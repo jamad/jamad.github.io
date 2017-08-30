@@ -19,8 +19,7 @@ When committed, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild
 ##### Header5
 
 ```###### Header6```
-###### Header6
-
+###### Header6 doesn't work as expected
 
 ```####### Header7```
 ####### Header7 doesn't work as expected
