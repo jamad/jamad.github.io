@@ -39,13 +39,21 @@ When committed, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild
 1. Numbered
 2. List
 
+```**Bold**```
+**Bold**
 
-```markdown
+```_Italic_```
+_Italic_
 
-**Bold** and _Italic_ and `Code` text
+````Code````
+`Code`
 
-[Link](url) and ![Image](src)
-```
+```[Link](url) ```
+[Link](url) 
+
+```![Image](src)```
+![Image](src)
+
 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
