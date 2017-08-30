@@ -23,7 +23,7 @@ When committed, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild
 
 
 ```####### Header7```
-####### Header7
+####### Header7 doesn't work as expected
 
 
 ```
