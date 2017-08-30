@@ -52,7 +52,7 @@ _Italic_
 [Link](url) 
 
 ```![Image](src)```
-![Image](src)
+![Image](src) 
 
 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
