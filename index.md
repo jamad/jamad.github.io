@@ -1,11 +1,9 @@
 ## Welcome to GitHub Pages
 
 Use the [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md) to maintain your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+When committed, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages from the Markdown files.
 
 ### Markdown
-
 Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
 ```markdown
