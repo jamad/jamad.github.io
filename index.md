@@ -52,8 +52,10 @@ _Italic_
 [Link](url) 
 
 ```![Image](src)```
-![Image](src) 
+![Image](src)
 
+```<img src="https://octodex.github.com/images/yaktocat.png" width="64">```
+<img src="https://octodex.github.com/images/yaktocat.png" width="64">
 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
