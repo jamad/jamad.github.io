@@ -1,6 +1,6 @@
 ## Welcome to GitHub Pages
 
-Use the [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md) to maintain your website in Markdown files.
+Use the [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md) to maintain this.
 When committed, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages from the Markdown files.
 
 ```# Header 1```
