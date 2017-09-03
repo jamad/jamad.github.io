@@ -1,7 +1,8 @@
-## Welcome to GitHub Pages
+## Tips for GitHub Pages
 
-Use the [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md) to maintain this.
-When committed, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages from the Markdown files.
+Use [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md) to maintain this.
+
+When committed, [Jekyll](https://jekyllrb.com/) rebuild the pages from .md.
 
 ```# Header 1```
 # Header1
@@ -66,3 +67,10 @@ Your Pages site will use the layout and styles from the Jekyll theme you have se
 ### Support or Contact
 
 Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+
+
+- HTML tag test
+
+<center>center text</center>
+<p style="text-align: center;">test</p>
+<div style="text-align: center;"><img src="https://octodex.github.com/images/yaktocat.png" width="64"></div>
