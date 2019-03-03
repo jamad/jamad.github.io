@@ -1,7 +1,44 @@
 <html>
   <head>
     <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+    <script>
+      // https://www.w3schools.com/js/js_whereto.asp
+      document.getElementById("demo").innerHTML = "My First JavaScript";
+      
+      // https://digitransit.fi/en/developers/apis/1-routing-api/0-graphql/ 
+      const request = require('request');
+
+      var req = {
+        url: 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql',
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: { "query": `{
+          stop(id: \"HSL:1040129\") {
+            name
+            lat
+            lon
+            wheelchairBoarding
+          }
+        }` },
+        json: true
+      };
+
+      request(req, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          console.log(JSON.stringify(body, null, 4)); 
+        }
+      });
+      
+    </script>
   </head>
   <body>test html
   </body>
 </html>
+
+
+  
+
+  
+  
+  
+    
