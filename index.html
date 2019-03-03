@@ -25,7 +25,7 @@
 
       request(req, function (error, response, body) {
         if (!error && response.statusCode == 200) {
-          console.log(JSON.stringify(body, null, 4)); 
+          document.getElementById("demo").innerHTML = JSON.stringify(body, null, 4);
         }
       });
       
@@ -34,7 +34,8 @@
   <body>
     test html 3
   
-    <p id="demo"></p>
+    <p id="demo">demo</p>
+    <p id="demo2">demo2</p>
   </body>
 </html>
 
