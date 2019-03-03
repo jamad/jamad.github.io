@@ -6,6 +6,7 @@
     test html - update by script
     <p id="demo">demo</p>
     <p id="demo2">demo2</p>
+    <p id="demo3">demo3</p>
   </body>
   
     <script>
@@ -23,7 +24,10 @@
       };
       
       request(req,function(error, response, body) {
-        if (!error && response.statusCode == 200) {document.getElementById("demo2").innerHTML = JSON.stringify(body, null, 4);}
+        document.getElementById("demo3").innerHTML = JSON.stringify(body, null, 4);
+        if (!error && response.statusCode == 200) {
+          document.getElementById("demo2").innerHTML = JSON.stringify(body, null, 4);
+          }
         else{document.getElementById("demo2").innerHTML = "error";}
       });
       
