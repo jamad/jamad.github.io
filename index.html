@@ -3,7 +3,7 @@
     <meta content="text/html; charset=windows-1252" http-equiv="content-type">
   </head>
   <body>
-    test html - update by script
+    test html 6
     <p id="demo">demo</p>
     <p id="demo2">demo2</p>
     <p id="demo3">demo3</p>
@@ -11,7 +11,7 @@
   
     <script>
       // https://www.w3schools.com/js/js_whereto.asp
-      document.getElementById("demo").innerHTML = "My First JavaScript";
+      document.getElementById("demo").innerHTML = "text by javascript";
       
       // https://digitransit.fi/en/developers/apis/1-routing-api/0-graphql/ 
       const request = require('request');
@@ -22,6 +22,7 @@
         body: { "query": `{stop(id: \"HSL:1040129\") {name}}` },
         json: true
       };
+      document.getElementById("demo3").innerHTML = "updating...";
       
       request(req,function(error, response, body) {
         if (!error && response.statusCode == 200) {
