@@ -1,6 +1,7 @@
 <html lang="ja">
   <head>
     <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+    <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
   </head>
   <body>
     <div style="text-align: center;">WIP<br>
@@ -8,5 +9,40 @@
       references<br>
       <br>
       <a title="http://qitailang.small.jp/bluegriffon/" href="http://qitailang.small.jp/bluegriffon/">http://qitailang.small.jp/bluegriffon/</a></div>
+
   </body>
+  
+    <script>
+      
+      // https://www.w3schools.com/js/js_whereto.asp
+      document.getElementById("demo").innerHTML = "text by javascript";
+      
+      // https://digitransit.fi/en/developers/apis/1-routing-api/0-graphql/ 
+      const request = require('request');
+      var req = {
+        url: 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql',
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: { "query": `{stop(id: \"HSL:1040129\") {name}}` },
+        json: true
+      };
+      document.getElementById("demo3").innerHTML = "updating...";
+      
+      request(req,function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+          document.getElementById("demo2").innerHTML = JSON.stringify(body, null, 4);
+          }
+        else{document.getElementById("demo2").innerHTML = "error";}
+      });
+      
+      document.getElementById("demo3").innerHTML = "done";
+    </script>
 </html>
+
+
+  
+
+  
+  
+  
+    
