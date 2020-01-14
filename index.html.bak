@@ -1,0 +1,14 @@
+<html lang="ja">
+  <head>
+    <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+  </head>
+  <body>test html
+    <meta charset="UTF-8">
+    <title>&#12469;&#12452;&#12488;&#12398;&#12479;&#12452;&#12488;&#12523;</title>
+    <link rel="stylesheet" type="text/css" href="css/html5reset.css"  ="">
+    <!--&#91;if lt IE 9&#93;>
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><!&#91;endif&#93;-->
+    &nbsp;
+    //&#12371;&#12371;&#12395;&#12469;&#12452;&#12488;&#12395;&#34920;&#31034;&#12377;&#12427;&#12467;&#12531;&#12486;&#12531;&#12484;&#20869;&#23481;&#12434;&#35352;&#36848;
+  </body>
+</html>
