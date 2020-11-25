@@ -1,14 +1,58 @@
 <html lang="ja">
   <head>
-    <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+    <meta http-equiv="content-type" content="text/html; charset=windows-1252">
+    <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
   </head>
-  <body>test html
-    <meta charset="UTF-8">
-    <title>&#12469;&#12452;&#12488;&#12398;&#12479;&#12452;&#12488;&#12523;</title>
-    <link rel="stylesheet" type="text/css" href="css/html5reset.css"  ="">
-    <!--&#91;if lt IE 9&#93;>
-<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><!&#91;endif&#93;-->
-    &nbsp;
-    //&#12371;&#12371;&#12395;&#12469;&#12452;&#12488;&#12395;&#34920;&#31034;&#12377;&#12427;&#12467;&#12531;&#12486;&#12531;&#12484;&#20869;&#23481;&#12434;&#35352;&#36848;
+  <body>
+    <p>experimental page - ( ctrl+R on browser to refresh ) </p>
+    <p> </p>
+    <p><a href="hello_world.html">hello world</a></p>
+    <p><a href="hello_world.html"></a><br>
+    </p>
+    <p><a href="how_to_use_bluegriffon.html">how to use bluegriffon</a></p>
+    <p><a href="blender_tips.html" title="blender tips"><br>
+      </a></p>
+    <p><a href="how_to_blender.html" title="blender how-to">blender how-to ( bpy
+        )<br>
+      </a></p>
+    <p><a href="blender_tips.html" title="blender tips">blender tips <br>
+      </a></p>
+    <p><a href="troubleshooting_blender.html" title="troubleshooting_blender">troubleshooting_blender</a></p>
+    <p><a href="python_to_run_on_the_webpage.html" title="python to run on the webpage"><br>
+      </a></p>
+    <p><a href="python_to_run_on_the_webpage.html" title="python to run on the webpage">python
+        to run on the webpage</a></p>
+    <p><a href="python_work_log.html" title="python work log">python work log</a></p>
+    <p><a href="note_html.html" title="note_html"><span style="color: #000100;">note
+          : html</span></a></p>
+    <p><a href="python_to_run_on_the_webpage.html" title="python to run on the webpage"><br>
+      </a></p>
+    <p><a href="python_to_run_on_the_webpage.html" title="python to run on the webpage"><br>
+      </a></p>
+    <script>
+      
+      // https://www.w3schools.com/js/js_whereto.asp
+      document.getElementById("demo").innerHTML = "text by javascript";
+      
+      // https://digitransit.fi/en/developers/apis/1-routing-api/0-graphql/ 
+      const request = require('request');
+      var req = {
+        url: 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql',
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: { "query": `{stop(id: \"HSL:1040129\") {name}}` },
+        json: true
+      };
+      document.getElementById("demo3").innerHTML = "updating...";
+      
+      request(req,function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+          document.getElementById("demo2").innerHTML = JSON.stringify(body, null, 4);
+          }
+        else{document.getElementById("demo2").innerHTML = "error";}
+      });
+      
+      document.getElementById("demo3").innerHTML = "done";
+    </script>
   </body>
 </html>
