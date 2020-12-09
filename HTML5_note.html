@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html lang="ja">
+    <head>
+        <title>HTML5-note</title>
+        <meta charset="UTF-8">
+        <script type="text/javascript" src="js/libs/jquery/jquery.min.js"></script>
+        <meta name="viewport" content="width=device-width">
+    </head>
+    <body>
+        <h1>note</h1>
+        <textarea id="memo" rows="10" cols="40" name="memo"></textarea>
+        <p><input type="button" id="save" value="Save"> <input type="button" id="clear" value="Clear">
+        </p>
+        <script>
+            $(function() {
+                if (localStorage.getItem("memo")) {
+                    $("#memo").val(localStorage.getItem("memo"));
+                }
+                $("#clear").click(function() {
+                    $("#memo").val(" ");
+                    localStorage.removeItem("memo");
+                });
+
+
+                $("#save").click(function() {
+                    localStorage.setItem("memo", $("#memo").val());
+                    console.log(localStorage.getItem("memo"));
+                });
+                
+                (function autoSave (){
+                    localStorage.setItem("memo", $("#memo").val());
+                    setTimeout(autoSave, 1000);
+                })();
+            });
+        </script>
+    </body>
+</html>
