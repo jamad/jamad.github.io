@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <title>HTML5-note</title>
+    <meta charset="UTF-8">
+    <!--
+    <script type="text/javascript" src="js/libs/jquery/jquery.min.js"></script>		-->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"
+"=""></script>
+    <meta name="viewport" content="width=device-width">
+  </head>
+  <body>
+    <h1>note</h1>
+    <textarea id="memo" rows="10" cols="40" name="memo"></textarea>
+    <p><input id="save" value="Save" type="button"> <input id="clear" value="Clear"
+type="button"> </p>
+    <script>
+            $(function() {
+                if (localStorage.getItem("memo")) {
+                    $("#memo").val(localStorage.getItem("memo"));
+                }
+                $("#clear").click(function() {
+                    $("#memo").val(" ");
+                    localStorage.removeItem("memo");
+                });
+
+
+                $("#save").click(function() {
+                    localStorage.setItem("memo", $("#memo").val());
+                    console.log(localStorage.getItem("memo"));
+                });
+                
+                (function autoSave (){
+                    localStorage.setItem("memo", $("#memo").val());
+                    setTimeout(autoSave, 1000);
+                })();
+            });
+        </script>
+  </body>
+</html>
