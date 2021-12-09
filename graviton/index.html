@@ -6,7 +6,7 @@
     <title>Unity WebGL Player | Graviton</title>
   </head>
   <body style="text-align: center">
-    <canvas id="unity-canvas" width=640 height=640 ></canvas>
+    <canvas id="unity-canvas" width=640 height=640 style="width: 640px; height: 640px; background: #231F20"></canvas>
     <script src="Build/graviton.loader.js"></script>
     <script>
       createUnityInstance(document.querySelector("#unity-canvas"), {
@@ -17,8 +17,8 @@
         companyName: "JAMAD",
         productName: "Graviton",
         productVersion: "1.0",
-        matchWebGLToCanvasSize: true, // Uncomment this to separately control WebGL canvas render size and DOM element size.
-        devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+        // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
+        // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
       });
     </script>
   </body>
