@@ -11,16 +11,14 @@
     <div id="unity-container" class="unity-desktop">
 
       <canvas id="unity-canvas" width=640 height=640></canvas>
-
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
         <div id="unity-progress-bar-empty">
           <div id="unity-progress-bar-full"></div>
         </div>
       </div>
-      
       <div id="unity-mobile-warning">
-        THis game should work on mobile devices.
+        WebGL builds are not supported on mobile devices.
       </div>
       <div id="unity-footer">
         <div id="unity-webgl-logo"></div>
@@ -62,10 +60,10 @@
         config.devicePixelRatio = 1;
         mobileWarning.style.display = "block";
 
-        //setTimeout(() => {
-        //  mobileWarning.style.display = "none";
-        //}, 5000);
-
+        setTimeout(() => {
+          mobileWarning.style.display = "none";
+        }, 5000);
+        
       } else {
         canvas.style.width = "640px";
         canvas.style.height = "640px";
