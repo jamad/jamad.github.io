@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
 
-
   <body>
     <div id="unity-container" class="unity-desktop">
 
@@ -19,7 +18,10 @@
           <div id="unity-progress-bar-full"></div>
         </div>
       </div>
-      <div id="unity-mobile-warning">WebGL a</div>
+      <div id="unity-mobile-warning">WebGL b</div>
+      <div id="unity-footer">
+        <div id="unity-fullscreen-button"></div>
+      </div>
     </div>
     <script>
       var buildUrl = "Build";
@@ -50,14 +52,9 @@
 
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         container.className = "unity-mobile";
-        // Avoid draining fillrate performance on mobile devices,
-        // and default/override low DPI mode on mobile browsers.
-        config.devicePixelRatio = 1;
-        mobileWarning.style.display = "block";
-
-        setTimeout(() => {
-          mobileWarning.style.display = "none";
-        }, 5000);
+        config.devicePixelRatio = 1;              // Avoid draining fillrate performance on mobile devices,
+        mobileWarning.style.display = "block";        // and default/override low DPI mode on mobile browsers.
+        setTimeout(() => {          mobileWarning.style.display = "none";        }, 500);
         
       } else {
         canvas.style.width = "640px";
