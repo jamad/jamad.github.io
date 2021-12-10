@@ -10,7 +10,7 @@
 
 
   <body>
-    <div id="unity-container" class="unity-desktop">
+    <div id="unity-container" class="unity-desktop"> <!-- // change name for css #unity-container.unity-mobile -->
       <canvas id="unity-canvas" width=640 height=640></canvas>
 
       <div id="unity-loading-bar">
@@ -51,7 +51,8 @@
       // happening inside the engine, and you would instead like to size up
       // the canvas DOM size and WebGL render target sizes yourself.
       // config.matchWebGLToCanvasSize = false;
-        container.className = "unity-mobile";
+        container.className = "unity-mobile";  // change name for css #unity-container.unity-mobile
+
         config.devicePixelRatio = 1;              // Avoid draining fillrate performance on mobile devices,
         mobileWarning.style.display = "block";        // and default/override low DPI mode on mobile browsers.
         setTimeout(() => {          mobileWarning.style.display = "none";        }, 500);
