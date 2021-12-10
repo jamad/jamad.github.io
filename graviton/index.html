@@ -14,10 +14,11 @@
       <canvas id="unity-canvas" width=640 height=640></canvas>
 
       <div id="unity-loading-bar">
-        <div id="unity-logo"></div>        <div id="unity-progress-bar-empty">          <div id="unity-progress-bar-full"></div>        
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-full"></div>        
       </div>
       </div>      
-        <div id="unity-mobile-warning">WebGL b</div>      <div id="unity-footer">        <div id="unity-fullscreen-button"></div>
+        <div id="unity-mobile-warning"></div>      <div id="unity-footer">        <div id="unity-fullscreen-button"></div>
       </div>
     </div>
 
@@ -50,7 +51,6 @@
       // happening inside the engine, and you would instead like to size up
       // the canvas DOM size and WebGL render target sizes yourself.
       // config.matchWebGLToCanvasSize = false;
-      
         container.className = "unity-mobile";
         config.devicePixelRatio = 1;              // Avoid draining fillrate performance on mobile devices,
         mobileWarning.style.display = "block";        // and default/override low DPI mode on mobile browsers.
