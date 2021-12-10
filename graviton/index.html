@@ -9,6 +9,7 @@
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
+
       <canvas id="unity-canvas" width=640 height=640></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
@@ -58,9 +59,11 @@
         // and default/override low DPI mode on mobile browsers.
         config.devicePixelRatio = 1;
         mobileWarning.style.display = "block";
-        setTimeout(() => {
-          mobileWarning.style.display = "none";
-        }, 5000);
+
+        //setTimeout(() => {
+        //  mobileWarning.style.display = "none";
+        //}, 5000);
+
       } else {
         canvas.style.width = "640px";
         canvas.style.height = "640px";
