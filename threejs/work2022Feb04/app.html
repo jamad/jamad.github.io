@@ -2,9 +2,7 @@
 <html>
 <head>
     <title>My first three.js app</title>
-    <style>
-        body { margin: 0; }
-    </style>
+    <style>body { margin: 0; }</style>
 </head>
 <body>
 <!-- Three.js library -->
@@ -19,8 +17,8 @@
     let light;
 
     function init() {
-        scene.background = new THREE.Color('black');
-        camera.position.set(0, 10, 20);
+        scene.background = new THREE.Color('darkred');
+        camera.position.set(0, 0, 5);
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
     }
@@ -35,18 +33,18 @@
 
         balloonLoader.load('./monkey.gltf', (gltf) => {
             Mesh = gltf.scene;
-            Mesh.scale.set(0.2,0.2,0.2);
             scene.add(Mesh);
             Mesh.position.x = 0;
-            Mesh.position.y = 10;
-            Mesh.position.z = 15;
+            Mesh.position.y = 0;
+            Mesh.position.z = 0;
         });
     }
 
     function animate() {
         requestAnimationFrame(animate);
         if (Mesh && Mesh.rotation) {
-            Mesh.rotation.y -= 0.005;
+            Mesh.rotation.x -= 0.01;
+            Mesh.rotation.y -= 0.01;
         }
         renderer.render(scene, camera);
     }
