@@ -18,7 +18,7 @@
 
     function init() {
         scene.background = new THREE.Color('darkred');
-        camera.position.set(0, 0, 5);
+        camera.position.set(0, 0, 2);
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
     }
@@ -31,19 +31,20 @@
     function loadGLTF() {
         let balloonLoader = new THREE.GLTFLoader();
 
-        balloonLoader.load('./monkey.gltf', (gltf) => {
+        balloonLoader.load('./shelf_wallpaper_simulation.gltf', (gltf) => {
             Mesh = gltf.scene;
             scene.add(Mesh);
             Mesh.position.x = 0;
             Mesh.position.y = 0;
             Mesh.position.z = 0;
+            scene.setSize = 2;
         });
     }
 
     function animate() {
         requestAnimationFrame(animate);
         if (Mesh && Mesh.rotation) {
-            Mesh.rotation.x -= 0.01;
+            //Mesh.rotation.x -= 0.01;
             Mesh.rotation.y -= 0.01;
         }
         renderer.render(scene, camera);
