@@ -10,9 +10,9 @@
 <!-- GLTFLoader.js source -->
 <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/loaders/GLTFLoader.js"></script>
 <script>
-    const renderer = new THREE.WebGLRenderer();
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
-    const scene = new THREE.Scene();
+    let renderer = new THREE.WebGLRenderer();
+    let camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+    let scene = new THREE.Scene();
     let Mesh;
     let light;
 
