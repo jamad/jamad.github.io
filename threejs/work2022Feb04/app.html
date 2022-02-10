@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>My first three.js app</title>
-    <style>body { margin: 0; }</style>
-</head>
 <body>
-<!-- Three.js library -->
-<script src="https://threejs.org/build/three.min.js"></script>
-<!-- GLTFLoader.js source -->
-<script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <script src="../three.min.js"></script>
+    <script src="../GLTFLoader.js"></script>
+    <script src="../OrbitControls.js"></script>
 <script>
     let renderer = new THREE.WebGLRenderer();
     let camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
