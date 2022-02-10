@@ -2,7 +2,7 @@
 <html>
 <body>
     
-    <script src="../three.min.js"></script>
+    <script src="../three.js"></script>
     <script src="../GLTFLoader.js"></script>
     <script src="../OrbitControls.js"></script>
 
@@ -22,7 +22,7 @@
         controls = new THREE.OrbitControls(camera);
         //controls.addEventListener('change', renderer); // https://stackoverflow.com/questions/58626623/threejs-uncaught-typeerror-bc-call-is-not-a-function-orbit-controls
         controls.update();
-
+        
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
     }
