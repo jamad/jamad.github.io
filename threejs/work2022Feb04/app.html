@@ -5,16 +5,23 @@
     <script src="../three.min.js"></script>
     <script src="../GLTFLoader.js"></script>
     <script src="../OrbitControls.js"></script>
+
 <script>
-    let renderer = new THREE.WebGLRenderer();
+    let renderer = new THREE.WebGLRenderer({antialias:true});
     let camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
     let scene = new THREE.Scene();
+
     let Mesh;
     let light;
 
     function init() {
         scene.background = new THREE.Color('darkred');
         camera.position.set(0, 0, 2);
+
+        // added camera control
+        controls = new THREE.OrbitControls(camera);
+        controls.addEventListener('change', renderer);
+
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
     }
@@ -25,9 +32,9 @@
     }
 
     function loadGLTF() {
-        let balloonLoader = new THREE.GLTFLoader();
+        let loader = new THREE.GLTFLoader();
 
-        balloonLoader.load('./shelf_wallpaper_simulation.gltf', (gltf) => {
+        loader.load('./shelf_wallpaper_simulation.gltf', (gltf) => {
             Mesh = gltf.scene;
             scene.add(Mesh);
             Mesh.position.x = 0;
@@ -40,8 +47,7 @@
     function animate() {
         requestAnimationFrame(animate);
         if (Mesh && Mesh.rotation) {
-            //Mesh.rotation.x -= 0.01;
-            Mesh.rotation.y -= 0.01;
+            Mesh.rotation.y -= 0.002;
         }
         renderer.render(scene, camera);
     }
