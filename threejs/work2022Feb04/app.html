@@ -23,7 +23,7 @@
         camera.position.set(0, 0, 2);
 
         // added camera control then the page got an error
-        controls = new THREE.OrbitControls(camera);
+        controls = new THREE.OrbitControls(camera, renderer.domElement );
         ////controls.addEventListener('change', renderer); // https://stackoverflow.com/questions/58626623/threejs-uncaught-typeerror-bc-call-is-not-a-function-orbit-controls
         //controls.update();
         
