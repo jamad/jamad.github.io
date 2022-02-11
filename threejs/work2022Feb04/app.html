@@ -12,7 +12,7 @@
 
 <script>
     let renderer = new THREE.WebGLRenderer({antialias:true});
-    let camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+    let camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 1000);// ( fov, aspect, near, far );
     let scene = new THREE.Scene();
 
     let Mesh;
