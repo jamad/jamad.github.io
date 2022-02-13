@@ -15,51 +15,34 @@
     let camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 1000);// ( fov, aspect, near, far );
     let scene = new THREE.Scene();
 
+    scene.background = new THREE.Color('darkred');
+    camera.position.set(0.8, 0.5, 1);
+    
+
+    // added camera control then the page got an error
+    controls = new THREE.OrbitControls(camera, renderer.domElement ); // https://sodocumentation.net/three-js/topic/8270/camera-controls-in-three-js
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
     let Mesh;
-    let light;
+    let light= new THREE.AmbientLight(0xffffff); // soft white light
+    scene.add(light);
 
-    function init() {
-        scene.background = new THREE.Color('darkred');
-        camera.position.set(0, 0, 2);
-
-        // added camera control then the page got an error
-        controls = new THREE.OrbitControls(camera, renderer.domElement ); // https://sodocumentation.net/three-js/topic/8270/camera-controls-in-three-js
-        ////controls.addEventListener('change', renderer); // https://stackoverflow.com/questions/58626623/threejs-uncaught-typeerror-bc-call-is-not-a-function-orbit-controls
-        //controls.update();
-        
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-    }
-
-    function setLight() {
-        light = new THREE.AmbientLight(0xffffff); // soft white light
-        scene.add(light);
-    }
-
-    function loadGLTF() {
-        let loader = new THREE.GLTFLoader();
-
-        loader.load('./shelf_wallpaper_simulation.gltf', (gltf) => {
+    let loader = new THREE.GLTFLoader();
+    loader.load('./shelf_wallpaper_simulation.gltf', (gltf) => {
             Mesh = gltf.scene;
             scene.add(Mesh);
             Mesh.position.x = 0;
-            Mesh.position.y = 0;
-            Mesh.position.z = 0;
-            scene.setSize = 2;
+            //scene.setSize = 1;
         });
-    }
 
     function animate() {
         requestAnimationFrame(animate);
-        if (Mesh && Mesh.rotation) {
-            Mesh.rotation.y -= 0.002;
-        }
+        if (Mesh && Mesh.rotation) {Mesh.rotation.y -= 0.002;}
         renderer.render(scene, camera);
     }
 
-    init();
-    setLight();
-    loadGLTF();
     animate();
 </script>
 </body>
