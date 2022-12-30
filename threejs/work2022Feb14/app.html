@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset=UTF-8 />
+      <link rel="stylesheet" type="text/css" href="../styles.css" />
+    </head>
+<body>
+    
+    <script src="../three.min.js"></script>
+    <script src="../GLTFLoader.js"></script>
+    <script src="../OrbitControls.js"></script>
+
+<script>
+    
+    let textureEquirec, textureCube;
+    let sphereMesh, sphereMaterial;
+
+    let renderer = new THREE.WebGLRenderer({antialias:true});
+    let camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 1000);// ( fov, aspect, near, far );
+    let scene = new THREE.Scene();    
+    let controls = new THREE.OrbitControls(camera, renderer.domElement ); // https://sodocumentation.net/three-js/topic/8270/camera-controls-in-three-js
+
+    camera.position.set(0.8, 0.5, 1);
+    
+    scene.background = new THREE.Color('darkred');
+    const texloader = new THREE.CubeTextureLoader();
+    texloader.setPath( '../skybox/' );
+    textureCube = texloader.load( [ 'posx.jpg', 'negx.jpg', 'posy.jpg', 'negy.jpg', 'posz.jpg', 'negz.jpg' ] );
+    textureCube.encoding = THREE.sRGBEncoding;
+    scene.background = textureCube;
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    let Mesh;
+    let ambient= new THREE.AmbientLight(0x888888); // soft white light
+    scene.add(ambient);
+
+    let light_dir = new THREE.DirectionalLight(0xffffff, 1 );
+    scene.add(light_dir)
+
+    const light_point = new THREE.PointLight()
+    scene.add(light_point)
+
+    let loader = new THREE.GLTFLoader();
+    loader.load('./envmap_test.gltf', (gltf) => {
+            Mesh = gltf.scene;
+            scene.add(Mesh);
+            Mesh.position.x = 0;
+            //scene.setSize = 1;
+        });
+
+    function animate() {
+        requestAnimationFrame(animate);
+        if (Mesh && Mesh.rotation) {Mesh.rotation.y -= 0.0002;}
+        renderer.render(scene, camera);
+    }
+
+    animate();
+</script>
+</body>
+</html>
+
+
+
