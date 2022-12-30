@@ -9,31 +9,14 @@
     * 2022-12-31: How to get the timestamp for the format "yyyy-mm-dd" quickly
     on Windows OS ?&nbsp;&nbsp; &gt;&gt; use powershell&nbsp; &gt;&gt; &nbsp;
     Get-Date -Format yyyy-MM-dd<br>
-    * 2022-12-31: How to add javascript showing today's date?&nbsp; &gt;&gt; A.
-    use Blue Griffon &gt;&gt; Insert &gt;&gt; HTML markup &gt;&gt; copy
-    following code<br>
+    * 2022-12-31: <a href="tips2022_12_31_01.html">How to add javascript
+      showing today's date?&nbsp; &gt;&gt; A. use Blue Griffon &gt;&gt; Insert
+      &gt;&gt; HTML markup &gt;&gt; </a><br>
     <script>window.onload = function() {
     var today = new Date();
     var options = { year: 'numeric', month: 'numeric', day: 'numeric' };
     document.getElementById("date").innerHTML = today.toLocaleDateString('en-US', options);
   }</script><br>
-    <table style="width: 100%" border="1">
-      <tbody>
-        <tr>
-          <td>&lt;span id="date"&gt;&lt;/span&gt;<br>
-            &lt;script&gt;<br>
-            &nbsp; window.onload = function() {<br>
-            &nbsp;&nbsp;&nbsp; var today = new Date();<br>
-            &nbsp;&nbsp;&nbsp; var options = { year: 'numeric', month:
-            'numeric', day: 'numeric' };<br>
-            &nbsp;&nbsp;&nbsp; document.getElementById("date").innerHTML =
-            today.toLocaleDateString('en-US', options);<br>
-            &nbsp; }<br>
-            &lt;/script&gt; : </td>
-        </tr>
-      </tbody>
-    </table>
-    <br>
     <p><a href="%3Cspan%20id=%22date%22%3E%3C/p%3E%3Cscript%3E%20%20var%20today%20=%20new%20Date%28%29;%20%20var%20options%20=%20%7B%20year:%20%27numeric%27,%20month:%20%27numeric%27,%20day:%20%27numeric%27%20%7D;%20%20document.getElementById%28%22date%22%29.innerHTML%20=%20today.toLocaleDateString%28%27en-US%27,%20options%29;%3C/script%3E"></a><a
         href="%3Cspan%20id=%22date%22%3E%3C/p%3E%3Cscript%3E%20%20var%20today%20=%20new%20Date%28%29;%20%20var%20options%20=%20%7B%20year:%20%27numeric%27,%20month:%20%27numeric%27,%20day:%20%27numeric%27%20%7D;%20%20document.getElementById%28%22date%22%29.innerHTML%20=%20today.toLocaleDateString%28%27en-US%27,%20options%29;%3C/script%3E"></a><span
         id="date"></span></p>
