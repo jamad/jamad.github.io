@@ -28,7 +28,6 @@ style="color: #9cdcfe;">encoding</span><span style="color: #d4d4d4;">=</span><sp
 style="color: #9cdcfe;">encoding</span><span style="color: #d4d4d4;">) </span><span
 style="color: #c586c0;">as</span><span style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">f</span><span
 style="color: #d4d4d4;">:</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; </span><span
-style="color: #6a9955;"># Create a CSV reader</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; </span><span
 style="color: #9cdcfe;">reader</span><span style="color: #d4d4d4;"> = </span><span
 style="color: #4ec9b0;">csv</span><span style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">reader</span><span
 style="color: #d4d4d4;">(</span><span style="color: #9cdcfe;">f</span><span style="color: #d4d4d4;">)</span></div><br><div><span
@@ -37,39 +36,7 @@ style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: #
 style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">row</span><span style="color: #d4d4d4;"> </span><span
 style="color: #c586c0;">in</span><span style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">reader</span><span
 style="color: #d4d4d4;">:</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
-style="color: #c586c0;">if</span><span style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">row</span><span
-style="color: #d4d4d4;">[</span><span style="color: #b5cea8;">0</span><span style="color: #d4d4d4;">]==</span><span
-style="color: #ce9178;">''</span><span style="color: #d4d4d4;">:</span></div><div><span
-style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
-style="color: #dcdcaa;">print</span><span style="color: #d4d4d4;">(</span><span
-style="color: #ce9178;">'invalid data'</span><span style="color: #d4d4d4;">, </span><span
-style="color: #9cdcfe;">row</span><span style="color: #d4d4d4;">)</span></div><div><span
-style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
-style="color: #c586c0;">continue</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
-style="color: #6a9955;"># print(row)</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
-style="color: #9cdcfe;">my_filename</span><span style="color: #d4d4d4;">=</span><span
-style="color: #ce9178;">'example_'</span><span style="color: #d4d4d4;">+</span><span
-style="color: #9cdcfe;">row</span><span style="color: #d4d4d4;">[</span><span style="color: #b5cea8;">2</span><span
-style="color: #d4d4d4;">].</span><span style="color: #dcdcaa;">replace</span><span
-style="color: #d4d4d4;">(</span><span style="color: #ce9178;">'-'</span><span style="color: #d4d4d4;">,</span><span
-style="color: #ce9178;">''</span><span style="color: #d4d4d4;">).</span><span style="color: #dcdcaa;">replace</span><span
-style="color: #d4d4d4;">(</span><span style="color: #ce9178;">' '</span><span style="color: #d4d4d4;">,</span><span
-style="color: #ce9178;">'_'</span><span style="color: #d4d4d4;">).</span><span style="color: #dcdcaa;">replace</span><span
-style="color: #d4d4d4;">(</span><span style="color: #ce9178;">':'</span><span style="color: #d4d4d4;">,</span><span
-style="color: #ce9178;">'_'</span><span style="color: #d4d4d4;">)+</span><span style="color: #ce9178;">'.jpg'</span></div><div><span
-style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: #9cdcfe;">my_url</span><span
-style="color: #d4d4d4;">=</span><span style="color: #9cdcfe;">row</span><span style="color: #d4d4d4;">[</span><span
-style="color: #b5cea8;">4</span><span style="color: #d4d4d4;">]</span></div><div><span
-style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: #dcdcaa;">print</span><span
-style="color: #d4d4d4;">(</span><span style="color: #9cdcfe;">my_filename</span><span
-style="color: #d4d4d4;">,</span><span style="color: #9cdcfe;">my_url</span><span
-style="color: #d4d4d4;">)</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
-style="color: #dcdcaa;">download_image</span><span style="color: #d4d4d4;">(</span><span
-style="color: #9cdcfe;">my_url</span><span style="color: #d4d4d4;">, </span><span
-style="color: #9cdcfe;">my_filename</span><span style="color: #d4d4d4;">)</span></div><br><div><span
-style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: #4ec9b0;">time</span><span
-style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">sleep</span><span
-style="color: #d4d4d4;">(</span><span style="color: #b5cea8;">2</span><span style="color: #d4d4d4;">)</span></div></div></li></ul></ul><p>&nbsp;&nbsp;&nbsp; </p><p><br></p>
+style="color: #6a9955;">print(row)</span></div></div></li></ul></ul><p>&nbsp;&nbsp;&nbsp; </p><p><br></p>
 
 
 </body></html>
