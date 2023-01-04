@@ -12,9 +12,18 @@
     <p>&nbsp;&nbsp;&nbsp; (ffmpeg) how to convert movie file (ex.&nbsp; .mkv,
       .flv ) into .mp4?&nbsp;&nbsp;<i></i></p>
     <p>A</p>
-    <p>&nbsp;&nbsp;&nbsp; <strong>ffmpeg -i </strong><i>aaa.flv</i> <strong>-vcodec
-        copy -vcodec h264_nvenc</strong> <i>aaa.mp4&nbsp;</i> (using GPU)&nbsp;
-      or&nbsp;<strong> ffmpeg -i</strong> <i>aaa.flv</i><strong> -vcodec copy</strong>
-      <i>aaa.mp4</i></p>
+    <ul>
+      <li>&nbsp;for better quality , </li>
+      <ul>
+        <li>&nbsp;ffmpeg -i <strong></strong><i>aaa</i>.webm -crf 1 -c:v
+          libx264 <strong></strong><i>aaa</i>.mp4</li>
+      </ul>
+      <li>&nbsp;&nbsp; <strong>ffmpeg -i </strong><i>aaa.flv</i> <strong>-vcodec
+          copy -vcodec h264_nvenc</strong> <i>aaa.mp4&nbsp;</i> (using
+        GPU)&nbsp; or&nbsp;<strong> ffmpeg -i</strong> <i>aaa.flv</i><strong>
+          -vcodec copy</strong> <i>aaa.mp4</i></li>
+    </ul>
+    <p><i><br>
+      </i></p>
   </body>
 </html>
