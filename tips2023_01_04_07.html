@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>tips2023_01_04_07</title>
+  </head>
+  <body>
+    <p>tips2023_01_04_07</p>
+    <p><br>
+    </p>
+    <p>Q</p>
+    <p>&nbsp;&nbsp;&nbsp; * 2023-01-04: (python) how to read the file? (.csv )</p>
+    <p>A</p>
+    <ul>
+      <li>&nbsp;&nbsp;&nbsp; the following is the example</li>
+      <ul>
+        <li>
+          <div style="color: #d4d4d4;background-color: #1e1e1e;font-family: Consolas, 'Courier New', monospace;font-weight: normal;font-size: 14px;line-height: 19px;white-space: pre;"><div><span
+style="color: #569cd6;">def</span><span style="color: #d4d4d4;"> </span><span style="color: #dcdcaa;">read_csv</span><span
+style="color: #d4d4d4;">(</span><span style="color: #9cdcfe;">filename</span><span
+style="color: #d4d4d4;">, &nbsp;</span><span style="color: #9cdcfe;">encoding</span><span
+style="color: #d4d4d4;">=</span><span style="color: #ce9178;">'utf-8'</span><span
+style="color: #d4d4d4;">):</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; </span><span
+style="color: #c586c0;">with</span><span style="color: #d4d4d4;"> </span><span style="color: #dcdcaa;">open</span><span
+style="color: #d4d4d4;">(</span><span style="color: #9cdcfe;">filename</span><span
+style="color: #d4d4d4;">, </span><span style="color: #ce9178;">'r'</span><span style="color: #d4d4d4;">, </span><span
+style="color: #9cdcfe;">encoding</span><span style="color: #d4d4d4;">=</span><span
+style="color: #9cdcfe;">encoding</span><span style="color: #d4d4d4;">) </span><span
+style="color: #c586c0;">as</span><span style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">f</span><span
+style="color: #d4d4d4;">:</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; </span><span
+style="color: #6a9955;"># Create a CSV reader</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; </span><span
+style="color: #9cdcfe;">reader</span><span style="color: #d4d4d4;"> = </span><span
+style="color: #4ec9b0;">csv</span><span style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">reader</span><span
+style="color: #d4d4d4;">(</span><span style="color: #9cdcfe;">f</span><span style="color: #d4d4d4;">)</span></div><br><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: #6a9955;"># Print the contents of the CSV file</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: #c586c0;">for</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">row</span><span style="color: #d4d4d4;"> </span><span
+style="color: #c586c0;">in</span><span style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">reader</span><span
+style="color: #d4d4d4;">:</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
+style="color: #c586c0;">if</span><span style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">row</span><span
+style="color: #d4d4d4;">[</span><span style="color: #b5cea8;">0</span><span style="color: #d4d4d4;">]==</span><span
+style="color: #ce9178;">''</span><span style="color: #d4d4d4;">:</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
+style="color: #dcdcaa;">print</span><span style="color: #d4d4d4;">(</span><span
+style="color: #ce9178;">'invalid data'</span><span style="color: #d4d4d4;">, </span><span
+style="color: #9cdcfe;">row</span><span style="color: #d4d4d4;">)</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
+style="color: #c586c0;">continue</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
+style="color: #6a9955;"># print(row)</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
+style="color: #9cdcfe;">my_filename</span><span style="color: #d4d4d4;">=</span><span
+style="color: #ce9178;">'example_'</span><span style="color: #d4d4d4;">+</span><span
+style="color: #9cdcfe;">row</span><span style="color: #d4d4d4;">[</span><span style="color: #b5cea8;">2</span><span
+style="color: #d4d4d4;">].</span><span style="color: #dcdcaa;">replace</span><span
+style="color: #d4d4d4;">(</span><span style="color: #ce9178;">'-'</span><span style="color: #d4d4d4;">,</span><span
+style="color: #ce9178;">''</span><span style="color: #d4d4d4;">).</span><span style="color: #dcdcaa;">replace</span><span
+style="color: #d4d4d4;">(</span><span style="color: #ce9178;">' '</span><span style="color: #d4d4d4;">,</span><span
+style="color: #ce9178;">'_'</span><span style="color: #d4d4d4;">).</span><span style="color: #dcdcaa;">replace</span><span
+style="color: #d4d4d4;">(</span><span style="color: #ce9178;">':'</span><span style="color: #d4d4d4;">,</span><span
+style="color: #ce9178;">'_'</span><span style="color: #d4d4d4;">)+</span><span style="color: #ce9178;">'.jpg'</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: #9cdcfe;">my_url</span><span
+style="color: #d4d4d4;">=</span><span style="color: #9cdcfe;">row</span><span style="color: #d4d4d4;">[</span><span
+style="color: #b5cea8;">4</span><span style="color: #d4d4d4;">]</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: #dcdcaa;">print</span><span
+style="color: #d4d4d4;">(</span><span style="color: #9cdcfe;">my_filename</span><span
+style="color: #d4d4d4;">,</span><span style="color: #9cdcfe;">my_url</span><span
+style="color: #d4d4d4;">)</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span
+style="color: #dcdcaa;">download_image</span><span style="color: #d4d4d4;">(</span><span
+style="color: #9cdcfe;">my_url</span><span style="color: #d4d4d4;">, </span><span
+style="color: #9cdcfe;">my_filename</span><span style="color: #d4d4d4;">)</span></div><br><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: #4ec9b0;">time</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">sleep</span><span
+style="color: #d4d4d4;">(</span><span style="color: #b5cea8;">2</span><span style="color: #d4d4d4;">)</span></div></div></li></ul></ul><p>&nbsp;&nbsp;&nbsp; </p><p><br></p>
+
+
+</body></html>
