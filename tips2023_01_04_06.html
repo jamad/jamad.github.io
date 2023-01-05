@@ -13,10 +13,14 @@
       .flv ) into .mp4?&nbsp;&nbsp;<i></i></p>
     <p>A</p>
     <ul>
-      <li>&nbsp;<strong>ffmpeg -i </strong><i>aaa.flv</i> <strong>-vcodec copy
-          -vcodec h264_nvenc</strong> <i>aaa.mp4&nbsp;</i> (using GPU)&nbsp;
-        or&nbsp;<strong> ffmpeg -i</strong> <i>aaa.flv</i><strong> -vcodec copy</strong>
-        <i>aaa.mp4</i></li>
+      <li>&nbsp;<strong>ffmpeg -i </strong><i>aaa.flv</i> -vcodec copy<strong>
+          -vcodec h264_nvenc</strong> <i>aaa.mp4&nbsp;</i> (using GPU)&nbsp; </li>
+      <ul>
+        <li><strong>&nbsp;ffmpeg -i</strong> <i>aaa.flv</i><strong> -vcodec
+            copy</strong> <i>aaa.mp4&nbsp;</i> (without GPU, CPU becomes almost
+          100% and slow to finish)<i><br>
+          </i></li>
+      </ul>
       <li>&nbsp;for better quality, try the following ( reference :
         https://stackoverflow.com/questions/49378977/ffmpeg-webm-to-mp4-quality-loss
         ) </li>
