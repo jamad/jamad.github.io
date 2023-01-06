@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>tips2023_01_06_001</title>
+  </head>
+  <body>
+    <p>tips2023_01_06_001</p>
+    <p><br>
+    </p>
+    <p>Q</p>
+    <p>&nbsp;&nbsp;&nbsp; * 2023-01-06: (html) how to create a quick notepad
+      app? </p>
+    <p>&nbsp;&nbsp;&nbsp; </p>
+    <table style="width: 100%" border="1">
+      <tbody>
+        <tr>
+          <td>
+            <h1>My Notepad</h1>
+            <textarea id="note"></textarea>
+            <br>
+            <input id="filename" value="note.txt" type="text">
+            <button onclick="saveFile()">Save</button>
+            <script>
+  function saveFile() {
+    // Get the contents of the textarea
+    var text = document.getElementById("note").value;
+
+    // Get the filename from the input field
+    var filename = document.getElementById("filename").value;
+
+    // Create a new Blob object (a file-like object)
+    var file = new Blob([text], {type: "text/plain"});
+
+    // Create a link element to trigger the download
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(file);
+    a.download = filename;
+    a.click();
+  }
+</script></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; </p>
+    <p>A&nbsp;&nbsp;&nbsp; the code </p>
+    <table style="width: 100%" border="1">
+      <tbody>
+        <tr>
+          <td><br>
+            <img src="data:image/png;base64,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"
+              alt=""><br>
+            <br>
+            then by clicking save, the file is created in Download folder<br>
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJMAAABDCAIAAAAXuaBtAAAD9klEQVR4nO2bzUrjUBSAfY2s9Q1K36FP4Qu4CgRcCra1P1HoLqthRmTIVpyNBE3TpsoMtdaBMDMIgcFdH6GtkFkkaW7uT9Le6qTHno8iqffcn9wv9+S2xh0FgclO0QNAJEFzUEFzUEFzUEFzUEFzUEFzUEFzUEFzUEFzUEFzUJE0p1oBB0tdvoWK4a8Uj1Csu+ZUazVhC9DcmiTm9vb2MuJEpWiuKBJzR0dHmqZxgzRNExWx5iqGL8qfSY71DZU0R9bxjQqv5YrhB76x+gl+WFLZUtd11pCmae12W1SfM7+UkPidaiVWIodxUcWw4gKiimol8bhEGej7HCUvW5tCm0tNtqKQE04XCdNsEkhUQXEMnB3KQl6uNoUSwLERzz4z9dQvUjmWSJjhIYpj4e8tdV0/Pz/P1aYsb44pImSoVpBOpPQxiuMg/FSwv7+/TP2UkXAXwc2WTFFSMe0lHaha9GYGiXjjz3OqFYhMCncoZFSYNAnFqhX4Porj8PafxHk7fKbEUsmVlhT4RoXayrDrGFEUBcD3lsx2FQnZcHO44oRsrrnoCxe8wwnYXHNINmgOKmgOKmgOKmgOKmgOKmgOKvnmdnd3S6VSGdkw8s2VSqWDg4NDZMPIN1cul4seJMIBzUEFzUEFzUFFxtzZ2dnT08/xePz4OB6NHkej0cPDw3A4vLr6Vq1WCzmNLUTG3Onp6evr62w2n0av2XQ6m87mw+HQ87zj4+NCzmTbkDQ355m7vLy8vr6+uPhayJlsGzLmdF2fJtro1+Du/v+egukFE7uzfNiS8ZuOjLl2uz2dze9/fKdef19eprO5O7hbe1QrTe47mcsOK16/jLlWq5Wx5vruYO1Robl8ZMw1my1yzf15fl7OnOkFE9v2wufzkvPu2JP4YT7PDMNS74mA8D2vWTOK4TUb1uKZo7sm21wU2PYkrhBVZUZYBDLmGs1mxppz+q6gL9Mjp5E5Ouwspoi8oolj0+Nd56a3MJZqlqrFmuN2TTZLjsEzo59saTFImWs0Mu5zTq8v6Ivno2NPiOs2nhv+shBc46JmqVqMOX7X3GZTVx2ntAhkzJ2cNDLWXNfpCfqSNpedkvKbTYdtsbl6/YRac97vXwtztuMI+uLmQCplMbnu0PSC7EkSNpuulZstxbfDD5Mta/V6xpq77XYFfQnuXklmS+Yi2gPQO5SlsyWnVvYOhdNCPIZkh0LeDVMjLAIZc9VaLcPcjS0yh7wlUuaqVXdw13cHPdft9V2n1+86Pbvr3HadG7v76fOX9xwwsSMv9povGvwrD1TQHFTQHFTQHFTQHFTweUuo4DPOUMH/K4AKmoMKmoMKmoMKmoMKmoMKmoPKPzESdGmlwM6ZAAAAAElFTkSuQmCC"
+              alt=""></td>
+          <td>
+            <div style="color: #d4d4d4;background-color: #1e1e1e;font-family: Consolas, 'Courier New', monospace;font-weight: normal;font-size: 14px;line-height: 19px;white-space: pre;"><div><span
+style="color: #808080;">&lt;</span><span style="color: #569cd6;">html</span><span
+style="color: #808080;">&gt;</span></div><div><span style="color: #808080;">&lt;</span><span
+style="color: #569cd6;">body</span><span style="color: #808080;">&gt;</span></div><div><span
+style="color: #808080;">&lt;</span><span style="color: #569cd6;">h1</span><span
+style="color: #808080;">&gt;</span><span style="color: #d4d4d4;">My Notepad</span><span
+style="color: #808080;">&lt;/</span><span style="color: #569cd6;">h1</span><span
+style="color: #808080;">&gt;</span></div><div><span style="color: #808080;">&lt;</span><span
+style="color: #569cd6;">textarea</span><span style="color: #d4d4d4;"> </span><span
+style="color: #9cdcfe;">id</span><span style="color: #d4d4d4;">=</span><span style="color: #ce9178;">"note"</span><span
+style="color: #808080;">&gt;&lt;/</span><span style="color: #569cd6;">textarea</span><span
+style="color: #808080;">&gt;</span></div><div><span style="color: #808080;">&lt;</span><span
+style="color: #569cd6;">br</span><span style="color: #808080;">&gt;</span></div><div><span
+style="color: #808080;">&lt;</span><span style="color: #569cd6;">input</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">type</span><span style="color: #d4d4d4;">=</span><span
+style="color: #ce9178;">"text"</span><span style="color: #d4d4d4;"> </span><span
+style="color: #9cdcfe;">id</span><span style="color: #d4d4d4;">=</span><span style="color: #ce9178;">"filename"</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">value</span><span
+style="color: #d4d4d4;">=</span><span style="color: #ce9178;">"note.txt"</span><span
+style="color: #808080;">&gt;</span></div><div><span style="color: #808080;">&lt;</span><span
+style="color: #569cd6;">button</span><span style="color: #d4d4d4;"> </span><span
+style="color: #9cdcfe;">onclick</span><span style="color: #d4d4d4;">=</span><span
+style="color: #ce9178;">"</span><span style="color: #dcdcaa;">saveFile</span><span
+style="color: #ce9178;">()</span><span style="color: #ce9178;">"</span><span style="color: #808080;">&gt;</span><span
+style="color: #d4d4d4;">Save</span><span style="color: #808080;">&lt;/</span><span
+style="color: #569cd6;">button</span><span style="color: #808080;">&gt;</span></div><br><div><span
+style="color: #808080;">&lt;</span><span style="color: #569cd6;">script</span><span
+style="color: #808080;">&gt;</span></div><div><span style="color: #d4d4d4;">&nbsp; </span><span
+style="color: #569cd6;">function</span><span style="color: #d4d4d4;"> </span><span
+style="color: #dcdcaa;">saveFile</span><span style="color: #d4d4d4;">() {</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #6a9955;">// Get the contents of the textarea</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #569cd6;">var</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">text</span><span style="color: #d4d4d4;"> = </span><span
+style="color: #9cdcfe;">document</span><span style="color: #d4d4d4;">.</span><span
+style="color: #dcdcaa;">getElementById</span><span style="color: #d4d4d4;">(</span><span
+style="color: #ce9178;">"note"</span><span style="color: #d4d4d4;">).</span><span
+style="color: #9cdcfe;">value</span><span style="color: #d4d4d4;">;</span></div><br><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #6a9955;">// Get the filename from the input field</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #569cd6;">var</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">filename</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">document</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">getElementById</span><span
+style="color: #d4d4d4;">(</span><span style="color: #ce9178;">"filename"</span><span
+style="color: #d4d4d4;">).</span><span style="color: #9cdcfe;">value</span><span
+style="color: #d4d4d4;">;</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; </span><span
+style="color: #6a9955;">// Create a new Blob object (a file-like object)</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #569cd6;">var</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">file</span><span style="color: #d4d4d4;"> = </span><span
+style="color: #569cd6;">new</span><span style="color: #d4d4d4;"> </span><span style="color: #dcdcaa;">Blob</span><span
+style="color: #d4d4d4;">([</span><span style="color: #9cdcfe;">text</span><span
+style="color: #d4d4d4;">], {</span><span style="color: #9cdcfe;">type:</span><span
+style="color: #d4d4d4;"> </span><span style="color: #ce9178;">"text/plain"</span><span
+style="color: #d4d4d4;">});</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; </span><span
+style="color: #6a9955;">// Create a link element to trigger the download</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #569cd6;">var</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">a</span><span style="color: #d4d4d4;"> = </span><span
+style="color: #9cdcfe;">document</span><span style="color: #d4d4d4;">.</span><span
+style="color: #dcdcaa;">createElement</span><span style="color: #d4d4d4;">(</span><span
+style="color: #ce9178;">"a"</span><span style="color: #d4d4d4;">);</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #9cdcfe;">a</span><span
+style="color: #d4d4d4;">.</span><span style="color: #9cdcfe;">href</span><span style="color: #d4d4d4;"> = </span><span
+style="color: #4fc1ff;">URL</span><span style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">createObjectURL</span><span
+style="color: #d4d4d4;">(</span><span style="color: #9cdcfe;">file</span><span style="color: #d4d4d4;">);</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #9cdcfe;">a</span><span
+style="color: #d4d4d4;">.</span><span style="color: #9cdcfe;">download</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">filename</span><span
+style="color: #d4d4d4;">;</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; </span><span
+style="color: #9cdcfe;">a</span><span style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">click</span><span
+style="color: #d4d4d4;">();</span></div><div><span style="color: #d4d4d4;">&nbsp; }</span></div><div><span
+style="color: #808080;">&lt;/</span><span style="color: #569cd6;">script</span><span
+style="color: #808080;">&gt;</span></div><br><div><span style="color: #808080;">&lt;/</span><span
+style="color: #569cd6;">body</span><span style="color: #808080;">&gt;</span></div><div><span
+style="color: #808080;">&lt;/</span><span style="color: #569cd6;">html</span><span
+style="color: #808080;">&gt;</span></div></div></td></tr></tbody></table><p><br></p><p>&nbsp;&nbsp;&nbsp; </p><p><br></p>
+
+
+</body></html>
