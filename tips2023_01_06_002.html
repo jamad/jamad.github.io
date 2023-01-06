@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>tips2023_01_06_002</title>
+  </head>
+  <body>
+    <p>tips2023_01_06_002</p>
+    <p><br>
+    </p>
+    <p>Q</p>
+    <p>&nbsp;&nbsp;&nbsp; * 2023-01-06: (html) how to make a button to display
+      time format like tips2023_01_06_001 ? </p>
+    <table style="width: 100%" border="1">
+      <tbody>
+        <tr>
+          <td>
+            <title>Button Example</title>
+            <button id="myButton">display time string</button>
+            <div id="dateContainer"></div>
+            <script>
+    const button = document.getElementById('myButton');
+    const dateContainer = document.getElementById('dateContainer');
+
+    button.addEventListener('click', function() {
+      // Get the current date and time
+      var now = new Date();
+      var year = now.getFullYear();
+      var month = (now.getMonth() + 1).toString().padStart(2, "0"); // months are zero-based
+      var day = now.getDate().toString().padStart(2, "0");
+      var hours = now.getHours().toString().padStart(2, "0");
+      var minutes = now.getMinutes().toString().padStart(2, "0");
+      var seconds = now.getSeconds().toString().padStart(2, "0");
+
+      // Format the date and time as a string
+      var sep = "_";
+      var filename = "note_" +year + month + day + sep + hours + sep + minutes + sep + seconds + ".txt";
+
+      // set the innerHTML of the date container to the current date
+      dateContainer.innerHTML = filename;
+
+      // copy the current date to the clipboard
+      copyToClipboard(filename);
+    });
+
+    function copyToClipboard(text) {
+      // create a textarea element
+      const textArea = document.createElement('textarea');
+
+      // set the value of the textarea to the text to be copied
+      textArea.value = text;
+
+      // add the textarea to the page
+      document.body.appendChild(textArea);
+
+      // select the text in the textarea
+      textArea.select();
+
+      // copy the text to the clipboard
+      document.execCommand('copy');
+
+      // remove the textarea from the page
+      document.body.removeChild(textArea);
+    }
+  </script>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+    <p>A&nbsp; 下記の通り</p>
+    <table style="width: 100%" border="1">
+      <tbody>
+        <tr>
+          <td><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAN8AAABoCAIAAAD+VLK2AAAI7UlEQVR4nO2dT2sTTRzH+wJ87kXfQSuoBNuiiEFQRJFWPUh6SOkhe9GrYIXEXhKy0KZgLhUqtJDNzctzkzxxL3kDiTn0FBqqJaeU9rpQnsMku/NvN5vNZnfafuFzqLuzM7Pz++xvZjYJzszPJQBQk5nYewCAG7ATqAvsBOoCO4G6wE6gLrATqAvsBOoCO4G6wE6gLrATqAvsBOoSgp0L9x/dvbMUZafv3llauP9oevUvLSbLX7/9/n1oWReWdfH792H567elxeT8XOLtm9TPn79iCdU1ZFI7Hz54svHpy/Lyuyg7vbz8buPTl4cPnkyj8s8bm/3+Wbf7t1DYXktra2mtUNjudv/2+2f5/Fa/f2ZZF7GH7ZowkZ1EzbW0Fn2/19LaNAT9vLFpWReFwrZ46mDfIKkUdkZGcDtjVJMQuqBLi8l+/0yq5tJi0p7oYWdkBLQzdjUJ4QpaLu92u3+lp378+NdW87R/Hu9dXx+C2KmImoQQBW23D6WJE8RFEDs3Pm3msvmRbHz6Mnn/omzLsi4UeeQAIYidL1+8zmXza2kt+fi5B6Hks4cPnni3spbWctn8yxevJ2/Lj51v36T6/bPYw3ZNCLjuJIKG4sQkhNsNPzN7ubzbbh/Ge9fXh+B79tgFDb0D5fLu0dEf7zLd7t9yeTeuW75uTPS+M0ZBp9H00mLytH/ukT4Lhe3T/jn50AhEwKSfFRFLnj19FWWnnz19NaWngryNz+e3xFOFwrZlXXze2Iw+SNeWED5nf/b0VfLx8yg7nXz8fHrPw+eNzdP++dHRn3x+K53OpNOZfH7r6OjPaf8cakYMvqMkYWkxSXY/5PV7u31YLu9iQo8e2AnUBXYCdYGdQF1gJ1AX2AnUBXYCdYGdQF1gJ1AX2AnUBXYCdYGdQF1gJ1CXmRs3/gFATWZmb94CQE1gJ1AX2AnUBXYCdYGdQF1gJ1AX2AnUBXYCdfGy815i4f2Hj6XS3s7OdzAhpdLe+w8f7yUWYg/5JcLVznuJhVJpb3kldXs+/k+0rgC35xPLK6lSaQ+ChmDn+w8fl1dSsQf1irG8knr/4WPsUb8suNpZKu0ha4bO7flEqbQXe9QvC6527ux8jz2WV5Kdne+xR/2yADthp7oEtjNvWt2DVIDwBL7wigA7o7RzXNsmsZO+dqqWe1Q+abuwM0o7Qwz8VK9VpSHYOT078+bwv+2xxNyZbdj/qY9l5gen9gcHO/vrbODpqi7MbGJ+bv2gYxdLzGcbVsdYdZpeP+jY5Rs5LnnTrWS5Fpm2zKxMGqbnB5KGskZnZLukqhQpSQ8R7IzCTtoeYWZPGR162h3YSTQl4XdfCaSMjtXIzSVW97u2kTmT1ktMaazlpBVihvN3I8d12znItS72nG7ognpO3NoV2nJJwLBzOnYyoZXayWUmPsZmVnLQJRNLQ+tmp3QxSnfM7vb6QUdIn6N7TvfEs91sw5IMEeyMwE750MtndkFEWwsm94hpZpAy+Wl9AjvpWdttcvfq+Zh2SrIs7IzATu/cKfHYM3e6pZlsw+oYB5JpfRI7hdncDXnPkTvVt9MxTLaOzDaYnUHHWOXTKgmbbJ3q1JYYTvdSn6gO+LeT3Wyt7jfEZ0nWc7EhP+1Khwh2RmEnNQOaDSFI0kWkuHt1grq63xVqS5DJfbDbEBheIuydvexkeyJfMPD9lDXk76mQDBHsjMbO8Qj21lC2cbmUYGa/enZKX/pcHnLmsPPyjR3sDMPOML5BF8ROj2n9UpAz6Tf5/Fl8gy4cO/Ht42mAbx+HYyd+uREu+OVGmHbO4ldv+NVb3OAXw0BdYCdQF9gJ1AV2AnVRxc6M0eydHPdOjnutSoY5VTRlx93Kj1vP7M1bs3qtd3Js6lyX3MtTZ9uGNvrugtTv2iJfXqu0yfGTZlWbZJwJWrUldjU21LBTrw3DXDSZgdOqrYEBGaPpHHcpnzGa9HFKHZd6qGixIXEtb1/iy8tA9ctwKa9V2nbNWqU9SlD38WF6e1XtLJr14vhXaVWDukqvOWlAr3GmmrpX+YzmDHfGaPbszsjrobrNhcS9fMZo+sxSweqX41Zer/VOarrvelzHh6BVTKPCd5W+3Kj5uPFgDsgJ0069fszfcACoHMBVKK/fJWfodefgqHp4e1zLa5W276wZpH5/A+v8k1kzFE3HVD/B4gZNq9YrGfFBGjXOU3FgiIedWrV13KsXyRCwCV+rto4Hy5fBiAxXRXTJ4YW9cUaNyhPOdEaQT4JMXnHGiOutZz1cSFzLZ4xm76RWHU7WvjX1W79HINzK6/XBijNjNP3PyOz4kDpJXpTb6axWT457rf9+tZxA63X7b5kD07GT8q9eHIyCRBpSjMg3tNmWZvi3v6WVOHC+oigMtDNGdCfDsFOrto57raZJTuk134JO0U47UmM9KvzTpVVMaj0qF4tecbFPBbe6iDZ3ciPCrHXohTldnk6uY+woZ7VK27k3PirUEyItL8bAeWw86xlhz7A8d5zI6uep81m/XzuZ8nqtbWhjbdSE8bmlG3brfu0cCsq5GLed7LNyi9r98XaOn9uLJhuk0etFj6BST1FI685xc9649bvW4LkOHsaC3r/7wR4f550Uhfy9G5diGMVFZyYnWO6kR8Eeet7OMXcPWrUlLE+ZNaWYgTyXs1qlTSUY93pkR1zKczr63gH4rd/LJB/9oV4Y+YAeH4+u0n1g7NSqrWZV4yaQ2O1k1prCCr1enNUqVZ2XOGNUPDdG5FapMRJysLDYkpZ3EDdG0ogO4iR7HykrT70m9LeHHbN+r1hIyjODPN58JW6MRtg5vF/dIIsc+94ZQRkHpmYnsyuitmzUBkiYAgbFqHfjPXEBLoHZ6wk7PvEzErfyzGLX52czzG5UmO7D/GzGZ/0jR4kr77wYGamm9/jI7OTfWJELh/U4Kz3HDc6BKdkJQPzATqAu0dlpv7blCW8RHQth3Zdq9agAcidQF9gJ1AV2AnWBnUBdYCdQF9gJ1AV2AnWBnUBdYCdQF9gJ1AV2AnWBnUBdYCdQF9gJ1AV2AnWBnUBdYCdQl/8BUTjsd+R1Bp0AAAAASUVORK5CYII="
+              alt=""></td>
+          <td>
+            <div style="color: #d4d4d4;background-color: #1e1e1e;font-family: Consolas, 'Courier New', monospace;font-weight: normal;font-size: 14px;line-height: 19px;white-space: pre;"><div><span
+style="color: #808080;">&lt;!</span><span style="color: #569cd6;">DOCTYPE</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">html</span><span style="color: #808080;">&gt;</span></div><div><span
+style="color: #808080;">&lt;</span><span style="color: #569cd6;">html</span><span
+style="color: #808080;">&gt;</span></div><div><span style="color: #808080;">&lt;</span><span
+style="color: #569cd6;">head</span><span style="color: #808080;">&gt;</span></div><div><span
+style="color: #d4d4d4;">&nbsp; </span><span style="color: #808080;">&lt;</span><span
+style="color: #569cd6;">title</span><span style="color: #808080;">&gt;</span><span
+style="color: #d4d4d4;">Button Example</span><span style="color: #808080;">&lt;/</span><span
+style="color: #569cd6;">title</span><span style="color: #808080;">&gt;</span></div><div><span
+style="color: #808080;">&lt;/</span><span style="color: #569cd6;">head</span><span
+style="color: #808080;">&gt;</span></div><div><span style="color: #808080;">&lt;</span><span
+style="color: #569cd6;">body</span><span style="color: #808080;">&gt;</span></div><div><span
+style="color: #d4d4d4;">&nbsp; </span><span style="color: #808080;">&lt;</span><span
+style="color: #569cd6;">button</span><span style="color: #d4d4d4;"> </span><span
+style="color: #9cdcfe;">id</span><span style="color: #d4d4d4;">=</span><span style="color: #ce9178;">"myButton"</span><span
+style="color: #808080;">&gt;</span><span style="color: #d4d4d4;">display time string</span><span
+style="color: #808080;">&lt;/</span><span style="color: #569cd6;">button</span><span
+style="color: #808080;">&gt;</span></div><div><span style="color: #d4d4d4;">&nbsp; </span><span
+style="color: #808080;">&lt;</span><span style="color: #569cd6;">div</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">id</span><span style="color: #d4d4d4;">=</span><span
+style="color: #ce9178;">"dateContainer"</span><span style="color: #808080;">&gt;&lt;/</span><span
+style="color: #569cd6;">div</span><span style="color: #808080;">&gt;</span></div><br><div><span
+style="color: #d4d4d4;">&nbsp; </span><span style="color: #808080;">&lt;</span><span
+style="color: #569cd6;">script</span><span style="color: #808080;">&gt;</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #569cd6;">const</span><span
+style="color: #d4d4d4;"> </span><span style="color: #4fc1ff;">button</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">document</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">getElementById</span><span
+style="color: #d4d4d4;">(</span><span style="color: #ce9178;">'myButton'</span><span
+style="color: #d4d4d4;">);</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; </span><span
+style="color: #569cd6;">const</span><span style="color: #d4d4d4;"> </span><span
+style="color: #4fc1ff;">dateContainer</span><span style="color: #d4d4d4;"> = </span><span
+style="color: #9cdcfe;">document</span><span style="color: #d4d4d4;">.</span><span
+style="color: #dcdcaa;">getElementById</span><span style="color: #d4d4d4;">(</span><span
+style="color: #ce9178;">'dateContainer'</span><span style="color: #d4d4d4;">);</span></div><br><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #9cdcfe;">button</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">addEventListener</span><span
+style="color: #d4d4d4;">(</span><span style="color: #ce9178;">'click'</span><span
+style="color: #d4d4d4;">, </span><span style="color: #569cd6;">function</span><span
+style="color: #d4d4d4;">() {</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #6a9955;">// Get the current date and time</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #569cd6;">var</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">now</span><span style="color: #d4d4d4;"> = </span><span
+style="color: #569cd6;">new</span><span style="color: #d4d4d4;"> </span><span style="color: #dcdcaa;">Date</span><span
+style="color: #d4d4d4;">();</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #569cd6;">var</span><span style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">year</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">now</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">getFullYear</span><span
+style="color: #d4d4d4;">();</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #569cd6;">var</span><span style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">month</span><span
+style="color: #d4d4d4;"> = (</span><span style="color: #9cdcfe;">now</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">getMonth</span><span
+style="color: #d4d4d4;">() + </span><span style="color: #b5cea8;">1</span><span
+style="color: #d4d4d4;">).</span><span style="color: #dcdcaa;">toString</span><span
+style="color: #d4d4d4;">().</span><span style="color: #dcdcaa;">padStart</span><span
+style="color: #d4d4d4;">(</span><span style="color: #b5cea8;">2</span><span style="color: #d4d4d4;">, </span><span
+style="color: #ce9178;">"0"</span><span style="color: #d4d4d4;">); </span><span
+style="color: #6a9955;">// months are zero-based</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #569cd6;">var</span><span style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">day</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">now</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">getDate</span><span
+style="color: #d4d4d4;">().</span><span style="color: #dcdcaa;">toString</span><span
+style="color: #d4d4d4;">().</span><span style="color: #dcdcaa;">padStart</span><span
+style="color: #d4d4d4;">(</span><span style="color: #b5cea8;">2</span><span style="color: #d4d4d4;">, </span><span
+style="color: #ce9178;">"0"</span><span style="color: #d4d4d4;">);</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #569cd6;">var</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">hours</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">now</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">getHours</span><span
+style="color: #d4d4d4;">().</span><span style="color: #dcdcaa;">toString</span><span
+style="color: #d4d4d4;">().</span><span style="color: #dcdcaa;">padStart</span><span
+style="color: #d4d4d4;">(</span><span style="color: #b5cea8;">2</span><span style="color: #d4d4d4;">, </span><span
+style="color: #ce9178;">"0"</span><span style="color: #d4d4d4;">);</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #569cd6;">var</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">minutes</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">now</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">getMinutes</span><span
+style="color: #d4d4d4;">().</span><span style="color: #dcdcaa;">toString</span><span
+style="color: #d4d4d4;">().</span><span style="color: #dcdcaa;">padStart</span><span
+style="color: #d4d4d4;">(</span><span style="color: #b5cea8;">2</span><span style="color: #d4d4d4;">, </span><span
+style="color: #ce9178;">"0"</span><span style="color: #d4d4d4;">);</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #569cd6;">var</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">seconds</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">now</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">getSeconds</span><span
+style="color: #d4d4d4;">().</span><span style="color: #dcdcaa;">toString</span><span
+style="color: #d4d4d4;">().</span><span style="color: #dcdcaa;">padStart</span><span
+style="color: #d4d4d4;">(</span><span style="color: #b5cea8;">2</span><span style="color: #d4d4d4;">, </span><span
+style="color: #ce9178;">"0"</span><span style="color: #d4d4d4;">);</span></div><br><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #6a9955;">// Format the date and time as a string</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #569cd6;">var</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">sep</span><span style="color: #d4d4d4;"> = </span><span
+style="color: #ce9178;">"_"</span><span style="color: #d4d4d4;">;</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #569cd6;">var</span><span
+style="color: #d4d4d4;"> </span><span style="color: #9cdcfe;">filename</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #ce9178;">"note_"</span><span
+style="color: #d4d4d4;"> +</span><span style="color: #9cdcfe;">year</span><span
+style="color: #d4d4d4;"> + </span><span style="color: #9cdcfe;">month</span><span
+style="color: #d4d4d4;"> + </span><span style="color: #9cdcfe;">day</span><span
+style="color: #d4d4d4;"> + </span><span style="color: #9cdcfe;">sep</span><span
+style="color: #d4d4d4;"> + </span><span style="color: #9cdcfe;">hours</span><span
+style="color: #d4d4d4;"> + </span><span style="color: #9cdcfe;">sep</span><span
+style="color: #d4d4d4;"> + </span><span style="color: #9cdcfe;">minutes</span><span
+style="color: #d4d4d4;"> + </span><span style="color: #9cdcfe;">sep</span><span
+style="color: #d4d4d4;"> + </span><span style="color: #9cdcfe;">seconds</span><span
+style="color: #d4d4d4;"> + </span><span style="color: #ce9178;">".txt"</span><span
+style="color: #d4d4d4;">;</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #6a9955;">// set the innerHTML of the date container to the current date</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #9cdcfe;">dateContainer</span><span
+style="color: #d4d4d4;">.</span><span style="color: #9cdcfe;">innerHTML</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">filename</span><span
+style="color: #d4d4d4;">;</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #6a9955;">// copy the current date to the clipboard</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #dcdcaa;">copyToClipboard</span><span
+style="color: #d4d4d4;">(</span><span style="color: #9cdcfe;">filename</span><span
+style="color: #d4d4d4;">);</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; });</span></div><br><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; </span><span style="color: #569cd6;">function</span><span
+style="color: #d4d4d4;"> </span><span style="color: #dcdcaa;">copyToClipboard</span><span
+style="color: #d4d4d4;">(</span><span style="color: #9cdcfe;">text</span><span style="color: #d4d4d4;">) {</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #6a9955;">// create a textarea element</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #569cd6;">const</span><span
+style="color: #d4d4d4;"> </span><span style="color: #4fc1ff;">textArea</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">document</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">createElement</span><span
+style="color: #d4d4d4;">(</span><span style="color: #ce9178;">'textarea'</span><span
+style="color: #d4d4d4;">);</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #6a9955;">// set the value of the textarea to the text to be copied</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #9cdcfe;">textArea</span><span
+style="color: #d4d4d4;">.</span><span style="color: #9cdcfe;">value</span><span
+style="color: #d4d4d4;"> = </span><span style="color: #9cdcfe;">text</span><span
+style="color: #d4d4d4;">;</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #6a9955;">// add the textarea to the page</span></div><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #9cdcfe;">document</span><span style="color: #d4d4d4;">.</span><span
+style="color: #9cdcfe;">body</span><span style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">appendChild</span><span
+style="color: #d4d4d4;">(</span><span style="color: #9cdcfe;">textArea</span><span
+style="color: #d4d4d4;">);</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #6a9955;">// select the text in the textarea</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #9cdcfe;">textArea</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">select</span><span
+style="color: #d4d4d4;">();</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #6a9955;">// copy the text to the clipboard</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #9cdcfe;">document</span><span
+style="color: #d4d4d4;">.</span><span style="color: #dcdcaa;">execCommand</span><span
+style="color: #d4d4d4;">(</span><span style="color: #ce9178;">'copy'</span><span
+style="color: #d4d4d4;">);</span></div><br><div><span style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span
+style="color: #6a9955;">// remove the textarea from the page</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; &nbsp; </span><span style="color: #9cdcfe;">document</span><span
+style="color: #d4d4d4;">.</span><span style="color: #9cdcfe;">body</span><span style="color: #d4d4d4;">.</span><span
+style="color: #dcdcaa;">removeChild</span><span style="color: #d4d4d4;">(</span><span
+style="color: #9cdcfe;">textArea</span><span style="color: #d4d4d4;">);</span></div><div><span
+style="color: #d4d4d4;">&nbsp; &nbsp; }</span></div><div><span style="color: #d4d4d4;">&nbsp; </span><span
+style="color: #808080;">&lt;/</span><span style="color: #569cd6;">script</span><span
+style="color: #808080;">&gt;</span></div><div><span style="color: #808080;">&lt;/</span><span
+style="color: #569cd6;">body</span><span style="color: #808080;">&gt;</span></div><div><span
+style="color: #808080;">&lt;/</span><span style="color: #569cd6;">html</span><span
+style="color: #808080;">&gt;</span></div></div></td></tr></tbody></table>
+
+
+</body></html>
