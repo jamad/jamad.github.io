@@ -9,7 +9,55 @@
     <table style="width: 100%" border="1">
       <tbody>
         <tr>
-          <td><br>
+          <td>
+            <title>Button Example</title>
+            <button id="myButton">display time string</button>
+            <div id="dateContainer"></div>
+            <script>
+    const button = document.getElementById('myButton');
+    const dateContainer = document.getElementById('dateContainer');
+
+    button.addEventListener('click', function() {
+      // Get the current date and time
+      var now = new Date();
+      var year = now.getFullYear();
+      var month = (now.getMonth() + 1).toString().padStart(2, "0"); // months are zero-based
+      var day = now.getDate().toString().padStart(2, "0");
+      var hours = now.getHours().toString().padStart(2, "0");
+      var minutes = now.getMinutes().toString().padStart(2, "0");
+      var seconds = now.getSeconds().toString().padStart(2, "0");
+
+      // Format the date and time as a string
+      var sep = "_";
+      var filename = "note_" +year + month + day + sep + hours + sep + minutes + sep + seconds + ".txt";
+
+      // set the innerHTML of the date container to the current date
+      dateContainer.innerHTML = filename;
+
+      // copy the current date to the clipboard
+      copyToClipboard(filename);
+    });
+
+    function copyToClipboard(text) {
+      // create a textarea element
+      const textArea = document.createElement('textarea');
+
+      // set the value of the textarea to the text to be copied
+      textArea.value = text;
+
+      // add the textarea to the page
+      document.body.appendChild(textArea);
+
+      // select the text in the textarea
+      textArea.select();
+
+      // copy the text to the clipboard
+      document.execCommand('copy');
+
+      // remove the textarea from the page
+      document.body.removeChild(textArea);
+    }
+  </script>
           </td>
         </tr>
       </tbody>
