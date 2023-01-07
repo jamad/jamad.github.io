@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>tips2023_01_07_001</title>
+  </head>
+  <body>
+    <p>tips2023_01_07_001</p>
+    <p>Q</p>
+    <ul>
+      <li>&nbsp;&nbsp;&nbsp; 2023-01-07: (python) how to compare 2 code
+        solutions?</li>
+    </ul>
+    <p>A</p>
+    <ul>
+      <li>&nbsp;&nbsp;&nbsp; 下の二つのsolutionの結果を比較する</li>
+    </ul>
+    <table style="width: 100%" border="1">
+      <tbody>
+        <tr>
+          <td>def solutionA(N,M,LINES):<br>
+            &nbsp;&nbsp;&nbsp; from collections import defaultdict<br>
+            &nbsp;&nbsp;&nbsp; D=defaultdict(int) # for []<br>
+            &nbsp;&nbsp;&nbsp; <br>
+            &nbsp;&nbsp;&nbsp; for L in LINES:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u,v=map(int,L.split())<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if v&lt;u:u,v=v,u<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; D[v]=u<br>
+            &nbsp;&nbsp;&nbsp; #print(D)<br>
+            &nbsp;&nbsp;&nbsp; #print(sum(len(D[k]) for k in D))<br>
+            &nbsp;&nbsp;&nbsp; <br>
+            &nbsp;&nbsp;&nbsp; <br>
+            &nbsp;&nbsp;&nbsp; ROOT=set()<br>
+            &nbsp;&nbsp;&nbsp; for i in range(1,N+1):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; node=i<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; while node in
+            D:node=D[node]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ROOT.add(node)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+            &nbsp;&nbsp;&nbsp; return len(ROOT)</td>
+          <td>def solutionB(N,M,LINES):<br>
+            &nbsp;&nbsp;&nbsp; D=defaultdict(list) # for []<br>
+            &nbsp;&nbsp;&nbsp; for L in LINES:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u,v=map(int,L.split())<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; D[u].append(v)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; D[v].append(u)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+            &nbsp;&nbsp;&nbsp; print(D)<br>
+            &nbsp;&nbsp;&nbsp; <br>
+            &nbsp;&nbsp;&nbsp; V=[0]*(N+1)<br>
+            &nbsp;&nbsp;&nbsp; ans=0<br>
+            &nbsp;&nbsp;&nbsp; <br>
+            &nbsp;&nbsp;&nbsp; for i in range(1,N+1):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print(V)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if V[i]:continue<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ans+=1<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V[i]=1<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Q=[i]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for c in Q:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            for node in D[c]:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            if V[node]:continue<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            V[node]=1<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Q.append(node)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+            &nbsp;&nbsp;&nbsp; return ans</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+    <p>下記のようなコードで比較できた。</p>
+    <table style="width: 100%" border="1">
+      <tbody>
+        <tr>
+          <td><img src="data:image/png;base64,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"
+              alt=""></td>
+          <td>from collections import defaultdict<br>
+            <br>
+            N,M=map(int,input().split())<br>
+            <br>
+            LINES=[]<br>
+            for i in range(M):<br>
+            &nbsp;&nbsp;&nbsp; LINES.append(input())<br>
+            &nbsp;&nbsp;&nbsp; <br>
+            ansA=solutionA(N,M,LINES)<br>
+            ansB=solutionB(N,M,LINES)<br>
+            print(ansA==ansB, ansA,ansB)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+  </body>
+</html>
