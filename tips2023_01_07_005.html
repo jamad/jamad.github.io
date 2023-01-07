@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>tips2023_01_07_005</title>
+  </head>
+  <body>
+    <p>tips2023_01_07_005</p>
+    <p><br>
+    </p>
+    Q<br>
+    &nbsp;&nbsp;&nbsp; (Blender) how to create the button in ImageEditor? <br>
+    A<br>
+    <ul>
+      <li>&nbsp; </li>
+      <ul>
+        <li>
+          <table style="width: 100%" border="1">
+            <tbody>
+              <tr>
+                <td><br>
+                </td>
+                <td>import bpy<br>
+                  <br>
+                  # define a function that will be called when the button is
+                  pressed<br>
+                  def my_button_callback(self, context):<br>
+                  &nbsp;&nbsp;&nbsp; # put your desired logic here<br>
+                  &nbsp;&nbsp;&nbsp; print("Button was pressed!")<br>
+                  <br>
+                  # create a new button<br>
+                  class MY_OT_Button(bpy.types.Operator):<br>
+                  &nbsp;&nbsp;&nbsp; bl_idname = "my.button"<br>
+                  &nbsp;&nbsp;&nbsp; bl_label = "My Button"<br>
+                  <br>
+                  &nbsp;&nbsp;&nbsp; def execute(self, context):<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  my_button_callback(self, context)<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return {'FINISHED'}<br>
+                  <br>
+                  # register the button<br>
+                  bpy.utils.register_class(MY_OT_Button)<br>
+                  <br>
+                  # create a panel with a button<br>
+                  class MY_PT_Panel(bpy.types.Panel):<br>
+                  &nbsp;&nbsp;&nbsp; bl_label = "My Panel"<br>
+                  &nbsp;&nbsp;&nbsp; bl_idname = "MY_PT_Panel"<br>
+                  &nbsp;&nbsp;&nbsp; bl_space_type = 'IMAGE_EDITOR'<br>
+                  &nbsp;&nbsp;&nbsp; bl_region_type = 'UI'<br>
+                  <br>
+                  &nbsp;&nbsp;&nbsp; def draw(self, context):<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; layout =
+                  self.layout<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  layout.operator("my.button")<br>
+                  <br>
+                  # register the panel<br>
+                  bpy.utils.register_class(MY_PT_Panel)</td>
+              </tr>
+            </tbody>
+          </table>
+        </li>
+      </ul>
+    </ul>
+  </body>
+</html>
