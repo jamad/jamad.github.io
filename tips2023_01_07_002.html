@@ -10,6 +10,29 @@
     <p>&nbsp;&nbsp;&nbsp; * 2023-01-07: (python) how to make all pair list
       of&nbsp; N nodes? </p>
     <p>A</p>
-    <p>&nbsp;&nbsp;&nbsp; wip</p>
+    <p>&nbsp;&nbsp; the following is the case of N==6</p>
+    <table style="width: 100%" border="1">
+      <tbody>
+        <tr>
+          <td>OUTPUT<br>
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA2QAAABaCAIAAABYEgLfAAAH2ElEQVR4nO3dz4rjRgIH4HmISWbZhd7uvS0MewuEHGwHls0D5NAn3XOOA8F+goBvBkMewIeAoZ/AN1/8WHvwf1tlSyqpVDP9wXfqbsk/V5W7f23J0oe//f0fOfhh8GPvGb56nz5//03xx8ffVvd9U/zx6fP3vacFAHLwofcEO8piMp++++nbn3//+MufH3/969QRf/3r4y9/fvvz75+++6n3hABAPpRFAACClEUAAIJyKYv//vyfHwY/AgCQlQ+D//4PAABKffjny7+enl8AAODWh94TAACQLWURAIAgZREAgCBlEQCAIGURAIAgZREAgCBlEQCAIGURAIAgZREAgCBlEQCAIGURAIAgZREAgCBlEQCAoPtlcTBdrbeb9XazXhT9Z/06FbPdCG9X42HvYQAALj0si8vp6PKLo/Hbrtxsbr5Vyb6ANmyfcY9ezPfdt2n4l6fnl+Fk2Sj/qXlvN+vt/PX6eSmLAEB+6pbF18WxJ43Gb5tZUe/xXheb5XQ0mK6alcXBdLV/xOFkGfNWXPPNi9l2NVs0yX/3WSuLAECWapbFYnbsWE3fYHt5UJsqKmbb2lX1ZDhZXr+3V0lM2VUWAYAvT72yeOxYxXy9XY2n8/XbZFD/UVsoixFtr/kJgsX++TYvi8GD4MoiAJClJmWxmK+PlbGfshj3tmLDPRSzQz2NzT+cLK8fXVkEALJU/zD05lgQY049bF62SppWE7sDyvUynz6eEvn55dH47erRlUUAIEsNPuBy+MrVm3PFrPIpjGVlsdrmwaZY49EPP39ezuptfpO/5qPvDuJfVENlEQDIUnuXztl9/cF5hIdTBjc3l2+ssvnpoRttfv7ot13t8ebnw3JZDSttfvbe5G0vVBYBgCzVL4tBZ1fVaeI9b64sAgCZaqcs7i6j0+jDLu998z1lEQDIktv99c3t/gCAjN0viwAAvGvKIgAAQcoiAABByiIAAEHKIgAAQcoiAABByiIAAEHKIgAAQZUuyn12Re6zGxzXuJkyAABfpDtl8XWxWU5Hg+nquiy6mwsAwDvx8DC0sggA8H41KYuHw9DL6aj/JwAAQHfqlsWT4WS53cyKvp8AAADdaV4Wn0bjN28uAgB81ZqXxWK+3q7Gw76fAAAA3bn/aeizq+TsL6Bzds6ipggA8LVzUW4AAIKURQAAgpRFAACClEUAAIKURQAAgpRFAACClEUAAIKURQAAgpRFAACC7pfF0/1abu/4V8wD94xuy2j81sZNYuSUU0455ZRTTjnfV85i1uL99h6WxeV0VPKt4WS5nb9eBN3fFbD85x/Zt9Kr0Szm64tHqa/lnIHNc8tZzI83acw652mfl1OfWc6zW1xuLoK1nzPwQqgq2fqMy5lufUaO53GfXa/PqJwJ16ffSxnlTDfvoYnLbTzjcqb8PV8+IF3lbKnvNiqLo/HbZlacvvK6OD7n629V8brYLKejwXR1O3C7bzV9ei3nHExX+02Gk+VlVc8q58kXkLOYbVezxfXUZ5WzdGV2lDP0QqiYM9n6jMl58gXkTLQ+I+c9zfq8s8Dq6Xje28iZYt4jcyab9zsTl9V4RuZMO57lA9JNzh7LYjFfv00Gl097H6VpWQ4OQWklr6ibnIddXU5/njlvU2WWM/hnMqec9/6Kt5mzwsNV1en6bC9nt+uzhZxJ1mdszsTr8+XpuWSB1ZJk3mNyppz3xjl7mPemu009no12m3I8Y/4/rJ+zv7J43V6P+Yr5ersaT++8JBoMQfO31jrKGZiSvHK+LkJnKuSU8/AqKpv6jHKev+1/83JoL+f5w7VewjLLmWJ9xudMsz6jcyZeny9PUaUh2bw3z5l23hvnTDnv4YnLazxjcqYbz3sD0kXOXstiyZsWx+Pl9/5/ejQEZQPX+B3gjnKG/gvML2d51GxyFrPD78d2z0DocDyHk2V343kQXRY7Xp+t5SyPmk3OVOuzxfFMsj5j31YM7CGbnKnnvYXxTDTvzaKmH8/oIe12PB8MSAc58ymLu0/cHP4At34wpdVJis5ZNj055gynyiTn5Vm6Jf8OZpLz0mj81t14no1M1IkHXa/PNnKGU2WSM+H6bHE8u1+f4QVWd+d55kw97+2MZ4rfS812m/51FLnbrsfz4YB0kDOfw9AXX7lq9MWs8ililQ9DV91n+znvvbBzynmR4WqV5Jiz2uGJ/nPuD2R3Np7h0chrfcbmvPj5jMfz3h5yzNn5+gwusMzmvaWcnc97W+OZ5PdS2cRlNp4t5Uw2njcD0kXO56w+4PIcvgTA7usPzsY4nGdwcD5YgbOvKn2UveWcp23zznk+njdLJKec58uswonPveU8+1+w2/EMvxDyWp9xOdOtz8icydZnZM5U6/POAstq3mNzppr32Jx9/F4qqSbZjGdszmTjGR6QLnI+53XpnDteF7X+4yzZvPwk1kr7lFNOOeWUU0455XynOfsti9U+vbW7TEnzD2eUXWSy7j7llFNOOeWUU04531vOvVRlseSQ1jFZ9Ontd50+NBRFTjnllFNOOeWU833lTHi7PwAA3jVlEQCAIGURAIAgZREAgCBlEQCAIGURAIAgZREAgCBlEQCAIGURAIAgZREAgCBlEQCAIGURAIAgZREAgCBlEQCAIGURAIAgZREAgCBlEQCAIGURAIAgZREAgCBlEQCAIGURAICg/wOJu9o5sDNwOgAAAABJRU5ErkJggg=="
+              alt=""></td>
+          <td>N=list(range(<strong>6</strong>))<br>
+            print(N)<br>
+            <br>
+            from itertools import combinations<br>
+            <br>
+            count=0<br>
+            pairs=[]<br>
+            <br>
+            for x in combinations(N,2):<br>
+            &nbsp;&nbsp;&nbsp; count+=1<br>
+            &nbsp;&nbsp;&nbsp; pairs.append(x)<br>
+            <br>
+            print(count)<br>
+            print(pairs)</td>
+        </tr>
+      </tbody>
+    </table>
   </body>
 </html>
