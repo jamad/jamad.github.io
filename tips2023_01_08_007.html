@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>tips2023_01_08_007</title>
+  </head>
+  <body>
+    <p>tips2023_01_08_007</p>
+    <p><br>
+    </p>
+    <p>Q</p>
+    <p>&nbsp;&nbsp;&nbsp; 2023-01-08: how to join multiple movie files into a
+      single file?</p>
+    <p>A</p>
+    <p>&nbsp;&nbsp; the following code make <strong>file_c</strong> as&nbsp;<strong>file_a
+        +</strong><strong> file_b</strong>&nbsp;<strong></strong></p>
+    <table style="width: 100%" border="1">
+      <tbody>
+        <tr>
+          <td><br>
+          </td>
+          <td>&gt;set <strong>file_a</strong>="C:\Users\jamad\output_ufo3.mp4"<br>
+            &gt;set <strong>file_b</strong>="D:\miscFiles\UFOpart5.mp4"<br>
+            &gt;set <strong>file_c</strong>="C:\Users\jamad\output_ufo4.mp4"<br>
+            &gt;ffmpeg -i <strong>%file_a%</strong> -i <strong>%file_b%</strong>
+            -filter_complex
+            "[0:v]scale=640x360,setsar=1[v0];[1:v]scale=640x360,setsar=1[v1];[v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]"
+            -map "[outv]" -map "[outa]" <strong>%file_c%</strong><br>
+            <br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
