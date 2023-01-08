@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>tips2023_01_08_006</title>
+  </head>
+  <body>
+    <p>tips2023_01_08_006</p>
+    <p><br>
+    </p>
+    <p>Q </p>
+    <p>&nbsp;&nbsp;&nbsp; how to make an access counter?</p>
+    <p>A</p>
+    <p>&nbsp;&nbsp;&nbsp; the code by chatGPT</p>
+    <table style="width: 100%" border="1">
+      <tbody>
+        <tr>
+          <td>
+            <div id="counter">
+              <p>access count: <span id="count">0</span> 回</p>
+            </div>
+            <style>
+  #counter {
+    font-size: 20px;
+    text-align: center;
+  }
+</style>
+            <script>
+  var count = 0;
+  document.getElementById("count").innerHTML = count;
+
+  function updateCounter() {
+    count++;
+    document.getElementById("count").innerHTML = count;
+  }
+</script></td>
+          <td>&lt;div id="counter"&gt;<br>
+            &nbsp; &lt;p&gt;access count: &lt;span id="count"&gt;0&lt;/span&gt;
+            回&lt;/p&gt;<br>
+            &lt;/div&gt;<br>
+            <br>
+            &lt;style&gt;<br>
+            &nbsp; #counter {<br>
+            &nbsp;&nbsp;&nbsp; font-size: 20px;<br>
+            &nbsp;&nbsp;&nbsp; text-align: center;<br>
+            &nbsp; }<br>
+            &lt;/style&gt;<br>
+            <br>
+            &lt;script&gt;<br>
+            &nbsp; var count = 0;<br>
+            &nbsp; document.getElementById("count").innerHTML = count;<br>
+            <br>
+            &nbsp; function updateCounter() {<br>
+            &nbsp;&nbsp;&nbsp; count++;<br>
+            &nbsp;&nbsp;&nbsp; document.getElementById("count").innerHTML =
+            count;<br>
+            &nbsp; }<br>
+            &lt;/script&gt;</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+  </body>
+</html>
