@@ -17,8 +17,26 @@
         <tr>
           <td>
             <div id="counter">
-              <p>access count: <span id="count">0</span> 回</p>
-            </div>
+              <div id="counter">
+                <p>アクセス数: <span id="count">0</span> 回</p>
+              </div>
+              <style>
+  #counter {
+    font-size: 20px;
+    text-align: center;
+  }
+</style>
+              <script>
+  var count = 0;
+  document.getElementById("count").innerHTML = count;
+
+  function updateCounter() {
+    count++;
+    document.getElementById("count").innerHTML = count;
+  }
+
+  window.onload = updateCounter;
+</script></div>
             <style>
   #counter {
     font-size: 20px;
@@ -55,7 +73,27 @@
             &nbsp;&nbsp;&nbsp; document.getElementById("count").innerHTML =
             count;<br>
             &nbsp; }<br>
+            window.onload = updateCounter;<br>
+            <br>
             &lt;/script&gt;</td>
+        </tr>
+        <tr>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
         </tr>
       </tbody>
     </table>
