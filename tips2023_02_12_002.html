@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>tips2023_02_12_002</title>
+  </head>
+  <body>
+    <p>tips2023_02_12_002</p>
+    <p><br>
+    </p>
+    <ul>
+      <li>&nbsp;charmap　関連エラーの修正</li>
+    </ul>
+    <ul>
+      <ul>
+        <li>problem&nbsp; </li>
+        <ul>
+          <li>'charmap' codec can't decode byte 0x81 in position 214: character
+            maps to &lt;undefined&gt;</li>
+        </ul>
+        <li>solution</li>
+        <ul>
+          <li>
+            with
+            open(fname, "w", <strong>encoding="utf-8"</strong>) as f:<br>
+            &nbsp;&nbsp;&nbsp; f.write(html)<br>
+          </li>
+        </ul>
+      </ul>
+    </ul>
+  </body>
+</html>
