@@ -4,13 +4,31 @@ Use [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/inde
 
 When committed, [Jekyll](https://jekyllrb.com/) rebuild the pages from .md.
 
-# Heading level 1
-## Heading level 2
-### Heading level 3
-#### Heading level 4
-##### Heading level 5
-###### Heading level 6
-####### Header7 doesn't work as expected
+# ヘッダーレベル 1
+## ヘッダーレベル 2
+### ヘッダーレベル 3
+#### ヘッダーレベル 4
+##### ヘッダーレベル 5
+###### ヘッダーレベル 6
+####### ヘッダーレベル 7 は期待通りの結果にならない
+
+# ハッシュタグの後にはスペースを追加する
+#ハッシュタグの後にスペースを追加しないとこうなる
+
+
+# 段落、パラグラフ
+段落を作るには、空行を追加する。
+
+こんな感じで左詰めの記述でOK
+
+
+
+
+
+
+I really like using Markdown.
+
+I think I'll use it to format all of my documents from now on.
 
 
 ```
