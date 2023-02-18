@@ -7,8 +7,6 @@ When committed, [Jekyll](https://jekyllrb.com/) rebuild the pages from .md.
 # ヘッダーレベル 1 は下線付き
 ## ヘッダーレベル 2　は下線付き
 ### ヘッダーレベル 3
-#### ヘッダーレベル 4
-##### ヘッダーレベル 5
 ###### ヘッダーレベル 6
 ####### ヘッダーレベル 7 は期待通りの結果にならない
 
@@ -21,6 +19,8 @@ When committed, [Jekyll](https://jekyllrb.com/) rebuild the pages from .md.
 
 こんな感じで左詰めの記述でOK
 
+（第一行）空行がなければ、
+（第二行）こんな感じで段落には別れない。
 
 I really like using Markdown.
 
