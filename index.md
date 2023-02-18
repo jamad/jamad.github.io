@@ -35,7 +35,7 @@ horizontal lines  は前後に空行を入れた方が確実
 ___
 
 # Links
-search engine is [Duck Duck Go](https://duckduckgo.com)
+search engine [Duck Duck Go](https://duckduckgo.com)
 
 
 ```
