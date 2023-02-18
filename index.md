@@ -7,23 +7,14 @@ When committed, [Jekyll](https://jekyllrb.com/) rebuild the pages from .md.
 ```# Header 1```
 # Header1
 
-```## Header 2```
-## Header2
-
 ```### Header3```
 ### Header3
-
-```#### Header4```
-#### Header4
 
 ```##### Header5```
 ##### Header5
 
 ```###### Header6```
 ###### Header6 doesn't work as expected
-
-```####### Header7```
-####### Header7 doesn't work as expected
 
 
 ```
