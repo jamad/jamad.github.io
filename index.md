@@ -26,9 +26,12 @@ I really like using Markdown.
 
 I think I'll use it to format all of my documents from now on.
 
-horizontal lines
+horizontal lines  は前後に空行を入れた方が確実
+
 ---
+
 ***
+
 ___
 
 
