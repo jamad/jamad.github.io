@@ -16,6 +16,9 @@ When committed, [Jekyll](https://jekyllrb.com/) rebuild the pages from .md.
 ```###### Header6```
 ###### Header6 doesn't work as expected
 
+```###### Header7```
+###### Header7 doesn't work as expected
+
 
 ```
 - Bulleted
