@@ -4,20 +4,13 @@ Use [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/inde
 
 When committed, [Jekyll](https://jekyllrb.com/) rebuild the pages from .md.
 
-```# Header 1```
-# Header1
-
-```### Header3```
-### Header3
-
-```##### Header5```
-##### Header5
-
-```###### Header6```
-###### Header6 doesn't work as expected
-
-```###### Header7```
-###### Header7 doesn't work as expected
+# Heading level 1
+## Heading level 2
+### Heading level 3
+#### Heading level 4
+##### Heading level 5
+###### Heading level 6
+####### Header7 doesn't work as expected
 
 
 ```
