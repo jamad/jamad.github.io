@@ -4,8 +4,8 @@ Use [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/inde
 
 When committed, [Jekyll](https://jekyllrb.com/) rebuild the pages from .md.
 
-# ヘッダーレベル 1
-## ヘッダーレベル 2
+# ヘッダーレベル 1 は下線付き
+## ヘッダーレベル 2　は下線付き
 ### ヘッダーレベル 3
 #### ヘッダーレベル 4
 ##### ヘッダーレベル 5
