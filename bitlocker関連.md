@@ -9,3 +9,10 @@
 
 ![image](https://user-images.githubusercontent.com/949913/226253924-c6a16248-1c15-42b3-b837-7855dc9975fb.png)
 再びPINを同じものに設定した715517
+
+![image](https://user-images.githubusercontent.com/949913/226254001-d3dc410c-6c12-48f2-9de3-836ba1efa65a.png)
+念のため 
+
+![image](https://user-images.githubusercontent.com/949913/226254052-fe532f8a-f190-4265-a7ee-55a692351554.png)
+
+![image](https://user-images.githubusercontent.com/949913/226254087-c1e58c6a-3985-4d8b-88c8-12279751dee6.png)
