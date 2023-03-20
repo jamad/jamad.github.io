@@ -16,3 +16,6 @@
 ![image](https://user-images.githubusercontent.com/949913/226254052-fe532f8a-f190-4265-a7ee-55a692351554.png)
 
 ![image](https://user-images.githubusercontent.com/949913/226254087-c1e58c6a-3985-4d8b-88c8-12279751dee6.png)
+
+![image](https://user-images.githubusercontent.com/949913/226254862-7b2de2eb-eb04-40e2-8777-8e42a1b83bf8.png)
+念のため　自分にメールを送っておいた
