@@ -6,43 +6,6 @@
 2. After several minutes, https://jamad.github.io/ display the content by index.md
 
 
-
----
-
-***
-
-___
-
-# Links
-search engine [Duck Duck Go](https://duckduckgo.com)
-
-
-```
-- Bulleted
-- List
-```
-- Bulleted
-- List
-
-```
-1. Numbered
-2. List
-```
-1. Numbered
-2. List
-
-```**Bold**```
-**Bold**
-
-```_Italic_```
-_Italic_
-
-````Code````
-`Code`
-
-```[Link](url) ```
-[Link](url) 
-
 ```![Image](src)```
 ![Image](src)
 
@@ -52,10 +15,8 @@ _Italic_
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
 
-
 ### Doc
 [documentation](https://help.github.com/categories/github-pages-basics/) 
-
 
 ### HTML tag test - center doesn't work
 
@@ -64,7 +25,6 @@ For more details see [GitHub Flavored Markdown](https://guides.github.com/featur
 
 `<p style="text-align: center;">test</p>`
 <p style="text-align: center;">test</p>
-
 
 `<div style="text-align: center;"><img src="https://octodex.github.com/images/yaktocat.png" width="64"></div>`
 <div style="text-align: center;"><img src="https://octodex.github.com/images/yaktocat.png" width="64"></div>
