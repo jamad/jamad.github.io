@@ -1,10 +1,8 @@
 * updated　after deleting  index.md
 
 # Tips for GitHub Pages
-
-Use [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md) to maintain this.
-
-When committed, [Jekyll](https://jekyllrb.com/) rebuild the pages from .md.
+1 Edit [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md) to update the page
+1 After commit, [Jekyll](https://jekyllrb.com/) rebuild the pages from index.md to index.html 
 
 
 
