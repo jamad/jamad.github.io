@@ -10,4 +10,4 @@
 * おお！自動的に index.htmlが作成されているじゃないか！
 * ![image](https://user-images.githubusercontent.com/949913/235340222-ecc72531-4394-45d2-82e9-9a4dd6a63b62.png)
 
-
+* 画像のリンクが切れているので治そう
