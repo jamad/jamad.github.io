@@ -15,7 +15,7 @@
 ![Image](https://jamad.github.io/jam_clock_icon.png)
 
 ```<img src="https://octodex.github.com/images/yaktocat.png" width="64">```
-<img src="https://github.com/jamad/jamad.github.io/blob/master/jam_clock_icon.png" width="64">
+<img src="https://jamad.github.io/jam_clock_icon.png" width="64">
 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
