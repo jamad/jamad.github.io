@@ -31,5 +31,5 @@ For more details see [GitHub Flavored Markdown](https://guides.github.com/featur
 `<p style="text-align: center;">test</p>`
 <p style="text-align: center;">test</p>
 
-`<div style="text-align: center;"><img src="https://github.com/jamad/jamad.github.io/blob/master/jam_clock_icon.png" width="64"></div>`
-<div style="text-align: center;"><img src="https://github.com/jamad/jamad.github.io/blob/master/jam_clock_icon.png" width="64"></div>
+`<div style="text-align: center;"><img src="https://jamad.github.io/jam_clock_icon.png" width="64"></div>`
+<div style="text-align: center;"><img src="https://jamad.github.io/jam_clock_icon.png" width="64"></div>
