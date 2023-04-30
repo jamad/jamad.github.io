@@ -1,3 +1,5 @@
+* updated
+
 ## Tips for GitHub Pages
 
 Use [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md) to maintain this.
