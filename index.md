@@ -2,7 +2,8 @@
 
 # Tips for GitHub Pages
 1. Edit [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md) to update the page
-1. After commit, [Jekyll](https://jekyllrb.com/) rebuild the pages from index.md to index.html 
+1. After commit, wait [Jekyll](https://jekyllrb.com/) rebuild the pages from index.md to index.html 
+2. After several minutes, https://jamad.github.io/ display the content by index.md
 
 
 
