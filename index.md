@@ -1,4 +1,4 @@
-* updated
+* updated　after deleting  index.md
 
 ## Tips for GitHub Pages
 
