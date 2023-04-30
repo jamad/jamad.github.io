@@ -1,9 +1,14 @@
 * updated　after deleting  index.md
 
+# Tips for GitHub Pages (JP)
+1. index.mdファイルを　[editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md)　で編集する
+2. jekyll が index.md から　index.html　を自動作成するのを数分待つ
+3. https://jamad.github.io/ が更新された内容を表示する
+
 # Tips for GitHub Pages
 1. Edit [editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md) to update the page
 1. After commit, wait [Jekyll](https://jekyllrb.com/) rebuild the pages from index.md to index.html 
-2. After several minutes, https://jamad.github.io/ display the content by index.md
+1. After several minutes, https://jamad.github.io/ display the content by index.md
 
 
 ```![Image](src)```
