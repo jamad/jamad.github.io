@@ -7,7 +7,7 @@
 
 
 ```![Image](src)```
-![Image](src)
+![Image]([src](https://octodex.github.com/images/yaktocat.png))
 
 ```<img src="https://octodex.github.com/images/yaktocat.png" width="64">```
 <img src="https://octodex.github.com/images/yaktocat.png" width="64">
