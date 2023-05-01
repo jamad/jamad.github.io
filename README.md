@@ -1,4 +1,6 @@
-* https://jamad.github.io
+# https://jamad.github.io の再始動
+* 一番のメリットは、iphone で編集できるところ
+
 
 
 # README.md　を作成した
