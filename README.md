@@ -1,5 +1,7 @@
 # https://jamad.github.io の再始動
 * 一番のメリットは、iphone で　index.mdファイルを　編集できるところ　[editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md)
+* https://github.com/topics/jekyll-theme  のようなテーマ使えるのか？
+* https://utteranc.es/ というコメントのウィジェットがあるらしい？
 
 
 
