@@ -2,6 +2,7 @@
 * 一番のメリットは、iphone で　index.mdファイルを　編集できるところ　[editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md)
 * https://github.com/topics/jekyll-theme  のようなテーマ使えるのか？
 * https://utteranc.es/ というコメントのウィジェットがあるらしい？
+* 参考になったのは　https://web.archive.org/web/20220506172751/https://stackoverflow.com/questions/59096243/adding-comments-in-blog-posts-on-github-pages
 
 
 
