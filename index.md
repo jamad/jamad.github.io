@@ -1,3 +1,5 @@
+# github pages の内容を権限者が更新する方法　例：https://jamad.github.io/
+
 * updated　after deleting  index.md
 
 # Tips for GitHub Pages (日本語)
