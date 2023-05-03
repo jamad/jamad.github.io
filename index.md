@@ -1,8 +1,8 @@
 # github pages を作成する上での注意点
 * index.html が既存だと index.md が上書きできないので削除する。
 
-# github pages の内容を権限者が更新する方法　例：https://jamad.github.io/
-* https://github.com/jamad/jamad.github.io/edit/master/index.md
+# github pages の内容を権限者が更新する方法　
+* 例：https://jamad.github.io/  [編集のためのリンクを開く](https://github.com/jamad/jamad.github.io/edit/master/index.md)　 
 
 
 
