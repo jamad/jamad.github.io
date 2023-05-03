@@ -13,6 +13,7 @@
 |-|-|
 |Architect|![image](https://user-images.githubusercontent.com/949913/235971245-22d71837-a12f-4ff6-a522-9b4065643c0e.png)|
 |Cayman|![image](https://user-images.githubusercontent.com/949913/235978166-dddbd7ea-96a2-4435-961f-6db689774c3a.png)|
+|Dinky|![image](https://user-images.githubusercontent.com/949913/235984076-cd5e938c-7d74-4872-bd40-2ba60a926b86.png)|
 
 
 
