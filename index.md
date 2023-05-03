@@ -7,11 +7,13 @@
 * まず、themeはここに見つかった　https://pages.github.com/themes/
 * ![image](https://user-images.githubusercontent.com/949913/235970625-b782ce4b-6a42-4bf3-afc4-aae9fb470109.png)
 *  既存ファイル　jamad.github.io/blob/master/_config.yml　を編集することで変更できた
-* ![image](https://user-images.githubusercontent.com/949913/235971245-22d71837-a12f-4ff6-a522-9b4065643c0e.png)
+* 
 
 |Theme Name|Theme Visual|
 |-|-|
+|Architect|![image](https://user-images.githubusercontent.com/949913/235971245-22d71837-a12f-4ff6-a522-9b4065643c0e.png)|
 |Cayman|![image](https://user-images.githubusercontent.com/949913/235978166-dddbd7ea-96a2-4435-961f-6db689774c3a.png)|
+
 
 
 
