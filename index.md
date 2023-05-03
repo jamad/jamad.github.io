@@ -3,6 +3,14 @@
 ## github pages を更新するには　例：https://jamad.github.io/
 * [編集のためのリンクを開く](https://github.com/jamad/jamad.github.io/edit/master/index.md)　 
 
+## theme の変更
+* ![image](https://user-images.githubusercontent.com/949913/235970625-b782ce4b-6a42-4bf3-afc4-aae9fb470109.png)
+*  既存ファイル　jamad.github.io/blob/master/_config.yml　を編集することで変更できた
+* ![image](https://user-images.githubusercontent.com/949913/235971245-22d71837-a12f-4ff6-a522-9b4065643c0e.png)
+
+
+
+
 ## github pages を作成する上での注意点
 * index.html が既存だと index.md が上書きできない。なので削除するべし。
 
