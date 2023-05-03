@@ -1,7 +1,10 @@
+# github pages を作成する上での注意点
+* index.html が既存だと index.md が上書きできないので削除する。
+
 # github pages の内容を権限者が更新する方法　例：https://jamad.github.io/
 * https://github.com/jamad/jamad.github.io/edit/master/index.md
 
-* updated　after deleting  index.md
+
 
 # Tips for GitHub Pages (日本語)
 1. index.mdファイルを　[editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md)　で編集する
