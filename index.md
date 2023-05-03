@@ -1,4 +1,5 @@
 # github pages の内容を権限者が更新する方法　例：https://jamad.github.io/
+* https://github.com/jamad/jamad.github.io/edit/master/index.md
 
 * updated　after deleting  index.md
 
