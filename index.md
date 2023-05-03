@@ -7,8 +7,6 @@
 * index.html が既存だと index.md が上書きできない。なので削除するべし。
 
 
-
-
 # Tips for GitHub Pages (日本語)
 1. index.mdファイルを　[editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md)　で編集する
 2. jekyll が index.md から　index.html　を自動作成するのを数分待つ
