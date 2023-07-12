@@ -1,5 +1,9 @@
 # Github Pages Jamad
 
+# test for pyxel 
+<script src="https://cdn.jsdelivr.net/gh/kitao/pyxel/wasm/pyxel.js"></script>
+<pyxel-run name="https://github.com/jamad/practicePython/blob/master/pyxel/01_hello_pyxel.py"></pyxel-run>
+
 ## github pages を更新するには　例：https://jamad.github.io/
 * [編集のためのリンクを開く](https://github.com/jamad/jamad.github.io/edit/master/index.md)　 
 
