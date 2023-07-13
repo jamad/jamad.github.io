@@ -1,3 +1,6 @@
+# トイレマップ作ろう
+* キアズマ　の一階　奥　シアター付近のトイレ
+
 # https://jamad.github.io の再始動
 * 編集する時は　[パスがいるな](https://github.com/jamad/markdown_devlog/blob/main/pass%E9%96%A2%E9%80%A3%E3%83%A1%E3%83%A2.md)
 
