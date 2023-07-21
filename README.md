@@ -1,13 +1,4 @@
-# トイレマップ作ろう
-* キアズマ　の一階　奥　シアター付近のトイレ
-
-# https://jamad.github.io の再始動
-* 編集する時は　[パスがいるな](https://github.com/jamad/markdown_devlog/blob/main/pass%E9%96%A2%E9%80%A3%E3%83%A1%E3%83%A2.md)
-
-* 一番のメリットは、iphone で　index.mdファイルを　編集できるところ　[editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md)
-* https://github.com/topics/jekyll-theme  のようなテーマ使えるのか？
-* https://utteranc.es/ というコメントのウィジェットがあるらしい？
-* 参考になったのは https://webapps.stackexchange.com/questions/165528/how-to-add-comments-in-blog-posts-on-github-pages-websites
+# パブリックなファイル
 
 
 
