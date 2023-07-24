@@ -1,25 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GitHub Pages Test2</title>
+    <title>Tile Image Generator</title>
 </head>
 <body>
-    <h1>Github Pages Test</h1>
-    <p>This is a test page for GitHub Pages..............</p>
-    <button onclick="getGreeting()">Get Greeting</button>
-    <div id="message"></div>
+    <h1>Tile Image Generator</h1>
+    <p>Drag and drop an image to generate a tiled pattern.</p>
+    <div id="imageContainer" style="border: 2px dashed #ccc; width: 300px; height: 300px;">
+        <img id="uploadedImage" style="display: none;">
+    </div>
+    <canvas id="tileCanvas" width="300" height="300" style="border: 2px solid #000;"></canvas>
 
     <script>
-        function getGreeting() {
-            const name = "John"; // 名前を適切な値に変更する
-            fetch(`/greet/${name}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("message").textContent = data.message;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+        const canvas = document.getElementById('tileCanvas');
+        const context = canvas.getContext('2d');
+
+        document.getElementById('imageContainer').addEventListener('drop', handleDrop, false);
+        document.getElementById('imageContainer').addEventListener('dragover', handleDragOver, false);
+
+        function handleDrop(event) {
+            event.preventDefault();
+            const file = event.dataTransfer.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    const pattern = context.createPattern(img, 'repeat');
+                    context.fillStyle = pattern;
+                    context.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                img.src = e.target.result;
+            }
+
+            reader.readAsDataURL(file);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
         }
     </script>
 </body>
