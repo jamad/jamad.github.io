@@ -27,9 +27,12 @@
                 const img = new Image();
                 img.onload = function() {
                     context.clearRect(0, 0, canvas.width, canvas.height);
-                    const pattern = context.createPattern(img, 'repeat');
-                    context.fillStyle = pattern;
-                    context.fillRect(0, 0, canvas.width, canvas.height);
+                    const tileSize = canvas.width / 3;
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = 0; j < 3; j++) {
+                            context.drawImage(img, 0, 0, img.width, img.height, j * tileSize, i * tileSize, tileSize, tileSize);
+                        }
+                    }
                 }
                 img.src = e.target.result;
             }
