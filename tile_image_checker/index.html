@@ -5,7 +5,9 @@
 </head>
 <body>
     <h1>タイル画像生成</h1>
-    <p>画像をドラッグ＆ドロップして 3x3 のタイル画像を生成します。エッジで繋がっているかの確認に。</p>
+    <p>画像を選択して 3x3 のタイル画像を生成します。エッジで繋がっているかの確認に。</p>
+    <!-- 画像を追加するフォーム -->
+    <input type="file" accept="image/*" onchange="handleFileSelect(event)">
     <div id="imageContainer" style="border: 2px dashed #ccc; width: 300px; height: 300px;">
         <img id="uploadedImage" style="display: none;">
     </div>
@@ -15,16 +17,10 @@
         const canvas = document.getElementById('tileCanvas');
         const context = canvas.getContext('2d');
 
-        // ドラッグ＆ドロップイベントの処理
-        document.getElementById('imageContainer').addEventListener('drop', handleDrop, false);
-        document.getElementById('imageContainer').addEventListener('dragover', handleDragOver, false);
-
-        function handleDrop(event) {
-            event.preventDefault();
-            const file = event.dataTransfer.files[0];
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
             const reader = new FileReader();
 
-            // ドラッグ＆ドロップされた画像を読み込んでタイル画像を生成
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
@@ -39,11 +35,9 @@
                 img.src = e.target.result;
             }
 
-            reader.readAsDataURL(file);
-        }
-
-        function handleDragOver(event) {
-            event.preventDefault();
+            if (file) {
+                reader.readAsDataURL(file);
+            }
         }
     </script>
 </body>
