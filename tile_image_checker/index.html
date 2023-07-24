@@ -6,12 +6,21 @@
 <body>
     <h1>Github Pages Test</h1>
     <p>This is a test page for GitHub Pages.</p>
-    <script src="test_code.py"></script>
+    <button onclick="getGreeting()">Get Greeting</button>
+    <div id="message"></div>
+
     <script>
-        // Pythonのコードを実行する例
-        const name = "John";
-        const message = greeting(name);
-        alert(message);
+        function getGreeting() {
+            const name = "John"; // 名前を適切な値に変更する
+            fetch(`/greet/${name}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("message").textContent = data.message;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
     </script>
 </body>
 </html>
