@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tile Image Generator</title>
+    <title>タイル画像生成</title>
 </head>
 <body>
-    <h1>Tile Image Generator</h1>
-    <p>Drag and drop an image to generate a tiled pattern.</p>
+    <h1>タイル画像生成</h1>
+    <p>画像をドラッグ＆ドロップしてタイル画像を生成します。</p>
     <div id="imageContainer" style="border: 2px dashed #ccc; width: 300px; height: 300px;">
         <img id="uploadedImage" style="display: none;">
     </div>
@@ -15,6 +15,7 @@
         const canvas = document.getElementById('tileCanvas');
         const context = canvas.getContext('2d');
 
+        // ドラッグ＆ドロップイベントの処理
         document.getElementById('imageContainer').addEventListener('drop', handleDrop, false);
         document.getElementById('imageContainer').addEventListener('dragover', handleDragOver, false);
 
@@ -23,6 +24,7 @@
             const file = event.dataTransfer.files[0];
             const reader = new FileReader();
 
+            // ドラッグ＆ドロップされた画像を読み込んでタイル画像を生成
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
