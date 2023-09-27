@@ -3,7 +3,7 @@
 ## github pages を更新するには　例：https://jamad.github.io/
 * [編集のためのリンクを開く](https://github.com/jamad/jamad.github.io/edit/master/index.md)　 
 
-## theme の変更
+## theme を変更するには
 * まず、themeはここに見つかった　https://pages.github.com/themes/
 *  既存ファイル　jamad.github.io/blob/master/_config.yml　を編集することで変更できた
 * `theme: jekyll-theme-slate` を削除すると思ったような結果にならなかったので、残した
@@ -20,13 +20,6 @@
 |Midnight |![image](https://user-images.githubusercontent.com/949913/236022948-501d2ea3-97c1-4238-b021-25f80e46c236.png)|
 |Slate|![image](https://user-images.githubusercontent.com/949913/236025082-bb9b0641-e1ff-4499-9ce8-75c06533cf70.png)|
  
-
-
-
-
-
-
-
 
 ## github pages を作成する上での注意点
 * index.html が既存だと index.md が上書きできない。なので削除するべし。
