@@ -1,5 +1,4 @@
-## github pages を更新する手順
-* 例：https://jamad.github.io/
+## github pages [jamad.github.io](https://jamad.github.io/) を更新する手順
 * [編集のためのリンクを開く](https://github.com/jamad/jamad.github.io/edit/master/index.md)　 
 
 ## theme を変更するには
