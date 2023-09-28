@@ -4,7 +4,9 @@
 
 #### TODO
 * ここを参考にして、背景をカスタマイズしよう
-* `http://pavelmakhov.com/jekyll-clean-dark/2016/09/customizations/` 
+* `http://pavelmakhov.com/jekyll-clean-dark/2016/09/customizations/`
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/4e22c35f-d8aa-4aea-b25e-107689b893ed)
+
 
 #### theme を変更する手順 
 * themeのある場所　https://pages.github.com/themes/
