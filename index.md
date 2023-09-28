@@ -5,7 +5,7 @@
 
 ## theme を変更するには
 * まず、themeはここに見つかった　https://pages.github.com/themes/
-*  既存ファイル　jamad.github.io/blob/master/_config.yml　を編集することで変更できた
+*  既存ファイル　[jamad.github.io/blob/master/_config.yml](https://github.com/jamad/jamad.github.io/edit/master/_config.yml)　を編集することで変更できた
 * `theme: jekyll-theme-slate` を削除すると思ったような結果にならなかったので、残した
 * ![image](https://user-images.githubusercontent.com/949913/235970625-b782ce4b-6a42-4bf3-afc4-aae9fb470109.png)
 
