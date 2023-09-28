@@ -17,8 +17,8 @@
 |Hacker|　<img height="60" src="https://user-images.githubusercontent.com/949913/236018878-31f80437-3935-4a48-a8ba-e942881b7939.png">|　
 |Leap day|　<img height="60" src="https://user-images.githubusercontent.com/949913/236020058-1ba2a718-3eea-414c-9020-91ab7e5ec86d.png">|　
 |Merlot|　<img height="60" src="https://user-images.githubusercontent.com/949913/236022003-e59d6cba-ace8-4a42-86ce-d6f90061f377.png">|　
-|Midnight |![image](https://user-images.githubusercontent.com/949913/236022948-501d2ea3-97c1-4238-b021-25f80e46c236.png)|
-|Slate|![image](https://user-images.githubusercontent.com/949913/236025082-bb9b0641-e1ff-4499-9ce8-75c06533cf70.png)|
+|Midnight |　<img height="60" src="https://user-images.githubusercontent.com/949913/236022948-501d2ea3-97c1-4238-b021-25f80e46c236.png">|　
+|Slate|　<img height="60" src="https://user-images.githubusercontent.com/949913/236025082-bb9b0641-e1ff-4499-9ce8-75c06533cf70.png">|
 
 
 ## github pages を作成する上での注意点
