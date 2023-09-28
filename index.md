@@ -3,7 +3,8 @@
 * [編集のためのリンクを開く](https://github.com/jamad/jamad.github.io/edit/master/index.md)　 
 
 #### TODO
-* ここを参考にして、背景をカスタマイズしよう　　ココの動画も参考になるかもしれないのでメモ `https://www.youtube.com/watch?v=kftqAritHyc`
+* ここを参考にして、背景をカスタマイズしよう
+* ココの動画も参考になるかもしれないのでメモ `https://www.youtube.com/watch?v=kftqAritHyc`
 * `http://pavelmakhov.com/jekyll-clean-dark/2016/09/customizations/`
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/4e22c35f-d8aa-4aea-b25e-107689b893ed)
 
