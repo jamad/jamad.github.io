@@ -6,6 +6,7 @@
 * 既存ファイル　[jamad.github.io/blob/master/_config.yml](https://github.com/jamad/jamad.github.io/edit/master/_config.yml)　を編集することで変更できた
 * 変更例
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/ea23f161-5d3e-4a37-9b79-7af01c4819e6)
+  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/1a8d09c4-e937-4a14-ae06-9f7b0b4fcce1)
 * `theme: jekyll-theme-slate` を削除すると思ったような結果にならなかったので、残した
 * ![image](https://user-images.githubusercontent.com/949913/235970625-b782ce4b-6a42-4bf3-afc4-aae9fb470109.png)
 
