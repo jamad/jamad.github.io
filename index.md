@@ -16,6 +16,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.scss">
 
 
+
 #### theme を変更する手順 
 * themeのある場所　https://pages.github.com/themes/
 * 既存ファイル　[jamad.github.io/blob/master/_config.yml](https://github.com/jamad/jamad.github.io/edit/master/_config.yml)　を編集することで変更できた
