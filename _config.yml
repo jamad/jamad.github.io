@@ -9,7 +9,7 @@ name: Blog Name
 description: Software Developer
 
 # For a project page here should be a project name. Otherwise (for user's/organization's page leave it empty)
-baseurl: '/jekyll-clean-dark'
+baseurl: 
 
 share:
   facebook: true
