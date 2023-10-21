@@ -3,9 +3,10 @@
 * [編集のためのリンクを開く](https://github.com/jamad/jamad.github.io/edit/master/index.md)　 
 
 #### TODO
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/4e22c35f-d8aa-4aea-b25e-107689b893ed)
 * ここを参考にして、背景をカスタマイズしよう
 * `http://pavelmakhov.com/jekyll-clean-dark/2016/09/customizations/`
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/4e22c35f-d8aa-4aea-b25e-107689b893ed)
+* _posts フォルダをダウンロードして　アップロードしてみた。
 
 
 #### theme を変更する手順 
