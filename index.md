@@ -7,6 +7,7 @@
 * ここを参考にして、背景をカスタマイズしよう
 * `http://pavelmakhov.com/jekyll-clean-dark/2016/09/customizations/`
 * _posts フォルダをダウンロードして　アップロードしてみた。
+* _config.yml を参考にして、適当に変更してみた 
 
 
 #### theme を変更する手順 
