@@ -19,27 +19,5 @@
 
 
 
-```![Image](src)```
-![Image](https://jamad.github.io/jam_clock_icon.png)
-
-```<img src="https://jamad.github.io/jam_clock_icon.png" width="64">```
-<img src="https://jamad.github.io/jam_clock_icon.png" width="64">
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Doc
-[documentation](https://help.github.com/categories/github-pages-basics/) 
-
-### HTML tag test - center doesn't work
-
-`<center>center text</center>`
-<center>center text</center>
-
-`<p style="text-align: center;">test</p>`
-<p style="text-align: center;">test</p>
-
-`<div style="text-align: center;"><img src="https://jamad.github.io/jam_clock_icon.png" width="64"></div>`
-<div style="text-align: center;"><img src="https://jamad.github.io/jam_clock_icon.png" width="64"></div>
-
 
 
