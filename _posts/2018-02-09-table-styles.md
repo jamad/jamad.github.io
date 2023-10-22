@@ -1,11 +1,10 @@
 ---
 layout: post
 title: Table styles
-date:   2023-10-22 21:07
-description: Examples of different table styles
-comments: true
+author: jamad
 ---
 
+<link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 
 >Markdown
 {:.filename}
