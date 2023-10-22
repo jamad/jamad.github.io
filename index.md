@@ -4,7 +4,7 @@
 # Jamad Blogs
 * どうも1st line の記述が全てのブログポストに複製されるように思えるので　 コメントにしてみた
 
-### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ (でも、もしかしてindex.md を変更しないとコンバートされない？ cacheをリセットする必要があるのか？ )
+### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 * https://github.com/jamad/jamad.github.io/blob/master/assets/css/theme.scss を編集してjelyllがコンバートするまで暫し待つ （34行付近） $background-pattern: 'subtle-grey.png'; 
 
@@ -12,11 +12,8 @@
 #### ここのページ[jamad.github.io](https://jamad.github.io/) を更新する手順
 * [編集のためのリンクを開く](https://github.com/jamad/jamad.github.io/edit/master/index.md)　 
 
-
-
 ## github pages を作成する上での注意点
 * index.html が既存だと index.md が上書きできない。なので削除するべし。
-
 
 # Tips for GitHub Pages (日本語)
 1. index.mdファイルを　[editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md)　で編集する
