@@ -4,21 +4,20 @@
 # Jamad Blogs
 * どうも1st line の記述が全てのブログポストに複製されるように思えるので　 コメントにしてみた
 
+
+## このページの更新方法 
+1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　を編集する
+2. jekyll が index.md から　index.html　を自動作成するのを数分待つ
+3. [jamad.github.io](https://jamad.github.io/) を確認する Chromeなら ctrl+shift+R でキャッシュクリアするのが吉
+
 ### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 * https://github.com/jamad/jamad.github.io/blob/master/assets/css/theme.scss を編集してjelyllがコンバートするまで暫し待つ （34行付近） $background-pattern: 'subtle-grey.png'; 
 
-#### github pages 
-#### ここのページ[jamad.github.io](https://jamad.github.io/) を更新する手順
-* [編集のためのリンクを開く](https://github.com/jamad/jamad.github.io/edit/master/index.md)　 
 
 ## github pages を作成する上での注意点
 * index.html が既存だと index.md が上書きできない。なので削除するべし。
 
-# このページの更新方法 
-1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　を編集する
-2. jekyll が index.md から　index.html　を自動作成するのを数分待つ
-3. https://jamad.github.io/ を確認する Chromeなら ctrl+shift+R でキャッシュクリアするのが吉
 
 
 ```![Image](src)```
