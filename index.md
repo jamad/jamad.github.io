@@ -5,8 +5,8 @@ Jamad Blogs
 
 
 ## このページの更新方法 
-1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　を編集する
-2. jekyll が index.md から　index.html　を自動作成するのを数分待つ
+1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　から編集
+2. jekyllの自動更新を数分待つ
 3. [jamad.github.io](https://jamad.github.io/) を確認する Chromeなら ctrl+shift+R でキャッシュクリアするのが吉
 
 ### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
