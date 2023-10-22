@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Table styles
-date:   2018-02-09 11:07
+date:   2023-10-22 21:07
 description: Examples of different table styles
 comments: true
 ---
@@ -12,7 +12,6 @@ comments: true
 {% highlight raw %}
 line to be highlighted
 {% endhighlight %}
-
 
 
 ## Few more examples from kramdown [documentation](https://kramdown.gettalong.org/syntax.html#tables):
