@@ -1,8 +1,8 @@
-
----
+```
+```
 
 # Jamad Blogs
-* 恐らく、上記の#タグは全てのブログポストに影響を及ぼす 
+* どうも1st line の記述が全てのブログポストに複製されるように思えるので　 コメントにしてみた
 
 ### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ (でも、もしかしてindex.md を変更しないとコンバートされない？ cacheをリセットする必要があるのか？ )
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
