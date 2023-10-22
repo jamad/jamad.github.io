@@ -3,7 +3,7 @@
 
 * どうも1st line の記述が全てのブログポストに複製されるように思える  だがリンクである必要があるみたいだ
 * [jamad.github.io](https://jamad.github.io/) の場合は複製されなかった
-* ## jamad.github.io　だと複製された
+* `## jamad.github.io　だと複製された`
 
 
 ## このページの更新方法 
