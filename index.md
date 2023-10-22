@@ -15,10 +15,10 @@
 ## github pages を作成する上での注意点
 * index.html が既存だと index.md が上書きできない。なので削除するべし。
 
-# Tips for GitHub Pages (日本語)
-1. index.mdファイルを　[editor on GitHub](https://github.com/jamad/jamad.github.io/edit/master/index.md)　で編集する
+# このページの更新方法 
+1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　を編集する
 2. jekyll が index.md から　index.html　を自動作成するのを数分待つ
-3. https://jamad.github.io/ が index.md　で更新された内容を表示する
+3. https://jamad.github.io/ を確認する Chromeなら ctrl+shift+R でキャッシュクリアするのが吉
 
 
 ```![Image](src)```
