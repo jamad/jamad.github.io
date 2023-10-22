@@ -1,6 +1,6 @@
 ---
 layout: post
-title: how to post a blog page
+title: Introduction to GitHub
 author: jamad
 ---
 
