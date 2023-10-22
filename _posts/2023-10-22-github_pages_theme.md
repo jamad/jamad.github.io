@@ -9,7 +9,7 @@ author: jamad
 * 背景画像を設定するためにしたこと
 * 
 
-#### TODO
+#### theme 主に 背景のカスタマイズ
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/4e22c35f-d8aa-4aea-b25e-107689b893ed)
 * ここを参考にして、背景をカスタマイズしよう
 * `http://pavelmakhov.com/jekyll-clean-dark/2016/09/customizations/`
