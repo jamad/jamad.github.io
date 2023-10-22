@@ -1,3 +1,8 @@
+
+### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
+<link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
+* https://github.com/jamad/jamad.github.io/blob/master/assets/css/theme.scss を編集してジキルがコンバートするまで暫し待つ （34行付近） $background-pattern: 'subtle-grey.png'; 
+
 #### github pages 
 #### ここのページ[jamad.github.io](https://jamad.github.io/) を更新する手順
 * [編集のためのリンクを開く](https://github.com/jamad/jamad.github.io/edit/master/index.md)　 
@@ -11,10 +16,6 @@
 * まだ思った通りになっていない　下記を参考にしよう
 * https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/adding-a-theme-to-your-github-pages-site-using-jekyll
 * https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
-
-### style.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
-<link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
-
 
 
 #### theme を変更する手順 
