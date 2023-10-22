@@ -1,7 +1,7 @@
 
 ### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
-* https://github.com/jamad/jamad.github.io/blob/master/assets/css/theme.scss を編集
+* https://github.com/jamad/jamad.github.io/blob/master/assets/css/theme.scss を編集 （34行付近） $background-pattern: 'subtle-grey.png'; 
 
 #### github pages 
 #### ここのページ[jamad.github.io](https://jamad.github.io/) を更新する手順
