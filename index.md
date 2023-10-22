@@ -1,4 +1,4 @@
-### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ (でも、もしかしてindex.md を変更しないとコンバートされない？ cacheをリセットする必要があるのかも？ )
+### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ (でも、もしかしてindex.md を変更しないとコンバートされない？ cacheをリセットする必要があるのか？ )
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 * https://github.com/jamad/jamad.github.io/blob/master/assets/css/theme.scss を編集してjelyllがコンバートするまで暫し待つ （34行付近） $background-pattern: 'subtle-grey.png'; 
 
@@ -69,3 +69,6 @@ For more details see [GitHub Flavored Markdown](https://guides.github.com/featur
 
 `<div style="text-align: center;"><img src="https://jamad.github.io/jam_clock_icon.png" width="64"></div>`
 <div style="text-align: center;"><img src="https://jamad.github.io/jam_clock_icon.png" width="64"></div>
+
+
+
