@@ -1,5 +1,4 @@
-
-### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ (でも、もしかしてindex.md を変更しないとコンバートされない？ )
+### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ (でも、もしかしてindex.md を変更しないとコンバートされない？ cacheをリセットする必要があるのかも？ )
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 * https://github.com/jamad/jamad.github.io/blob/master/assets/css/theme.scss を編集してjelyllがコンバートするまで暫し待つ （34行付近） $background-pattern: 'subtle-grey.png'; 
 
