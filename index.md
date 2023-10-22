@@ -1,7 +1,6 @@
 
-### theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
+### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
-`<link rel="stylesheet" type="text/css" href="/assets/css/theme.css">`
 
 #### github pages 
 #### ここのページ[jamad.github.io](https://jamad.github.io/) を更新する手順
