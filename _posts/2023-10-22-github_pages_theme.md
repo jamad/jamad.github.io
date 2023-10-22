@@ -13,12 +13,9 @@ author: jamad
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/4e22c35f-d8aa-4aea-b25e-107689b893ed)
 * ここを参考にして、背景をカスタマイズしよう
 * `http://pavelmakhov.com/jekyll-clean-dark/2016/09/customizations/`
-* _posts フォルダをダウンロードして　アップロードしてみた。
-* _config.yml を参考にして、適当に変更してみた
-* まだ思った通りになっていない　下記を参考にしよう
+* _config.yml を参考にして、適当に変更してみた >> まだ理解が浅いので、もっと学ぼう 
 * https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/adding-a-theme-to-your-github-pages-site-using-jekyll
 * https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
-
 
 #### theme を変更する手順 
 * themeのある場所　https://pages.github.com/themes/
