@@ -1,10 +1,12 @@
 ---
 layout: post
-title: github pages theme
+title: theme , theme.scss
 author: jamad
 ---
-
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
+
+### History
+* 2023-10-23 titleを変更 
 
 * 背景画像を設定するためにしたこと
 
