@@ -17,6 +17,9 @@ author: jamad
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/cc069bbe-1b74-4fe7-a443-5d0fd4625afc)
 * 初めてまともにbranch を作ったかもしれない
  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/48349b9b-5edd-463d-b9c2-7ee719229bdb)
+ * ブランチを作成後にRefreshするとStep２が始まるのか。面白い。
+  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/b55c6435-84ae-409b-af8d-8fe9d2853d6f)
+
  
 
 
