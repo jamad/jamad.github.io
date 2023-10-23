@@ -6,4 +6,5 @@ author: jamad
 
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 
-wip
+
+* この行はiPhone で追加
