@@ -8,3 +8,4 @@ author: jamad
 
 
 * この行はiPhone で追加
+* github app > codes > _posta > .md edit
