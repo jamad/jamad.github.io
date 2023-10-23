@@ -16,21 +16,14 @@
 //                    Variables
 //********************************************************
 
-// Several accent colors, choose one or create your own!
-
-//$accent-color: #3CA2A2;    // original =)
-//$accent-color: #C38FD6;  // velvet
-$accent-color: #8FD6B3;  // greenish
-//$accent-color: #35B4DE;  // bluish
-//$accent-color: #D2E354;  // yellowish
-//$accent-color: #52B54B;  // green
-
+$accent-color: #3CA2A2;    // original =)
 $font-color: #dddddd;
 $background-color: #292929;
 $post-panel-color: #39393a;
 $footer-background-color: #292c2f;
 $note-color: #87CEFA;
 $warning-color: #ffff00;
+
 // use this or pick any from /css/pics/background folder or from transparenttextures.com
 $background-pattern: 'xv.png';
 
@@ -52,12 +45,12 @@ body {
   width: 75%;
 }
 
-h1 { font-size: 2em; }
-h2 { font-size: 1.5em; }
-h3 { font-size: 1.17em; }
-h4 { font-size: 1.12em; }
-h5 { font-size: .83em; }
-h6 { font-size: .75em; }
+h1 { font-size: 1.2em; }
+h2 { font-size: 1.1em; }
+h3 { font-size: 1.0em; }
+h4 { font-size: .9em; }
+h5 { font-size: .8em; }
+h6 { font-size: .7em; }
 
 img {
   display: inline-block;
