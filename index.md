@@ -20,9 +20,4 @@
 
 
 * このページにヘッダーを入れた場合、Blogpostが表示されなくなった
-![image](https://github.com/jamad/jamad.github.io/assets/949913/c4d90cbb-de74-4eb8-932b-76633230b5dd)
-
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/173199b6-f8c8-49e8-ac17-faaf83bc5204)
- 
-
-
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/c4d90cbb-de74-4eb8-932b-76633230b5dd)
