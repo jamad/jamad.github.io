@@ -9,4 +9,7 @@ author: jamad
 * followed the page [https://github.com/skills/introduction-to-github/blob/main/README.md](https://github.com/skills/introduction-to-github/blob/main/README.md)
   * clicked the green `Start course` button
 * then after creating the repo checked the page [https://github.com/jamad/skills-introduction-to-github](https://github.com/jamad/skills-introduction-to-github)
+ * 要点
+ * main branch は最終決定となるBranch
+ *  
   
