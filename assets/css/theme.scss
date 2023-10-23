@@ -111,44 +111,6 @@ div.post-meta {
   text-align: center;
 }
 
-//********************************************************
-//                    Note / Warning
-//********************************************************
-blockquote{
-  border-left: 2px solid #666;
-  padding-left: 20px;
-  font-style: italic;
-}
-
-blockquote.note p,
-blockquote.warning p{
-  height: 48px;
-  vertical-align: middle;
-  padding: 10px;
-  font-style: normal;
-}
-
-.note {
-  font-style: normal;
-  position:relative;
-  border: 0;
-  padding-left: 30px;
-}
-.note:before {
-  font-style: normal;
-  content: "\f06a";
-  font-size: 2em;
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900;
-  left: 0;
-  position:absolute;
-  top: 0;
-  color: $note-color;
-}
-.warning:before {
-  content: "\f071";
-  color: $warning-color;
-}
 
 //********************************************************
 //                    Header
@@ -304,40 +266,6 @@ table.inner-borders {
   background: #202020;
 }
 
-
-//********************************************************
-//       Custom classes to apply to block elements,
-//  more info: http://pavelmakhov.com/2015/12/images-in-jekyll
-//********************************************************
-.key {
-  font-size: 1.0em;
-  box-shadow: 1px 0 1px 0 #555, 0 1px 0 2px #888, 0 2px 0 2px #777;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  border-radius: 3px;
-  margin: 2px 3px;
-  padding: 0px 5px;
-}
-.center-image
-{
-  margin: 0 auto;
-  display: block;
-}
-.filename{
-  background-color: #292929;
-  color: lightgrey;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
-  margin: 0;
-  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
-  border-left: 0;
-  bottom: -2px;
-  position: relative;
-  padding: 0 0 2px 1em;
-  p {
-    margin: 0;
-  }
-}
 
 //********************************************************
 
