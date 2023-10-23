@@ -1,6 +1,6 @@
 ---
 layout: post
-title: タイトルの日本語表記は可能 
+title: 別フォルダに入れた.mdファイル  
 author: jamad
 ---
 
