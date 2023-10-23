@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 別フォルダに入れた.mdファイル  
+title: .md in antoher_posts 
 author: jamad
 ---
 
