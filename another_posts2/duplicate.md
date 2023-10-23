@@ -1,6 +1,6 @@
 ---
 layout: post
-title: .md in antoher_posts 
+title: .md in antoher_posts 2
 author: jamad
 ---
 
