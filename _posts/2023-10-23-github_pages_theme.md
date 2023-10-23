@@ -8,8 +8,7 @@ author: jamad
 ### History
 * 2023-10-23 titleを変更 
 
-* 背景画像を設定するためにしたこと
-
+# 背景画像を設定するためにしたこと
 
 ### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
