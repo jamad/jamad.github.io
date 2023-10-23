@@ -79,7 +79,7 @@ a {
 //                    Post
 //********************************************************
 h2.post-title {
-  padding-top: 10px;
+  padding-top: 5px;
   text-align: left;
 }
 div.post-meta {
@@ -87,7 +87,7 @@ div.post-meta {
   border-width: 1px 0;
   border-color: #666666;
   border-style: solid;
-  margin: 0 0 20px;
+  margin: 0 0 10px;
   ul {
     display: inline;
     padding-left: 0;
@@ -96,18 +96,18 @@ div.post-meta {
   }
   ul > li {
     display: inline;
-    padding: 0 0 5px 20px;
+    padding: 0 0 5px 10px;
   }
   .post-time {
     display: inline;
   }
 }
 .post-footer {
-  height: 20px;
+  height: 10px;
   display: table;
   width: 100%;
   position: relative;
-  margin-top: 16px;
+  margin-top: 8px;
   text-align: center;
 }
 
