@@ -1,8 +1,12 @@
+---
+layout: post
+title: jamad.github.io Home
+author: jamad
+---
+
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 
-### jamad.github.io
-
-* どうも1st line の記述が全てのブログポストに複製されるように思える  だがリンクである必要があるみたいだ
+* どうも1st line の記述が全てのブログポストに複製されるように思える  だがリンクである必要があるみたいだ　>> いや違うな。別の記事のタイトルが表示された
 * [jamad.github.io](https://jamad.github.io/) の場合は複製されなかった
 * `## jamad.github.io`　だと複製された
 * `### jamad.github.io`　も複製された
