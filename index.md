@@ -1,4 +1,4 @@
-#### jamad.github.io
+### jamad.github.io
 
 
 * どうも1st line の記述が全てのブログポストに複製されるように思える  だがリンクである必要があるみたいだ
