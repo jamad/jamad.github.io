@@ -9,6 +9,11 @@ author: jamad
 * 背景画像を設定するためにしたこと
 
 
+### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
+<link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
+* https://github.com/jamad/jamad.github.io/blob/master/assets/css/theme.scss を編集してjelyllがコンバートするまで暫し待つ （34行付近） $background-pattern: 'subtle-grey.png'; 
+
+
 #### theme 主に 背景のカスタマイズ
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/4e22c35f-d8aa-4aea-b25e-107689b893ed)
 * ここを参考にして、背景をカスタマイズしよう
