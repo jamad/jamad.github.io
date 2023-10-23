@@ -8,4 +8,4 @@ author: jamad
 
 
 * この行はiPhone で追加
-* github app > codes > _posts > .md edit
+* github app > repo > code > _posts > .md edit > commit > wait
