@@ -1,3 +1,5 @@
+https://jamad.github.io/
+
 # パブリックなファイル
 
 iPhoneから画像のコピペできないのか？
