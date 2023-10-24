@@ -1,5 +1,4 @@
 ### jamad.github.io
-
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 
 * どうも1st line の記述が全てのブログポストに複製されるように思える  だがリンクである必要があるみたいだ　>> いや違うな。別の記事のタイトルが表示された
