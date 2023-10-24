@@ -44,3 +44,39 @@ blockquote {
   font-size: 1em;
   background-color: #111;
 }
+
+//********************************************************
+//                    Post
+//********************************************************
+h2.post-title {
+  padding-top: 5px;
+  text-align: left;
+}
+div.post-meta {
+  z-index: 1;
+  border-width: 1px 0;
+  border-color: #666666;
+  border-style: solid;
+  margin: 0 0 10px;
+  ul {
+    display: inline;
+    padding-left: 0;
+    float: right;
+    margin: 0;
+  }
+  ul > li {
+    display: inline;
+    padding: 0 0 5px 10px;
+  }
+  .post-time {
+    display: inline;
+  }
+}
+.post-footer {
+  height: 10px;
+  display: table;
+  width: 100%;
+  position: relative;
+  margin-top: 8px;
+  text-align: center;
+}
