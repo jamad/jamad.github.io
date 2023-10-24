@@ -1,16 +1,4 @@
----
----
-@mixin font-size($size) {
-  font-size: $size;
-  font-size: calculateRem($size);
-}
-@mixin transition($args...) {
-  -webkit-transition: $args;
-  -moz-transition: $args;
-  -ms-transition: $args;
-  -o-transition: $args;
-  transition: $args;
-}
+
 
 //********************************************************
 //                    Variables
