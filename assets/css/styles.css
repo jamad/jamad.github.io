@@ -2,7 +2,6 @@ body {
   background-color: #101233; /* ダーク背景色 */
   color: white; /* テキストカラー白*/
   
-  background-image: url("pics/background/xv.png"); /* 画像のファイルパスを指定 */
-  background-size: cover; /* 画像をウィンドウ全体に広げる */
-  background-repeat: no-repeat; /* 画像の繰り返しを無効化 */
+  background-image: url("pics/background/xv.png"); /* 画像パス指定 */
+  background-repeat: repeat; /* 画像をタイリング */
 }
