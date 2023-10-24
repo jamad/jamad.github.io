@@ -12,19 +12,15 @@ description: Software Developer
 baseurl: 
 
 share:
-  facebook: true
-  twitter: true
-  gplus: true
-  linkedin: true
-  pinterest: true
-  email: true
+  facebook: false
+  twitter: false
+  gplus: false
+  linkedin: false
+  pinterest: false
+  email: false
 
 social:
   github: jamad
-  stackoverflow: ''
-  linkedin:
-  instagram: ''
-  lastfm: ''
   rss: feed.xml
 
 
