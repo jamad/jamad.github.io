@@ -12,4 +12,47 @@
   transition: $args;
 }
 
+//********************************************************
+//                    Variables
+//********************************************************
 
+$background-pattern: 'xv.png';　// use this or pick any from /css/pics/background folder or from transparenttextures.com
+
+//********************************************************
+//                  Common styles
+//********************************************************
+body {
+  color:  #dddddd;
+  background: #292929 url(pics/background/#{$background-pattern});
+}
+
+.main-page {  width: 75%;}
+
+a {  color:  #3CA2A2;}
+
+h1 { font-size: 1.2em; }
+h2 { font-size: 1.1em; }
+h3 { font-size: 1.0em; }
+h4 { font-size: .9em; }
+h5 { font-size: .8em; }
+h6 { font-size: .7em; }
+
+img {
+  display: inline-block;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+img + em {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+blockquote {
+  color: #bbb;
+  font-size: 1em;
+  background-color: #111;
+}
