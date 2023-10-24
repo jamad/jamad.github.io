@@ -1,3 +1,4 @@
 body {
-  background-color: #00008B;
+  background-color: #00008B; /* ダークブルーの背景色 */
+  color: white; /* テキストカラーを白に設定 */
 }
