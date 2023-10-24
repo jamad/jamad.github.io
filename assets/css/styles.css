@@ -22,3 +22,12 @@ a:visited {
 a:hover {
   color: #0056b3; /* マウスホバー時のリンクテキストカラー */
 }
+
+/* コードブロックの背景色を設定 */
+pre code {
+  background-color: #333; /* ダークグレーの背景色 */
+  color: white; /* テキストカラーを白に設定 */
+  padding: 10px; /* コードブロック内の余白を設定 */
+  border-radius: 5px; /* 角丸の設定（任意） */
+}
+
