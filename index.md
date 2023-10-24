@@ -5,7 +5,7 @@
 * どうも1st line の記述が全てのブログポストに複製されるように思える  だがリンクである必要があるみたいだ　>> いや違うな。別の記事のタイトルが表示された
 * [jamad.github.io](https://jamad.github.io/) の場合は複製されなかった
 * `## jamad.github.io`　だと複製された
-* `### jamad.github.io`　も複製された
+* `### jamad.github.io`　も複製された (結局これを使うことにした)
 * `#### jamad.github.io` だと複製されなくなった
 
 
@@ -16,8 +16,8 @@
 
 
 ## github pages を作成する上での注意点
-* index.html が既存だと index.md が上書きできない。なので削除するべし。
+* index.html が既存だと index.md が上書きできないので削除すべし。
 
 
-* このページにヘッダーを入れた場合、Blogpostが表示されなくなった
+* このページにヘッダーを入れた場合、Blogpostがページの下部に表示されなくなった。ブログ記事は他のブログ記事を表示しないということか？
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/c4d90cbb-de74-4eb8-932b-76633230b5dd)
