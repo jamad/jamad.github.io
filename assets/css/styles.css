@@ -6,11 +6,19 @@ body {
   background-repeat: repeat; /* 画像をタイリング */
 }
 
-a {
+/* 未訪問リンクのスタイル */
+a:link {
   color: #007BFF; /* 明るい青色のリンクテキストカラー */
   text-decoration: none; /* リンクの下線を削除 */
 }
 
+/* 訪問済みリンクのスタイル */
+a:visited {
+  color: #9933cc; /* 訪問済みリンクの色を変更 */
+  text-decoration: none; /* リンクの下線を削除 */
+}
+
+/* マウスホバー時のスタイル（未訪問リンクと訪問済みリンクの両方に適用） */
 a:hover {
   color: #0056b3; /* マウスホバー時のリンクテキストカラー */
 }
