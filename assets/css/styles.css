@@ -5,3 +5,12 @@ body {
   background-image: url("pics/background/xv.png"); /* 画像パス指定 */
   background-repeat: repeat; /* 画像をタイリング */
 }
+
+a {
+  color: #007BFF; /* 明るい青色のリンクテキストカラー */
+  text-decoration: none; /* リンクの下線を削除 */
+}
+
+a:hover {
+  color: #0056b3; /* マウスホバー時のリンクテキストカラー */
+}
