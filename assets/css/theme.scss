@@ -80,3 +80,70 @@ div.post-meta {
   margin-top: 8px;
   text-align: center;
 }
+
+//********************************************************
+//                    Footer
+//********************************************************
+.footer {
+  text-align: center;
+}
+
+.footer-distributed {
+  background-color: #292929; 
+  font: normal 16px sans-serif;
+  padding: 20px 25px;
+  margin-top: 80px;
+  text-align: center;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  position: absolute;
+}
+
+.box h3{
+	text-align:center;
+	position:relative;
+	top:80px;
+}
+.box {
+	width:70%;
+	height:200px;
+	background:#FFF;
+	margin:40px auto;
+}
+.wrapper{
+  padding-top: 80px;
+  min-height: 100%;
+  position: relative;
+}
+.content{
+  padding-bottom: 250px;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4,
+.post-content h5,
+.post-content h6 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+
+
+// Scrollbar
+::-webkit-scrollbar {
+  width: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: #343434;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #171717;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #202020;
+}
