@@ -80,7 +80,54 @@ div.post-meta {
   margin-top: 8px;
   text-align: center;
 }
+//********************************************************
+//                    Header
+//********************************************************
+nav {
+  background-color: #222;
+  border-color: #080808;
+  font-size: 18px;
+  font-family: "Ubuntu", sans-serif;
+  padding: 0 10px !important;
+  border-top: 3px #3CA2A2 solid;
+  border-bottom: 1px #000000 solid;
+  .navbar-brand, .nav-link {
+   color: #777;
+   @include transition(color 0.31s);
+   transition: all .7s ease;
+  }
+  .navbar-brand:hover, .nav-link:hover {
+    color: white !important;
+  }
+  .navbar-brand {
+    font-size: 30px;
+    color: #777;
+  }
+  .navbar-nav {
+    margin-left: auto;
+  }
+  .navbar.shrink {
+    min-height: 15px !important;
+  }
+  .navbar-toggler {
+    margin: 13px 15px 13px 0;
+  }
+  .shrink .navbar-toggler {
+    padding: 4px 5px;
+    margin: 8px 15px 8px 0;
+  }
+}
 
+nav.shrink {
+  a {
+    font-size: 15px;
+    padding: 0 10px !important;
+  }
+  .navbar-brand {
+    font-size: 25px;
+    height: inherit;
+  }
+}
 //********************************************************
 //                    Footer
 //********************************************************
