@@ -1,6 +1,6 @@
 ---
 layout: post
-title: css , scssファイルの編集
+title: github で検索が期待通りに動作しない
 author: jamad
 ---
 
