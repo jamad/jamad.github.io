@@ -1,55 +1,58 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>画像を360pxにリサイズする</title>
-    <style>
-        #resizedImage {
-            max-width: 360px;
-            height: auto;
-        }
-    </style>
+  <title>Image Resizer</title>
+  <style>
+    /* スタイルはここに追加 */
+  </style>
 </head>
 <body>
-    <h1>画像を360pxにリサイズする</h1>
-    <input type="file" accept="image/*" onchange="handleFileSelect(event)" lang="ja" aria-label="ファイルを選択">
-    <div>
-        <canvas id="resizedCanvas" width="360" height="360" style="border: 2px solid #000; display: none;"></canvas>
-        <a id="downloadLink" style="display: none;">画像をダウンロード</a>
-    </div>
+  <input type="file" id="imageInput" accept="image/*">
+  <canvas id="resizedCanvas" style="display: none;"></canvas>
 
-    <script>
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+  <script>
+    const input = document.getElementById('imageInput');
+    input.addEventListener('change', handleImageResize);
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.getElementById('resizedCanvas');
-                    const ctx = canvas.getContext('2d');
+    function handleImageResize(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
 
-                    // アンチエイリアスon
-                    ctx.imageSmoothingEnabled = true;
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.getElementById('resizedCanvas');
+          const ctx = canvas.getContext('2d');
 
-                    const aspectRatio = img.width / img.height;
-                    const newWidth = 360; // 画像の横幅を360pxに固定
-                    const newHeight = newWidth / aspectRatio;
-                    canvas.width = newWidth;
-                    canvas.height = newHeight;
+          // 画像をリサイズするための新しいサイズを指定
+          const maxWidth = 300;
+          const maxHeight = 300;
 
-                    ctx.drawImage(img, 0, 0, newWidth, newHeight);
+          
+          const aspectRatio = img.width / img.height;
+          const width = 360; // 画像の横幅を360pxに固定
+          const height = newWidth / aspectRatio;
 
-                    const downloadLink = document.getElementById('downloadLink');
-                    downloadLink.href = canvas.toDataURL('image/jpeg');
-                    downloadLink.download = 'resized_image.jpg';
-                    downloadLink.innerHTML = '画像をダウンロード';
-                    downloadLink.style.display = 'block';
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    </script>
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // リサイズされた画像を表示
+          const resizedImage = canvas.toDataURL('image/jpeg', 0.7); // JPEG 形式で変換
+          const resizedImgElement = document.createElement('img');
+          resizedImgElement.src = resizedImage;
+          document.body.appendChild(resizedImgElement);
+
+          // ここでリサイズされた画像をGitHubに保存する処理を追加する必要があります
+          // この例ではGitHubへの保存は行っていません
+        };
+
+        img.src = event.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    }
+  </script>
 </body>
 </html>
