@@ -13,7 +13,7 @@
     <h1>画像をリサイズして表示する</h1>
     <input type="file" accept="image/*" onchange="handleFileSelect(event)" lang="ja" aria-label="ファイルを選択">
     <div>
-        <img id="resizedImage" style="display: none;">
+        <canvas id="resizedCanvas" width="360" height="360" style="border: 2px solid #000; display: none;"></canvas>
         <a id="downloadLink" style="display: none;">画像をダウンロード</a>
     </div>
 
@@ -26,19 +26,19 @@
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
+                    const canvas = document.getElementById('resizedCanvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // アンチエイリアスon
+                    ctx.imageSmoothingEnabled = true;
+
                     const aspectRatio = img.width / img.height;
                     const newWidth = 360; // 画像の横幅を360pxに固定
                     const newHeight = newWidth / aspectRatio;
-
-                    const canvas = document.createElement('canvas');
                     canvas.width = newWidth;
                     canvas.height = newHeight;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
-                    const resizedImage = document.getElementById('resizedImage');
-                    resizedImage.src = canvas.toDataURL('image/jpeg');
-                    resizedImage.style.display = 'block';
+                    ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = canvas.toDataURL('image/jpeg');
