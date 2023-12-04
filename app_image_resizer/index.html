@@ -1,16 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>画像をリサイズして表示する</title>
-    <style>
-        #resizedImage {
-            max-width: 360px;
-            height: auto;
-        }
-    </style>
+    <title>画像を360pxにリサイズする</title>
 </head>
 <body>
-    <h1>画像をリサイズして表示する</h1>
+    <h1>画像を360pxにリサイズする</h1>
     <input type="file" accept="image/*" onchange="handleFileSelect(event)" lang="ja" aria-label="ファイルを選択">
     <div>
         <canvas id="resizedCanvas" width="360" height="360" style="border: 2px solid #000; display: none;"></canvas>
