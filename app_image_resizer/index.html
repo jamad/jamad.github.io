@@ -7,7 +7,7 @@
     <h1>画像をリサイズして保存する</h1>
     <input type="file" accept="image/*" onchange="handleFileSelect(event)" lang="ja" aria-label="ファイルを選択">
     <canvas id="resizedCanvas" width="300" height="300" style="border: 2px solid #000;"></canvas>
-    <a id="downloadLink" download="resized_image.png" style="display: none;">画像をダウンロード</a>
+    <a id="downloadLink" style="display: none;">画像をダウンロード</a>
 
     <script>
         function handleFileSelect(event) {
@@ -26,9 +26,15 @@
 
                     context.drawImage(img, 0, 0, img.width * newSize, img.height * newSize);
                     
+                    // 新しいファイル名を作成する
+                    const fileNameParts = file.name.split('.');
+                    const newFileName = `${fileNameParts[0]}_half.${fileNameParts[1]}`;
+
                     // ダウンロードリンクの設定
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = canvas.toDataURL('image/png');
+                    downloadLink.download = newFileName;
+                    downloadLink.innerHTML = `画像をダウンロード (${newFileName})`;
                     downloadLink.style.display = 'block';
                 };
                 img.src = e.target.result;
