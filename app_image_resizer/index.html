@@ -20,8 +20,9 @@
     <script>
         function handleFileSelect(event) {
             const file = event.target.files[0];
-            const reader = new FileReader();
+            if (!file) return;
 
+            const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
@@ -47,10 +48,7 @@
                 };
                 img.src = e.target.result;
             };
-
-            if (file) {
-                reader.readAsDataURL(file);
-            }
+            reader.readAsDataURL(file);
         }
     </script>
 </body>
