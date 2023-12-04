@@ -1,30 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<<<<<<< HEAD
-    <title>画像を横幅360pxにリサイズして保存する</title>
-    <style>
-        #resizedImage {
-            max-width: 360px;
-            height: auto;
-        }
-    </style>
-=======
-    <title>画像を半分にリサイズして保存する</title>
->>>>>>> parent of 21caacf (version by fixed width : 360px)
+    <title>画像をリサイズして保存する</title>
 </head>
 <body>
-    <h1>画像を横幅360pxにリサイズして保存する</h1>
+    <h1>画像をリサイズして保存する</h1>
     <input type="file" accept="image/*" onchange="handleFileSelect(event)" lang="ja" aria-label="ファイルを選択">
-<<<<<<< HEAD
-    <div>
-        <img id="resizedImage" style="display: none;">
-        <a id="downloadLink" style="display: none;">画像をダウンロード</a>
-    </div>
-=======
     <canvas id="resizedCanvas" width="300" height="300" style="border: 2px solid #000;"></canvas>
-    <a id="downloadLink" style="display: none;">画像をダウンロード</a>
->>>>>>> parent of 21caacf (version by fixed width : 360px)
+    <a id="downloadLink" download="resized_image.png" style="display: none;">画像をダウンロード</a>
 
     <script>
         function handleFileSelect(event) {
@@ -41,28 +24,11 @@
                     canvas.width = img.width * newSize;
                     canvas.height = img.height * newSize;
 
-<<<<<<< HEAD
-                    const resizedImage = document.getElementById('resizedImage');
-                    resizedImage.src = canvas.toDataURL('image/jpeg');
-                    resizedImage.style.display = 'block';
-
-                    const downloadLink = document.getElementById('downloadLink');
-                    downloadLink.href = canvas.toDataURL('image/jpeg');
-                    downloadLink.download = 'resized_image.jpg';
-                    downloadLink.innerHTML = '画像をダウンロード';
-=======
                     context.drawImage(img, 0, 0, img.width * newSize, img.height * newSize);
                     
-                    // 新しいファイル名を作成する
-                    const fileNameParts = file.name.split('.');
-                    const newFileName = `${fileNameParts[0]}_half.${fileNameParts[1]}`;
-
                     // ダウンロードリンクの設定
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = canvas.toDataURL('image/png');
-                    downloadLink.download = newFileName;
-                    downloadLink.innerHTML = `画像をダウンロード (${newFileName})`;
->>>>>>> parent of 21caacf (version by fixed width : 360px)
                     downloadLink.style.display = 'block';
                 };
                 img.src = e.target.result;
