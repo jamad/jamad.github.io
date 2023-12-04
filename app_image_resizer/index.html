@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>画像を半分にリサイズして保存する</title>
+</head>
+<body>
+    <h1>画像を半分にリサイズして保存する</h1>
+    <input type="file" accept="image/*" onchange="handleFileSelect(event)" lang="ja" aria-label="ファイルを選択">
+    <canvas id="resizedCanvas" width="300" height="300" style="border: 2px solid #000;"></canvas>
+    <a id="downloadLink" download="resized_image.png" style="display: none;">画像をダウンロード</a>
+
+    <script>
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById('resizedCanvas');
+                    const context = canvas.getContext('2d');
+                    const newSize = 0.5; // 画像サイズを半分にする
+
+                    canvas.width = img.width * newSize;
+                    canvas.height = img.height * newSize;
+
+                    context.drawImage(img, 0, 0, img.width * newSize, img.height * newSize);
+                    
+                    // ダウンロードリンクの設定
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = canvas.toDataURL('image/png');
+                    downloadLink.style.display = 'block';
+                };
+                img.src = e.target.result;
+            };
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
