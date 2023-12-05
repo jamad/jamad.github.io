@@ -1,24 +1,58 @@
+
 <!DOCTYPE html>
 <html>
- <head>
-  <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css"/>
-  <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
- </head>
- <body>
- <py-script>
+<head>
+  <title>Image Resizer</title>
+  <style>
+    /* スタイルはここに追加 */
+  </style>
+</head>
+<body>
+  <input type="file" id="imageInput" accept="image/*">
+  <canvas id="resizedCanvas" style="display: none;"></canvas>
 
-print("Hello, world!")
-from datetime import datetime
+  <script>
+    const input = document.getElementById('imageInput');
+    input.addEventListener('change', handleImageResize);
 
-# 現在の日時を取得
-current_datetime = datetime.now()
+    function handleImageResize(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
 
-# 日時のフォーマットを指定して表示
-print("現在の日時:", current_datetime)
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.getElementById('resizedCanvas');
+          const ctx = canvas.getContext('2d');
 
+          // 画像をリサイズするための新しいサイズを指定
+          const maxWidth = 300;
+          const maxHeight = 300;
 
- </py-script>
- </body>
+          
+          const aspectRatio = img.width / img.height;
+          const width = 360; // 画像の横幅を360pxに固定
+          const height = newWidth / aspectRatio;
 
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
 
+          // リサイズされた画像を表示
+          const resizedImage = canvas.toDataURL('image/jpeg', 0.7); // JPEG 形式で変換
+          const resizedImgElement = document.createElement('img');
+          resizedImgElement.src = resizedImage;
+          document.body.appendChild(resizedImgElement);
+
+          // ここでリサイズされた画像をGitHubに保存する処理を追加する必要があります
+          // この例ではGitHubへの保存は行っていません
+        };
+
+        img.src = event.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
 </html>
