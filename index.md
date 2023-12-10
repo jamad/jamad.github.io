@@ -1,6 +1,6 @@
-### jamad.github.io
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+### jamad.github.io
 
 * どうも1st line の記述が全てのブログポストに複製されるように思える  だがリンクである必要があるみたいだ　>> いや違うな。別の記事のタイトルが表示された
 * [jamad.github.io](https://jamad.github.io/) の場合は複製されなかった
