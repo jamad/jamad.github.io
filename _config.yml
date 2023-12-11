@@ -2,3 +2,4 @@ theme: minima
 minima:
   dark_mode: true
 
+timezone: Europe/Helsinki
