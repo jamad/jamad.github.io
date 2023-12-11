@@ -7,7 +7,7 @@ author: jamad
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 # history
-* 2023-12-12 added this line
+* 2023-12-12 added this line , then renamed the file as 2023-12-12-search_in_github.md
 
 # 2023-10-30  何故か powertoys に関する issue が見つからなかったので実験した。どんなルールだ？ 
 ## 見つからないケース 
