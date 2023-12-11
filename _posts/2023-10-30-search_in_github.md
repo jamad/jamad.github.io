@@ -6,6 +6,9 @@ author: jamad
 
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+# history
+* 2023-12-12 added this line
+
 # 2023-10-30  何故か powertoys に関する issue が見つからなかったので実験した。どんなルールだ？ 
 ## 見つからないケース 
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/a949f964-48e6-43ba-9b64-9011594dbd35)
