@@ -2,4 +2,4 @@ theme: minima
 minima:
   dark_mode: true
 
-timezone: Europe/Helsinki
+timezone: Europe/Helsinki # この設定が無いと　blogpost が未来と認識されて表示されない場合があった
