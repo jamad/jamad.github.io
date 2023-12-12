@@ -17,13 +17,11 @@
 1. commit changes... しても即反映はされない。Jekyllのコンバート完了を待つ（Actionsで確認可能）
 1. ブラウザではキャッシュをクリアして更新の確認をするのが吉　(chromeなら ctrl + shift + R )
 
-```
+```ヘッダー具体例
 ---
 layout: post
 title: how to post a blog page
 author: jamad
 ---
 ```
-具体例：この記事の場合は下記のようにヘッダーを入れている 
-![image](https://github.com/jamad/jamad.github.io/assets/949913/80e13766-cc52-4b49-90e5-287a919c6b5f)
 
