@@ -2,8 +2,8 @@
 
 |filename|Blog post title|note|
 |-|-|-|
-|`2023-12-12-how to post a blog page.md`|`How to post a blog page`|空白は保持。先頭のみ大文字化|
-|`2023-10-22-table-styles.md`|`Table Styles`|-での接続の場合-直後が大文字化|
+|`2023-12-12-how to post a blog page.md`|`How to post a blog page`|空白は保持。<br>先頭のみ大文字化|
+|`2023-10-22-table-styles.md`|`Table Styles`|-での接続の場合<br>-直後が大文字化|
 
 
 
