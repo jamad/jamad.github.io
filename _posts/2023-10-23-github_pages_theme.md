@@ -1,21 +1,16 @@
-
-<link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
-
-### History
-* 2023-10-23 titleを変更 
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 # 背景画像を設定するためにしたこと
 
-### /assets/css/theme.css へのリンクを張ってみる .scss も.css にコンバートされるようだ
-<link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
-* https://github.com/jamad/jamad.github.io/blob/master/assets/css/theme.scss を編集してjelyllがコンバートするまで暫し待つ （34行付近） $background-pattern: 'subtle-grey.png'; 
-
+### /assets/css/styles.css へのリンクを.md内に記述することで背景画像が表示された
+```
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+```
 
 #### theme 主に 背景のカスタマイズ
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/4e22c35f-d8aa-4aea-b25e-107689b893ed)
-* ここを参考にして、背景をカスタマイズしよう
-* `http://pavelmakhov.com/jekyll-clean-dark/2016/09/customizations/`
-* _config.yml を参考にして、適当に変更してみた >> まだ理解が浅いので、もっと学ぼう 
+* [ここ](http://pavelmakhov.com/jekyll-clean-dark/2016/09/customizations/)を参考にして、背景をカスタマイズしよう
+* _config.yml を適当に変更してみた 
 * https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/adding-a-theme-to-your-github-pages-site-using-jekyll
 * https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
 
