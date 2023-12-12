@@ -1,11 +1,6 @@
 
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
----
-layout: post
-title: how to post a blog page
-author: jamad
----
 
 * History
 * changed the filename from 2023-10-23-blogpost.md to 2023-12-12-blogpost.md
