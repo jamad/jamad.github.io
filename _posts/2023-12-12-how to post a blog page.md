@@ -2,8 +2,8 @@
 
 |filename|Blog post title|note|
 |-|-|-|
-|`2023-12-12-how to post a blog page.md`|`How to post a blog page`|空白は保持できる。文字列の先頭は大文字に固定されるようだ|
-|`2023-10-22-table-styles.md`|`Table Styles`|ハイフンで接続した文字列の場合、単語の先頭が大文字に固定されるようだ|
+|`2023-12-12-how to post a blog page.md`|`How to post a blog page`|空白は保持。先頭のみ大文字化|
+|`2023-10-22-table-styles.md`|`Table Styles`|-での接続の場合-直後が大文字化|
 
 
 
