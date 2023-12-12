@@ -1,8 +1,9 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-|Blog post title|filename|note|
+|filename|Blog post title|note|
 |-|-|-|
-|`How to post a blog page`|`2023-12-12-how to post a blog page.md`|can keep whitespace. the first letter becomes uppercase|
+|`2023-12-12-how to post a blog page.md`|`How to post a blog page`|空白は保持できる。文字列の先頭は大文字に固定されるようだ|
+|`2023-10-22-table-styles.md`|`Table Styles`|ハイフンで接続した文字列の場合、単語の先頭が大文字に固定されるようだ|
 
 
 
