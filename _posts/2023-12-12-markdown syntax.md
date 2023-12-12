@@ -1,9 +1,3 @@
----
-layout: post
-title: syntax
-author: jamad
----
-
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 
 *  moved the content from top page
