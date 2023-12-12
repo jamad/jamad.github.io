@@ -2,7 +2,7 @@
 
 |Blog post title|filename|note|
 |-|-|-|
-|`How to post a blog page`|`2023-12-12-how to post a blog page.md`|can keep whitespace|
+|`How to post a blog page`|`2023-12-12-how to post a blog page.md`|can keep whitespace. the first letter becomes uppercase|
 
 
 
