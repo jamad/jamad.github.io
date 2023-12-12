@@ -9,4 +9,4 @@
 
 
 ### Doc
-[documentation](https://help.github.com/categories/github-pages-basics/) 
+* https://docs.github.com/en/pages/getting-started-with-github-pages
