@@ -1,5 +1,12 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+|Blog post title|filename|to use|
+|-|-|-|
+|`How to post a blog page`|`2023-12-12-how to post a blog page.md`|-|
+
+
+
+
 * History
 * changed the filename as `2023-12-12-how to post a blog page.md`
 * changed the filename from 2023-10-23-blogpost.md to 2023-12-12-blogpost.md
