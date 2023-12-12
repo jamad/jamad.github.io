@@ -1,12 +1,16 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 
-*  moved the content from top page
+* example
 
-```![Image](src)```
-![Image](https://jamad.github.io/jam_clock_icon.png)
 
-```<img src="https://jamad.github.io/jam_clock_icon.png" width="64">```
-<img src="https://jamad.github.io/jam_clock_icon.png" width="64">
+|syntax|result|
+|-|-|
+|```![Image](https://jamad.github.io/jam_clock_icon.png)```|![Image](https://jamad.github.io/jam_clock_icon.png)|
+|```<img src="https://jamad.github.io/jam_clock_icon.png" width="64">```|<img src="https://jamad.github.io/jam_clock_icon.png" width="64">|
+
+
+
+
 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
