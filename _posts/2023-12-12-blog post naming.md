@@ -17,7 +17,8 @@
 1. commit changes... しても即反映はされない。Jekyllのコンバート完了を待つ（Actionsで確認可能）
 1. ブラウザではキャッシュをクリアして更新の確認をするのが吉　(chromeなら ctrl + shift + R )
 
-```ヘッダー具体例
+#### ヘッダー具体例
+```
 ---
 layout: post
 title: how to post a blog page
