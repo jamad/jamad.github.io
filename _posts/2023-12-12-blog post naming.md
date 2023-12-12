@@ -3,7 +3,8 @@
 |filename|Blog post title|note|
 |-|-|-|
 |`2023-12-12-how to post a blog page.md`|`How to post a blog page`|空白は保持。<br>先頭のみ大文字化|
-|`2023-10-22-table-styles.md`|`Table Styles`|-での接続の場合<br>-直後が大文字化|
+|`2023-10-22-table-styles.md`|`Table Styles`|-は空白に置換<br>-直後は大文字化|
+|`2023-10-23-github_pages_theme.md`|`Github_pages_theme`|_での接続の場合<br>そのまま表示|
 
 
 
