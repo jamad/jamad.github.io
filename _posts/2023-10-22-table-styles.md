@@ -1,9 +1,3 @@
----
-layout: post
-title: Table styles
-author: jamad
----
-
 <link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
 
 >Markdown
