@@ -16,7 +16,7 @@
 
 
 # 基本
-1. 記事を[ _postフォルダ内](https://github.com/jamad/jamad.github.io/tree/master/_posts)に　YYYY-MM-DD-title.md のファイル名で作成する title部分は日本語ではダメだった
+1. 記事を[ _postフォルダ内](https://github.com/jamad/jamad.github.io/tree/master/_posts)に　YYYY-MM-DD-title.md のファイル名で作成する title部分は日本語OKだった
 1. ファイルには下記のようにヘッダーを入れる  ここのtitle文字列がトップページに表示される 
 1. commit changes... しても即反映はされないので、 Jekyllがコンバート終了するまで数分待つ
 1. ブラウザでは念のためキャッシュクリアして更新の確認をする　(chromeなら ctrl + shift + R )
