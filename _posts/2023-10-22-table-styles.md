@@ -1,4 +1,4 @@
-<link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 >Markdown
 {:.filename}
@@ -10,7 +10,7 @@ line to be highlighted
 ## Few more examples from kramdown [documentation](https://kramdown.gettalong.org/syntax.html#tables):
 
 |-----------------+------------+-----------------+----------------|
-| Default aligned |Left aligned| Center aligned  | Right aligned  |
+| デフォルト 　　　|左詰め　　　　| 中央揃え　　　  | 右詰め  　　　　|
 |-----------------|:-----------|:---------------:|---------------:|
 | First body part |Second cell | Third cell      | fourth cell    |
 | Second line     |foo         | **strong**      | baz            |
