@@ -1,9 +1,4 @@
----
-layout: post
-title: Introduction to GitHub
-author: jamad
----
-<link rel="stylesheet" type="text/css" href="/assets/css/theme.css">
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 
 * followed the page [https://github.com/skills/introduction-to-github/blob/main/README.md](https://github.com/skills/introduction-to-github/blob/main/README.md)
