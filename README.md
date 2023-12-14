@@ -3,6 +3,7 @@ https://jamad.github.io/
 # README.md　を作成した public document
 
 * note on discussion test
+
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/d31435c0-e158-4645-994a-1e363d27e4e0)| found where to start
 -|-
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/2dad6b8e-8e15-46c8-9ae3-7f57ae3df37e)| discussion test
