@@ -2,8 +2,8 @@
 
 ## このページ(index.html)の更新方法 
 1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　から編集 (index.html が既存だと index.md が上書きできないので削除)
-2. jekyllの自動更新を数分待つ おそらく確認は[ここ](https://github.com/jamad/jamad.github.io/actions)でできる
-3. [jamad.github.io](https://jamad.github.io/) を確認する Chromeなら `ctrl+shift+R` でキャッシュクリアするのが吉
+2. jekyllの自動更新を数分待つ。 確認は[ここ](https://github.com/jamad/jamad.github.io/actions)でできる
+3. [このページを再読み込み](https://jamad.github.io/) して確認 Chromeなら `ctrl+shift+R` でキャッシュクリアするのが吉
 
 ## note
 * どうも1st line の記述が全てのブログポストに複製されるように思える  だがリンクである必要があるみたいだ　>> いや違うな。別の記事のタイトルが表示された
