@@ -8,10 +8,3 @@
 2. jekyllの自動更新を数分待つ。確認は[ここ](https://github.com/jamad/jamad.github.io/actions)でできる
 3. [このページを再読み込み](https://jamad.github.io/) して確認。Chromeなら `ctrl+shift+R` でキャッシュクリア可能。
 
-
-## note
-* どうも1st line の記述が全てのブログポストに複製されるように思える  だがリンクである必要があるみたいだ　>> いや違うな。別の記事のタイトルが表示された
-* [jamad.github.io](https://jamad.github.io/) の場合は複製されなかった
-* `## jamad.github.io`　だと複製された
-* `### jamad.github.io`　も複製された (結局これを使うことにした)
-* `#### jamad.github.io` だと複製されなくなった
