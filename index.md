@@ -16,7 +16,3 @@
 
 ## github pages を作成する上での注意点
 * index.html が既存だと index.md が上書きできないので削除すべし。
-
-
-* このページにヘッダーを入れた場合、Blogpostがページの下部に表示されなくなった。ブログ記事は他のブログ記事を表示しないということか？
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/c4d90cbb-de74-4eb8-932b-76633230b5dd)
