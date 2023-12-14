@@ -8,7 +8,6 @@ author: jamad
  
 * .md　ファイルを別のフォルダ内に入れた場合のテスト  
 
-* https://jamad.github.io/another_posts/another_post_test.md でファイルを見ることはできた
 * jekyll の後は　https://jamad.github.io/another_posts/another_post_test/ にファイルが展開されるようだ  つまり .md 部分が / に変換された結果になるようだ 
 
 * https://jamad.github.io/another_posts/another_post_test/
