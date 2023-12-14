@@ -1,10 +1,5 @@
 https://jamad.github.io/
 
-# パブリックなファイル
-
-iPhoneから画像のコピペできないのか？
-
-![image](https://github.com/jamad/markdown_devlog/assets/949913/de2ea3fe-804c-4fb0-9614-e0c6b5178cf3)
 
 # README.md　を作成した
 * https://github.com/jamad/jamad.github.io/blob/master/index.html  を一旦削除してみた
