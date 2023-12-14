@@ -1,7 +1,5 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-# 一番大きいヘッダー
-
 ## 新規postの方法
 1. wip
 
