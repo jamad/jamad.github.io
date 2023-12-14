@@ -1,6 +1,9 @@
 https://jamad.github.io/
 
-# README.md　を作成した
+# README.md　を作成した public document
+
+* note
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/d31435c0-e158-4645-994a-1e363d27e4e0)
 
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/90021531-0d25-4283-b5bb-20eb3e41801c)| これはまだ動いてない https://jamad.github.io/godot/hello2023
