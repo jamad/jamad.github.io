@@ -1,3 +1,5 @@
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+
 * win + Pause/Break
 * scroll down to click advanced system settings
 
