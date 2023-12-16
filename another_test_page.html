@@ -1,1 +1,28 @@
-<h1>hello world again</h1>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Brython の読み込み -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.9.5/brython.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.9.5/brython_stdlib.min.js"></script>
+</head>
+<body onload="brython()">
+  <script type="text/python">
+    from browser import document
+    import time
+
+    def update_time():
+        label.text = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
+    # ラベルを作成して時刻を表示する
+    label = document.createElement('label')
+    document <= label
+
+    # 時刻を更新する
+    update_time()
+
+    # 1秒ごとに時刻を更新する
+    setInterval(update_time, 1000)
+  </script>
+</body>
+</html>
