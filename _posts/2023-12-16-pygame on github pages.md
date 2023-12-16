@@ -1,3 +1,5 @@
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+
 # pygbag (wasm_webassembly) でpygameをdeploy
 
 # まずは結果から。Github pagesでpygameをプレイできた　（問題点は、iOSだと　ReadyToStartを押しても反応せず、描画エリア外を押したら何故か開始するところ）
