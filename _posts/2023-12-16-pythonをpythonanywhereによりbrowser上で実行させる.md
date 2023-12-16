@@ -1,3 +1,5 @@
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+
 # python to run on the webpage
 
 ## exmaple ( gist + pythonanywhere )
