@@ -1,5 +1,10 @@
-# 結果
-* playable pygame at [https://jamad.github.io/wasm/simplest_snakegame/](https://jamad.github.io/wasm/simplest_snakegame/)
+# pygbag (wasm_webassembly) でpygameをdeploy
+
+# まずは結果から。Github pagesでpygameをプレイできた
+
+|playable pygame at [https://jamad.github.io/wasm/simplest_snakegame/](https://jamad.github.io/wasm/simplest_snakegame/)|![image](https://github.com/jamad/jamad.github.io/assets/949913/d0b4b29b-4b2d-4cc1-83ac-15b5289ea13d)|
+|-|-|
+
 
 # pygbag 前のコード変更
 
