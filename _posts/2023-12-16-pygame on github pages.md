@@ -1,6 +1,6 @@
 # pygbag (wasm_webassembly) でpygameをdeploy
 
-# まずは結果から。Github pagesでpygameをプレイできた
+# まずは結果から。Github pagesでpygameをプレイできた　（問題点は、iOSだと　ReadyToStartを押しても反応せず、描画エリア外を押したら何故か開始するところ）
 
 |playable pygame at [https://jamad.github.io/wasm/simplest_snakegame/](https://jamad.github.io/wasm/simplest_snakegame/)|![image](https://github.com/jamad/jamad.github.io/assets/949913/d0b4b29b-4b2d-4cc1-83ac-15b5289ea13d)|
 |-|-|
