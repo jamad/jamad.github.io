@@ -1,5 +1,6 @@
 
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <!-- Brython の読み込み -->
@@ -12,17 +13,21 @@
     import time
 
     def update_time():
-        label.text = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        document["time_display"].text = current_time  # JavaScript側のIDで指定した要素に時刻をセットする
 
     # ラベルを作成して時刻を表示する
     label = document.createElement('label')
+    label.id = 'time_display'  # IDを設定する
     document <= label
 
-    # 時刻を更新する
+    # 初回の時刻更新
     update_time()
 
-    # 1秒ごとに時刻を更新する
-    setInterval(update_time, 1000)
+    # PythonからJavaScriptを介して定期的に時刻を更新する
+    from browser import window
+    window.setInterval(update_time, 1000)
   </script>
 </body>
 </html>
+
