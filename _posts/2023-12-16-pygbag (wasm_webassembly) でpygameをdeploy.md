@@ -1,14 +1,11 @@
-# example case
-  * main.py というファイル名にしてコードを作成する（事前準備）
+# pygbag 前のコード変更
 
-## 加工前の pygame
-  * [original pygame](https://github.com/jamad/jamad.github.io/commit/b81478935a263176660824928385a67ddc909fb8?diff=unified&w=0) 
-  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/de710223-ef60-4c0f-96e6-358972bb7f12)
-## 加工前後のDiff
-  * [diff between before and after](https://github.com/jamad/jamad.github.io/commit/210a7ad0bcecc3d415990180ecc1b1a69433cbd8?diff=split&w=0)
-    * asyncio を import する
-    * mainloop の構造を下記のように変更する
-
+|作業のステップ|補足|
+|-|-|
+|main.py をファイル名にしてpygame作成 [original pygame](https://github.com/jamad/jamad.github.io/commit/b81478935a263176660824928385a67ddc909fb8?diff=unified&w=0)|![image](https://github.com/jamad/jamad.github.io/assets/949913/de710223-ef60-4c0f-96e6-358972bb7f12)|
+|コードの加工　|[diff between before and after](https://github.com/jamad/jamad.github.io/commit/210a7ad0bcecc3d415990180ecc1b1a69433cbd8?diff=split&w=0)|
+|加工の為のポイント| asyncio を import する <br> mainloop の構造を下記のように変更する|
+  
 ```
 async def main():
   while 1: # main loop
