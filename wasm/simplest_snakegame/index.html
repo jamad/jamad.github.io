@@ -6,7 +6,7 @@ Loading simplest_snakegame from simplest_snakegame.apk
     Template Version : 0.8.3
     Python  : 3.11
     CDN URL : https://pygame-web.github.io/archives/0.8/
-    Screen  : {{cookiecutter.width}}x{{cookiecutter.height}}
+    Screen  : {{296}}x{{296}}
     Title   : simplest_snakegame
     Folder  : simplest_snakegame
     Authors : pgw
@@ -16,8 +16,8 @@ Loading simplest_snakegame from simplest_snakegame.apk
 
 
 # screen pixels (real, hardware)
-WIDTH=296  # {{cookiecutter.width}}
-HEIGHT=296  # {{cookiecutter.height}}
+WIDTH=296  # {{296}}
+HEIGHT=296  # {{296}}
 
 # reference/idealized screen pixels
 REFX = 296
@@ -46,8 +46,6 @@ def uy(*argv):
     return acc
 
 
-
-
 # do not rename
 async def custom_site():
 
@@ -57,10 +55,7 @@ async def custom_site():
     import json
     from pathlib import Path
 
-
-
     import embed
-
 
     platform.document.body.style.background = "#7f7f7f"
 
@@ -81,8 +76,6 @@ async def custom_site():
 
     platform.window.transfer.hidden = true
     platform.window.canvas.style.visibility = "visible"
-
-
 
     apk = "simplest_snakegame.apk"
 
@@ -194,14 +187,6 @@ asyncio.run( custom_site() )
 
 
 
-
-
-
-
-
-
-
-
 # BEGIN BLOCK
 #
 # now this is the html part you can (and should) customize
@@ -285,6 +270,8 @@ config = {
 
         /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
         /* average size of droid screen 470dp x 320dp  */
+
+        
         canvas.emscripten {
             border: 0px none;
             background-color: transparent;
