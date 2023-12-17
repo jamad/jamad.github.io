@@ -6,8 +6,6 @@ FRAMERATE = 60
 
 class Game:
 	def __init__(self):
-		
-		# setup
 		pygame.init()
 		self.display_surface = pygame.display.set_mode((WINDOW_WIDTH,WINDOW_HEIGHT))
 		pygame.display.set_caption('Flappy Sammy')
@@ -28,12 +26,6 @@ class Game:
 		self.score = 0
 		self.fps = 0
 		self.start_offset = 0
-
-		# music 
-		#self.music = pygame.mixer.Sound('sounds/music.ogg')
-		#self.music.set_volume(0.4)
-		#self.music.play()
-
 
 	def display_score(self):
 		if self.active:
