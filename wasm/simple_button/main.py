@@ -1,6 +1,6 @@
 import asyncio # step1
 
-import pygame ,sys 
+import pygame
 pygame.init() 
 w=h=360
 screen = pygame.display.set_mode((h,w) ) 
