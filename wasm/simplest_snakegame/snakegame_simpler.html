@@ -16,7 +16,7 @@ async def main():
             if event.type == pygame.KEYDOWN:
                 text = font.render(f"Pressed: {pygame.key.name(event.key)}", True,(255, 255, 255) )
                 window.fill((0, 0, 0))
-                window.blit(text, (width // 2 - text.get_width() // 2, height // 2 - text.get_height() // 2))
+                window.blit(text, (320, 240))
                 pygame.display.flip()
 
         await asyncio.sleep(0)
