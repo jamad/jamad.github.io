@@ -5,6 +5,7 @@
 * iOS の画面でもそれなりに合致するような解像度にした
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/72e8d875-ffcc-4506-8f16-b2ae58292628)
 * [参考](https://github.com/pygame-web/pygbag)
+* [ここもまた見よう](https://github.com/pygame-web/pygame-web.github.io/blob/main/wiki/pygbag-code/README.md)
 
 # pygbag (wasm_webassembly) でpygameをdeploy
 * 幾つかのメモ
