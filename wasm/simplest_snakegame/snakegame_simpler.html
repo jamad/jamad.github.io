@@ -1,35 +1,29 @@
 <html><head><meta charset="utf-8"></head>
 <script src="https://pygame-web.github.io/archives/0.7/pythons.js" type=module id="site" data-os="fs,vtx,gui" async defer>#<!--
 
+# この後からpythonのコード
+
 import pygame
 import asyncio
 
 pygame.init()
-width, height = 640, 480
-window = pygame.display.set_mode((width, height))
+window = pygame.display.set_mode((640, 480))
 font = pygame.font.Font(None, 36)
 
 async def main():
     while 1:
-        text = None
-
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                key_name = pygame.key.name(event.key)
-                text = font.render(f"Pressed: {key_name}", True,(255, 255, 255) )
-                
-        if text:  # textが定義されている場合にのみ表示する
-            window.fill((0, 0, 0))
-            window.blit(text, (width // 2 - text.get_width() // 2, height // 2 - text.get_height() // 2))
-            pygame.display.flip()
+            if event.type == pygame.KEYDOWN:
+                text = font.render(f"Pressed: {pygame.key.name(event.key)}", True,(255, 255, 255) )
+                window.fill((0, 0, 0))
+                window.blit(text, (width // 2 - text.get_width() // 2, height // 2 - text.get_height() // 2))
+                pygame.display.flip()
 
         await asyncio.sleep(0)
 
 asyncio.run(main())
 
-# the following line is essential for python tu run 
+# ここまでがpythonのコード
 # --></script></html>
 
 
