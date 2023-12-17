@@ -13,8 +13,8 @@ DIRECTION={pygame.K_UP :Vector2(0, -1),pygame.K_DOWN : Vector2(0, 1),pygame.K_LE
 pygame.init()
 screen = pygame.display.set_mode( [2*OFFSET + CELL_SIZE*CELL_COUNT]*2)
 
-SNAKE_UPDATE = pygame.USEREVENT
-pygame.time.set_timer(SNAKE_UPDATE, 15) 	# the smaller, the faster
+#SNAKE_UPDATE = pygame.USEREVENT
+#pygame.time.set_timer(SNAKE_UPDATE, 15) 	# the smaller, the faster
 
 
 async def main():
@@ -27,13 +27,13 @@ async def main():
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				sys.exit(pygame.quit())
-			if event.type == SNAKE_UPDATE:
-				new_head=bodies[0] + dir
-				bodies = [new_head]+bodies[:-1]	
-				if 	not -1<new_head.x <= CELL_COUNT or not -1<new_head.y <= CELL_COUNT or	new_head in bodies[1:]:	
-					init=True
-			if event.type == pygame.KEYDOWN:
+			elif event.type == pygame.KEYDOWN:
 				dir =DIRECTION.get(event.key,dir) # default : no change
+
+		new_head=bodies[0] + dir
+		bodies = [new_head]+bodies[:-1]	
+		if 	not -1<new_head.x <= CELL_COUNT or not -1<new_head.y <= CELL_COUNT or	new_head in bodies[1:]:	
+			init=True
 
 		#Draw
 		screen.fill(BLUE)
@@ -47,7 +47,7 @@ async def main():
 
 		screen.blit(title_surface, (OFFSET-15, 2))
 		pygame.display.update()
-		pygame.time.Clock().tick(60)
+		pygame.time.Clock().tick(120)
 
 		await asyncio.sleep(0)
 
