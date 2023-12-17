@@ -1,7 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 # 2023-12-17 更新
-* https://jamad.github.io/wasm/simple_button/
+* [https://jamad.github.io/wasm/simple_button/](https://jamad.github.io/wasm/simple_button/)
 * iOS の画面でもそれなりに合致するような解像度にした
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/72e8d875-ffcc-4506-8f16-b2ae58292628)
 
