@@ -4,7 +4,7 @@ import pygame
 pygame.init() 
 
 w=360
-h=720
+h=640
 screen = pygame.display.set_mode((w,h) ) 
 smallfont = pygame.font.SysFont('Corbel',35) 
 
