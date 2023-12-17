@@ -1,4 +1,4 @@
-# pygbag を使わなくても、python code を .html内部に記述すれば実行はできる
+# pygbag を使わなくても、python code を .html内部に記述すれば実行はできる (速度が十分かは未検証)
 
 入力したキーを表示するDemo 
 |加工後|加工前|
