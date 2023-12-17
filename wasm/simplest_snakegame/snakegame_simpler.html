@@ -10,18 +10,21 @@ window = pygame.display.set_mode((width, height))
 font = pygame.font.Font(None, 36)
 
 async def main():
-    while True:
+    while 1:
+        text = None
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-
+                running = False
             elif event.type == pygame.KEYDOWN:
                 key_name = pygame.key.name(event.key)
-                text = font.render(f"Pressed: {key_name}", True, (255, 255, 255))
+                text = font.render(f"Pressed: {key_name}", True,(255, 255, 255) )
+                
+        if text:  # textが定義されている場合にのみ表示する
+            window.fill((0, 0, 0))
+            window.blit(text, (width // 2 - text.get_width() // 2, height // 2 - text.get_height() // 2))
+            pygame.display.flip()
 
-        window.fill((0, 0, 0))
-        window.blit(text, (width // 2 - text.get_width() // 2, height // 2 - text.get_height() // 2))
-        pygame.display.flip()
         await asyncio.sleep(0)
 
 asyncio.run(main())
