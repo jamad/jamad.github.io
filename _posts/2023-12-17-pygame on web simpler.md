@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-# pygbag を使わなくても、python code を .html内部に記述すれば実行はできる (速度が十分かは未検証)
+# pygbag を使わなくても、python code を .html内部に記述すれば実行はできる (速度が十分かは未検証 更に不要な情報が見え隠れするのはNG )
 
 * 入力したキーを表示するDemo
 
