@@ -1,5 +1,10 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+# 2023-12-17 更新
+* https://jamad.github.io/wasm/simple_button/ を作成した Buttonのサンプル
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/cc65083e-90a4-40bd-9775-434efd3c2e73)
+
+
 # pygbag (wasm_webassembly) でpygameをdeploy
 * 幾つかのメモ
 * browserで勝手に拡大されて画像がぼける
