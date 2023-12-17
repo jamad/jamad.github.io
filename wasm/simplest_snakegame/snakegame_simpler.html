@@ -1,9 +1,7 @@
 <html><head><meta charset="utf-8"></head>
 <script src="https://pygame-web.github.io/archives/0.7/pythons.js" type=module id="site" data-os="fs,vtx,gui" async defer>
-
-#<!--
-
-import pygame, sys
+<!--
+import pygame
 import asyncio
 
 pygame.init()
@@ -16,7 +14,6 @@ async def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                sys.exit()
 
             elif event.type == pygame.KEYDOWN:
                 key_name = pygame.key.name(event.key)
@@ -25,13 +22,12 @@ async def main():
         window.fill((0, 0, 0))
         window.blit(text, (width // 2 - text.get_width() // 2, height // 2 - text.get_height() // 2))
         pygame.display.flip()
-		await asyncio.sleep(0)
+        await asyncio.sleep(0)
 
 asyncio.run(main())
 
-# the following line is essential for python code 
-
-# --></script></html>
+# the following line is essential for python tu run 
+--></script></html>
 
 
 
