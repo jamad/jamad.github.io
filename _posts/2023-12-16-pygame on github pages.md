@@ -1,6 +1,9 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 # pygbag (wasm_webassembly) でpygameをdeploy
+* 幾つかのメモ
+* browserで勝手に拡大されて画像がぼける
+* pygbagのヘルプを見る方法　`pygbag --help 'foldername'`
 
 # まずは結果から。Github pagesでpygameをプレイできた　（問題点は、iOSだと　ReadyToStartを押しても反応せず、描画エリア外を押したら何故か開始するところ）
 
