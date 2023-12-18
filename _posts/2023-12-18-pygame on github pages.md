@@ -4,6 +4,7 @@
 
 # 2023-12-18
 * [2023-12-18-simpleclock](https://jamad.github.io/wasm/2023-12-18-simpleclock/)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/680a1d64-1320-4b0c-8ae5-3a18fb012427)
 
 # 2023-12-17 更新
 * [https://jamad.github.io/wasm/simple_button/](https://jamad.github.io/wasm/simple_button/)
