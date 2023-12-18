@@ -1,5 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+* [このページの更新用](https://github.com/jamad/jamad.github.io/edit/master/_posts/2023-12-17-pygame%20on%20github%20pages.md)
+
 # 2023-12-17 更新
 * [https://jamad.github.io/wasm/simple_button/](https://jamad.github.io/wasm/simple_button/)
 * iOS の画面でもそれなりに合致するような解像度にした
