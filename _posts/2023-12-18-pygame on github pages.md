@@ -3,7 +3,7 @@
 * [このページの更新用](https://github.com/jamad/jamad.github.io/edit/master/_posts/2023-12-17-pygame%20on%20github%20pages.md)
 
 # 2023-12-18
-* wip
+* [2023-12-18-simpleclock](https://jamad.github.io/wasm/2023-12-18-simpleclock/)
 
 # 2023-12-17 更新
 * [https://jamad.github.io/wasm/simple_button/](https://jamad.github.io/wasm/simple_button/)
