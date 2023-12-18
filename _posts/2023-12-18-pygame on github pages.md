@@ -49,4 +49,3 @@ asyncio.run(main())
 |必要なファイルはbuildフォルダ内に生成されている|![image](https://github.com/jamad/jamad.github.io/assets/949913/63766277-7a2d-4d1f-9df9-27f998f6f002)|
 |必要に応じてファイルの階層を変更してgithubにcommitすれば完了|![image](https://github.com/jamad/jamad.github.io/assets/949913/4cdef75e-1694-437f-8590-54c42b45199e)|
 
-* [reference](https://www.youtube.com/watch?v=q25i2CCNvis)https://www.youtube.com/watch?v=q25i2CCNvis 
