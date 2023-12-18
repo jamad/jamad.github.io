@@ -1,6 +1,11 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+### pinned notes
 * [このページの更新用　タイトルが変わるので親階層](https://github.com/jamad/jamad.github.io/tree/master/_posts)
+* browserで勝手に拡大されて画像がぼけるので、大きめの画面サイズで考える。
+* pygbagのヘルプを見る方法　`pygbag --help 'foldername'`
+* iOS の場合、なぜか　ReadyToStartのボタンから大きく外れたエリアを押さないと開始しない
+
 
 ## 2023-12-18
 * [2023-12-18-simpleclock iphone動作確認済](https://jamad.github.io/wasm/2023-12-18-simpleclock/)
@@ -14,15 +19,9 @@
 * [ここもまた見よう](https://github.com/pygame-web/pygame-web.github.io/blob/main/wiki/pygbag-code/README.md)
 
 ## pygbag (wasm_webassembly) でpygameをdeploy
-* 幾つかのメモ
-* browserで勝手に拡大されて画像がぼける
-* pygbagのヘルプを見る方法　`pygbag --help 'foldername'`
-
-## まずは結果から。Github pagesでpygameをプレイできた　（問題点は、iOSだと　ReadyToStartを押しても反応せず、描画エリア外を押したら何故か開始するところ）
 
 |playable pygame at [https://jamad.github.io/wasm/simplest_snakegame/](https://jamad.github.io/wasm/simplest_snakegame/)|![image](https://github.com/jamad/jamad.github.io/assets/949913/d0b4b29b-4b2d-4cc1-83ac-15b5289ea13d)|
 |-|-|
-
 
 ## pygbag 前のコード変更
 
