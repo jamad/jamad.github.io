@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-* [このページの更新用](https://github.com/jamad/jamad.github.io/edit/master/_posts/2023-12-17-pygame%20on%20github%20pages.md)
+* [このページの更新用　タイトルが変わるので親階層](https://github.com/jamad/jamad.github.io/tree/master/_posts)
 
 # 2023-12-18
 * [2023-12-18-simpleclock iphone動作確認済](https://jamad.github.io/wasm/2023-12-18-simpleclock/)
