@@ -1,9 +1,13 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-# 2023-12-17 更新
-* https://jamad.github.io/wasm/simple_button/ を作成した Buttonのサンプル
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/cc65083e-90a4-40bd-9775-434efd3c2e73)
+* [このページの更新用](https://github.com/jamad/jamad.github.io/edit/master/_posts/2023-12-17-pygame%20on%20github%20pages.md)
 
+# 2023-12-17 更新
+* [https://jamad.github.io/wasm/simple_button/](https://jamad.github.io/wasm/simple_button/)
+* iOS の画面でもそれなりに合致するような解像度にした
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/72e8d875-ffcc-4506-8f16-b2ae58292628)
+* [参考](https://github.com/pygame-web/pygbag)
+* [ここもまた見よう](https://github.com/pygame-web/pygame-web.github.io/blob/main/wiki/pygbag-code/README.md)
 
 # pygbag (wasm_webassembly) でpygameをdeploy
 * 幾つかのメモ
