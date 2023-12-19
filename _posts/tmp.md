@@ -18,7 +18,7 @@ for event in pygame.event.get():
 ```
 
 Creating a Simple Game
-You can find all the code in this GitHub Repo.
+You can find all the code in this [GitHub Repo](https://github.com/Imranalam28/Touch-Inputs-in-Pygame/tree/main).
 
 Start by creating a simple game. This game will consist of a player character that you can move around the screen using touch inputs. To do this, you will need to create a game loop and a player character.
 
