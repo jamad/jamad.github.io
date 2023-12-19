@@ -8,7 +8,7 @@
 * iOS の場合、なぜか　ReadyToStartのボタンから大きく外れたエリアを押さないと開始しない  `https://github.com/pygame-web/pygbag/issues/138#issue-2011645179`
 
 ## 2023-12-19 メインを別ファイル化して作業しやすくした　(main.py は触らず、mygame.pyだけを更新)
-* [2023-12-19-swipe_action まだ指でタップしても反応せず、、、](https://jamad.github.io/wasm/2023-12-19-swipe_action/index.html)
+* [2023-12-19-swipe_action 指でタップして反応を得た！　player_pos = pygame.mouse.get_pos()　で指の位置ゲット](https://jamad.github.io/wasm/2023-12-19-swipe_action/index.html)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/44db743b-1a16-4995-b53e-0a027e9d0b2a)
 * [こっちはどうだ？ タッチできたけど、位置がずれているな、、、](https://jamad.github.io/wasm/2023-12-19-touch_action/)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/b8010e57-35e8-4000-bd01-a378d9af49c4)
