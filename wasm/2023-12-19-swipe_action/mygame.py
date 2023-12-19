@@ -18,7 +18,7 @@ def mainloop():
     # Check for events
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.FINGERDOWN:
-            player_pos = event.pos
+            player_pos = pygame.mouse.get_pos()# changed for the position to draw
             greencolor= not greencolor
 
     player.fill((255-255*greencolor,255*greencolor,0))
