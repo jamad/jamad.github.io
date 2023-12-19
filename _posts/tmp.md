@@ -20,78 +20,7 @@ for event in pygame.event.get():
 Creating a Simple Game
 You can find all the code in this [GitHub Repo](https://github.com/Imranalam28/Touch-Inputs-in-Pygame/tree/main).
 
-Start by creating a simple game. This game will consist of a player character that you can move around the screen using touch inputs. To do this, you will need to create a game loop and a player character.
 
-Before you begin, make sure you have pip installed on your device, then use the following command to install the PyGame module:
-
-pip install pygame
-Now, import the PyGame module in your game code:
-
-import pygame
-pygame.init()
-After that, create the game window and a game object:
-
-# Set up the display
-size = (400, 400)
-screen = pygame.display.set_mode(size)
-
-# Create a player object
-player = pygame.Surface((50, 50))
-player.fill((255, 0, 0))
-
-# Set the initial position of the player
-player_pos = [175, 175]
-Finally, create the game loop:
-
-# The game loop
-running = True
-
-while running:
-    # Check for events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    # Update the player position
-    player_pos[0] += 5
-    player_pos[1] += 5
-
-    # Draw the player
-    screen.blit(player, player_pos)
-
-    # Update the display
-    pygame.display.update()
-Note that the above code only creates a simple game where the player character moves around the screen. To make the game more interesting, you can add physics and collisions to create obstacles for the player to overcome.
-
-Mouse Touch Inputs for Player Movement
-Now that you have a game with a player character, you can start adding touch inputs. To do this, you will need to add an event handler for the mouse inputs. Add the pygame.MOUSEBUTTONDOWN and pygame.MOUSEBUTTONUP events to the game loop.
-
-Create an event handler for the mouse inputs. When a player presses the mouse button, update the character’s position to the current mouse position. The program will ignore the release of the mouse button, since it doesn't need to take any action in that case.
-
-# The game loop
-running = True
-
-while running:
-    # Check for events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        # Check for mouse inputs
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_x, mouse_y = event.pos
-            player_pos[0] = mouse_x
-            player_pos[1] = mouse_y
-        elif event.type == pygame.MOUSEBUTTONUP:
-            pass
-    
-    screen.fill((0, 0, 0))
-
-    # Draw the player
-    screen.blit(player, player_pos)
-
-    # Update the display
-    pygame.display.update()
-You can also add extra logic to the event handler to make the player move in response to the mouse input.
 
 Finger Touch Inputs for Player Movement
 In addition to mouse inputs, you can also add finger touch inputs. To do this, you will need to add an event handler for the finger-touch inputs.
