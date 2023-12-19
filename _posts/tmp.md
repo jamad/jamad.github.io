@@ -1,7 +1,6 @@
 Working With Touch Inputs in PyGame
-BY
-IMRAN ALAM
-PUBLISHED MAR 13, 2023
+
+
 A game is nothing without input, and with Pygame’s support for both mouse and touch input, you can ensure your game is accessible.
 
 kid playing games on a tablet with touch inputs
