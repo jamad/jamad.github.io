@@ -1,17 +1,16 @@
 Working With Touch Inputs in PyGame
 
-
 PyGame’s Touch Support
-PyGame has built-in support for working with touch inputs. This includes support for mouse and finger touch inputs.
 
-To detect a mouse, you can use the pygame.MOUSEBUTTONDOWN and pygame.MOUSEBUTTONUP events. For example:
+* example for mouse input  pygame.MOUSEBUTTONDOWN and pygame.MOUSEBUTTONUP
 ```
 for event in pygame.event.get():
     if event.type == pygame.MOUSEBUTTONDOWN:
         print("Mouse button pressed")
 
 ```
-To detect finger touch inputs, you can use the pygame.FINGERDOWN and pygame.FINGERUP events. For example:
+
+* example for touch input pygame.FINGERDOWN and pygame.FINGERUP 
 ```
 for event in pygame.event.get():
     if event.type == pygame.FINGERDOWN:
