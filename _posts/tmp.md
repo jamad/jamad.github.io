@@ -1,18 +1,6 @@
 Working With Touch Inputs in PyGame
 
 
-A game is nothing without input, and with Pygame’s support for both mouse and touch input, you can ensure your game is accessible.
-
-kid playing games on a tablet with touch inputs
-Readers like you help support MUO. When you make a purchase using links on our site, we may earn an affiliate commission. Read More.
-In this day and age, touchscreen devices are everywhere. It’s no surprise that game developers are increasingly using touch input in their games, and frameworks are making this easier and easier.
-
-MUO VIDEO OF THE DAY
-
-Close
-
-PyGame makes it easy to create games and applications that can take advantage of touch inputs.
-
 PyGame’s Touch Support
 PyGame has built-in support for working with touch inputs. This includes support for mouse and finger touch inputs.
 
