@@ -21,7 +21,7 @@ def mainloop():
             player_pos = pygame.mouse.get_pos()# changed for the position to draw
             greencolor= not greencolor
 
-    player.fill((255-255*greencolor,255*greencolor,0))
+    player.fill((255-255*greencolor,0,255*greencolor))
 
     myscreen.fill((0, 0, 0))
     myscreen.blit(player, player_pos)
