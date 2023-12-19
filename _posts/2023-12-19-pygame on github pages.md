@@ -10,7 +10,7 @@
 ## 2023-12-19 メインを別ファイル化して作業しやすくした　(main.py は触らず、mygame.pyだけを更新)
 * [2023-12-19-swipe_action まだ指でタップしても反応せず、、、](https://jamad.github.io/wasm/2023-12-19-swipe_action/index.html)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/44db743b-1a16-4995-b53e-0a027e9d0b2a)
-
+* [こっちはどうだ？](https://jamad.github.io/wasm/2023-12-19-touch_action/)
 
 
 ## 2023-12-18
