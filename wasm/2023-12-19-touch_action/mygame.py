@@ -6,8 +6,6 @@ pygame.init()
 SCREEN_IPHONE=(360,640)
 myscreen = pygame.display.set_mode(SCREEN_IPHONE) 
 myfont = pygame.font.SysFont(None,25)   
-clock = pygame.time.Clock()
-
 buttons = [
     pygame.Rect(25, 25, 100, 100),
     pygame.Rect(175, 25, 100, 100),
@@ -17,33 +15,22 @@ buttons = [
 colors = [(64, 0, 0), (64, 64, 0), (0, 64, 0), (0, 0, 64)]
 colorsH = [(255, 0, 0), (255, 255, 0), (0, 255, 0), (0, 0, 255)]
 
-fingers = {}
-
-# Create a player object
-player = pygame.Surface((50, 50))
-# Set the initial position of the player
-player_pos = [175, 175]
-
-player.fill((255, 0, 0))
-greencolor=0
+fingers = []
 
 def mainloop():
-    clock.tick(60)
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-        if event.type == pygame.FINGERDOWN:
-            x = event.x * myscreen.get_height()
-            y = event.y * myscreen.get_width()
-            fingers[event.finger_id] = x, y
-        if event.type == pygame.FINGERUP:
-            fingers.pop(event.finger_id, None)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x,y = pygame.mouse.get_pos() 
+            fingers.append((x, y))
+        if event.type == pygame.MOUSEBUTTONUP and fingers:
+            fingers.pop()
 
     highlight = []  
     for i, rect in enumerate(buttons): 
         touched = False
-        for finger, pos in fingers.items():       
+        for pos in fingers:       
             if rect.collidepoint(pos):
                 touched = True
         highlight.append(touched)   
