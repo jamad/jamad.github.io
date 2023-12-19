@@ -5,9 +5,7 @@ import pygame
 pygame.init() 
 SCREEN_IPHONE=(360,640)
 myscreen = pygame.display.set_mode(SCREEN_IPHONE) 
-myfont = pygame.font.SysFont(None,25) 
-
-pygame.display.set_caption('simple clock')            
+myfont = pygame.font.SysFont(None,25)   
 
 def maincore():
     mytext = myfont.render(str(datetime.datetime.now()), True, (255,255,255)) 
