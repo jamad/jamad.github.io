@@ -10,8 +10,9 @@
 ## 2023-12-19 メインを別ファイル化して作業しやすくした　(main.py は触らず、mygame.pyだけを更新)
 * [2023-12-19-swipe_action まだ指でタップしても反応せず、、、](https://jamad.github.io/wasm/2023-12-19-swipe_action/index.html)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/44db743b-1a16-4995-b53e-0a027e9d0b2a)
-* [こっちはどうだ？ タッチできたけど、位置がずれているな、、、以前のテストだとボタンは問題なかったのに何故だ？](https://jamad.github.io/wasm/2023-12-19-touch_action/)
+* [こっちはどうだ？ タッチできたけど、位置がずれているな、、、](https://jamad.github.io/wasm/2023-12-19-touch_action/)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/b8010e57-35e8-4000-bd01-a378d9af49c4)
+* https://jamad.github.io/wasm/2023-12-17-simple_button/ だとボタンは問題なかったのに何故だ？
 
 
 ## 2023-12-18
