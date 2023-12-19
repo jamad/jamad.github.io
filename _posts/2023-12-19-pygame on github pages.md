@@ -7,8 +7,8 @@
 * pygbagのヘルプを見る方法　`pygbag --help 'foldername'`
 * iOS の場合、なぜか　ReadyToStartのボタンから大きく外れたエリアを押さないと開始しない  `https://github.com/pygame-web/pygbag/issues/138#issue-2011645179`
 
-## 2023-12-19
-* wip
+## 2023-12-19 メインを別ファイル化して作業しやすくした
+* [2023-12-19-swipe_action](https://jamad.github.io/wasm/2023-12-19-swipe_action/index.html)
 
 ## 2023-12-18
 * [2023-12-18-simpleclock iphone動作確認済](https://jamad.github.io/wasm/2023-12-18-simpleclock/)
