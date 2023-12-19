@@ -1,18 +1,21 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-### pinned notes
 * [このページの更新用　タイトルが変わるので親階層](https://github.com/jamad/jamad.github.io/tree/master/_posts)
+
+### pinned notes
 * browserで勝手に拡大されて画像がぼけるので、大きめの画面サイズで考える。
 * pygbagのヘルプを見る方法　`pygbag --help 'foldername'`
-* iOS の場合、なぜか　ReadyToStartのボタンから大きく外れたエリアを押さないと開始しない
+* iOS の場合、なぜか　ReadyToStartのボタンから大きく外れたエリアを押さないと開始しない  `https://github.com/pygame-web/pygbag/issues/138#issue-2011645179`
 
+## 2023-12-19
+* wip
 
 ## 2023-12-18
 * [2023-12-18-simpleclock iphone動作確認済](https://jamad.github.io/wasm/2023-12-18-simpleclock/)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/680a1d64-1320-4b0c-8ae5-3a18fb012427)
 
 ## 2023-12-17 更新
-* [https://jamad.github.io/wasm/simple_button/](https://jamad.github.io/wasm/simple_button/)
+* [2023-12-17-simple_button](https://jamad.github.io/wasm/2023-12-17-simple_button/)
 * iOS の画面でもそれなりに合致するような解像度にした
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/72e8d875-ffcc-4506-8f16-b2ae58292628)
 * [参考](https://github.com/pygame-web/pygbag)
@@ -49,4 +52,3 @@ asyncio.run(main())
 |必要なファイルはbuildフォルダ内に生成されている|![image](https://github.com/jamad/jamad.github.io/assets/949913/63766277-7a2d-4d1f-9df9-27f998f6f002)|
 |必要に応じてファイルの階層を変更してgithubにcommitすれば完了|![image](https://github.com/jamad/jamad.github.io/assets/949913/4cdef75e-1694-437f-8590-54c42b45199e)|
 
-* [reference](https://www.youtube.com/watch?v=q25i2CCNvis)https://www.youtube.com/watch?v=q25i2CCNvis 
