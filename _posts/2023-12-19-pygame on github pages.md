@@ -11,7 +11,7 @@
 ### 更にモバイルで　指でタップして反応を得た！　player_pos = pygame.mouse.get_pos()　で指の位置ゲット
 * [2023-12-19-swipe_action ](https://jamad.github.io/wasm/2023-12-19-swipe_action/index.html)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/3675df6f-c1d5-49b4-b064-d05683d78c32)
-* [こっちはどうだ？ タッチできたけど、位置がずれているな、、、](https://jamad.github.io/wasm/2023-12-19-touch_action/)
+* [こちらも　メソッドを更新したらタッチの位置が正しくなった！](https://jamad.github.io/wasm/2023-12-19-touch_action/)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/b8010e57-35e8-4000-bd01-a378d9af49c4)
 
 
