@@ -7,10 +7,16 @@
 * pygbagのヘルプを見る方法　`pygbag --help 'foldername'`
 * iOS の場合、なぜか　ReadyToStartのボタンから大きく外れたエリアを押さないと開始しない  `https://github.com/pygame-web/pygbag/issues/138#issue-2011645179`
 
+## 2023-12-23
+* https://jamad.github.io/pygbag_test/
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/93a52565-d14e-44c4-b571-2e9b2e5920c7)
+
+
 ## 2023-12-19 メインを別ファイル化して作業しやすくした　(main.py は触らず、mygame.pyだけを更新)
-* [2023-12-19-swipe_action 指でタップして反応を得た！　player_pos = pygame.mouse.get_pos()　で指の位置ゲット](https://jamad.github.io/wasm/2023-12-19-swipe_action/index.html)
+### 更にモバイルで　指でタップして反応を得た！　player_pos = pygame.mouse.get_pos()　で指の位置ゲット
+* [2023-12-19-swipe_action ](https://jamad.github.io/wasm/2023-12-19-swipe_action/index.html)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/3675df6f-c1d5-49b4-b064-d05683d78c32)
-* [こっちはどうだ？ タッチできたけど、位置がずれているな、、、](https://jamad.github.io/wasm/2023-12-19-touch_action/)
+* [こちらも　メソッドを更新したらタッチの位置が正しくなった！](https://jamad.github.io/wasm/2023-12-19-touch_action/)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/b8010e57-35e8-4000-bd01-a378d9af49c4)
 
 
@@ -24,6 +30,20 @@
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/72e8d875-ffcc-4506-8f16-b2ae58292628)
 * [参考](https://github.com/pygame-web/pygbag)
 * [ここもまた見よう](https://github.com/pygame-web/pygame-web.github.io/blob/main/wiki/pygbag-code/README.md)
+
+
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+
+# pygbag を使わなくても、python code を .html内部に記述すれば実行はできる (速度が十分かは未検証 更に不要な情報が見え隠れするのはNG )
+* 入力したキーを表示するDemo
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/bed98232-1841-4a8f-af52-c1787b44dc7f)
+* 加工後
+* [after modding](https://jamad.github.io/wasm/pygame-web/pygame_simplest.html)
+* 加工前
+* [orignal](https://jamad.github.io/wasm/pygame-web/pygame_simplest.py)
+* [参考](https://pygame-web.github.io/wiki/pygbag-code/)
+
+
 
 ## pygbag (wasm_webassembly) でpygameをdeploy
 
