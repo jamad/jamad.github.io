@@ -1,3 +1,5 @@
+* image
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/0a2ccab2-3a5f-4559-97ce-0d00923f8fde)
 * code
 
 ```
