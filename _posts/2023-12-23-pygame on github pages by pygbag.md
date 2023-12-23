@@ -7,6 +7,11 @@
 * pygbagのヘルプを見る方法　`pygbag --help 'foldername'`
 * iOS の場合、なぜか　ReadyToStartのボタンから大きく外れたエリアを押さないと開始しない  `https://github.com/pygame-web/pygbag/issues/138#issue-2011645179`
 
+## 2023-12-23
+* https://jamad.github.io/pygbag_test/
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/93a52565-d14e-44c4-b571-2e9b2e5920c7)
+
+
 ## 2023-12-19 メインを別ファイル化して作業しやすくした　(main.py は触らず、mygame.pyだけを更新)
 ### 更にモバイルで　指でタップして反応を得た！　player_pos = pygame.mouse.get_pos()　で指の位置ゲット
 * [2023-12-19-swipe_action ](https://jamad.github.io/wasm/2023-12-19-swipe_action/index.html)
