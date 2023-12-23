@@ -1,5 +1,5 @@
 
-* jamad.github.io\wasm\2023-12-23-mandelbrot\mygame.py
+* wasm\2023-12-23-mandelbrot\mygame.py
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/cd251b82-05a4-48dc-b919-3f84e103e931)
 
 
