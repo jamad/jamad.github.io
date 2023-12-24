@@ -1,7 +1,8 @@
 
-# HTMLとJavaScriptの例
+# 現在の時刻を表示
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/6cd01629-0eeb-495f-99de-02c4de680648)
+* https://codepen.io/jamad/pen/JjzoPGB
 
-* [codepenでの例](https://codepen.io/jamad/pen/eYXmOYE)
 ```html
 現在の時間
 <p id="time"></p>
@@ -13,6 +14,11 @@ updateTime=()=> document.getElementById('time').textContent=getTime();
 updateTime();
 setInterval(updateTime, 1000);
 ```
+
+
+# HTMLとJavaScriptの例
+
+* [codepenでの例](https://codepen.io/jamad/pen/eYXmOYE)
 
 ```html
 <!DOCTYPE html>
