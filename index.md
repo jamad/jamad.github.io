@@ -1,11 +1,12 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-<p id="time"></p>
+<p id="tm"></p>
 <script>
-getTime=(now=new Date())=>`${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
-updateTime=()=> document.getElementById('time').textContent=getTime();
-setInterval(updateTime, 1000);
-</script> 
+f=(x)=>String(x).padStart(2,'0');
+g=(d=new Date())=>`${f(d.getHours())}:${f(d.getMinutes())}:${f(d.getSeconds())}`;
+u=()=>document.getElementById('tm').textContent=g();
+setInterval(u,1000);
+</script>
 
 ### 新規postの方法
 * iOS app の場合
