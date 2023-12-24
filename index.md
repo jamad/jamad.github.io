@@ -5,7 +5,10 @@
   * profile > pinned repo > code > _posts > create file as yyyy-mm-dd-title.md > commit > wait
 * pc の場合
   * [_posts](https://github.com/jamad/jamad.github.io/tree/master/_posts) > add file
+* TODO
+  * CSSタグをコピーするボタンをここに作成
 * 最初の行に記載するcssのtag
+
 ```
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 ```
