@@ -1,7 +1,7 @@
 # 現在の日時を表示
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/18f44f87-42b1-4fa3-b91f-71726a1d20ee)
 * https://codepen.io/jamad/pen/XWGJWro
-```
+```html
 <span id="datetime"></span>
 <script>
 dateOptions=Object.fromEntries(['year','month','day','hour','minute','second'].map(key=>[key,'numeric']));
