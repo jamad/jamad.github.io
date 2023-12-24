@@ -6,6 +6,7 @@
 document.getElementById("mystr").innerText=new Date().toISOString().slice(0,10)+'-';
 </script>
 
---- 
+
+https://codepen.io/jamad/pen/ExMaxPz
 
 the string above is made by javascript in .md file!
