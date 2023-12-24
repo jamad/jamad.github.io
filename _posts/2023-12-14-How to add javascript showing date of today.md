@@ -31,7 +31,7 @@ setInterval(updateTime, 1000);
 
 # 現在の日付を表示
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/3e1f707b-83b3-4f6b-85ef-c47c83b4d59b)
-* [codepenでの例](https://codepen.io/jamad/pen/eYXmOYE)
+* https://codepen.io/jamad/pen/eYXmOYE
 
 ```html
 <span id="date"></span>
