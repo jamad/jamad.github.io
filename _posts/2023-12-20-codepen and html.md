@@ -1,3 +1,13 @@
+<span id="datetime"></span>
+<script>
+dateOptions=Object.fromEntries(['year','month','day','hour','minute','second'].map(key=>[key,'numeric']));
+getdate=(today = new Date())=>today.toLocaleDateString('en-US', dateOptions);
+const updateDateTime = () => document.getElementById('datetime').innerHTML =`${getdate()}`;
+updateDateTime();
+setInterval(updateDateTime, 1000);
+</script>
+
+
 # my works
 * https://codepen.io/your-work/
 
