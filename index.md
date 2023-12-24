@@ -9,7 +9,7 @@ setInterval(u,1000);
 </script>
 
 ## codepen で動作確認して htmlを.md に実装し、jekyllでhtml 化する流れが今のところ最も効率が良い
-* https://codepen.io/your-work/
+* [https://codepen.io/your-work/](https://codepen.io/your-work/)
 
 ### 新規postの方法
 * iOS app の場合
