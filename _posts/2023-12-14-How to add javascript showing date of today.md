@@ -1,3 +1,17 @@
+# 現在の日時を表示
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/18f44f87-42b1-4fa3-b91f-71726a1d20ee)
+* https://codepen.io/jamad/pen/XWGJWro
+```
+<span id="datetime"></span>
+<script>
+dateOptions=Object.fromEntries(['year','month','day','hour','minute','second'].map(key=>[key,'numeric']));
+getdate=(today = new Date())=>today.toLocaleDateString('en-US', dateOptions);
+const updateDateTime = () => document.getElementById('datetime').innerHTML =`${getdate()}`;
+updateDateTime();
+setInterval(updateDateTime, 1000);
+</script>
+```
+
 
 # 現在の時刻を表示
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/6cd01629-0eeb-495f-99de-02c4de680648)
