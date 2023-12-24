@@ -3,7 +3,15 @@
 
 * [codepenでの例](https://codepen.io/jamad/pen/eYXmOYE)
 ```html
+現在の時間
+<p id="time"></p>
+```
 
+```javascript
+getTime=(now=new Date())=>`${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+updateTime=()=> document.getElementById('time').textContent=getTime();
+updateTime();
+setInterval(updateTime, 1000);
 ```
 
 ```html
