@@ -1,10 +1,14 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 ### 新規postの方法
-iOS app の場合|profile > pinned repo > code > _posts > create file as yyyy-mm-dd-title.md > commit > wait
--|-
-pc の場合|[_posts](https://github.com/jamad/jamad.github.io/tree/master/_posts) > add file
-最初の行に記載するcssのtag|`<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">`
+* iOS app の場合
+  * profile > pinned repo > code > _posts > create file as yyyy-mm-dd-title.md > commit > wait
+* pc の場合
+  * [_posts](https://github.com/jamad/jamad.github.io/tree/master/_posts) > add file
+* 最初の行に記載するcssのtag
+```
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+```
 
 ---
 
