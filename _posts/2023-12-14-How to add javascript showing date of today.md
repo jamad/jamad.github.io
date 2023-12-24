@@ -6,13 +6,12 @@
 ```html
 現在の時間
 <p id="time"></p>
-```
-
-```javascript
+<script>
 getTime=(now=new Date())=>`${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
 updateTime=()=> document.getElementById('time').textContent=getTime();
 updateTime();
 setInterval(updateTime, 1000);
+</script> 
 ```
 
 
