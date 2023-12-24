@@ -1,3 +1,5 @@
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+
 <button onclick="copyText()"><span id="mystr">dummy placeholder</span></button>
 
 <script>
