@@ -15,31 +15,17 @@ setInterval(updateTime, 1000);
 ```
 
 
-# HTMLとJavaScriptの例
-
+# 現在の日付を表示
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/3e1f707b-83b3-4f6b-85ef-c47c83b4d59b)
 * [codepenでの例](https://codepen.io/jamad/pen/eYXmOYE)
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>HTML内のJavaScript</title>
-</head>
-<body>
-
-<h1>HTML with JavaScript</h1>
-
 <span id="date"></span>
 <script>
-  window.onload = function() {
-    var today = new Date();
-    var options = { year: 'numeric', month: 'numeric', day: 'numeric' };
-    document.getElementById("date").innerHTML = today.toLocaleDateString('en-US', options);
-  }
-</script> 
-
-</body>
-</html>
+today= new Date();
+options={year:'numeric', month:'numeric',day: 'numeric' };
+document.getElementById("date").innerHTML = today.toLocaleDateString('en-US', options);
+</script>
 ```
 
 * need to learn more about this
