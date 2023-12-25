@@ -54,13 +54,12 @@
 
 ---
 
-# 2023-12-24
+# 2023-12-24  日時表示
 
-<span id="datetime"></span>
+<p id="mytime"></p>
 <script>
-dateOptions=Object.fromEntries(['year','month','day','hour','minute','second'].map(key=>[key,'numeric']));
-getdate=(today = new Date())=>today.toLocaleDateString('en-US', dateOptions);
-const updateDateTime = () => document.getElementById('datetime').innerHTML =`${getdate()}`;
-updateDateTime();
-setInterval(updateDateTime, 1000);
+opt=Object.fromEntries(['year','month','day','hour','minute','second'].map(k=>[k,'numeric']));
+d=(t = new Date())=>t.toLocaleDateString('en-US',opt);
+ut=()=> document.getElementById('mytime').innerHTML=d();
+setInterval(ut, 500);
 </script>
