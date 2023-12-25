@@ -8,7 +8,6 @@
 # practice
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/50f1390a-13fc-4a7d-a750-847e7034cbfa) 001 [https://codepen.io/jamad/pen/yLwBzrQ](https://codepen.io/jamad/pen/yLwBzrQ)
 
-  
 ---
 
 # 簡易メモ (Local storage を使ったメモ)
@@ -55,6 +54,7 @@
 ---
 
 # 2023-12-24  日時表示
+* https://codepen.io/jamad/pen/yLwyMEe
 
 <p id="mytime"></p>
 <script>
