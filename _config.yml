@@ -8,5 +8,4 @@ defaults:
   - scope:
       path: "_posts"
     values:
-      layout: "post"
       css: "/assets/css/styles.css"
