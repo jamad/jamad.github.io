@@ -15,11 +15,11 @@
 
 # post用prefixのコピーボタン
 
-<button onclick="copyText()"><span id="str20231225">dummy</span></button>
+<button onclick="copyText1()"><span id="str20231225">dummy</span></button>
 <script>
 var mystr20231225= new Date().toISOString().slice(0, 10) + '-';
 document.getElementById("str20231225").innerText =mystr20231225;
-function copyText() {
+function copyText1() {
   var textArea = document.createElement("textarea");
   document.body.appendChild(textArea);
   textArea.value = mystr20231225;
@@ -44,11 +44,11 @@ setInterval(u,1000);
 ---
 
 # CSSタグをコピーするボタン
-<button onclick="copyText()"><span id="mystr">dummy</span></button>
+<button onclick="copyText2()"><span id="mystr">dummy</span></button>
 <script>
 var mystr= '<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">';
 document.getElementById("mystr").innerText =mystr;
-function copyText() {// テキストエリア追加し、コピー後に削除
+function copyText2() {// テキストエリア追加し、コピー後に削除
   var textArea = document.createElement("textarea");
   document.body.appendChild(textArea);
   textArea.value = mystr;
