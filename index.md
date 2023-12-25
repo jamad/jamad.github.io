@@ -9,16 +9,14 @@ u=()=>document.getElementById('tm').textContent=g();
 setInterval(u,1000);
 </script>
 
+---
+
 # CSSタグをコピーするボタン
 <button onclick="copyText()"><span id="mystr">dummy</span></button>
-
 <script>
 var mystr= '<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">';
-  
 document.getElementById("mystr").innerText =mystr;
-
-// テキストエリア追加し、コピー後に削除
-function copyText() {
+function copyText() {// テキストエリア追加し、コピー後に削除
   var textArea = document.createElement("textarea");
   document.body.appendChild(textArea);
   textArea.value = mystr;
@@ -29,6 +27,7 @@ function copyText() {
 }
 </script>
 
+---
 
 ## codepen で動作確認して htmlを.md に実装し、jekyllでhtml 化する流れが今のところ最も効率が良い
 * [https://codepen.io/your-work/](https://codepen.io/your-work/)
