@@ -1,3 +1,6 @@
+# move the doc here
+* https://jamad.github.io/how_to_blender.html
+
 # tips
 #### blender tips 200
 * 1 - absolute grid snap checkbox
