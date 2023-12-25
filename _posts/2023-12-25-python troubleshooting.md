@@ -1,4 +1,5 @@
 ---
+layout: post
 css: /assets/css/styles.css
 ---
 
