@@ -1,7 +1,4 @@
----
-layout: post
-css: /assets/css/styles.css
----
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 # 問題と解決方法
 * invalid character in identifier  [例](https://github.com/jamad/myPygame/commit/de48df759a5f5d60929908afdcabc22b14cbc6d3)
