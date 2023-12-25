@@ -14,6 +14,22 @@
   * [_posts](https://github.com/jamad/jamad.github.io/tree/master/_posts) > add file
 
 ---
+<button onclick="copyText()"><span id="str20231225">dummy</span></button>
+<script>
+var mystr20231225= new Date().toISOString().slice(0, 10) + '-';
+document.getElementById("str20231225").innerText =mystr20231225;
+function copyText() {
+  var textArea = document.createElement("textarea");
+  document.body.appendChild(textArea);
+  textArea.value = mystr20231225;
+  textArea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textArea);
+  alert("copied : " + mystr20231225);
+}
+</script>
+
+---
 
 # javascript による簡易時計
 <p id="tm"></p>
