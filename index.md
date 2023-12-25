@@ -55,7 +55,6 @@ function copyText2() {// テキストエリア追加し、コピー後に削除
   textArea.select();
   document.execCommand("copy");
   document.body.removeChild(textArea);
-  alert("copied : " + mystr);
 }
 </script>
 
