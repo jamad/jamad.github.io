@@ -13,7 +13,8 @@
 * pc の場合
   * [_posts](https://github.com/jamad/jamad.github.io/tree/master/_posts) > add file
 
----
+# post用prefixのコピーボタン
+
 <button onclick="copyText()"><span id="str20231225">dummy</span></button>
 <script>
 var mystr20231225= new Date().toISOString().slice(0, 10) + '-';
