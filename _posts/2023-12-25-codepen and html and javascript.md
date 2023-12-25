@@ -5,6 +5,12 @@
 
 ---
 
+# practice
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/50f1390a-13fc-4a7d-a750-847e7034cbfa) 001 [https://codepen.io/jamad/pen/yLwBzrQ](https://codepen.io/jamad/pen/yLwBzrQ)
+
+  
+---
+
 # 簡易メモ (Local storage を使ったメモ)
 * [試作（完了）](https://codepen.io/jamad/pen/wvOBJwE?editors=1000)
 * textarea に文字を入力してSaveするとmemoをkeyとしたlocalstrageというDictにValueが保存される
@@ -43,14 +49,8 @@
     else{displayDiv.innerHTML=`${memoInput.value}`;}
   }
 
- 
 </script>
 
-
----
-
-# practice
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/50f1390a-13fc-4a7d-a750-847e7034cbfa) 001 [https://codepen.io/jamad/pen/yLwBzrQ](https://codepen.io/jamad/pen/yLwBzrQ)
 
 ---
 
