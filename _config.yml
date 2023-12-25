@@ -3,3 +3,10 @@ minima:
   dark_mode: true
 
 timezone: Europe/Helsinki # この設定が無いと　blogpost が未来と認識されて表示されない場合があった
+
+defaults:
+  - scope:
+      path: "_posts"
+    values:
+      layout: "post"
+      css: "/assets/css/styles.css"
