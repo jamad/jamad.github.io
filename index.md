@@ -57,7 +57,7 @@ function copyText2() {// テキストエリア追加し、コピー後に削除
 
 ---
 
-## codepen で動作確認して htmlを.md に実装し、jekyllでhtml 化する流れが今のところ最も効率が良い
+## codepen で動作確認したhtmlを.mdに記述し、jekyllで実装するのが最も効率良い
 * [https://codepen.io/your-work/](https://codepen.io/your-work/)
 
 
