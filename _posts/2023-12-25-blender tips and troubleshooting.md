@@ -15,3 +15,198 @@
   * ob = bpy.context.scene.objects["Cube"]
   * dt = ob.data
 
+# how_to_blender
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/aab25db9-11b8-4ae1-aba4-f5bfb2727e35)
+```
+import sys
+import subprocess
+
+print()
+print('sameple code to work with numpy')
+print()
+
+try:
+    import numpy as np
+except:
+    command="pip install numpy"
+    result = subprocess.check_output(command.split())
+    print(result)
+   
+import numpy as np
+
+A=[[1,2,3],[4,5,6]]
+
+M = np.array(A, int)
+
+for X in (M, np.rot90(M),np.fliplr(M), np.flipud(M)):
+    print(X)
+    print()
+```
+
+before	after	code
+import general module
+
+example
+pip numpy	
+	import sys
+import subprocess
+
+print()
+print('sameple code to work with numpy')
+print()
+
+try:
+    import numpy as np
+except:
+    command="pip install numpy"
+    result = subprocess.check_output(command.split())
+    print(result)
+   
+import numpy as np
+
+A=[[1,2,3],[4,5,6]]
+
+M = np.array(A, int)
+
+for X in (M, np.rot90(M),np.fliplr(M), np.flipud(M)):
+    print(X)
+    print()
+iteration -
+selected objects	
+	import bpy
+for obj in bpy.context.selected_objects:
+    obj.name='new_name'
+shader node	
+
+import bpy
+
+mat = bpy.data.materials.new('Hoge')
+
+mat.use_nodes = True
+
+bsdf = mat.node_tree.nodes["Principled BSDF"]
+
+texImage = mat.node_tree.nodes.new('ShaderNodeTexMagic')
+
+mat.node_tree.links.new(bsdf.inputs['Base Color'], texImage.outputs['Color'])
+
+ob =bpy.context.view_layer.objects.active    #
+
+ 
+
+if ob.data.materials:    ob.data.materials[0] = mat
+
+else: ob.data.materials.append(mat)           
+
+animation		
+import bpy
+
+ 
+
+bpy.context.scene.frame_set(0)
+
+ 
+
+#obj = bpy.context.scene.objects.active
+
+obj =bpy.context.view_layer.objects.active   
+
+ 
+
+obj.keyframe_insert(data_path='location')
+
+bpy.context.scene.frame_set(100)
+
+obj.location.z += 5
+
+obj.keyframe_insert(data_path='location')
+
+ 
+
+old_type = bpy.context.area.type
+
+bpy.context.area.type = 'GRAPH_EDITOR'
+
+bpy.ops.graph.interpolation_type(type='LINEAR')
+
+bpy.context.area.type = old_type
+
+shader node
+
+
+import bpy
+import math
+
+START=0
+END=100
+N=5
+bpy.context.scene.frame_start = START
+bpy.context.scene.frame_end   = END
+
+# Add a camera
+bpy.ops.object.camera_add(
+    location=(70, -40, 50),
+    rotation=(1.1, 0, 0.8)
+)
+
+# Add color cubes
+for x in range(0, N):
+    for y in range(0, N):
+        for z in range(0, N):
+            # Add a color cube
+            bpy.ops.mesh.primitive_cube_add( location=(x*3, y*3, z*3) )
+           
+            obj =bpy.context.view_layer.objects.active
+           
+            mat = bpy.data.materials.new('Cube')
+            mat.use_nodes = True
+           
+            bsdf = mat.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (x/N, y/N, z/N,1) # color
+            bsdf = mat.node_tree.nodes["Principled BSDF"].inputs[18].default_value = 0.5 # alpha
+            mat.blend_method = 'BLEND'
+
+            obj.data.materials.append(mat)
+           
+            # Set the start key frame
+            bpy.context.scene.frame_set(START)
+            obj.keyframe_insert( data_path='rotation_euler' )
+            obj.keyframe_insert( data_path='location' )
+           
+            # Set the end key frame
+            bpy.context.scene.frame_set(END)
+            obj.location = ( (N-x)*3, (N-y)*3, (N-z)*3 )
+            obj.rotation_euler = (math.pi, math.pi, math.pi)
+            obj.keyframe_insert( data_path='location' )
+            obj.keyframe_insert( data_path='rotation_euler' )
+light
+
+camera	
+
+import bpy
+import math
+
+# create a light
+bpy.ops.object.light_add(type='POINT', radius=1, align='WORLD', location=(0, 0, 0))
+
+# create a camera
+bpy.ops.object.camera_add()
+
+# create a plane
+bpy.ops.mesh.primitive_plane_add(    location=( 1, 2, 3 ),    rotation=( math.pi/3, math.pi/4, math.pi/5 ),   )
+
+
+
+animation_trajectory.py
+
+animation_trajectory.blend 
+ 
+
+
+what to get	script	ref
+ set frame 0	bpy.context.scene.frame_set(0)	https://blender.stackexchange.com/questions/14809/location-of-an-object-at-a-specific-frame
+register object by name 'target'	targetOBJ=bpy.data.objects["target"]	
+get the position and rotation of the object above	pX,pY,pZ=targetOBJ.matrix_world.to_translation()
+rX,rY,rZ=targetOBJ.matrix_world.to_euler('XYZ')	https://blender.stackexchange.com/questions/39677/how-do-you-get-an-objects-position-and-rotation-through-script
+
+
+
