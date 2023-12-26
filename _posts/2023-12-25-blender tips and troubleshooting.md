@@ -37,6 +37,15 @@ for X in (M, np.rot90(M),np.fliplr(M), np.flipud(M)):
     print('-'*20)
 ```
 
+# iteration - seelcted objects
+* before ![image](https://github.com/jamad/jamad.github.io/assets/949913/b84824bb-70d9-4a2a-b074-43d69c9586eb)
+* after ![image](https://github.com/jamad/jamad.github.io/assets/949913/1c68a32a-44d5-4d0c-a668-2b2efcd0d8b6)
+
+```
+import bpy
+for obj in bpy.context.selected_objects:
+    obj.name='new_name'
+```
 before	after	code
 
 
