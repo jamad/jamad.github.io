@@ -3,7 +3,7 @@
 # このページ(index.html)の更新方法 
 1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　から編集 (index.html が既存だと index.md が上書きできないので削除)
 1. jekyllのconversionを待つ。進捗状況は[ここ](https://github.com/jamad/jamad.github.io/actions)で確認できる。
-1. [このページを再読み込み](https://jamad.github.io/) して確認。Chromeなら `ctrl+shift+R` でキャッシュクリア可能。
+1. [このページ](https://jamad.github.io/)を再読み込みして確認。Chromeなら `ctrl+shift+R` でキャッシュクリア可能。
 
 ---
 
