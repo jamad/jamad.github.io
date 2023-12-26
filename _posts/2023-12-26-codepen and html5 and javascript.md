@@ -9,6 +9,35 @@
 * [https://codepen.io/jamad/pen/ExMadmE](https://codepen.io/jamad/pen/ExMadmE)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/1cb81a0f-03ab-406e-9333-aa9ab63654f0)
 
+
+<main></main>
+
+<script>
+  const imageUrl = "https://raw.githubusercontent.com/dkzakka/dkzakka/main/dkzakka_icon.jpg";
+  function createContents(filter) {
+    const group = document.createElement('div');
+    group.dataset.filter = `image-${filter}`;
+    const header = document.createElement('h3');
+    header.textContent = filter;
+    const image = document.createElement('img');
+    image.src = imageUrl;
+    image.style.setProperty('--filter', filter === 'none' ? 'none' : filter);
+    group.appendChild(header);
+    group.appendChild(image);
+    return group;
+  }
+
+  const main = document.querySelector('main');
+  const filters = ["none", "grayscale(100%)", "saturate(200%)", "sepia(100%)", "invert(100%)", "opacity(50%)", "brightness(150%)", "contrast(200%)", "blur(5px)", "hue-rotate(180deg)"];
+  filters.forEach(x=>main.appendChild(createContents(x)));
+</script>
+
+<style>
+  main {display: flex;flex-wrap: wrap;  }
+  main div {margin: 4px;  }
+  main div img {width: 160px;filter: var(--filter); /* 画像に適用されるフィルターを定義 */  }
+</style>
+
 ---
 
 # practice
