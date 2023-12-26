@@ -1,8 +1,5 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
-# move the doc here
-* https://jamad.github.io/how_to_blender.html
-
 # tips
 #### blender tips 200
 * 1 - absolute grid snap checkbox
@@ -40,7 +37,8 @@ for X in (M, np.rot90(M),np.fliplr(M), np.flipud(M)):
     print('-'*20)
 ```
 
-# iteration - seelcted objects
+
+# Iteration - seelcted objects
 * before-after ![image](https://github.com/jamad/jamad.github.io/assets/949913/b84824bb-70d9-4a2a-b074-43d69c9586eb) >>  ![image](https://github.com/jamad/jamad.github.io/assets/949913/1c68a32a-44d5-4d0c-a668-2b2efcd0d8b6)
 
 ```
@@ -48,6 +46,7 @@ import bpy
 for obj in bpy.context.selected_objects:
     obj.name='new_name'
 ```
+
 
 # shader node	
 * before-after ![image](https://github.com/jamad/jamad.github.io/assets/949913/6aee3d27-9e8f-4bde-bb3a-a9139b3adac8) >> ![image](https://github.com/jamad/jamad.github.io/assets/949913/e4e6b192-0781-4576-9544-fa722ebaee52)
