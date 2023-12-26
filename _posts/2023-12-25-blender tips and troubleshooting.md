@@ -19,6 +19,7 @@
 
 ## numpyを扱う
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/aab25db9-11b8-4ae1-aba4-f5bfb2727e35)
+
 ```
 import subprocess
 
