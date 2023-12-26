@@ -130,6 +130,9 @@ bpy.context.area.type = old_type
 bpy.context.scene.frame_end = 20
 ```
 
+* trajectory
+* example - https://github.com/jamad/blender_jamad/commits/master/animation_trajectory.py
+* example - https://github.com/jamad/blender_jamad/blob/master/animation_trajectory.blend
 
 # light and camera
 * example after script ![image](https://github.com/jamad/jamad.github.io/assets/949913/b5766a5c-a858-4de2-80fb-55effa382515)
@@ -149,17 +152,13 @@ bpy.ops.mesh.primitive_plane_add(    location=( 1, 2, 3 ),    rotation=( math.pi
 ```
 
 
-animation_trajectory.py
-
-animation_trajectory.blend 
- 
-
-
-what to get	script	ref
- set frame 0	bpy.context.scene.frame_set(0)	https://blender.stackexchange.com/questions/14809/location-of-an-object-at-a-specific-frame
-register object by name 'target'	targetOBJ=bpy.data.objects["target"]	
-get the position and rotation of the object above	pX,pY,pZ=targetOBJ.matrix_world.to_translation()
-rX,rY,rZ=targetOBJ.matrix_world.to_euler('XYZ')	https://blender.stackexchange.com/questions/39677/how-do-you-get-an-objects-position-and-rotation-through-script
+# 逆引き
+* set frame 0
+ * bpy.context.scene.frame_set(0)	https://blender.stackexchange.com/questions/14809/location-of-an-object-at-a-specific-frame
+* register object by name 'target'
+ * targetOBJ=bpy.data.objects["target"]
+* get the position and rotation of the object above	pX,pY,pZ=targetOBJ.matrix_world.to_translation()
+ * rX,rY,rZ=targetOBJ.matrix_world.to_euler('XYZ')	https://blender.stackexchange.com/questions/39677/how-do-you-get-an-objects-position-and-rotation-through-script
 
 
 
