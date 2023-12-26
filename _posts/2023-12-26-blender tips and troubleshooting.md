@@ -1,3 +1,5 @@
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
+
 # move the doc here
 * https://jamad.github.io/how_to_blender.html
 
