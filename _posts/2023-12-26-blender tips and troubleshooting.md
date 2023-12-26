@@ -132,7 +132,8 @@ bpy.context.scene.frame_end = 20
 ```
 
 ### trajectory
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/3c570c40-592e-45fb-8f97-7197b0805b4f) ![image](https://github.com/jamad/jamad.github.io/assets/949913/73029f6d-f891-45b3-82f1-b1582152433a)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/3c570c40-592e-45fb-8f97-7197b0805b4f) ![image](https://github.com/jamad/jamad.github.io/assets/949913/73029f6d-f891-45b3-82f1-b1582152433a) ![image](https://github.com/jamad/jamad.github.io/assets/949913/7c94287f-626c-459e-abb8-e5fe5c8837e0)
+
 
 * example - https://github.com/jamad/blender_jamad/blob/master/animation_trajectory.py
 * example - https://github.com/jamad/blender_jamad/blob/master/animation_trajectory.blend
