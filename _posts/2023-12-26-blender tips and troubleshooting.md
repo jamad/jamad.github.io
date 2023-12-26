@@ -52,27 +52,35 @@ for obj in bpy.context.selected_objects:
 
 ```
 import bpy
-
 mat = bpy.data.materials.new('Hoge')
-
 mat.use_nodes = True
-
 bsdf = mat.node_tree.nodes["Principled BSDF"]
-
 texImage = mat.node_tree.nodes.new('ShaderNodeTexMagic')
-
 mat.node_tree.links.new(bsdf.inputs['Base Color'], texImage.outputs['Color'])
-
 ob =bpy.context.view_layer.objects.active    #
-
 if ob.data.materials:    ob.data.materials[0] = mat
-
 else: ob.data.materials.append(mat)           
 ```
 
-     
+# animation		
+* example after the script for the selected object ![image](https://github.com/jamad/jamad.github.io/assets/949913/ee6ed791-bd66-4beb-b02b-c4fdd339e000)
 
-animation		
+```
+import bpy
+
+bpy.context.scene.frame_set(0)
+obj =bpy.context.view_layer.objects.active   
+obj.keyframe_insert(data_path='location')
+bpy.context.scene.frame_set(20)
+obj.location.z += 1
+obj.keyframe_insert(data_path='location')
+old_type = bpy.context.area.type
+bpy.context.area.type = 'GRAPH_EDITOR'
+bpy.ops.graph.interpolation_type(type='LINEAR')
+bpy.context.area.type = old_type
+bpy.context.scene.frame_end = 20
+```
+
 import bpy
 
  
