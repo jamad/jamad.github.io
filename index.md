@@ -18,7 +18,8 @@
 <button onclick="copyT()"><p id="buttonlabel"></p></button>
 <script>
   title=new Date().toISOString().slice(0,10)+'-';
-  (f=(x=title)=>document.getElementById("buttonlabel").textContent=x)();//定義しつつ実行
+  f=(x=title)=>document.getElementById("buttonlabel").textContent=x;
+  f();//定義しつつ実行
   function copyT() {
     navigator.clipboard.writeText(title);
     f("copied:"+title);
