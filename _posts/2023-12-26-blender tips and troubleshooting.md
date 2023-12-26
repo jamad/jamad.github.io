@@ -62,6 +62,55 @@ if ob.data.materials:    ob.data.materials[0] = mat
 else: ob.data.materials.append(mat)           
 ```
 
+* example after the script ![image](https://github.com/jamad/jamad.github.io/assets/949913/396b55e8-7111-4e59-914a-69157e56adba)
+
+```
+import bpy
+import math
+
+START=0
+END=100
+N=5
+bpy.context.scene.frame_start = START
+bpy.context.scene.frame_end   = END
+
+# Add a camera
+bpy.ops.object.camera_add(
+    location=(70, -40, 50),
+    rotation=(1.1, 0, 0.8)
+)
+
+# Add color cubes
+for x in range(0, N):
+    for y in range(0, N):
+        for z in range(0, N):
+            # Add a color cube
+            bpy.ops.mesh.primitive_cube_add( location=(x*3, y*3, z*3) )
+           
+            obj =bpy.context.view_layer.objects.active
+           
+            mat = bpy.data.materials.new('Cube')
+            mat.use_nodes = True
+           
+            bsdf = mat.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (x/N, y/N, z/N,1) # color
+            bsdf = mat.node_tree.nodes["Principled BSDF"].inputs[18].default_value = 0.5 # alpha
+            mat.blend_method = 'BLEND'
+
+            obj.data.materials.append(mat)
+           
+            # Set the start key frame
+            bpy.context.scene.frame_set(START)
+            obj.keyframe_insert( data_path='rotation_euler' )
+            obj.keyframe_insert( data_path='location' )
+           
+            # Set the end key frame
+            bpy.context.scene.frame_set(END)
+            obj.location = ( (N-x)*3, (N-y)*3, (N-z)*3 )
+            obj.rotation_euler = (math.pi, math.pi, math.pi)
+            obj.keyframe_insert( data_path='location' )
+            obj.keyframe_insert( data_path='rotation_euler' )
+```
+
 # animation		
 * example after the script for the selected object ![image](https://github.com/jamad/jamad.github.io/assets/949913/ee6ed791-bd66-4beb-b02b-c4fdd339e000)
 
