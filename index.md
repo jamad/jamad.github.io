@@ -15,19 +15,15 @@
 
 # post用prefixのコピーボタン
 
-<button onclick="copyText1()"><span id="str20231225">dummy</span></button>
+<button onclick="copyT()"><p id="ボタン文字"></p></button>
 <script>
-var mystr20231225= new Date().toISOString().slice(0, 10) + '-';
-document.getElementById("str20231225").innerText =mystr20231225;
-function copyText1() {
-  var textArea = document.createElement("textarea");
-  document.body.appendChild(textArea);
-  textArea.value = mystr20231225;
-  textArea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textArea);
-  alert("copied : " + mystr20231225);
-}
+  title=new Date().toISOString().slice(0,10)+'-';
+  (f=(x=title)=>document.getElementById("ボタン文字").textContent=x)();//定義しつつ実行
+  function copyT() {
+    navigator.clipboard.writeText(title);
+    f("copied:"+title);
+    setTimeout(f,250);
+  }
 </script>
 
 ---
