@@ -16,6 +16,8 @@
   * dt = ob.data
 
 # how_to_blender
+
+## import general module
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/aab25db9-11b8-4ae1-aba4-f5bfb2727e35)
 ```
 import sys
@@ -44,7 +46,7 @@ for X in (M, np.rot90(M),np.fliplr(M), np.flipud(M)):
 ```
 
 before	after	code
-import general module
+
 
 example
 pip numpy	
