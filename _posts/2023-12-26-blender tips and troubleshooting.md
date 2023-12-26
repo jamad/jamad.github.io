@@ -131,7 +131,7 @@ bpy.context.scene.frame_end = 20
 ```
 
 * trajectory
-* example - https://github.com/jamad/blender_jamad/commits/master/animation_trajectory.py
+* example - https://github.com/jamad/blender_jamad/blob/master/animation_trajectory.py
 * example - https://github.com/jamad/blender_jamad/blob/master/animation_trajectory.blend
 
 # light and camera
