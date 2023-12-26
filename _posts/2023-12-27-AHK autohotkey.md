@@ -1,5 +1,7 @@
-# pyautogui    
+# pyautogui 
 ## i.e, only controls for keyboard and mouse action  
+* onenote  `重要 pyautogui : VisualScriptNodeを作成` から移動しよう
+
 
 * ref 1 : https://pyautogui.readthedocs.io/en/latest/#examples
 * ref 2 : https://automatetheboringstuff.com/2e/chapter20/
