@@ -15,8 +15,7 @@
 
 # post用prefixのコピーボタン
 
-<button onclick="copyT()"><div id="buttonlabel"></div></button>
-
+<button onclick="copyT()" id="buttonlabel"></button>
 <script>
   title=new Date().toISOString().slice(0,10)+'-';
   f=(x=title)=>document.getElementById("buttonlabel").textContent=x;
