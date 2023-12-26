@@ -153,12 +153,13 @@ bpy.ops.mesh.primitive_plane_add(    location=( 1, 2, 3 ),    rotation=( math.pi
 
 
 # 逆引き
-* set frame 0
- * bpy.context.scene.frame_set(0)	https://blender.stackexchange.com/questions/14809/location-of-an-object-at-a-specific-frame
-* register object by name 'target'
- * targetOBJ=bpy.data.objects["target"]
-* get the position and rotation of the object above	pX,pY,pZ=targetOBJ.matrix_world.to_translation()
- * rX,rY,rZ=targetOBJ.matrix_world.to_euler('XYZ')	https://blender.stackexchange.com/questions/39677/how-do-you-get-an-objects-position-and-rotation-through-script
+* タイムラインを　frame 0 に移動 [ref](https://blender.stackexchange.com/questions/14809/location-of-an-object-at-a-specific-frame)
+  * bpy.context.scene.frame_set(0)	
+* 'target'という名前のオブジェクトを変数に登録
+  * targetOBJ=bpy.data.objects["target"]
+* 位置と回転をゲット　[ref](https://blender.stackexchange.com/questions/39677/how-do-you-get-an-objects-position-and-rotation-through-script)
+  * pX,pY,pZ=targetOBJ.matrix_world.to_translation()
+  * rX,rY,rZ=targetOBJ.matrix_world.to_euler('XYZ')	
 
 
 
