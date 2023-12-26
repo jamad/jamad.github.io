@@ -12,7 +12,8 @@
     * monkey creation  - (automation/pyautogui/practice_pyautogui_blender.py)
  
 * mspaint
-    * version 1 - manually open mspaint then  draw the spiralpyautogui_result<<  automation/pyautogui/hello_pyautogui.py
+    * version 1 - manually open mspaint then  draw the spiral　![image](https://github.com/jamad/jamad.github.io/assets/949913/ff7f23c9-8586-4e66-8bae-691e73447e6b)
+<<  automation/pyautogui/hello_pyautogui.py
     * version 2 - open mspaint then draw the spiral <<     automation\mspaint_control_autogui.py
 
  
