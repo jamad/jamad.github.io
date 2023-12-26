@@ -46,41 +46,12 @@ import bpy
 for obj in bpy.context.selected_objects:
     obj.name='new_name'
 ```
-before	after	code
 
+# shader node	
+* before ![image](https://github.com/jamad/jamad.github.io/assets/949913/6aee3d27-9e8f-4bde-bb3a-a9139b3adac8)
+* after ![image](https://github.com/jamad/jamad.github.io/assets/949913/e4e6b192-0781-4576-9544-fa722ebaee52)
 
-example
-pip numpy	
-	import sys
-import subprocess
-
-print()
-print('sameple code to work with numpy')
-print()
-
-try:
-    import numpy as np
-except:
-    command="pip install numpy"
-    result = subprocess.check_output(command.split())
-    print(result)
-   
-import numpy as np
-
-A=[[1,2,3],[4,5,6]]
-
-M = np.array(A, int)
-
-for X in (M, np.rot90(M),np.fliplr(M), np.flipud(M)):
-    print(X)
-    print()
-iteration -
-selected objects	
-	import bpy
-for obj in bpy.context.selected_objects:
-    obj.name='new_name'
-shader node	
-
+```
 import bpy
 
 mat = bpy.data.materials.new('Hoge')
@@ -95,11 +66,12 @@ mat.node_tree.links.new(bsdf.inputs['Base Color'], texImage.outputs['Color'])
 
 ob =bpy.context.view_layer.objects.active    #
 
- 
-
 if ob.data.materials:    ob.data.materials[0] = mat
 
 else: ob.data.materials.append(mat)           
+```
+
+     
 
 animation		
 import bpy
