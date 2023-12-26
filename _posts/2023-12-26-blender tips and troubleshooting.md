@@ -130,89 +130,11 @@ bpy.context.area.type = old_type
 bpy.context.scene.frame_end = 20
 ```
 
-import bpy
 
- 
+# light and camera
+* example after script ![image](https://github.com/jamad/jamad.github.io/assets/949913/b5766a5c-a858-4de2-80fb-55effa382515)
 
-bpy.context.scene.frame_set(0)
-
- 
-
-#obj = bpy.context.scene.objects.active
-
-obj =bpy.context.view_layer.objects.active   
-
- 
-
-obj.keyframe_insert(data_path='location')
-
-bpy.context.scene.frame_set(100)
-
-obj.location.z += 5
-
-obj.keyframe_insert(data_path='location')
-
- 
-
-old_type = bpy.context.area.type
-
-bpy.context.area.type = 'GRAPH_EDITOR'
-
-bpy.ops.graph.interpolation_type(type='LINEAR')
-
-bpy.context.area.type = old_type
-
-shader node
-
-
-import bpy
-import math
-
-START=0
-END=100
-N=5
-bpy.context.scene.frame_start = START
-bpy.context.scene.frame_end   = END
-
-# Add a camera
-bpy.ops.object.camera_add(
-    location=(70, -40, 50),
-    rotation=(1.1, 0, 0.8)
-)
-
-# Add color cubes
-for x in range(0, N):
-    for y in range(0, N):
-        for z in range(0, N):
-            # Add a color cube
-            bpy.ops.mesh.primitive_cube_add( location=(x*3, y*3, z*3) )
-           
-            obj =bpy.context.view_layer.objects.active
-           
-            mat = bpy.data.materials.new('Cube')
-            mat.use_nodes = True
-           
-            bsdf = mat.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (x/N, y/N, z/N,1) # color
-            bsdf = mat.node_tree.nodes["Principled BSDF"].inputs[18].default_value = 0.5 # alpha
-            mat.blend_method = 'BLEND'
-
-            obj.data.materials.append(mat)
-           
-            # Set the start key frame
-            bpy.context.scene.frame_set(START)
-            obj.keyframe_insert( data_path='rotation_euler' )
-            obj.keyframe_insert( data_path='location' )
-           
-            # Set the end key frame
-            bpy.context.scene.frame_set(END)
-            obj.location = ( (N-x)*3, (N-y)*3, (N-z)*3 )
-            obj.rotation_euler = (math.pi, math.pi, math.pi)
-            obj.keyframe_insert( data_path='location' )
-            obj.keyframe_insert( data_path='rotation_euler' )
-light
-
-camera	
-
+```
 import bpy
 import math
 
@@ -224,7 +146,7 @@ bpy.ops.object.camera_add()
 
 # create a plane
 bpy.ops.mesh.primitive_plane_add(    location=( 1, 2, 3 ),    rotation=( math.pi/3, math.pi/4, math.pi/5 ),   )
-
+```
 
 
 animation_trajectory.py
