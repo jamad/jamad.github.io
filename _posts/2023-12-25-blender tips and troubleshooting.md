@@ -39,8 +39,7 @@ for X in (M, np.rot90(M),np.fliplr(M), np.flipud(M)):
 ```
 
 # iteration - seelcted objects
-* before ![image](https://github.com/jamad/jamad.github.io/assets/949913/b84824bb-70d9-4a2a-b074-43d69c9586eb)
-* after ![image](https://github.com/jamad/jamad.github.io/assets/949913/1c68a32a-44d5-4d0c-a668-2b2efcd0d8b6)
+* before-after ![image](https://github.com/jamad/jamad.github.io/assets/949913/b84824bb-70d9-4a2a-b074-43d69c9586eb) >>  ![image](https://github.com/jamad/jamad.github.io/assets/949913/1c68a32a-44d5-4d0c-a668-2b2efcd0d8b6)
 
 ```
 import bpy
@@ -49,8 +48,7 @@ for obj in bpy.context.selected_objects:
 ```
 
 # shader node	
-* before ![image](https://github.com/jamad/jamad.github.io/assets/949913/6aee3d27-9e8f-4bde-bb3a-a9139b3adac8)
-* after ![image](https://github.com/jamad/jamad.github.io/assets/949913/e4e6b192-0781-4576-9544-fa722ebaee52)
+* before-after ![image](https://github.com/jamad/jamad.github.io/assets/949913/6aee3d27-9e8f-4bde-bb3a-a9139b3adac8) >> ![image](https://github.com/jamad/jamad.github.io/assets/949913/e4e6b192-0781-4576-9544-fa722ebaee52)
 
 ```
 import bpy
