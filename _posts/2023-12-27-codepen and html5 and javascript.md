@@ -6,7 +6,7 @@
 ---
 
 # image adjuster
-* https://jamad.github.io/mytools/image_adjuster
+* [https://jamad.github.io/mytools/image_adjuster](https://jamad.github.io/mytools/image_adjuster)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/e50d8a56-59ec-4641-ad1f-594abe37cba1)
 
 
