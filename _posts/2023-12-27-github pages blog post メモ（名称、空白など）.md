@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-|filename|Blog post title|note|
+|ファイル名|Blog post表示されたタイトル|備考|
 |-|-|-|
 |`2023-12-12-how to post a blog page.md`|`How to post a blog page`|空白は保持。<br>先頭のみ大文字化|
 |`2023-10-22-table-styles.md`|`Table Styles`|-は空白に置換<br>-直後は大文字化|
