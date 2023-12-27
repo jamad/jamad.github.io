@@ -4,7 +4,28 @@
 * example ![image](https://github.com/jamad/jamad.github.io/assets/949913/64ab77f8-5c1b-4851-839e-f4c553fce5a4)
 
 
- 
+ <main></main>
+
+<script>
+  const imageUrl = "https://raw.githubusercontent.com/dkzakka/dkzakka/main/dkzakka_icon.jpg";
+  function createContents(filter) {
+    const group = document.createElement('div');
+    group.dataset.filter = `image-${filter}`;
+    const header = document.createElement('h3');
+    header.textContent = filter;
+    const image = document.createElement('img');
+    image.src = imageUrl;
+    image.style.setProperty('--filter', filter === 'none' ? 'none' : filter);
+    group.appendChild(header);
+    group.appendChild(image);
+    return group;
+  }
+
+  const main = document.querySelector('main');
+  const filters = ["none", "grayscale(100%)", "saturate(200%)", "sepia(100%)", "invert(100%)", "opacity(50%)", "brightness(150%)", "contrast(200%)", "blur(5px)", "hue-rotate(180deg)"];
+  filters.forEach(x=>main.appendChild(createContents(x)));
+</script>
+
 <style>
  main {
   display: flex;
@@ -29,46 +50,4 @@ main div img {
 }
 
 </style>
-  
-  <input type="file" accept="image/*" id="fileI" style="display: none">
-  <div class="tgt" onclick="document.getElementById('fileI').click()">  <div class="img">Click Here to Display Image</div> </div>
-  <main></main>
-
-  <script>
-    const img = document.querySelector('.img');
-    const main = document.querySelector('main');
-    const filters = ["none", "grayscale(100%)", "saturate(200%)", "sepia(100%)", "invert(100%)", "opacity(50%)", "brightness(150%)", "contrast(200%)", "blur(5px)", "hue-rotate(180deg)"];
-
-    function dispI(x) {
-      if (x && x.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          img.style.backgroundImage = `url(${event.target.result})`;
-          main.innerHTML = '';
-          filters.forEach(filter => main.appendChild(createContents(event.target.result, filter)));
-        };
-        reader.readAsDataURL(x);
-      } else {
-        alert('Please select an image file.');
-      }
-    }
-
-    document.getElementById('fileI').addEventListener('change', event => {
-      dispI(event.target.files[0]);
-    });
-
-    function createContents(imageUrl, filter) {
-      const group = document.createElement('div');
-      group.dataset.filter = `image-${filter}`;
-      const header = document.createElement('h3');
-      header.textContent = filter;
-      const image = document.createElement('img');
-      image.src = imageUrl;
-      image.style.width = '120px';
-      image.style.filter = filter === 'none' ? 'none' : filter; // フィルターを直接適用
-      group.appendChild(header);
-      group.appendChild(image);
-      return group;
-    }
-  </script>
 
