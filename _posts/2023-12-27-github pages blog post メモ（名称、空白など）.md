@@ -1,5 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+# .md のファイル名と表示文字列の関係
+
 |ファイル名|Blog post表示されたタイトル|備考|
 |-|-|-|
 |`2023-12-12-how to post a blog page.md`|`How to post a blog page`|空白は保持。<br>先頭のみ大文字化|
