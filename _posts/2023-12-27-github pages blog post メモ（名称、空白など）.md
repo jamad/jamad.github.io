@@ -15,16 +15,5 @@
 
 # 基本
 1. 記事を[ _postフォルダ内](https://github.com/jamad/jamad.github.io/tree/master/_posts)に　YYYY-MM-DD-title.md で作成する title部分は日本語もOK
-1. ファイルには下記のようにヘッダーを入れれば、ファイル名を無視して、そのtitle文字列がトップページに表示されるようになる
 1. commit changes... しても即反映はされない。Jekyllのコンバート完了を待つ（Actionsで確認可能）
 1. ブラウザではキャッシュをクリアして更新の確認をするのが吉　(chromeなら ctrl + shift + R )
-
-#### ヘッダー具体例
-```
----
-layout: post
-title: how to post a blog page
-author: jamad
----
-```
-
