@@ -1,3 +1,5 @@
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
+
 # pyautogui 
 ## i.e, only controls for keyboard and mouse action  
 * onenote  `重要 pyautogui : VisualScriptNodeを作成` から移動しよう
