@@ -1,6 +1,9 @@
 <link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
 
+
 # image adjuster
+* example ![image](https://github.com/jamad/jamad.github.io/assets/949913/065c1238-c85c-4e89-92f6-6c20aada056b)
+
 
  <style>
   body { background: #222; color: #fff; }
