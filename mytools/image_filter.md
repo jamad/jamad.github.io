@@ -3,13 +3,14 @@
 # image filter
 
 
+ 
   <style>
     body { background: #222; color: #fff; }
     .tgt { width: 100%; height: 200px; border: 1px dashed #ccc; text-align: center; line-height: 200px; }
     .img { background: center no-repeat; background-size: contain; width: 100%; height: 100%; }
     main { display: flex; flex-wrap: wrap; }
     main div { margin: 4px; }
-    main div img { width: 120px; filter: var(--filter); }
+    main div img { width: 120px; height: auto; filter: none; }
   </style>
   
   <input type="file" accept="image/*" id="fileI" style="display: none">
@@ -46,10 +47,11 @@
       header.textContent = filter;
       const image = document.createElement('img');
       image.src = imageUrl;
-      image.style.width = '120px'; // 調整したい画像サイズに合わせて変更可能
-      image.style.setProperty('--filter', filter === 'none' ? 'none' : filter);
+      image.style.width = '120px';
+      image.style.filter = filter === 'none' ? 'none' : filter; // フィルターを直接適用
       group.appendChild(header);
       group.appendChild(image);
       return group;
     }
   </script>
+
