@@ -1,56 +1,52 @@
 <link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
 
 # image adjuster
-
- <style>
+<style>
     body { background: #222; color: #fff; }
-    .container { width: 100%; }
-    .tgt { width: 100%; height: 400px; border: 2px dashed #ccc; text-align: center; line-height: 400px; cursor: pointer; overflow: hidden; }
+    .tgt { width: 100%; height: 200px; border: 1px dashed #ccc; text-align: center; line-height: 200px; }
     .img { background: center no-repeat; background-size: contain; width: 100%; height: 100%; }
-    .ctrl { display: flex; flex-direction: column; margin-top: 10px; }
-  </style>
+    main { display: flex; flex-wrap: wrap; }
+    main div { margin: 4px; }
+    main div img { width: 160px; filter: var(--filter); }
+</style>
 
-  <input type="file" accept="image/*" id="fileInput" style="display: none">
-  
-  <div class="container">
-    <div class="tgt" onclick="document.getElementById('fileInput').click()">
-      <div class="img" id="dropArea">Click Here to Display Image</div>
-    </div>
-    <div class="ctrl">
-      <label for="brightness">Brightness</label>
-      <input type="range" class="bar bri" id="brightness" min="0" max="200" value="100" step="1">
-      
-      <label for="hue">Hue</label>
-      <input type="range" class="bar hue" id="hue" min="0" max="360" value="0" step="1">
-      
-      <label for="saturation">Saturation</label>
-      <input type="range" class="bar sat" id="saturation" min="0" max="200" value="100" step="1">
-    </div>
-  </div>
+<input type="file" accept="image/*" id="fileI" style="display: none">
+<div class="tgt" onclick="document.getElementById('fileI').click()">  <div class="img">Click Here to Display Image</div> </div>
 
-  <script>
-    function displayImage(file) {
-      if (file && file.type.startsWith('image/')) {
+<main></main>
+
+<script>
+const img = document.querySelector('.img');
+const main = document.querySelector('main');
+const filters = ["none", "grayscale(100%)", "saturate(200%)", "sepia(100%)", "invert(100%)", "opacity(50%)", "brightness(150%)", "contrast(200%)", "blur(5px)", "hue-rotate(180deg)"];
+
+function dispI(x) {
+  if (x && x.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = function(event) {
-          const imgElement = document.querySelector('.img');
-          imgElement.style.backgroundImage = `url(${event.target.result})`;
+          img.style.backgroundImage = `url(${event.target.result})`;
+          main.innerHTML = '';
+          filters.forEach(filter => main.appendChild(createContents(event.target.result, filter)));
         };
-        reader.readAsDataURL(file);
-      } else { alert('Please select an image file.');}
+        reader.readAsDataURL(x);
+      } else {
+        alert('Please select an image file.');
+      }
     }
 
-    const sliders = document.querySelectorAll('.bar');
-    const img = document.querySelector('.img');
+    document.getElementById('fileI').addEventListener('change', event => {      dispI(event.target.files[0]);    });
 
-    sliders.forEach(slider => {
-      slider.addEventListener('input', () => {
-        const brightness = document.getElementById('brightness').value / 100;
-        const hue = document.getElementById('hue').value;
-        const saturation = document.getElementById('saturation').value / 100;
-        img.style.filter = `brightness(${brightness}) hue-rotate(${hue}deg) saturate(${saturation})`;
-      });
-    });
-    // fileInputのonchangeイベントをJavaScriptで処理する
-    document.getElementById('fileInput').addEventListener('change', function(event){displayImage(this.files[0]);});
+    function createContents(imageUrl, filter) {
+      const group = document.createElement('div');
+      group.dataset.filter = `image-${filter}`;
+      const header = document.createElement('h3');
+      header.textContent = filter;
+      const image = document.createElement('img');
+      image.src = imageUrl;
+      image.style.setProperty('--filter', filter === 'none' ? 'none' : filter);
+      group.appendChild(header);
+      group.appendChild(image);
+      return group;
+    }
+
   </script>
