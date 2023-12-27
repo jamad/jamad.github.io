@@ -52,17 +52,30 @@
     body { background: #222; color: #fff; }
     .tgt { width: 100%; height: 200px; border: 1px dashed #ccc; text-align: center; line-height: 200px; }
     .img { background: center no-repeat; background-size: contain; width: 100%; height: 100%; }
-    main { display: flex; flex-wrap: wrap; }
    
-    main div {
+
+ main {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+main div {
   margin: 10px;
   display: flex; /* 子要素を横に並べるために追加 */
   flex-direction: column; /* 子要素を縦に並べる指示を削除 */
   align-items: center; /* 要素を中央揃え */
   text-align: center; /* テキストを中央揃え */
-    }
+}
 
-    main div img { width: 120px; height: auto; filter: none; }
-  </style>
+
+/* 画像 */
+main div img {
+  width: 100%; /* 画像を親要素に合わせて調整 */
+  max-width: 160px; /* 最大幅を指定 */
+  height: auto; /* アスペクト比を保ったまま高さを自動調整 */
+  filter: var(--filter); /* 画像に適用されるフィルターを定義 */
+}
+
+</style>
 
 
