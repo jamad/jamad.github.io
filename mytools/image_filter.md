@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
 
-# image adjuster
+# image filter
 
 
   <style>
