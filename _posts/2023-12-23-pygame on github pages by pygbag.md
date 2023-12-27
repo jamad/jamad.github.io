@@ -13,6 +13,38 @@
 * あれ？まだ黒いな  .py で実行した時は、下記のように表示されるのに。もしかしたらpygame.surfarray.pixels3d(screen)が良くないのか？
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/6aecef9a-3df1-4481-900d-945d114e96ec)
 
+
+* ちなみに、下記はpygame前のmatplotでの事前調査
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/0a2ccab2-3a5f-4559-97ce-0d00923f8fde)
+* code
+
+```
+import pygame
+import numpy as np
+import matplotlib.pyplot as plt
+
+def mandelbrot(c, max_iterations=30):
+    z = 0
+    for i in range(max_iterations):
+        if 2<abs(z):return i
+        z=z*z+c
+    return max_iterations 
+
+def mandelbrot_set(size=512):
+    x=np.linspace(-2    ,1  ,size)
+    y=np.linspace(-1.5  ,1.5,size)
+    mset=np.zeros((size,size))
+    for i in range(size):
+        for j in range(size):
+            c=complex(x[j],y[i])
+            mset[i,j]=mandelbrot(c)
+    return mset
+
+plt.imshow(mandelbrot_set(),cmap='hot')
+plt.show()
+```
+
+
 * https://jamad.github.io/pygbag_test/
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/93a52565-d14e-44c4-b571-2e9b2e5920c7)
 
