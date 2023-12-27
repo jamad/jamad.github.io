@@ -12,6 +12,7 @@
 * https://docs.github.com/en/pages/getting-started-with-github-pages
 
 
+# テーブルの揃えのsyntax
 ### 一つのパイプでテーブル作れたぞ？ preview ではテーブルにならない。htmlのみ？
 
 A|B
