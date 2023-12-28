@@ -8,16 +8,18 @@
 
 <style>
   body { background: #222; color: #fff; }
-  section { display: flex;}
+  section {display: flex;}
   img { margin-right: 10px; } 
 </style>
 
 <input type="file" accept="image/*" id="fileInput">
 
-<button onclick="saveFiltered()">Save Filtered Image</button>
+<button onclick="saveFiltered()">
+Save Filtered Image
+</button>
 
 <section>
-<img id="originalImage" src="https://via.placeholder.com/160"　alt="Placeholder" style="width: 160px;height: 160px;">
+<img id="originalImage" src=""　alt="Placeholder" style="width: 160px;height: 160px;">
 <canvas id="filteredCanvas"></canvas>
 </section>
 
