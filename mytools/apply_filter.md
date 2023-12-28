@@ -1,8 +1,10 @@
 * 画像を開き、'grayscale(100%)'フィルタをApplyし、結果を保存するツール　（PCでは作動。iOSでは不具合？）
 * [習作](https://codepen.io/jamad/pen/ZEPGLGo)
-* `img { margin-right: 10px; }` /* img要素の右側に隙間を追加 */
+* `img { margin-right: 10px; }` << img要素の右側に隙間を追加 
+
 
 ---
+
 
 <style>
   body { background: #222; color: #fff; }
@@ -15,8 +17,8 @@
 <button onclick="saveFiltered()">Save Filtered Image</button>
 
 <section>
-  <img id="originalImage" src="https://via.placeholder.com/160"　alt="Placeholder" style="width: 160px;height: 160px;">
-  <canvas id="filteredCanvas"></canvas>
+<img id="originalImage" src="https://via.placeholder.com/160"　alt="Placeholder" style="width: 160px;height: 160px;">
+<canvas id="filteredCanvas"></canvas>
 </section>
 
 <script>
