@@ -5,22 +5,18 @@
 
 ---
 
-
 <style>
   body { background: #222; color: #fff; }
-  section {display: flex;}
-  img { margin-right: 10px; } 
+  section { display: flex;}
+  img { margin-right: 10px; } /* img要素の右側に隙間を追加 */
 </style>
 
 <input type="file" accept="image/*" id="fileInput">
-
-<button onclick="saveFiltered()">
-Save Filtered Image
-</button>
+<button onclick="saveFiltered()">Save Filtered Image</button>
 
 <section>
-<img id="originalImage" src=""　alt="Placeholder" style="width: 160px;height: 160px;">
-<canvas id="filteredCanvas"></canvas>
+  <img id="originalImage" src=""　alt="Placeholder" style="width: 160px;height: 160px;">
+  <canvas id="filteredCanvas"></canvas>
 </section>
 
 <script>
@@ -29,8 +25,12 @@ const originalImg = document.getElementById('originalImage');
 const canvas = document.getElementById('filteredCanvas');
 const ctx = canvas.getContext('2d');
 const img = new Image();
-img.onload = function() { ctx.drawImage(img, 0, 0);};
+img.onload = function() { 
+  ctx.drawImage(img, 0, 0);
+  originalImg.src='https://via.placeholder.com/160';
+};
 img.src = 'https://via.placeholder.com/160';
+
 
 function applyFilter() {
   ctx.filter = 'grayscale(100%)';
@@ -54,5 +54,4 @@ downloadLink.href = canvas.toDataURL('image/png');
 downloadLink.download = 'filtered_image.png';
 downloadLink.click();
 }
-
 </script>
