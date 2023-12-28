@@ -1,5 +1,9 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+# 2023-12-28 下記は終了しておいた方がいいかもしれないのでメモ
+* https://github.com/skills/communicate-using-markdown
+
+
 * example and [reference](https://guides.github.com/features/mastering-markdown/)
 
 |syntax|result|
