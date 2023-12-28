@@ -1,13 +1,17 @@
 * 画像を開き、'grayscale(100%)'フィルタをApplyし、結果を保存するツール　（PCでは作動。iOSでは不具合？）
 * [習作](https://codepen.io/jamad/pen/ZEPGLGo)
+* `#originalImage { margin-right: 10px; }` /* img要素の右側に隙間を追加 */
+
+---
 
 <style>
   body { background: #222; color: #fff; }
   section { display: flex;}
-  #originalImage { margin-right: 10px; } /* img要素の右側に隙間を追加 */
+  #originalImage { margin-right: 10px; } 
 </style>
 
 <input type="file" accept="image/*" id="fileInput">
+
 <button onclick="saveFiltered()">Save Filtered Image</button>
 
 <section>
@@ -46,4 +50,5 @@ downloadLink.href = canvas.toDataURL('image/png');
 downloadLink.download = 'filtered_image.png';
 downloadLink.click();
 }
+
 </script>
