@@ -1,6 +1,10 @@
 # test for layout of auto generated contents
 
+---
+
 <main></main>
+
+---
 
 <style>
 body { background: #222; color: #fff; }
