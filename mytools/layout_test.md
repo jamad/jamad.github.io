@@ -1,4 +1,7 @@
 * test for layout of auto generated contents
+* `<main>` だと　下記のようにレイアウトが崩れるので　`<section>` を使うようにしてみたら解決！
+![image](https://github.com/jamad/jamad.github.io/assets/949913/ddf2fd91-2f50-4921-b339-c32aaf513664)
+
 
 ---
   <section></section>
