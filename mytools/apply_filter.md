@@ -3,14 +3,15 @@
 
 <style>
   body { background: #222; color: #fff; }
-  section { display: flex;flex-wrap: wrap;}
+  section { display: flex;}
+  #originalImage { margin-right: 10px; } /* img要素の右側に隙間を追加 */
 </style>
 
 <input type="file" accept="image/*" id="fileInput">
 <button onclick="saveFiltered()">Save Filtered Image</button>
 
 <section>
-  <img id="originalImage" src="#" style="width: 160px; display: none;">
+  <img id="originalImage" src="https://via.placeholder.com/160"　alt="Placeholder" style="width: 160px;height: 160px;">
   <canvas id="filteredCanvas"></canvas>
 </section>
 
@@ -19,25 +20,24 @@ const fileInput = document.getElementById('fileInput');
 const originalImg = document.getElementById('originalImage');
 const canvas = document.getElementById('filteredCanvas');
 const ctx = canvas.getContext('2d');
+const img = new Image();
+img.onload = function() { ctx.drawImage(img, 0, 0);};
+img.src = 'https://via.placeholder.com/160';
 
 function applyFilter() {
-  const newWidth = originalImg.width;
-  const newHeight = originalImg.height;
-  canvas.width = newWidth;
-  canvas.height = newHeight;
   ctx.filter = 'grayscale(100%)';
-  ctx.drawImage(originalImg, 0, 0, newWidth, newHeight);
+  ctx.drawImage(originalImg, 0, 0, originalImg.width, originalImg.height);
 }
   
 fileInput.addEventListener('change', function(event) {
-  const file = event.target.files[0];
   const reader = new FileReader();
-  reader.onload = function(e) {//画像がロード完了された後に実行される
+  reader.readAsDataURL(event.target.files[0]);
+  reader.onload = function(e) {
+    console.log('画像がロード完了')
     originalImg.src = e.target.result;
     originalImg.style.display = 'block';
     applyFilter();
     };
-  reader.readAsDataURL(file);
 });
 
 function saveFiltered() {
