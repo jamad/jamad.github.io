@@ -1,4 +1,4 @@
-* 画像を開き、'grayscale(100%)'フィルタをApplyし、結果を保存するツール
+* 画像を開き、'grayscale(100%)'フィルタをApplyし、結果を保存するツール　（PCでは作動。iOSでは不具合？）
 
 <style>
   body { background: #222; color: #fff; }
