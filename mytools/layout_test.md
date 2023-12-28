@@ -1,10 +1,8 @@
-# test for layout of auto generated contents
+* test for layout of auto generated contents
 
 ---
 
 <main></main>
-
----
 
 <style>
 body { background: #222; color: #fff; }
@@ -19,7 +17,10 @@ function f(filter) {
   const header = document.createElement('h5');
   header.textContent = filter;
   const image = document.createElement('img');
-  image.src = "https://via.placeholder.com/120/0000FF/808080"; // 画像を表示するための img 要素
+  
+  //image.src = "https://via.placeholder.com/120/0000FF/808080"; // placeholder
+  image.src = "https://picsum.photos/id/237/300/300.jpg"; // another placeholder
+  
   image.style.width = '120px';
   image.style.filter = filter; 
   group.appendChild(header);
