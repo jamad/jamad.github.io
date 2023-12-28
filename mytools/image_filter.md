@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
 
-# image filter
+# image filter　（但し、画像を保存しようとした場合、フィルタ前の画像が保存されるようだ？）
 * example 
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/63ff0710-394e-45b5-b83e-c2448f84a4a5)
