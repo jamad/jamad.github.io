@@ -1,4 +1,4 @@
-# test for apply filter
+* 画像を開き、'grayscale(100%)'フィルタをApplyし、結果を保存するツール
 
   <style>
     body { background: #222; color: #fff; }
