@@ -1,8 +1,8 @@
 * 画像を開き、'grayscale(100%)'フィルタをApplyし、結果を保存するツール
 
-  <style>
+<style>
   body { background: #222; color: #fff; }
-  section { display: flex;flex-wrap: wrap;}　/* 画像を横並びにするため　
+  section { display: flex;flex-wrap: wrap;}
 </style>
 
 <input type="file" accept="image/*" id="fileInput">
