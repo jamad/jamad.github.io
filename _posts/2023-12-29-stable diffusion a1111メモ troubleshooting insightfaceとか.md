@@ -22,7 +22,11 @@
 #### Problem `No SDP backend available, likely because you are running in pytorch versions < 2.0. In fact, you are using PyTorch 1.13.1+cu117. You might want to consider upgrading.`
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/f6480ec4-8862-43aa-bbdc-901ed4ee5315)
 * Solution
- *  上と同様に
+ * 上と同様に
  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/1a7d72a7-228d-4305-9934-36674b9f42e8)
 
 
+#### Problem `python.exe - Entry Point Not Found , The procedure entry point ?get_warnAlways@Warning@c10@@YA_NXZ could not be located in the dynamic link library `
+![image](https://github.com/jamad/jamad.github.io/assets/949913/c1b7d67a-2b79-4033-af5d-f300d9b17583)
+* Solution
+* not yet
