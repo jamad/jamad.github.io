@@ -20,8 +20,9 @@
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/5b067cd7-3eca-45bd-8311-77e5ca1a4aa3)
 
 #### Problem `No SDP backend available, likely because you are running in pytorch versions < 2.0. In fact, you are using PyTorch 1.13.1+cu117. You might want to consider upgrading.`
+![image](https://github.com/jamad/jamad.github.io/assets/949913/f6480ec4-8862-43aa-bbdc-901ed4ee5315)
 * Solution
- * 上と同様に
+ *  上と同様に
  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/1a7d72a7-228d-4305-9934-36674b9f42e8)
 
 
