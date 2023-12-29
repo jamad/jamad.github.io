@@ -1,5 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+* 下記は　practicePython\opencv\image_comparison\color_remap_visualization.py により、変換前（横軸）と変換後（縦軸）がどう対応しているかを可視化したもの。
+* （注意点はBGRなのと、左上が原点だったので左下原点にする為に反時計回り回転が必要だったこと）
 ![created_image](https://github.com/jamad/jamad.github.io/assets/949913/b3eb7597-35da-4106-9781-fc52e80244b0)
 
 
