@@ -2,7 +2,7 @@
 
 ## troubleshooting
 
-#### Problem　2023-12-29  `Error: The 'insightface==0.7.3' distribution was not found and is required by the application`
+#### 解決済　Problem　2023-12-29  `Error: The 'insightface==0.7.3' distribution was not found and is required by the application`
 * Solution
   * 通常のstartのための.batを複製し、同様の手順で進んだ後にpipさせるようにしたらエラー出なくなった
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/f3439a84-243e-4121-bfa2-a24ced383c24)
@@ -13,20 +13,20 @@
 
 
 
-####  Problem　2023-12-29 `no module 'xformers'. Processing without...`
+####  解決済　Problem　2023-12-29 `no module 'xformers'. Processing without...`
 * Solution
   * 上と同様に
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/15106516-34a7-45dc-90b8-aae5ce137964)
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/5b067cd7-3eca-45bd-8311-77e5ca1a4aa3)
 
-#### Problem `No SDP backend available, likely because you are running in pytorch versions < 2.0. In fact, you are using PyTorch 1.13.1+cu117. You might want to consider upgrading.`
+#### 未解決　Problem `No SDP backend available, likely because you are running in pytorch versions < 2.0. In fact, you are using PyTorch 1.13.1+cu117. You might want to consider upgrading.`
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/f6480ec4-8862-43aa-bbdc-901ed4ee5315)
 * Solution >> no, new error
  * 上と同様に  `venv\Scripts\python.exe -m pip install torch==2.0.0+cu118 --extra-index-url https://download.pytorch.org/whl/cu118`
  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/1a7d72a7-228d-4305-9934-36674b9f42e8)
  * いや、待て、下記のエラーが新たに発生するようになったぞ
 
-#### Problem　2023-12-29 `python.exe - Entry Point Not Found , The procedure entry point ?get_warnAlways@Warning@c10@@YA_NXZ could not be located in the dynamic link library `
+#### 解決中　Problem　2023-12-29 `python.exe - Entry Point Not Found , The procedure entry point ?get_warnAlways@Warning@c10@@YA_NXZ could not be located in the dynamic link library `
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c1b7d67a-2b79-4033-af5d-f300d9b17583)
 * Solution
 * 下記を試してみた
