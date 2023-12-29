@@ -15,4 +15,8 @@
 
 ####  Problem　2023-12-29 `no module 'xformers'. Processing without...`
 * Solution
-  * not yet
+  * 同様に
+  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/15106516-34a7-45dc-90b8-aae5ce137964)
+  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/5b067cd7-3eca-45bd-8311-77e5ca1a4aa3)
+
+
