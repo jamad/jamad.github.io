@@ -29,4 +29,7 @@
 #### Problem　2023-12-29 `python.exe - Entry Point Not Found , The procedure entry point ?get_warnAlways@Warning@c10@@YA_NXZ could not be located in the dynamic link library `
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c1b7d67a-2b79-4033-af5d-f300d9b17583)
 * Solution
-* not yet
+* 下記を試してみた
+* pip install --upgrade torch==1.9.0
+* pip install --upgrade torchvision==0.10.0
+* 
