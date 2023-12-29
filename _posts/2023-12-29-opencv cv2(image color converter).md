@@ -1,5 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+![created_image](https://github.com/jamad/jamad.github.io/assets/949913/b3eb7597-35da-4106-9781-fc52e80244b0)
+
 
 # 2023-12-29 オリジナルと加工後の画像から、RGBのそれぞれのデータ変換を推測してみた
 * 下記の結果をゲットするのに使ったコードは　practicePython\opencv\image_comparison\image_comparison.py
