@@ -1,5 +1,11 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+
+# 2023-12-29 bugを発見して修正した。opencvはBGRなのにgradioはRGBの順番でデータを持っていたのかよ！
+* project_github\practiceGradio\image_adjuster　にapp.py をアップロードし直して
+* https://huggingface.co/spaces/juyam/image_adjuster 期待通りの結果になることを確認した。ひとまず完了だ。
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/5d3acaa5-2847-4d58-947b-85256aace6d7)
+
 * 下記は　practicePython\opencv\image_comparison\color_remap_visualization.py により、変換前（横軸）と変換後（縦軸）がどう対応しているかを可視化したもの。
 * （注意点はBGRなのと、左上が原点だったので左下原点にする為に反時計回り回転が必要だったこと）
 ![created_image](https://github.com/jamad/jamad.github.io/assets/949913/b3eb7597-35da-4106-9781-fc52e80244b0)
@@ -27,8 +33,4 @@
   * https://huggingface.co/spaces/juyam/image_adjuster
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/be518384-b498-4961-91df-8db9e7158c7b)
 
-# 2023-12-29 bugを発見して修正した。opencvはBGRなのにgradioはRGBの順番でデータを持っていたのかよ！
-* project_github\practiceGradio\image_adjuster　にapp.py をアップロードし直して
-* https://huggingface.co/spaces/juyam/image_adjuster 期待通りの結果になることを確認した。ひとまず完了だ。
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/5d3acaa5-2847-4d58-947b-85256aace6d7)
 
