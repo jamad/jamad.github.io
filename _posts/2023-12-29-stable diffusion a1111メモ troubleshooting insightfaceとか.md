@@ -15,11 +15,13 @@
 
 ####  Problem　2023-12-29 `no module 'xformers'. Processing without...`
 * Solution
-  * 同様に
+  * 上と同様に
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/15106516-34a7-45dc-90b8-aae5ce137964)
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/5b067cd7-3eca-45bd-8311-77e5ca1a4aa3)
 
 #### Problem `No SDP backend available, likely because you are running in pytorch versions < 2.0. In fact, you are using PyTorch 1.13.1+cu117. You might want to consider upgrading.`
 * Solution
-* not yet
+ * 上と同様に
+ * ![image](https://github.com/jamad/jamad.github.io/assets/949913/1a7d72a7-228d-4305-9934-36674b9f42e8)
+
 
