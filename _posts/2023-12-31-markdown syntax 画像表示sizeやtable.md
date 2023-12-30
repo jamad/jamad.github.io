@@ -18,12 +18,6 @@
 
 
 # テーブルの揃えのsyntax
-### 一つのパイプでテーブル作れたぞ？ preview ではテーブルにならない。htmlのみ？
-
-A|B
-
-by `A|B`
-
 
 ##  [参考](https://kramdown.gettalong.org/syntax.html#tables)
 
@@ -38,3 +32,11 @@ by `A|B`
 |-  |:- |:-:|-: |
 |abc|abc|abc|abc|
 ```
+
+### （メモ）html では　一つのパイプでテーブル作れたけど、.mdのpreview ではテーブルにならないので、通常の表記の方が良いだろう。
+
+A|B
+
+by `A|B`
+
+
