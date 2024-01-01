@@ -1,8 +1,10 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+
 * example and [reference](https://guides.github.com/features/mastering-markdown/)
 
-* javascript で リンク入れたらタグを作るツールをcodepenで作ったほうがいいな
+* javascript で リンク入れたら50%表示するタグを作るツールをcodepenで作ったほうがいいな
+* 作ったのでトップページに配置した。<< [実験場](https://codepen.io/jamad/pen/RwdNQPv ) 
 * ```<img src="https://jamad.github.io/jam_clock_icon.png" width="64">``` <img src="https://jamad.github.io/jam_clock_icon.png" width="64">
 
 
