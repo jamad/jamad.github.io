@@ -1,8 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 * memo
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/0ba82b15-1158-4c23-b78d-da46ecec53ce)
-
+* <img src="https://github.com/jamad/jamad.github.io/assets/949913/0ba82b15-1158-4c23-b78d-da46ecec53ce" width="50%">
 
 ## troubleshooting
 
