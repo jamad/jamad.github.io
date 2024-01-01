@@ -64,6 +64,29 @@ function copyText2() {// テキストエリア追加し、コピー後に削除
 
 ---
 
+
+# urlで画像をwidth=50%表示させるタグをコピーするボタン
+<input type="text" id="my_userInput">
+<button onclick="copyT2()" id="buttonlabel2">dummy</button>
+
+<script>
+// https://jamad.github.io/jam_clock_icon.png
+  // HTML要素を取得
+var userInput = document.getElementById("my_userInput");
+
+// input要素の内容が変化した時に実行される関数を定義
+userInput.addEventListener("input", function() {
+  document.getElementById("buttonlabel2").textContent = `<img src="${userInput.value}" width="50%">`
+});
+  
+
+  function copyT2() {
+    navigator.clipboard.writeText(document.getElementById("buttonlabel2").textContent);
+  }
+</script>
+
+---
+
 ## codepen で動作確認したhtmlを.mdに記述し、jekyllで実装するのが最も効率良い
 * [https://codepen.io/your-work/](https://codepen.io/your-work/)
 
