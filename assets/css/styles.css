@@ -7,16 +7,10 @@ body {
 }
 
 /* 未訪問リンクのスタイル */
-a:link {
-  color: #0077FF; /* 明るい青色のリンクテキストカラー */
-}
+a:link {  color: #0077FF; }
 
 /* 訪問済みリンクのスタイル */
-a:visited {
-  color: #008833; /* 訪問済みリンクの色を変更 */
-}
+a:visited {  color: #008833; }
 
-/* コードブロック内の文字色を黒に変更 */
-pre.highlight code {
-  color: black;
-}
+/* ```で囲まれたコードブロック内の文字色を黒に変更 */
+pre.highlight code {  color: black;}

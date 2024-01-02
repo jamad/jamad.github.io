@@ -1,0 +1,17 @@
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+
+# pythonanywhereによりweb上で実行する
+## exmaple ( gist + pythonanywhere )
+* gist - https://gist.github.com/jamad/a081f2e9cc0c23dcfcadcfde704984b6
+* create a console for the gist - https://www.pythonanywhere.com/gists/
+* the result on pythonanywhere - https://www.pythonanywhere.com/gists/a081f2e9cc0c23dcfcadcfde704984b6/test%20py%20code/ipython3/
+
+
+# 順次移していくべき内容
+* ツール
+  * pyqt5 :  image_base64_converter.py
+    * ![image](https://github.com/jamad/jamad.github.io/assets/949913/b0e8517b-e8db-4e77-b1c2-11266c88e603)
+  * filepath_joint_swapper.py
+    * ![image](https://github.com/jamad/jamad.github.io/assets/949913/7ba8e25b-ac96-4ba3-acf9-0b03f35fd0e8)
+* pyscreenshot
+* screenshotter -  automation/capture_unity_preview_panel.py)

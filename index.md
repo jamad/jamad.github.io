@@ -1,9 +1,16 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+---
+layout: default
+title: test Documentation
+permalink: top_page
+---
+
+
 # このページ(index.html)の更新方法 
 1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　から編集 (index.html が既存だと index.md が上書きできないので削除)
 1. jekyllのconversionを待つ。進捗状況は[ここ](https://github.com/jamad/jamad.github.io/actions)で確認できる。
-1. [このページを再読み込み](https://jamad.github.io/) して確認。Chromeなら `ctrl+shift+R` でキャッシュクリア可能。
+1. [https://jamad.github.io](https://jamad.github.io/)を再読み込みして確認。Chromeなら `ctrl+shift+R` でキャッシュクリア可能。
 
 ---
 
@@ -15,19 +22,16 @@
 
 # post用prefixのコピーボタン
 
-<button onclick="copyText1()"><span id="str20231225">dummy</span></button>
+<button onclick="copyT()" id="buttonlabel">dummy</button>
+
 <script>
-var mystr20231225= new Date().toISOString().slice(0, 10) + '-';
-document.getElementById("str20231225").innerText =mystr20231225;
-function copyText1() {
-  var textArea = document.createElement("textarea");
-  document.body.appendChild(textArea);
-  textArea.value = mystr20231225;
-  textArea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textArea);
-  alert("copied : " + mystr20231225);
-}
+  title=new Date().toISOString().slice(0,10)+'-';
+  (f=(x=title)=>document.getElementById("buttonlabel").textContent=x)();//定義しつつ実行
+  function copyT() {
+    navigator.clipboard.writeText(title);
+    f("copied:"+title);
+    setTimeout(f,250);
+  }
 </script>
 
 ---
@@ -60,7 +64,30 @@ function copyText2() {// テキストエリア追加し、コピー後に削除
 
 ---
 
-## codepen で動作確認して htmlを.md に実装し、jekyllでhtml 化する流れが今のところ最も効率が良い
+
+# urlで画像をwidth=50%表示させるタグをコピーするボタン
+<input type="text" id="my_userInput">
+<button onclick="copyT2()" id="buttonlabel2">dummy</button>
+
+<script>
+// https://jamad.github.io/jam_clock_icon.png
+  // HTML要素を取得
+var userInput = document.getElementById("my_userInput");
+
+// input要素の内容が変化した時に実行される関数を定義
+userInput.addEventListener("input", function() {
+  document.getElementById("buttonlabel2").textContent = `<img src="${userInput.value}" width="50%">`
+});
+  
+
+  function copyT2() {
+    navigator.clipboard.writeText(document.getElementById("buttonlabel2").textContent);
+  }
+</script>
+
+---
+
+## codepen で動作確認したhtmlを.mdに記述し、jekyllで実装するのが最も効率良い
 * [https://codepen.io/your-work/](https://codepen.io/your-work/)
 
 
