@@ -7,6 +7,9 @@
 * pygbagのヘルプを見る方法　`pygbag --help 'foldername'`
 * iOS の場合、なぜか　ReadyToStartのボタンから大きく外れたエリアを押さないと開始しない  `https://github.com/pygame-web/pygbag/issues/138#issue-2011645179`
 
+## 2024-01-02 未完　movie size changer
+* [https://jamad.github.io/wasm/2024-01-02-video_size_changer/](https://jamad.github.io/wasm/2024-01-02-video_size_changer/)
+  
 
 ## 2023-12-23
 * [https://jamad.github.io/wasm/2023-12-23-mandelbrot/](https://jamad.github.io/wasm/2023-12-23-mandelbrot)
