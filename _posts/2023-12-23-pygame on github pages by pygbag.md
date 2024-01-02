@@ -9,7 +9,7 @@
 
 
 ## 2023-12-23
-* https://jamad.github.io/wasm/2023-12-23-mandelbrot/
+* [https://jamad.github.io/wasm/2023-12-23-mandelbrot/](https://jamad.github.io/wasm/2023-12-23-mandelbrot)
 * あれ？まだ黒いな  .py で実行した時は、下記のように表示されるのに。もしかしたらpygame.surfarray.pixels3d(screen)が良くないのか？
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/6aecef9a-3df1-4481-900d-945d114e96ec)
 
