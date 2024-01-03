@@ -1,10 +1,5 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
----
-layout: default
-title: test Documentation
-permalink: top_page
----
 
 
 # このページ(index.html)の更新方法 
