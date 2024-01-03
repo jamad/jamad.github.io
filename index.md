@@ -21,7 +21,8 @@ permalink: top_page
   * [_posts](https://github.com/jamad/jamad.github.io/tree/master/_posts) > add file
 
 # コピーボタン各種
-
+* [codepen](https://codepen.io/your-work/) で動作確認したhtmlを.mdに記述し、jekyllで実装するのが最も効率良い
+  
 <button onclick="copyT()" id="buttonlabel">dummy</button>
 
 <script>
@@ -60,10 +61,6 @@ setInterval(u,1000);
 
 ---
 
-## codepen で動作確認したhtmlを.mdに記述し、jekyllで実装するのが最も効率良い
-* [https://codepen.io/your-work/](https://codepen.io/your-work/)
 
-
----
 
 
