@@ -48,5 +48,5 @@
 * pip install --upgrade torch==1.9.0
 * pip install --upgrade torchvision==0.10.0
 
-#### 解決済　Problem 2024-01-03 modules.devices.NansException: A tensor with all NaNs was produced in Unet. This could be either because there's not enough precision to represent the picture, or because your video card does not support half type. Try setting the "Upcast cross attention layer to float32" option in Settings > Stable Diffusion or using the --no-half commandline argument to fix this. Use --disable-nan-check commandline argument to disable this check.
+#### 解決済　Problem 2024-01-03 `modules.devices.NansException: A tensor with all NaNs was produced in Unet. This could be either because there's not enough precision to represent the picture, or because your video card does not support half type. Try setting the "Upcast cross attention layer to float32" option in Settings > Stable Diffusion or using the --no-half commandline argument to fix this. Use --disable-nan-check commandline argument to disable this check.`
 * 解像度が大きすぎると発生した。width やheightを小さくすれば出なくなった。512x768 くらいなら大丈夫だった。
