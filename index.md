@@ -25,22 +25,17 @@ permalink: top_page
 <button onclick="copyT()" id="buttonlabel">dummy</button>
 
 <script>
-  title='post用prefixのコピーボタン : '+new Date().toISOString().slice(0,10)+'-';
-  document.getElementById("buttonlabel").textContent=title;
-  function copyT() {
-    str_to_copy=new Date().toISOString().slice(0,10)+'-';
-    navigator.clipboard.writeText(str_to_copy);
-  }
+  str_to_copy=new Date().toISOString().slice(0,10)+'-';
+  document.getElementById("buttonlabel").textContent='post用prefixのコピーボタン : '+str_to_copy;
+  function copyT() {navigator.clipboard.writeText(str_to_copy);}
 </script>
-
-<br>
 
 <button onclick="copyText2()"><span id="mystr">dummy</span></button>
 
 <script>
-var mystr= '<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">';
-document.getElementById("mystr").innerText ='CSSタグをコピーするボタン : '+mystr;
-function copyText2() { navigator.clipboard.writeText(mystr);}
+  mystr= '<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">';
+  document.getElementById("mystr").innerText ='CSSタグをコピーするボタン : '+mystr;
+  function copyText2() { navigator.clipboard.writeText(mystr);}
 </script>
 
 ---
