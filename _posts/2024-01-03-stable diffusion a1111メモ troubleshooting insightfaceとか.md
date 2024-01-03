@@ -2,6 +2,7 @@
 
 # AUTOMATIC1111_webui_0824.zip を試す
 * zip を解凍
+* 1_セットアップ.bat　を実行し、ｙを押して暫く待つ
 * wip
 
 
