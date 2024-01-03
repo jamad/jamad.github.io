@@ -38,6 +38,16 @@ permalink: top_page
   function copyText2() { navigator.clipboard.writeText(mystr);}
 </script>
 
+<input type="text" id="my_userInput"> <button onclick="copyT2()" id="buttonlabel2">urlで画像をwidth=50%表示させるタグをコピーするボタン</button>
+<script> //example :  https://jamad.github.io/jam_clock_icon.png
+  var userInput = document.getElementById("my_userInput");
+ 
+  // input要素の内容が変化した時に実行される関数を定義
+  userInput.addEventListener("input", function() {  document.getElementById("buttonlabel2").textContent = `<img src="${userInput.value}" width="50%">`});
+  
+  function copyT2() {navigator.clipboard.writeText(document.getElementById("buttonlabel2").textContent);}
+</script>
+
 ---
 
 # javascript による簡易時計
@@ -47,29 +57,6 @@ f=(x)=>String(x).padStart(2,'0');
 g=(d=new Date())=>`${f(d.getHours())}:${f(d.getMinutes())}:${f(d.getSeconds())}`;
 u=()=>document.getElementById('tm').textContent=g();
 setInterval(u,1000);
-</script>
-
----
-
-
-# urlで画像をwidth=50%表示させるタグをコピーするボタン
-<input type="text" id="my_userInput">
-<button onclick="copyT2()" id="buttonlabel2">dummy</button>
-
-<script>
-// https://jamad.github.io/jam_clock_icon.png
-  // HTML要素を取得
-var userInput = document.getElementById("my_userInput");
-
-// input要素の内容が変化した時に実行される関数を定義
-userInput.addEventListener("input", function() {
-  document.getElementById("buttonlabel2").textContent = `<img src="${userInput.value}" width="50%">`
-});
-  
-
-  function copyT2() {
-    navigator.clipboard.writeText(document.getElementById("buttonlabel2").textContent);
-  }
 </script>
 
 ---
