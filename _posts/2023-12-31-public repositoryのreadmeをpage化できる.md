@@ -1,4 +1,4 @@
-
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 ### public なrepository のsettings で main に変更してSaveしたら readme.md が pages として公開される。
 
