@@ -25,7 +25,7 @@ permalink: top_page
 <button onclick="copyT()" id="buttonlabel">dummy</button>
 
 <script>
-  title='post用prefixのコピーボタン '+new Date().toISOString().slice(0,10)+'-';
+  title='post用prefixのコピーボタン : '+new Date().toISOString().slice(0,10)+'-';
   (f=(x=title)=>document.getElementById("buttonlabel").textContent=x)();//定義しつつ実行
   function copyT() {
     title=new Date().toISOString().slice(0,10)+'-';
@@ -37,6 +37,16 @@ permalink: top_page
 
 ---
 
+<button onclick="copyText2()"><span id="mystr">dummy</span></button>
+
+<script>
+var mystr= '<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">';
+document.getElementById("mystr").innerText ='CSSタグをコピーするボタン : '+mystr;
+function copyText2() { navigator.clipboard.writeText(mystr);}
+</script>
+
+---
+
 # javascript による簡易時計
 <p id="tm"></p>
 <script>
@@ -44,23 +54,6 @@ f=(x)=>String(x).padStart(2,'0');
 g=(d=new Date())=>`${f(d.getHours())}:${f(d.getMinutes())}:${f(d.getSeconds())}`;
 u=()=>document.getElementById('tm').textContent=g();
 setInterval(u,1000);
-</script>
-
----
-
-# CSSタグをコピーするボタン
-<button onclick="copyText2()"><span id="mystr">dummy</span></button>
-<script>
-var mystr= '<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">';
-document.getElementById("mystr").innerText =mystr;
-function copyText2() {// テキストエリア追加し、コピー後に削除
-  var textArea = document.createElement("textarea");
-  document.body.appendChild(textArea);
-  textArea.value = mystr;
-  textArea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textArea);
-}
 </script>
 
 ---
