@@ -20,14 +20,15 @@ permalink: top_page
 * pc の場合
   * [_posts](https://github.com/jamad/jamad.github.io/tree/master/_posts) > add file
 
-# post用prefixのコピーボタン
+# コピーボタン各種
 
 <button onclick="copyT()" id="buttonlabel">dummy</button>
 
 <script>
-  title=new Date().toISOString().slice(0,10)+'-';
+  title='post用prefixのコピーボタン '+new Date().toISOString().slice(0,10)+'-';
   (f=(x=title)=>document.getElementById("buttonlabel").textContent=x)();//定義しつつ実行
   function copyT() {
+    title=new Date().toISOString().slice(0,10)+'-';
     navigator.clipboard.writeText(title);
     f("copied:"+title);
     setTimeout(f,250);
