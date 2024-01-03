@@ -26,16 +26,14 @@ permalink: top_page
 
 <script>
   title='post用prefixのコピーボタン : '+new Date().toISOString().slice(0,10)+'-';
-  (f=(x=title)=>document.getElementById("buttonlabel").textContent=x)();//定義しつつ実行
+  document.getElementById("buttonlabel").textContent=title;
   function copyT() {
-    title=new Date().toISOString().slice(0,10)+'-';
-    navigator.clipboard.writeText(title);
-    f("copied:"+title);
-    setTimeout(f,250);
+    str_to_copy=new Date().toISOString().slice(0,10)+'-';
+    navigator.clipboard.writeText(str_to_copy);
   }
 </script>
 
----
+<br>
 
 <button onclick="copyText2()"><span id="mystr">dummy</span></button>
 
