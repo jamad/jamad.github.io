@@ -5,7 +5,9 @@
 
 # maze 2024-01-05
 * [https://jamad.github.io/codepen_porting/maze](https://jamad.github.io/codepen_porting/maze)
-* [by maze.md](https://github.com/jamad/jamad.github.io/blob/master/codepen_porting/maze.md) 
+* [by maze.md](https://github.com/jamad/jamad.github.io/blob/master/codepen_porting/maze.md)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/7a6d3d40-18c4-440d-9d1a-4a6f7bc4dae4)
+
 ---
 
 # image adjuster
