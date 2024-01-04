@@ -1,4 +1,5 @@
-https://codepen.io/jamad/pen/ZEPQrrQ より
+* testbed : https://codepen.io/jamad/pen/ZEPQrrQ
+
 
 <br>
 <canvas></canvas>
