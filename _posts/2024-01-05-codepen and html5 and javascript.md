@@ -11,12 +11,12 @@
 
 # image adjuster
 * [https://jamad.github.io/mytools/image_adjuster](https://jamad.github.io/mytools/image_adjuster)
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/e50d8a56-59ec-4641-ad1f-594abe37cba1)
+* <img src="https://github.com/jamad/jamad.github.io/assets/949913/e50d8a56-59ec-4641-ad1f-594abe37cba1" width="160" />
 * 研究過程　[https://codepen.io/jamad/pen/RwdPbmw](https://codepen.io/jamad/pen/RwdPbmw)
 
 # image filter
 * [https://codepen.io/jamad/pen/ExMadmE](https://codepen.io/jamad/pen/ExMadmE)
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/1cb81a0f-03ab-406e-9333-aa9ab63654f0)
+* <img src="https://github.com/jamad/jamad.github.io/assets/949913/1cb81a0f-03ab-406e-9333-aa9ab63654f0" width="160" />
 
 # 2024-01-04 https://codepen.io/jamad/pen/ZEPQrrQ
 
