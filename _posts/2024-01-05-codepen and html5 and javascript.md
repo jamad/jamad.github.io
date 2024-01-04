@@ -4,8 +4,8 @@
 * [https://codepen.io/your-work/](https://codepen.io/your-work/)
 
 # maze 2024-01-05
-* https://github.com/jamad/jamad.github.io/blob/master/codepen_porting/maze.md
-* [maze](https://jamad.github.io/codepen_porting/maze)
+* [https://jamad.github.io/codepen_porting/maze](https://jamad.github.io/codepen_porting/maze)
+* [by maze.md](https://github.com/jamad/jamad.github.io/blob/master/codepen_porting/maze.md) 
 ---
 
 # image adjuster
