@@ -2,7 +2,7 @@ body {
   background-color: #101233; /* ダーク背景色 */
   color: white; /* テキストカラー白*/
   
-  background-image: url("pics/background/xv.png"); /* 画像パス指定 */
+  background-image: url("https://jamad.github.io/assets/css/pics/background/xv.png"); /* 画像パス指定 absolute path に変更してみた*/
   background-repeat: repeat; /* 画像をタイリング */
 }
 
