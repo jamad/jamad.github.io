@@ -15,7 +15,9 @@
 
 #### 解決済　Problem　2023-12-29  `Error: The 'insightface==0.7.3' distribution was not found and is required by the application`
 * Solution
-  * 通常のstartのための.batを複製し、同様の手順で進んだ後にpipさせるようにしたらエラー出なくなった
+  * 準備として　insightface-0.7.3-cp310-cp310-win_amd64.whl　を下記の場所に置く。
+    * ![image](https://github.com/jamad/jamad.github.io/assets/949913/7f27197c-63be-45f7-bb14-10196cac1bc8)
+  * そして通常のstartのための.batを複製し、同様の手順で進んだ後にpipさせるようにしたらエラー出なくなった
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/f3439a84-243e-4121-bfa2-a24ced383c24)
   * 問題解決後は、通常のスタート.batを起動すると mov2mov のタブの中のControlNet下にReactorが表示された
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/10dbaa9a-ecc7-416c-8d06-c4c3bc639f3d)
