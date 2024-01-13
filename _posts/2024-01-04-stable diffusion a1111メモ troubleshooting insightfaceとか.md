@@ -5,11 +5,11 @@
 * 1_セットアップ.bat　を実行し、ｙを押して暫く待つ
 * 自動的にインターフェースが起動した状態になった
 
-
-
 # ComfiUI 試したものの、結果がイマイチだったので一旦中止
 * <img src="https://github.com/jamad/jamad.github.io/assets/949913/0ba82b15-1158-4c23-b78d-da46ecec53ce" width="20%">
 * see `https://stable-diffusion-art.com/comfyui/#ComfyUI_vs_AUTOMATIC1111`
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/e2cbef15-90a6-45bd-ad19-f028c3be640e)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/6499fa30-35e8-4897-b634-89e43e21588d)
 
 ## troubleshooting
 
@@ -22,8 +22,6 @@
   * 問題解決後は、通常のスタート.batを起動すると mov2mov のタブの中のControlNet下にReactorが表示された
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/10dbaa9a-ecc7-416c-8d06-c4c3bc639f3d)
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/bf9228c7-cf9e-4e7a-878d-a50947b6add8)
-  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/e2cbef15-90a6-45bd-ad19-f028c3be640e)
-  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/6499fa30-35e8-4897-b634-89e43e21588d)
 
 
 
