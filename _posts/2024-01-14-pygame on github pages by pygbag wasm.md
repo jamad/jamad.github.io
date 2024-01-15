@@ -3,6 +3,7 @@
 * [このページの更新用　タイトルが変わるので親階層](https://github.com/jamad/jamad.github.io/tree/master/_posts)
 
 ### pinned notes
+* numpy　の import は pygame の直後に行うようにした。
 * browserで勝手に拡大されて画像がぼけるので、大きめの画面サイズで考える。
 * pygbagのヘルプを見る方法　`pygbag --help 'foldername'`
 * iOS の場合、なぜか　ReadyToStartのボタンから大きく外れたエリアを押さないと開始しない  `https://github.com/pygame-web/pygbag/issues/138#issue-2011645179`
