@@ -30,12 +30,12 @@
   function copyText2() { navigator.clipboard.writeText(mystr);}
 </script>
 
-<input type="text" id="my_userInput"> <button onclick="copyT2()" id="buttonlabel2">urlで画像をwidth=50%表示させるタグをコピーするボタン</button>
+<input type="text" id="my_userInput"> <button onclick="copyT2()" id="buttonlabel2">urlで画像をwidth=25%表示させるタグをコピーするボタン</button>
 <script> 
  //example :  https://jamad.github.io/jam_clock_icon.png
  userInput = document.getElementById("my_userInput");
  // input要素の内容が変化した時に実行される関数を定義
- userInput.addEventListener("input", function() {  document.getElementById("buttonlabel2").textContent = `<img src="${userInput.value}" width="50%">`});
+ userInput.addEventListener("input", function() {  document.getElementById("buttonlabel2").textContent = `<img src="${userInput.value}" width="25%">`});
  function copyT2() {navigator.clipboard.writeText(document.getElementById("buttonlabel2").textContent);}
 </script>
 
