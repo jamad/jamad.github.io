@@ -8,7 +8,7 @@
 * iOS の場合、なぜか　ReadyToStartのボタンから大きく外れたエリアを押さないと開始しない  `https://github.com/pygame-web/pygbag/issues/138#issue-2011645179`
 
 ## 2024-01-15 numpy sample 
-* wip
+* [https://jamad.github.io/wasm/2024-01-15-numpy/](https://jamad.github.io/wasm/2024-01-15-numpy/)
 
 ## 2024-01-02 未完　movie size changer
 * [https://jamad.github.io/wasm/2024-01-02-video_size_changer/](https://jamad.github.io/wasm/2024-01-02-video_size_changer/)
