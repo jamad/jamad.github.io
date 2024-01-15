@@ -9,7 +9,7 @@
 
 ## 2024-01-15 numpy sample 
 * [https://jamad.github.io/wasm/2024-01-15-numpy/](https://jamad.github.io/wasm/2024-01-15-numpy/) 何故か、何も起こらない
-* #import tkinter as tk  のようにtkinter を完全コメントアウトし、import を下記の順序にしたらコードが実行された
+* 結局、`#import tkinter as tk` のようにtkinter を完全コメントアウトし、import を下記の順序にしたらコードが実行された
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/46010d5d-4354-44a3-bbee-0fbd0ad540e1)
 
 
