@@ -10,7 +10,7 @@
 
 ## 2024-01-15 numpy sample 
 * [https://jamad.github.io/wasm/2024-01-15-numpy/](https://jamad.github.io/wasm/2024-01-15-numpy/)
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/df8627ea-41ee-41ac-be1d-a5c6ca6bc1d5)
+* <img src="https://github.com/jamad/jamad.github.io/assets/949913/df8627ea-41ee-41ac-be1d-a5c6ca6bc1d5" width="25%" />
 * 当初、 実行しても何故か、何も起こらなかった（pygbag のコマンドでローカルサーバでのテストの時から）
   * 結局、`#import tkinter as tk` のようにtkinter を完全コメントアウトし、import を下記の順序にしたらコードが実行された
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/46010d5d-4354-44a3-bbee-0fbd0ad540e1)
