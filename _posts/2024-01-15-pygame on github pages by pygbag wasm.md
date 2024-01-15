@@ -18,6 +18,8 @@
 
 ## 2024-01-02 未完　movie size changer
 * [https://jamad.github.io/wasm/2024-01-02-video_size_changer/](https://jamad.github.io/wasm/2024-01-02-video_size_changer/)
+* tkinter は　未サポートなようだ　`https://github.com/pygame-web/pkg-porting-wasm/issues/28`
+
   
 
 ## 2023-12-23
