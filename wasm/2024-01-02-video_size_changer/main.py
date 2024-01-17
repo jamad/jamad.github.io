@@ -1,6 +1,10 @@
+import pygame
 import tkinter as tk
 from tkinter import filedialog
-import pygame
+import asyncio # step1
+
+pygame.init() 
+
 
 def play_video(file_path):
     # ここでファイルパスを使って動画を再生するなどの処理を行う
@@ -19,11 +23,6 @@ def select_file():
         print("ファイルが選択されていません")
     
     return file_path
-
-import asyncio # step1
-
-import pygame
-pygame.init() 
 
 w=360
 h=640

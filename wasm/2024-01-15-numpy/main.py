@@ -1,6 +1,5 @@
 import pygame
 import numpy as np #  "soon as possible" but just after the first import pygame - ref : https://www.reddit.com/r/pygame/comments/162qefm/pygbag_stops_working_when_importing_numpy/
-
 import asyncio # step1
 
 pygame.init() 
