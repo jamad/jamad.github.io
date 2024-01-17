@@ -1,6 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 # available lib at codewars 
+
+* `import numpy` example : [.base_reprで5進法に変換](https://atcoder.jp/contests/abc336/submissions/49343419)
 * `import gmpy2`  example : [twin primes](https://www.codewars.com/kata/reviews/6117f77c0c70a70001ae2313/groups/611824f1497d5e0001725ef1) , [next prime](https://www.codewars.com/kata/reviews/6117f77c0c70a70001ae2313/groups/61f8e2aa398ead00015bb9e2)
 * `import re` example : [`re.sub('c|[a-z]?C[a-z]?','',x)`](https://www.codewars.com/kata/reviews/62b769aaef340600014f7f3a/groups/64a69b6dfbed130001b5bae1)
 * `import haslib` example : [`sha256(x.encode()).hexdigest()`](https://www.codewars.com/kata/reviews/587fb72807076d73c200068a/groups/588752311fe4490415000261)
