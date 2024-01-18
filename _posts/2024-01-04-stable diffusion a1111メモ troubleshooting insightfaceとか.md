@@ -13,6 +13,11 @@
 
 ## troubleshooting
 
+#### Problem 2024-01-18 `TypeError: FaceSwapScript.process() missing 26 required positional arguments: 'img', 'enable', ...`
+* 参考　`https://github.com/Gourieff/sd-webui-reactor#iv-attributeerror-faceswapscript-object-has-no-attribute-enable`
+* オフに変更して　apply and quit した　![image](https://github.com/jamad/jamad.github.io/assets/949913/a5e96ee2-f3ca-49f3-81ae-0404e80481ac)
+
+
 #### 解決済　Problem　2023-12-29  `Error: The 'insightface==0.7.3' distribution was not found and is required by the application`
 * Solution
   * 準備として　insightface-0.7.3-cp310-cp310-win_amd64.whl　を下記の場所に置く。
