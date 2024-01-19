@@ -13,6 +13,11 @@
 
 ## troubleshooting
 
+#### Problem 2024-01-19 `ValueError: max() arg is an empty sequence`
+* reference `https://github.com/Gourieff/sd-webui-reactor/issues/273#issuecomment-1879502934`
+* fixed by ![image](https://github.com/jamad/jamad.github.io/assets/949913/397ebcee-986e-41b6-abde-608a922ddb97)
+
+
 #### Problem 2024-01-18 `TypeError: FaceSwapScript.process() missing 26 required positional arguments: 'img', 'enable', ...`
 * 参考　`https://github.com/Gourieff/sd-webui-reactor#iv-attributeerror-faceswapscript-object-has-no-attribute-enable`
 * オフに変更して　apply and quit した　![image](https://github.com/jamad/jamad.github.io/assets/949913/a5e96ee2-f3ca-49f3-81ae-0404e80481ac)
