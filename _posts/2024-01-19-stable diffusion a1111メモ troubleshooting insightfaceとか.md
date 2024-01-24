@@ -2,7 +2,8 @@
 
 # IP-adapter の使い方
 * 特に画像を追加する為に　Upload independent control image　が必要だった　![image](https://github.com/jamad/jamad.github.io/assets/949913/46809d9d-c459-498d-b085-bf09ef1363a7)
-* 後は　![image](https://github.com/jamad/jamad.github.io/assets/949913/48f73fe4-f7f2-4c60-afd2-2c6ddf0767d2)
+* 後は  extensions\sd-webui-controlnet\models に .pth を入れた後に下記のように選択
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/48f73fe4-f7f2-4c60-afd2-2c6ddf0767d2)
 
 
 
