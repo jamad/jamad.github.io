@@ -1,5 +1,11 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+# IP-adapter の使い方
+* 特に画像を追加する為に　Upload independent control image　が必要だった　![image](https://github.com/jamad/jamad.github.io/assets/949913/46809d9d-c459-498d-b085-bf09ef1363a7)
+* 後は　![image](https://github.com/jamad/jamad.github.io/assets/949913/48f73fe4-f7f2-4c60-afd2-2c6ddf0767d2)
+
+
+
 # AUTOMATIC1111_webui_0824.zip を試す
 * zip を解凍
 * 1_セットアップ.bat　を実行し、ｙを押して暫く待つ
