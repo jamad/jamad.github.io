@@ -1,5 +1,16 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+# controlnet reference_only を使った時のメモ
+* image を追加 下記のみ変更した
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/dd7f44e6-8003-4076-9e09-d05481b28d8d)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/71e1df21-81ac-4dad-86e6-c38288b39ade)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/120b2304-53a0-48a2-ade0-6730eea761ce)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/0921146d-8e9a-4c94-a3c5-aa79f5ab7635)
+
+
+
+
+
 # IP-adapter の使い方 (reference only は似ているが顔に特化しているらしい)
 * 特に画像を追加する為に　Upload independent control image　が必要だった　![image](https://github.com/jamad/jamad.github.io/assets/949913/46809d9d-c459-498d-b085-bf09ef1363a7)
 * 後は  extensions\sd-webui-controlnet\models に [.pth](https://huggingface.co/lllyasviel/sd_control_collection/tree/main) を入れた後に下記のように選択
