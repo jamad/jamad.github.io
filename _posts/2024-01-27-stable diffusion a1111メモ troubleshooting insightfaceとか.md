@@ -9,15 +9,11 @@
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/0921146d-8e9a-4c94-a3c5-aa79f5ab7635)
 
 
-
-
-
 # IP-adapter の使い方 (reference only は似ているが顔に特化しているらしい)
 * 特に画像を追加する為に　Upload independent control image　が必要だった　![image](https://github.com/jamad/jamad.github.io/assets/949913/46809d9d-c459-498d-b085-bf09ef1363a7)
 * 後は  extensions\sd-webui-controlnet\models に [.pth](https://huggingface.co/lllyasviel/sd_control_collection/tree/main) を入れた後に下記のように選択
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/48f73fe4-f7f2-4c60-afd2-2c6ddf0767d2)
 * Controlweight はデフォルトか、それより小さい値がいいかも。0.7とか。0.25とか。試しに1.6にしてみた＞＞結果はイマイチだった。
-
 
 
 # AUTOMATIC1111_webui_0824.zip を試す
