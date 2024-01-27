@@ -1,7 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 # controlnet reference_only を使った時のメモ
-* image を追加 下記のみ変更した
+* txt2img で prompt を通常通り設定
+* controlnet に　image を追加 下記パラメータのみ変更した
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/dd7f44e6-8003-4076-9e09-d05481b28d8d)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/71e1df21-81ac-4dad-86e6-c38288b39ade)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/120b2304-53a0-48a2-ade0-6730eea761ce)
