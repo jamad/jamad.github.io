@@ -5,6 +5,7 @@
 * log in with Github
 
 # font awesome
+* clicking the icon can copy it into the clipboard
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/71db6ccb-39a4-4fb0-99a3-99eb71c6b0c4)
 
 
