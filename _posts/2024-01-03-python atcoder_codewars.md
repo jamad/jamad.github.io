@@ -1,5 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+* [edit](https://github.com/jamad/jamad.github.io/tree/master/_posts)
+
 # available lib at codewars 
 
 * `import gmpy2`  example : [xのn乗根 root(x,n)](https://www.codewars.com/kata/reviews/572af8eb9e69bf1329000036/groups/65b02c5766e84700012b952f)  , [is_prime(x)](https://www.codewars.com/kata/reviews/6117f77c0c70a70001ae2313/groups/611824f1497d5e0001725ef1) , [next_prime(x)](https://www.codewars.com/kata/reviews/6117f77c0c70a70001ae2313/groups/61f8e2aa398ead00015bb9e2)
