@@ -1,8 +1,11 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 # よく使うTips
-* ファイルのあるパスを取得する方法
-* 
+* ファイルのあるパスを取得する方法 \practicePython\scraping\selenium_basic_test_2024.py を見よ。
+```
+import os
+current_directory = os.path.dirname(os.path.abspath(__file__)) # 現在のスクリプトのディレクトリを取得
+```
 
 # 問題と解決方法
 
