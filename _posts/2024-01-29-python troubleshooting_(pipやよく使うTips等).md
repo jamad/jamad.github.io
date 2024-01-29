@@ -1,5 +1,9 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+# よく使うTips
+* ファイルのあるパスを取得する方法
+* 
+
 # 問題と解決方法
 
 * pipコマンド
