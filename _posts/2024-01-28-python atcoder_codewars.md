@@ -2,6 +2,9 @@
 
 * [edit](https://github.com/jamad/jamad.github.io/tree/master/_posts)
 
+# 間違えたことがあるもの
+* `-1**x` で `(1,-1)[x]`を表現しようとしたが、正しい表記は `(-1)**x` だった。 さもないと、常に `-1` を意味する。
+
 # available lib at codewars 
 
 * `import collections` example :  Counter(A)
