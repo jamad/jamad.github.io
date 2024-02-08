@@ -7,5 +7,8 @@
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/796a78f8-78b7-41bc-9f34-5bda841ddcab)
   * 一応動くようになったが、とても反応が遅い。あと、信頼性が低い。
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/71f069f8-00c8-4514-b8d4-9e3f94776cc0)
+  * 全く賢くないことを確認した。モデルが悪いのだろうか。
+  * ![image](https://github.com/jamad/jamad.github.io/assets/949913/1166254b-1d0b-4110-81bf-b25421578881)
+
 
 
