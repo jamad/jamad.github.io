@@ -8,7 +8,8 @@
 
 # メモ
 * グラフで木の半径は　およそ木の直径の半分 
-   * 木の直径は任意の点から最も遠い点をゲットし、そこを起点として再び最も遠い点までの距離 `https://algo-method.com/submissions/1276401`
+   * 木の直径は任意の点から最も遠い点をゲットし、そこを起点として再び最も遠い点までの距離
+      * `https://algo-method.com/submissions/1276401`
 
 
 # available lib at codewars 
