@@ -6,6 +6,11 @@
 *  `(1,-1)[x]`　の9文字を短く表現する方法。
     *  結局`1-2*v`の5文字がベスト。 `-1**x` の5文字だと常に `-1` を返してしまうので間違い。正しい表記は7文字 `(-1)**x`で長い。
 
+# メモ
+* グラフで木の半径は　およそ木の直径の半分 
+   * `https://algo-method.com/submissions/1276401`
+
+
 # available lib at codewars 
 
 * `import collections` example :  Counter(A)
