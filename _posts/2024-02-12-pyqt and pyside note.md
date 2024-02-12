@@ -12,6 +12,7 @@
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/0b18bbf1-6500-48ae-b0b4-7dec107e0da6)
 * .uiファイルはコマンドでpyファイルにコンバートする。そのために、上記のパス通しは必須　`pyside6-uic untitled.ui > Ui_MainWindow.py`
 * でも、できたファイルを実行しても何も起きない。今ここ。
+* `https://qiita.com/karakuri-t910/items/9d418a4edab081990243` で最初から見直すべきだな。
 
 
 
