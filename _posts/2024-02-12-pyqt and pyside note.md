@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
-# pyside
+# pyside　（要するに Qt for python のようだ）
 * install は　`python -m pip install -U PySide6` 最後に6が必要なので注意
 * %localappdata%\Programs\Python\Python310\Lib\site-packages\PySide6 に designer.exe が見つかるが、下記のようにEnvを設定すれば　`pyside6-designer` のコマンドだけで起動できる
 * `pyside6-uic untitled.ui > Ui_MainWindow.py` のように認識させるために
