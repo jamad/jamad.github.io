@@ -5,6 +5,7 @@
 ```
 import os
 current_directory = os.path.dirname(os.path.abspath(__file__)) # 現在のスクリプトのディレクトリを取得
+imagepath = current_directory+"/img/jam_clock_icon.png"
 ```
 
 # 問題と解決方法
