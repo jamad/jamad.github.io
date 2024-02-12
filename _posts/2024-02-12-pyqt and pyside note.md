@@ -6,6 +6,9 @@
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/e93eaee5-a417-4049-96f1-cacbc6b5f18c)
 * できたファイルを保存したら .ui ファイルとなる
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/0b18bbf1-6500-48ae-b0b4-7dec107e0da6)
+* .uiファイルはコマンドでpyファイルにコンバートする
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/55584f9d-94b0-4fa3-a109-505f6b4ee0ba)
+
 
 
 
