@@ -4,7 +4,9 @@
 * install は　`python -m pip install -U PySide6` 6が必要なので注意
 * %localappdata%\Programs\Python\Python310\Lib\site-packages\PySide6 に designer.exe が見つかるだろう
 * `pyside6-uic untitled.ui > Ui_MainWindow.py` のように認識させるために
-   * ENV edit > user veriables > path に `%localappdata%\Programs\Python\Python310\Scripts` と `%localappdata%\Programs\Python\Python310` を追加した
+   * ENV edit > user veriables > path に
+     * `%localappdata%\Programs\Python\Python310\Scripts` と
+     * `%localappdata%\Programs\Python\Python310` を追加した
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/e93eaee5-a417-4049-96f1-cacbc6b5f18c)
 * できたファイルを保存したら .ui ファイルとなる
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/0b18bbf1-6500-48ae-b0b4-7dec107e0da6)
