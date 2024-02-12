@@ -1,5 +1,11 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+# pyside
+* install は　`python -m pip install -U PySide2` 2が必要なので注意
+* %localappdata%\Programs\Python\Python310\Lib\site-packages\PySide2 に designer.exe が見つかるだろう
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/e93eaee5-a417-4049-96f1-cacbc6b5f18c)
+
+
 # pyqt5
 ## installation (windows)
 * `pip install pyqt5`
