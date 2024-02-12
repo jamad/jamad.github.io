@@ -14,6 +14,7 @@
 * .uiファイルはコマンドでpyファイルにコンバートする。そのために、上記のパス通しは必須　`pyside6-uic untitled.ui > Ui_MainWindow.py`
 * でも、できたファイルを実行しても何も起きない。今ここ。
 * `https://qiita.com/karakuri-t910/items/9d418a4edab081990243` で最初から見直すべきだな。
+* practicePython\pyside にサンプルを追加中
 
 
 
