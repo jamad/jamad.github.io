@@ -1,8 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 # pyside
-* install は　`python -m pip install -U PySide2` 2が必要なので注意
-* %localappdata%\Programs\Python\Python310\Lib\site-packages\PySide2 に designer.exe が見つかるだろう
+* install は　`python -m pip install -U PySide6` 6が必要なので注意
+* %localappdata%\Programs\Python\Python310\Lib\site-packages\PySide6 に designer.exe が見つかるだろう
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/e93eaee5-a417-4049-96f1-cacbc6b5f18c)
 * できたファイルを保存したら .ui ファイルとなる
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/0b18bbf1-6500-48ae-b0b4-7dec107e0da6)
