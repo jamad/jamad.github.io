@@ -1,5 +1,18 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+# 連番静止画から動画の作成方法　Scriptで簡単にできそう
+* sequencer に切り替え、連番画像を読み込みし、movieに切り替えて render animation すれば C:\tmp に動画が作成された
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/7a786188-69c3-40ae-9d07-fcd9df7eb5a6)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/4e5d2629-1221-4f06-823e-31026b2ea472)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/12d49ed4-70a4-4a55-9714-de3ec21490ee)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/96e089dd-613f-4225-a1df-7be8f3d4aac3)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/2defe826-86a1-47d9-850b-20b1eb9622d9)
+
+
+
+
+
+
 # tips
 #### blender tips 200
 * 1 - absolute grid snap checkbox
