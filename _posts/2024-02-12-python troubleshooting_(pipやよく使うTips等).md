@@ -68,4 +68,50 @@ tk.Button(root, text="生成", command=convert_video).grid(row=2, column=1)
 root.mainloop()
 
 ```
+
+* その逆のツール
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/4b97ca77-34a9-4924-8ddc-86656fad28be)
+```
+import tkinter as tk
+from tkinter import filedialog
+import subprocess
+
+def choose_input_folder():
+    input_entry.delete(0, tk.END)
+    input_entry.insert(0, filedialog.askdirectory(title="入力用フォルダを選んでね"))
+
+def choose_output_file():
+    output_entry.delete(0, tk.END)
+    output_entry.insert(0, filedialog.asksaveasfilename(defaultextension=".mp4", filetypes=[("MP4 files", "*.mp4")], title="動画ファイルを保存"))
+
+def convert_images_to_video():
+    input_folder, output_file = input_entry.get(), output_entry.get()
+    if input_folder and output_file:
+        subprocess.run(f'ffmpeg -framerate 25 -i "{input_folder}/%04d.png" -c:v libx264 -pix_fmt yuv420p "{output_file}"', shell=True)
+    print('変換完了!')
+
+# GUIの作成
+root = tk.Tk()
+root.title("連番静止画から動画に変換")
+
+# 入力フォルダの選択
+tk.Label(root, text="入力用フォルダ:").grid(row=0, column=0)
+input_entry = tk.Entry(root, width=80)
+input_entry.grid(row=0, column=1)
+tk.Button(root, text="Browse", command=choose_input_folder).grid(row=0, column=2)
+
+# 出力ファイルの選択
+tk.Label(root, text="出力用動画ファイル:").grid(row=1, column=0)
+output_entry = tk.Entry(root, width=80)
+output_entry.grid(row=1, column=1)
+tk.Button(root, text="Browse", command=choose_output_file).grid(row=1, column=2)
+
+# コンバートボタン
+tk.Button(root, text="変換開始", command=convert_images_to_video).grid(row=2, column=1)
+
+# GUIの実行
+root.mainloop()
+
+```
+
   
