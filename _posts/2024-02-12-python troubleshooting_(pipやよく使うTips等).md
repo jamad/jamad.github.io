@@ -25,7 +25,7 @@ imagepath = current_directory+"/img/jam_clock_icon.png"
       * `pip install opencv-python`
  
 
-* 動画を連番静止画に変換する簡単なGUIツール
+# 動画を連番静止画に変換する簡単なGUIツール
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/091ebc2c-1368-4cec-b321-2ccb9bbab978)
 ```
 import tkinter as tk
