@@ -27,7 +27,7 @@ imagepath = current_directory+"/img/jam_clock_icon.png"
 
 # 動画を連番静止画に変換する簡単なGUIツール
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/091ebc2c-1368-4cec-b321-2ccb9bbab978)
-```
+```python
 import tkinter as tk
 from tkinter import filedialog
 import subprocess
@@ -71,7 +71,7 @@ root.mainloop()
 
 * その逆のツール
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/4b97ca77-34a9-4924-8ddc-86656fad28be)
-```
+```python
 import tkinter as tk
 from tkinter import filedialog
 import subprocess
