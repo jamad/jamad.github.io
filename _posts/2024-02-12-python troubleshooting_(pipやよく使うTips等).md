@@ -25,3 +25,46 @@ imagepath = current_directory+"/img/jam_clock_icon.png"
       * `pip install opencv-python`
  
 
+* 動画を連番静止画に変換するGUIツール
+```
+import tkinter as tk
+from tkinter import filedialog
+import subprocess
+
+def choose_file():
+    input_entry.delete(0, tk.END)
+    input_entry.insert(0, filedialog.askopenfilename(title="動画を選んでね"))
+
+def choose_folder():
+    output_entry.delete(0, tk.END)
+    output_entry.insert(0, filedialog.askdirectory(title="フォルダを選んでね"))
+
+def convert_video():
+    if input_entry.get() and output_entry.get():
+        subprocess.run(f'ffmpeg -i "{input_entry.get()}" "{output_entry.get()}/%04d.png"', shell=True)
+    print('finished!')
+
+# GUIの作成
+root = tk.Tk()
+root.title("動画を連番静止画に")
+
+# 入力ファイルの選択
+tk.Label(root, text="入力用動画:").grid(row=0, column=0)
+input_entry = tk.Entry(root, width=80)
+input_entry.grid(row=0, column=1)
+tk.Button(root, text="Browse", command=choose_file).grid(row=0, column=2)
+
+# 出力先フォルダの選択
+tk.Label(root, text="出力用フォルダ:").grid(row=1, column=0)
+output_entry = tk.Entry(root, width=80)
+output_entry.grid(row=1, column=1)
+tk.Button(root, text="Browse", command=choose_folder).grid(row=1, column=2)
+
+# コンバートボタン
+tk.Button(root, text="生成", command=convert_video).grid(row=2, column=1)
+
+# GUIの実行
+root.mainloop()
+
+```
+  
