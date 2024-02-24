@@ -1,10 +1,9 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 # pyside doc
-* https://doc.qt.io/qtforpython-6/index.html
+* [https://doc.qt.io/qtforpython-6/index.html](https://doc.qt.io/qtforpython-6/index.html)
 
 # pyside example
-* https://doc.qt.io/qtforpython-6/examples/index.html
 * zipをダウンロードして .pyをVSCodeで実行しただけで確認できた。
 * [例](https://doc.qt.io/qtforpython-6/examples/example_3d_simple3d.html)　![image](https://github.com/jamad/jamad.github.io/assets/949913/74e440dc-80f6-41a7-8c3d-8d8df16d6632)
 
