@@ -1,5 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+# pyside doc
+* https://doc.qt.io/qtforpython-6/index.html
+
 # pyside example
 * https://doc.qt.io/qtforpython-6/examples/index.html
 * zipをダウンロードして .pyをVSCodeで実行しただけで確認できた。
