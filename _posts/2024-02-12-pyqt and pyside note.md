@@ -1,5 +1,11 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+# pyside example
+* https://doc.qt.io/qtforpython-6/examples/example_3d_simple3d.html
+* ダウンロードして .pyをVSCodeで実行しただけで確認できた。
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/74e440dc-80f6-41a7-8c3d-8d8df16d6632)
+
+
 # pyside　（要するに Qt for python のようだ）
 * install は　`python -m pip install -U PySide6` (最後に6が必要なので注意)
 * `%localappdata%\Programs\Python\Python310\Lib\site-packages\PySide6` に designer.exe が見つかるが、下記のようにEnvを設定すれば　`pyside6-designer` のコマンドだけで起動できる
