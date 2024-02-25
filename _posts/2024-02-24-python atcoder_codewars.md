@@ -10,6 +10,9 @@
 * グラフで木の高さの最小値（木の半径と呼ばれる）は　およそ木の直径の半分 下記のコードでいうところの`(GetDiam(G)+1)//2`
    * 木の直径は任意の点から最も遠い点をゲットし、そこを起点として再び最も遠い点までの距離
       * `https://algo-method.com/submissions/1276401`
+* nCr のベストな説明
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/9e4b9ee6-f28c-49fd-8c35-14d005a44441)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/f2343670-f9d8-4d1d-81da-473a29ee31e3)
 
 
 # available lib at codewars 
