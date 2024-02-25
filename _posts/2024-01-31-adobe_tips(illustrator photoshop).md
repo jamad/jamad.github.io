@@ -1,7 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 # PNG の配置
-* File > Place
+* File > Place によって、PNGを参照して.ai ファイルに表示できた。出力サイズからトリミングして、当たりとなるような画像を生成できた。
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/2587a447-0549-48b9-9a1d-42d6ea94c0dd)
 
 
