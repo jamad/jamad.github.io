@@ -15,6 +15,9 @@
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/f2343670-f9d8-4d1d-81da-473a29ee31e3)
 
 
+## (atcoder では使えなかったもの、、、)
+* `import gmpy2`   example : [xのn乗根 root(x,n)](https://www.codewars.com/kata/reviews/572af8eb9e69bf1329000036/groups/65b02c5766e84700012b952f)  , [is_prime(x)](https://www.codewars.com/kata/reviews/6117f77c0c70a70001ae2313/groups/611824f1497d5e0001725ef1) , [next_prime(x)](https://www.codewars.com/kata/reviews/6117f77c0c70a70001ae2313/groups/61f8e2aa398ead00015bb9e2)
+
 # available lib at codewars 
 
 * `import math` example :  [lcm(a,b)](https://atcoder.jp/contests/abc341/submissions/50431482) , factorial(x)
@@ -24,4 +27,4 @@
 * `import haslib` example : [`sha256(x.encode()).hexdigest()`](https://www.codewars.com/kata/reviews/587fb72807076d73c200068a/groups/588752311fe4490415000261)
 * `import datetime` exmaple : [`(date(2024,1,1)+timedelta(x)).strftime("%B, %-d")`](https://www.codewars.com/kata/reviews/602d5f49265b840001f3ca4d/groups/6030b82e99b32b0001557fea)
 * `import itertools` example : [zip_longest with fillvalue=''](https://www.codewars.com/kata/reviews/6274c394871b6200017aefd2/groups/6274dd3af229f5000178ed96) , [groupby](https://www.codewars.com/kata/reviews/63617a951a7c220001edfeba/groups/63b612398bc05e00011695a0)
-* `import gmpy2` (atcoder では使えず、、、)  example : [xのn乗根 root(x,n)](https://www.codewars.com/kata/reviews/572af8eb9e69bf1329000036/groups/65b02c5766e84700012b952f)  , [is_prime(x)](https://www.codewars.com/kata/reviews/6117f77c0c70a70001ae2313/groups/611824f1497d5e0001725ef1) , [next_prime(x)](https://www.codewars.com/kata/reviews/6117f77c0c70a70001ae2313/groups/61f8e2aa398ead00015bb9e2)
+
