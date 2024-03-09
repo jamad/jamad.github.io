@@ -5,6 +5,7 @@
 * [edit](https://github.com/jamad/jamad.github.io/tree/master/_posts)
 
 # segment tree
+*　`\practicePython\atcoder\segment_tree.py` 
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/cb543a80-693b-4a52-b6dc-b87ed818f03b)
 * `https://algo-logic.info/segment-tree/`より ![image](https://github.com/jamad/jamad.github.io/assets/949913/16e4304b-ff75-45d6-97fd-42d06255fc62)
 
