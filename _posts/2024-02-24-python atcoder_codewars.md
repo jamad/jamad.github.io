@@ -5,6 +5,9 @@
 # 二重ループのbreakは初めて知った
 * 競プロでよく使うけど空で書けないフレーズ `https://qiita.com/do_an/items/e5a202cac4fc69fe849d`
 
+# 自分のvisualgo を codepen とかで作れるのではないかと思っている
+* `https://visualgo.net/`
+
 # segment tree
 *　`\practicePython\atcoder\segment_tree.py` 
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/cb543a80-693b-4a52-b6dc-b87ed818f03b)
