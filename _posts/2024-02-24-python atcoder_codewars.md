@@ -1,8 +1,9 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+* [このページの edit](https://github.com/jamad/jamad.github.io/tree/master/_posts)
 
-
-* [edit](https://github.com/jamad/jamad.github.io/tree/master/_posts)
+# 二重ループのbreakは初めて知った
+* 競プロでよく使うけど空で書けないフレーズ `https://qiita.com/do_an/items/e5a202cac4fc69fe849d`
 
 # segment tree
 *　`\practicePython\atcoder\segment_tree.py` 
