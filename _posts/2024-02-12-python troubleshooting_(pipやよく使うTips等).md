@@ -8,6 +8,15 @@ current_directory = os.path.dirname(os.path.abspath(__file__)) # 現在のスク
 imagepath = current_directory+"/img/jam_clock_icon.png"
 ```
 
+# pipしているものの確認方法
+* practicePython> `pip freeze > requirements.txt` と実行すれば
+* practicePython のディレクトリ内にその txtが生成されるので、それを確認すれば良い
+
+# VScode で interpreter の選択肢を少なくしたい
+* 方法の基本は、パスに対応したものを削除する
+* Anaconda関連は anacondaフォルダ内にあった uninstaller exe を実行するだけ。それで２つ消えた
+* text gen webui はフォルダをがっつり削除しただけ。それで２つ消えた。
+
 # 問題と解決方法
 
 * pipコマンド
