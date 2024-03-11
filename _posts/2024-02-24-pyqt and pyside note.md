@@ -3,6 +3,7 @@
 
 # 今日実行したら下記のようなエラーで何も実行されなかった。
 * `Extension modules: numpy.core._multiarray_umath, numpy.core._multiarray_tests, numpy.linalg._umath_linalg, numpy.fft._pocketfft_internal, numpy.random._common, numpy.random.bit_generator, numpy.random._bounded_integers, numpy.random._mt19937, numpy.random.mtrand, numpy.random._philox, numpy.random._pcg64, numpy.random._sfc64, numpy.random._generator, xxsubtype (total: 14)`
+* gptに現状を伝えたら `pip install --upgrade numpy` を勧められたので、試してみた。
 
 # pyside doc
 * [https://doc.qt.io/qtforpython-6/index.html](https://doc.qt.io/qtforpython-6/index.html)
