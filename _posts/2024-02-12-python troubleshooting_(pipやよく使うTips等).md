@@ -2,7 +2,7 @@
 
 # Q&A 
 * `https://teratail.com/` を使ってみよう（未登録）
-* `https://qiita.com/cannorin/items/eb062aae88bfe2ad6fe5`が参考になった
+* `https://qiita.com/cannorin/items/eb062aae88bfe2ad6fe5`が参考になった　`エラーメッセージの読み方と対処，検索や質問の原則`
 
 # よく使うTips
 * ファイルのあるパスを取得する方法 \practicePython\scraping\selenium_basic_test_2024.py を見よ。
