@@ -16,7 +16,7 @@ imagepath = current_directory+"/img/jam_clock_icon.png"
 * practicePython> `pip freeze > requirements.txt` と実行すれば
 * practicePython のディレクトリ内にその txtが生成されるので、それを確認すれば良い
 
-# VScode で interpreter の選択肢を少なくしたい
+# VScode で interpreter の選択肢を少なくする方法
 * 方法の基本は、パスに対応したものを削除する
 * Anaconda関連は anacondaフォルダ内にあった uninstaller exe を実行するだけ。それで２つ消えた
 * text gen webui はフォルダをがっつり削除しただけ。それで２つ消えた。
