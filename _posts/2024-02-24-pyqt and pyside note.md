@@ -1,5 +1,9 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+
+# 今日実行したら下記のようなエラーで何も実行されなかった。
+* `Extension modules: numpy.core._multiarray_umath, numpy.core._multiarray_tests, numpy.linalg._umath_linalg, numpy.fft._pocketfft_internal, numpy.random._common, numpy.random.bit_generator, numpy.random._bounded_integers, numpy.random._mt19937, numpy.random.mtrand, numpy.random._philox, numpy.random._pcg64, numpy.random._sfc64, numpy.random._generator, xxsubtype (total: 14)`
+
 # pyside doc
 * [https://doc.qt.io/qtforpython-6/index.html](https://doc.qt.io/qtforpython-6/index.html)
 
@@ -23,7 +27,6 @@
 * でも、できたファイルを実行しても何も起きない。今ここ。
 * `https://qiita.com/karakuri-t910/items/9d418a4edab081990243` で最初から見直すべきだな。
 * practicePython\pyside にサンプルを追加中
-
 
 
 
