@@ -1,7 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 
-# 今日実行したら下記のようなエラーで何も実行されなかった。
+# VSCodeでpysideを実行しようとしたら下記エラー。解決方法は右下からinterpreterを変更することだった
 * `Extension modules: numpy.core._multiarray_umath, numpy.core._multiarray_tests, numpy.linalg._umath_linalg, numpy.fft._pocketfft_internal, numpy.random._common, numpy.random.bit_generator, numpy.random._bounded_integers, numpy.random._mt19937, numpy.random.mtrand, numpy.random._philox, numpy.random._pcg64, numpy.random._sfc64, numpy.random._generator, xxsubtype (total: 14)`
 * gptと長い間対話した結果、右下のpythonバージョンの部分をクリックして select interpreter のモードを表示し、下記のようになっていることを確認後、recommended となっているvenv を選択した。
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/b090ec4b-c398-4253-8674-339a82b74065)
