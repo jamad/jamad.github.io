@@ -2,8 +2,26 @@
 
 * [このページの edit](https://github.com/jamad/jamad.github.io/tree/master/_posts)
 
-# 二重ループのbreakは初めて知った
+## 二重ループをbreakできるtipsは初めて知った　確かにbreakしなかった場合は  else:continue を通るよなあ 
 * 競プロでよく使うけど空で書けないフレーズ `https://qiita.com/do_an/items/e5a202cac4fc69fe849d`
+```
+for i in range(10):
+    for j in range(10):
+        for k in range(10):
+            if 25< i*j*k:
+                ng=(i,j,k)
+                break
+            ok=(i,j,k)
+
+        else:continue
+        break
+
+    else:continue
+    break
+
+print(ok) # (1, 3, 8)
+print(ng) # (1, 3, 9)
+```
 
 # 自分のvisualgo を codepen とかで作れるのではないかと思っている
 * `https://visualgo.net/`
