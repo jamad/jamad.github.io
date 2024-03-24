@@ -6,33 +6,32 @@
 
 # Pip command list
 
-| ライブラリ        | インストールコマンド                | エラーメッセージ                 |
-|----------------|-------------------------------|---------------------------|
-| cv2            | `pip install opencv-python`   | No module named 'cv2'     |
-|                | `pip install pypdf2`          | No module named 'PyPDF2'  |
-|                | `pip install kivy`            | No module named 'kivy'    |
-|                | `pip install graphillion`     |                           |
-|                | `pip install networkx`        |                           |
-|                | `Pip install beautifulsoup4`  | No module named 'bs4'     |
-| pyperclip      | `Pip install pyperclip`       |                           |
-| PIL            | `pip install pillow`          | No module named 'PIL'     |
-|                | `pip install pyinstaller`     | The term 'pyinstaller' is not recognized |
-| matplotlib     | `pip install matplotlib`      | No module named 'matplotlib' |
-| pysimplegui   | `pip install pysimplegui`     | No module named 'PySimpleGUI' |
-| pandas         | `pip install pandas`          | No module named 'pandas'  |
-| xlrd           | `pip install xlrd`            | No module named 'xlrd'    |
-|                | `pip install pyscreenshot`    | No module named 'pyscreenshot' |
-|                | `try:import Tkinter as tk # for Python2 except ImportError:import tkinter as tk # for Python3` | No module named 'Tkinter' |
-| pyautogui      | `pip install pyautogui`       | cannot import name 'drag' from 'pyautogui' |
-| Instagram api |                               | No module named 'instagram_private_api' |
-|                | `pip install instagram_private_api` |                      |
-| pyglet         | `pip install pyglet`          | No module named 'pyglet' |
-|                | `tkinter for python3`         | No module named 'Tkinter' |
-|                | `pip install "C:\Users\***\Downloads\PyAudio-0.2.11-cp39-cp39-win_amd64.whl` from `https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio` | No module named 'pyaudio' |
-|                | `pip install scipy`           | No module named 'scipy'   |
-| instaloader    | `pip install instaloader`     |                           |
-|                | `pip install pyws`            | No module named 'pyws'    |
+| ライブラリ      | インストールコマンド                 | エラーメッセージ                  |
+|----------------|-------------------------------     |---------------------------       |
+| cv2            | `pip install opencv-python`        | No module named 'cv2'            |
+| pypdf2         | `pip install pypdf2`               | No module named 'PyPDF2'         |
+| kivy           | `pip install kivy`                 | No module named 'kivy'           |
+| graphillion    | `pip install graphillion`          |                                  |
+| networkx       | `pip install networkx`             |                                  |
+| bs4            | `Pip install beautifulsoup4`       | No module named 'bs4'            |
+| pyperclip      | `Pip install pyperclip`            |                                  |
+| PIL            | `pip install pillow`               | No module named 'PIL'            |
+| pyinstaller    | `pip install pyinstaller`          | The term 'pyinstaller' is not recognized |
+| matplotlib     | `pip install matplotlib`           | No module named 'matplotlib'     |
+| pysimplegui    | `pip install pysimplegui`          | No module named 'PySimpleGUI'    |
+| pandas         | `pip install pandas`               | No module named 'pandas'         |
+| xlrd           | `pip install xlrd`                 | No module named 'xlrd'           |
+| pyscreenshot   | `pip install pyscreenshot`         | No module named 'pyscreenshot'   |
+| pyautogui      | `pip install pyautogui`            | cannot import name 'drag' from 'pyautogui' |
+| Instagram api  | `pip install instagram_private_api`| No module named 'instagram_private_api' |
+| pyglet         | `pip install pyglet`               | No module named 'pyglet'         |
+| Tkinter        | `tkinter for python3`              | No module named 'Tkinter'        | 
+| scipy          | `pip install scipy`                | No module named 'scipy'          |
+| instaloader    | `pip install instaloader`          |                                  |
+| pyws           | `pip install pyws`                 | No module named 'pyws'           |
+| pyaudio        | `pip install "C:\Users\***\Downloads\PyAudio-0.2.11-cp39-cp39-win_amd64.whl` from `https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio` | No module named 'pyaudio' |
 
+`try:import Tkinter as tk # for Python2 except ImportError:import tkinter as tk # for Python3`
 
 
 
