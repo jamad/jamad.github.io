@@ -4,9 +4,12 @@
 * `https://teratail.com/` を使ってみよう（未登録）
 * `https://qiita.com/cannorin/items/eb062aae88bfe2ad6fe5`が参考になった　`エラーメッセージの読み方と対処，検索や質問の原則`
 
+## VSCodeで問題が発生した場合
+* select iterpreter で recommended を選ぶことが下記のエラーを解決した ![image](https://github.com/jamad/jamad.github.io/assets/949913/c7a99504-911e-47f4-a8ce-a991acb23322) 
+  * import cv2 によるエラー `partially initialized module 'cv2' has no attribute 'gapi_wip_gst_GStreamerPipeline' (most likely due to a circular import)`
+    
+
 # Pip command list (下記の表)
-* cv2 で下記のエラーに遭遇した
-  * `partially initialized module 'cv2' has no attribute 'gapi_wip_gst_GStreamerPipeline' (most likely due to a circular import)`
 * tkinter
   * `try:import Tkinter as tk # for Python2 except ImportError:import tkinter as tk # for Python3`
 
