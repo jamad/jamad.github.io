@@ -1,5 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+* styleを適用している理由はiOSのデフォルトSafariでダークモードにならないから
+
 # このindex.htmlの更新方法 
 1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　から編集 (index.html が既存だと index.md が上書きできないので削除)
 1. [jekyllのconversion完了を待つ](https://github.com/jamad/jamad.github.io/actions)
