@@ -7,8 +7,7 @@
     <title>crisp-game-lib</title>
     <meta
       name="viewport"
-      content="width=512, height=512,
-    user-scalable=no, initial-scale=1, maximum-scale=1"
+      content="width=512, height=512, user-scalable=yes, initial-scale=1, maximum-scale=1"
     />
     <script src="https://unpkg.com/sounds-some-sounds@3.0.0/build/index.js"></script>
     <script src="https://unpkg.com/gif-capture-canvas@1.1.0/build/index.js"></script>
@@ -35,5 +34,5 @@ addEventListener("load", onLoad);
 </script>
 
   </head>
-  <body style="background: #ddd"></body>
+  <body style="background: #ddd"> テキストのテスト</body>
 </html>
