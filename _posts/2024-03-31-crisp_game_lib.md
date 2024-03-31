@@ -1,15 +1,13 @@
 # ドキュメント
 * https://github.com/abagames/crisp-game-lib/blob/master/README_ja.md
 
-
-<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
     <title>crisp-game-lib</title>
     <meta
       name="viewport"
-      content="width=device-width, height=device-height,
+      content="width=512, height=512,
     user-scalable=no, initial-scale=1, maximum-scale=1"
     />
     <script src="https://unpkg.com/sounds-some-sounds@3.0.0/build/index.js"></script>
