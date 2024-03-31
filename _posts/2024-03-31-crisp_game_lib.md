@@ -1,3 +1,5 @@
+# ドキュメント
+* https://github.com/abagames/crisp-game-lib/blob/master/README_ja.md
 
 
 <!DOCTYPE html>
