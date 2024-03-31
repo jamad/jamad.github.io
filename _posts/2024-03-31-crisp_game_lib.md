@@ -1,4 +1,6 @@
-# ドキュメント
+たまたま見かけたライブラリだが、面白そうだと思ったのでメモしておく。
+
+# 後で読みたいドキュメント
 * https://github.com/abagames/crisp-game-lib/blob/master/README_ja.md
 * https://abagames.github.io/joys-of-small-game-development/fun_to_make_small_games.html
 * https://abagames.github.io/literate-diff-viewer/pinclimb/index.html?lang=ja は丁寧なチュートリアル。後で試してみよう。
