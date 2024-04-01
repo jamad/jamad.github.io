@@ -11,6 +11,7 @@ options = {
     viewSize: { x: G.WIDTH, y: G.HEIGHT },
     isPlayingBgm: true,
     isReplayEnabled: true,
+    theme: "pixel",
 };
 
 /** @type {Vector[]} */ //必須でないが、このsyntaxで型宣言すると、デバッグ等に役立つらしい
