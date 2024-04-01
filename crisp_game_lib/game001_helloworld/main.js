@@ -12,12 +12,12 @@ let box_list;
 /** @type {{angle: number, length: number, pivot:Vector}}*/
 let player_cord;
 
-let scroll_y = 0.1234;
 const boxsize = 2.0;
 const cord_default_length = 5;
 const line_thickness = 1;
 
 function update() { //1 秒に 60 回呼び出される
+
 
     if (!ticks) { //開始フレームのみ実行という意味　つまり初期化処理 
         box_list = [vec(50, 5)]; // x=50, y=5　の2Dベクトルを１つ保持
@@ -27,9 +27,10 @@ function update() { //1 秒に 60 回呼び出される
 
     }
 
-    // 画面の視認性改善
-    let player_advance = 80 - player_cord.pivot.y;
-    //if (0 < player_advance) { scroll_y += player_advance * 0.1; } // プレイヤー位置が上の方にあるほどスクロールも加速させる
+    // 画面の視認性改
+    let scroll_y = 0.1234; // default value for each frame
+    let player_advance = 75 - player_cord.pivot.y;
+    if (0 < player_advance) { scroll_y += player_advance * 0.1; } // プレイヤー位置が上の方にあるほどスクロールも加速させる
 
     //　プレイヤーの入力処理
     if (input.isPressed) {//input 変数には、マウスやタッチパネル、キーボードからの入力状態が格納
