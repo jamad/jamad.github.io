@@ -9,7 +9,7 @@ options = {};// 現時点では何に使うか不明
 /** @type {Vector[]} */ //必須でないが、このsyntaxで型宣言すると、デバッグ等に役立つ
 
 let pins;
-let scroll_y = 0.1234;
+let scroll_y = 1.234;
 let boxsize = 2.0;
 
 function update() { //1 秒に 60 回呼び出される
