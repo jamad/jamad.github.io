@@ -1,3 +1,5 @@
+<body style="background: #222;">
+ 
 たまたま見かけたライブラリだが、面白そうだと思ったのでメモしておく。
 
 # Quick test 
