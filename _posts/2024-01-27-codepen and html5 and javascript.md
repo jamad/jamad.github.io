@@ -2,6 +2,7 @@
 
 # my works
 * [https://codepen.io/your-work/](https://codepen.io/your-work/)
+* [文字列内の全ての{}を()に置き換え](https://codepen.io/jamad/pen/NWmwpVm)
 * log in with Github
 
 # font awesome
