@@ -4,7 +4,7 @@
 アイデアの具現化に集中できるよう、スコアやBGMやインプットなどの処理がライブラリで整えられているのが素晴らしい。
 
 # Quick test 
-* https://abagames.github.io/literate-diff-viewer/pinclimb/index.html?lang=ja は丁寧なチュートリアル。なので試してみた
+* https://abagames.github.io/literate-diff-viewer/pinclimb/index.html?lang=ja は非常に丁寧なチュートリアル。なので、その手順通りに試してみた
 * [https://jamad.github.io/crisp_game_lib/?game001_helloworld](https://jamad.github.io/crisp_game_lib/?game001_helloworld) によりゲーム画面を表示できるようだ
 * <img src="https://github.com/jamad/jamad.github.io/assets/949913/b47cbeb7-5f1c-48ac-8106-1e10d38b70d9" width="25%" />
 * `https://abagames.github.io/literate-diff-viewer/pinclimb/src/1_pins_variable.js` の内容を変更せずに試用)
