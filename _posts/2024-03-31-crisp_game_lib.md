@@ -1,6 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
  
-たまたま見かけたライブラリだが、面白そうだと思ったのでメモしておく。
+たまたま見かけたライブラリだが、とても面白いと思ったのでメモしておく。
+アイデアの具現化に集中できるよう、スコアやBGMやインプットなどの処理がライブラリで整えられているのが素晴らしい。
 
 # Quick test 
 * https://abagames.github.io/literate-diff-viewer/pinclimb/index.html?lang=ja は丁寧なチュートリアル。なので試してみた
