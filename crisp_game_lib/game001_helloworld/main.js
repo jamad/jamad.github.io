@@ -8,7 +8,9 @@ characters = [];// 現時点では何に使うか不明
 //options = {};// 現時点では何に使うか不明 >> https://github.com/JunoNgx/crisp-game-lib-tutorial#step-012-create-the-tuning-data-container-and-change-the-size で見つけた
 const G = { WIDTH: 128, HEIGHT: 256 };
 options = {
-    viewSize: { x: G.WIDTH, y: G.HEIGHT }
+    viewSize: { x: G.WIDTH, y: G.HEIGHT },
+    isPlayingBgm: true,
+    isReplayEnabled: true,
 };
 
 /** @type {Vector[]} */ //必須でないが、このsyntaxで型宣言すると、デバッグ等に役立つらしい
