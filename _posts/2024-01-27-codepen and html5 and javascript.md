@@ -1,9 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 # my works
-* [https://codepen.io/your-work/](https://codepen.io/your-work/)
+* [https://codepen.io/your-work/（Github でログイン）](https://codepen.io/your-work/)
 * [文字列内の全ての{}を()に置き換え](https://codepen.io/jamad/pen/NWmwpVm)
-* log in with Github
 
 # font awesome
 * clicking the icon can copy it into the clipboard
