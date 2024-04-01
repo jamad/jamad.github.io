@@ -33,6 +33,10 @@ function update() { //1 秒に 60 回呼び出される
     if (0 < player_advance) { scroll_y += player_advance * 0.1; } // プレイヤー位置が上の方にあるほどスクロールも加速させる
 
     //　プレイヤーの入力処理
+    if (input.isJustPressed) {
+        play("select"); // サウンド再生
+    }
+
     if (input.isPressed) {//input 変数には、マウスやタッチパネル、キーボードからの入力状態が格納
         player_cord.length += 1.5;//入力で長さが１伸びる
     } else {
@@ -51,7 +55,10 @@ function update() { //1 秒に 60 回呼び出される
     color("black")//デフォルトカラーに戻しておく
 
     //ゲームオーバー
-    if (98 < player_cord.pivot.y) { end(); }
+    if (98 < player_cord.pivot.y) {
+        end();
+        play("explosion"); // サウンド再生
+    }
 
     let nextPivot;
 
@@ -70,9 +77,14 @@ function update() { //1 秒に 60 回呼び出される
         return 100 + boxsize < pos.y // 条件にマッチした要素は自動的に box_list からremove される
     });
 
-    if (nextPivot != null) {
-        player_cord.pivot = nextPivot;
-        player_cord.length = cord_default_length;
+    // playerの移動アクション発生
+    if (nextPivot != null) {//
+        play("powerUp") // サウンド再生
+        let score_to_add = ceil(player_cord.pivot.distanceTo(nextPivot));//加算するスコア
+        addScore(score_to_add, nextPivot)// the last arg for position to display
+
+        player_cord.pivot = nextPivot;// position 更新
+        player_cord.length = cord_default_length; // ベルト長さリセット
     }
 
     // 描画準備（新規ボックス）
