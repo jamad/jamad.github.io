@@ -9,14 +9,27 @@ options = {};// 現時点では何に使うか不明
 /** @type {Vector[]} */ //必須でないが、このsyntaxで型宣言すると、デバッグ等に役立つ
 
 let box_list;
-let scroll_y = 1.234;
-let boxsize = 2.0;
+const scroll_y = 0.1234;
+const boxsize = 2.0;
+const cord_length = 7;
+
+/** @type {{angle: number, length: number, pin:Vector}}*/
+let player_cord;
 
 function update() { //1 秒に 60 回呼び出される
     if (!ticks) { //開始フレームのみ実行という意味　つまり初期化処理 
         box_list = [vec(50, 5)]; // x=50, y=5　の2Dベクトルを１つ保持
         nextPinDist = -10; // 次のbox生成トリガーに利用　画面に表示されそうになった時点で次の新規生成を行う
+
+        player_cord = { angle: 0, length: cord_length, pin: box_list[0] }
+
     }
+
+    player_cord.angle += 0.05;
+    let edge0 = player_cord.pin;
+    let edge1 = vec(edge0).addWithAngle(player_cord.angle, player_cord.length);// edge0自身が変更されてしまわないようにvec(edge0)によってVectorのコピーを作成している
+    line(edge0, edge1);// playerの描画
+
 
     //box_list.forEach((pos) => {
     remove(box_list, (pos) => {　//これはライブラリの独自メソッド？
