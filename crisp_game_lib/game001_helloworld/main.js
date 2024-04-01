@@ -39,7 +39,7 @@ function update() { //1 秒に 60 回呼び出される
 
     //　プレイヤーの入力処理
     if (input.isJustPressed) {
-        play("select"); // サウンド再生
+        play("laser"); // サウンド再生
     }
 
     if (input.isPressed) {//input 変数には、マウスやタッチパネル、キーボードからの入力状態が格納
@@ -53,6 +53,8 @@ function update() { //1 秒に 60 回呼び出される
     let edge0 = player_cord.pivot;//回転軸側の端点
     let edge1 = vec(edge0).addWithAngle(player_cord.angle, player_cord.length);// edge0自身が変更されてしまわないようにvec(edge0)によってVectorのコピーを作成している
 
+    color("white")//着色はこれで可能になった。
+    line(edge0, edge1);// playerのlineを描画　細くできた。あとラインが鎖線にならないようにできる？
     color("red")//着色はこれで可能になった。
     line(edge0, edge1, line_thickness);// playerのlineを描画　細くできた。あとラインが鎖線にならないようにできる？
     box(edge0, boxsize + 2);// 端点にもboxを描画
@@ -75,7 +77,7 @@ function update() { //1 秒に 60 回呼び出される
         box(pos, boxsize);// box の描画
 
         // ラインが別のボックスに引っかかったら新しいpivotに設定　。どうも鎖線になっているのがコリジョン的に抜けるようだ。透明な別ラインを作成すべきかも？
-        if (box(pos, boxsize).isColliding.rect.red && pos !== player_cord.pivot) { // 俺は線を赤くしたので redにする必要があった。
+        if (box(pos, boxsize).isColliding.rect.white && pos !== player_cord.pivot) { // 細い赤い線はコリジョンが抜け易かったので デフォルト太さのwhiteをコリジョンに指定した。
             nextPivot = pos;
         }
 
