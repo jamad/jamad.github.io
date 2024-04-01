@@ -1,7 +1,6 @@
-title = "";
+title = "表示されるタイトル";
 
-description = `
-`;
+description = `表示されるデスクリプション`;
 
 characters = [];
 
