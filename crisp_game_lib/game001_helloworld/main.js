@@ -6,16 +6,16 @@ characters = [];// 現時点では何に使うか不明
 
 options = {};// 現時点では何に使うか不明
 
-/** @type {Vector[]} */ //必須でないが、このsyntaxで型宣言すると、デバッグ等に役立つ
-
+/** @type {Vector[]} */ //必須でないが、このsyntaxで型宣言すると、デバッグ等に役立つらしい
 let box_list;
-const scroll_y = 0.1234;
-const boxsize = 2.0;
-const cord_default_length = 5;
-const line_thickness = 1.5;
 
 /** @type {{angle: number, length: number, pivot:Vector}}*/
 let player_cord;
+
+const scroll_y = 0.1234;
+const boxsize = 2.0;
+const cord_default_length = 5;
+const line_thickness = 1.2;
 
 function update() { //1 秒に 60 回呼び出される
     if (!ticks) { //開始フレームのみ実行という意味　つまり初期化処理 
@@ -27,7 +27,7 @@ function update() { //1 秒に 60 回呼び出される
     }
 
     if (input.isPressed) {//input 変数には、マウスやタッチパネル、キーボードからの入力状態が格納
-        player_cord.length += 1;//入力で長さが１伸びる
+        player_cord.length += 1.5;//入力で長さが１伸びる
     } else {
         player_cord.length -= (player_cord.length - cord_default_length) * 0.5; //入力無ければ増分の半分だけ短くなるように
     }
@@ -35,7 +35,7 @@ function update() { //1 秒に 60 回呼び出される
     player_cord.angle += 0.05;//自動回転
     let edge0 = player_cord.pivot;//回転軸側の端点
     let edge1 = vec(edge0).addWithAngle(player_cord.angle, player_cord.length);// edge0自身が変更されてしまわないようにvec(edge0)によってVectorのコピーを作成している
-    line(edge0, edge1, line_thickness);// playerのlineを描画　細くできる？着色できる？
+    line(edge0, edge1, line_thickness);// playerのlineを描画　細くできた。着色は可能？あとラインが鎖線にならないようにできる？
 
 
     //box_list.forEach((pos) => {
@@ -52,7 +52,7 @@ function update() { //1 秒に 60 回呼び出される
         let pos_y = nextPinDist; // 条件から、必ず画面外に新規boxは描画されるはず
         box_list.push(vec(pos_x, pos_y));// box_list にドットを追加
 
-        nextPinDist = -rnd(5, 15);// 次の生成距離ｙをランダムに決定しつつ更新
+        nextPinDist = rnd(-10, -20);// 次の生成距離ｙをランダムに決定しつつ更新
     }
 
 }
