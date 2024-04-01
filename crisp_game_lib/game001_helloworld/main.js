@@ -52,14 +52,27 @@ function update() { //1 秒に 60 回呼び出される
     //ゲームオーバー
     if (98 < player_cord.pivot.y) { end(); }
 
+    let nextPivot;
+
 
     // 描画（ボックス）
     //box_list.forEach((pos) => {
     remove(box_list, (pos) => {//これはライブラリの独自メソッドっぽい？
         pos.y += scroll_y; // 画面下方向にｙが増加するため。　右下座標が(99,99)
         box(pos, boxsize);// box の描画
+
+        // ラインが別のボックスに引っかかったら新しいpivotに設定　。どうも鎖線になっているのがコリジョン的に抜けるようだ。透明な別ラインを作成すべきかも？
+        if (box(pos, boxsize).isColliding.rect.red && pos !== player_cord.pivot) { // 俺は線を赤くしたので redにする必要があった。
+            nextPivot = pos;
+        }
+
         return 100 + boxsize < pos.y // 条件にマッチした要素は自動的に box_list からremove される
     });
+
+    if (nextPivot != null) {
+        player_cord.pivot = nextPivot;
+        player_cord.length = cord_default_length;
+    }
 
     // 描画準備（新規ボックス）
     nextPinDist += scroll_y; //他のbox同様にスクロールさせる 
