@@ -25,10 +25,16 @@ function update() { //1 秒に 60 回呼び出される
 
     }
 
-    player_cord.angle += 0.05;
+    if (input.isPressed) {//input 変数には、マウスやタッチパネル、キーボードからの入力状態が格納
+        player_cord.length += 1;//入力で長さが１伸びる
+    } else {
+        player_cord.length -= (player_cord.length - cord_length) * 0.5; //入力無ければ増分の半分だけ短くなるように
+    }
+
+    player_cord.angle += 0.05;//自動回転
     let edge0 = player_cord.pin;
     let edge1 = vec(edge0).addWithAngle(player_cord.angle, player_cord.length);// edge0自身が変更されてしまわないようにvec(edge0)によってVectorのコピーを作成している
-    line(edge0, edge1);// playerの描画
+    line(edge0, edge1);// playerのlineを描画
 
 
     //box_list.forEach((pos) => {
