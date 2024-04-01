@@ -4,7 +4,12 @@ description = `DESCRIPTIN\nTO DISPLAY`;// 初期画面に表示される　改�
 
 characters = [];// 現時点では何に使うか不明
 
-options = {};// 現時点では何に使うか不明
+
+//options = {};// 現時点では何に使うか不明 >> https://github.com/JunoNgx/crisp-game-lib-tutorial#step-012-create-the-tuning-data-container-and-change-the-size で見つけた
+const G = { WIDTH: 128, HEIGHT: 256 };
+options = {
+    viewSize: { x: G.WIDTH, y: G.HEIGHT }
+};
 
 /** @type {Vector[]} */ //必須でないが、このsyntaxで型宣言すると、デバッグ等に役立つらしい
 let box_list;
@@ -29,7 +34,7 @@ function update() { //1 秒に 60 回呼び出される
 
     // 画面の視認性改
     let scroll_y = 0.1234; // default value for each frame
-    let player_advance = 75 - player_cord.pivot.y;
+    let player_advance = ceil(G.HEIGHT * 0.75) - player_cord.pivot.y;
     if (0 < player_advance) { scroll_y += player_advance * 0.1; } // プレイヤー位置が上の方にあるほどスクロールも加速させる
 
     //　プレイヤーの入力処理
@@ -55,7 +60,7 @@ function update() { //1 秒に 60 回呼び出される
     color("black")//デフォルトカラーに戻しておく
 
     //ゲームオーバー
-    if (98 < player_cord.pivot.y) {
+    if (G.HEIGHT - 1 < player_cord.pivot.y) {
         end();
         play("explosion"); // サウンド再生
     }
@@ -74,7 +79,7 @@ function update() { //1 秒に 60 回呼び出される
             nextPivot = pos;
         }
 
-        return 100 + boxsize < pos.y // 条件にマッチした要素は自動的に box_list からremove される
+        return G.HEIGHT + 1 + boxsize < pos.y // 条件にマッチした要素は自動的に box_list からremove される
     });
 
     // playerの移動アクション発生
@@ -91,7 +96,7 @@ function update() { //1 秒に 60 回呼び出される
     nextPinDist += scroll_y; //他のbox同様にスクロールさせる 
 
     while (-boxsize * 2 < nextPinDist) { //boxが画面に表示されそうになったので実体化
-        let pos_x = rnd(10, 90);// ｘ座標はランダムな値 range(10,90)　画面がrange(0,100)なので。
+        let pos_x = rnd(10, G.WIDTH - 10);// ｘ座標はランダムな値 range(10,90)　画面がrange(0,100)なので。
         let pos_y = nextPinDist; // 条件から、必ず画面外に新規boxは描画されるはず
         box_list.push(vec(pos_x, pos_y));// box_list にドットを追加
 
