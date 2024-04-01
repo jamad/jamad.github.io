@@ -6,7 +6,8 @@
 * [https://jamad.github.io/crisp_game_lib/?game001_helloworld](https://jamad.github.io/crisp_game_lib/?game001_helloworld) によりゲーム画面を表示できるようだ
 * ファイル構成は ![image](https://github.com/jamad/jamad.github.io/assets/949913/cce7632e-d5c1-4628-b8c8-6cbbe7d7ed97)
 * コードの更新は　https://github.com/jamad/jamad.github.io/blob/master/crisp_game_lib/game001_helloworld/main.js のEditで良い
-* 実際にはローカルのindex.htmlを開き　`index.html?game001_helloworld` のように変更して動作確認をしてはcommit という繰り返し手順になるだろう
+* 実際にはローカルのindex.htmlを開き　`index.html?game001_helloworld` のように変更して動作確認をしてはcommit という繰り返し手順となった
+* 着色などは　https://abagames.github.io/crisp-game-lib/ref_document/modules.html　を参考にした。
 
 
 # 後で読みたいドキュメント
