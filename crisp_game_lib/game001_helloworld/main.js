@@ -2,9 +2,9 @@ title = "TITLE TO DISPLAY";// ブラウザのタブにも表示されるし、�
 
 description = `DESCRIPTIN\nTO DISPLAY`;// 初期画面に表示される　改行可能
 
-characters = [];
+characters = [];// 現時点では何に使うか不明
 
-options = {};
+options = {};// 現時点では何に使うか不明
 
 /** @type {Vector[]} */
 let pins;
@@ -12,17 +12,17 @@ let pins;
 function update() { //1 秒に 60 回呼び出される
     if (!ticks) { //開始フレームのみ実行という意味　つまり初期化処理 
         pins = [vec(50, 5)]; // x=50, y=5
-        nextPinDist = 5; // 
+        nextPinDist = 5; // 現時点では何に使うか不明
     }
 
-    let scr = 0.02;
+    let scroll_y = 1.234;
+    let boxsize = 1.5;
     pins.forEach((pos) => {
-        pos.y += scr;
-        let boxsize = 3;
+        pos.y += scroll_y;
         box(pos, boxsize);// draw box objects
     });
 
-    nextPinDist -= scr;
+    nextPinDist -= scroll_y;
     while (nextPinDist < 0) {
         pins.push(vec(rnd(10, 90), -2 - nextPinDist));
         nextPinDist += rnd(5, 15);
