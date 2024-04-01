@@ -3,7 +3,7 @@
 # Quick test 
 * https://abagames.github.io/literate-diff-viewer/pinclimb/index.html?lang=ja は丁寧なチュートリアル。なので試してみた
 * `https://abagames.github.io/literate-diff-viewer/pinclimb/src/1_pins_variable.js` の内容を変更せずに試用)
-* [https://jamad.github.io/crisp_game_lib/?game001_helloworld](https://jamad.github.io/crisp_game_lib/?game001_helloworld)
+* [https://jamad.github.io/crisp_game_lib/?game001_helloworld](https://jamad.github.io/crisp_game_lib/?game001_helloworld) によりゲーム画面を表示できるようだ
 * ファイル構成は ![image](https://github.com/jamad/jamad.github.io/assets/949913/cce7632e-d5c1-4628-b8c8-6cbbe7d7ed97)
 
 
