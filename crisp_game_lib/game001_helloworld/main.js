@@ -14,13 +14,15 @@ let boxsize = 2.0;
 
 function update() { //1 秒に 60 回呼び出される
     if (!ticks) { //開始フレームのみ実行という意味　つまり初期化処理 
-        box_list = [vec(50, -5)]; // x=50, y=-5　の2Dベクトルを１つ保持
-        nextPinDist = -5; // 次のbox生成トリガーに利用　画面に表示されそうになった時点で次の新規生成を行う
+        box_list = [vec(50, 5)]; // x=50, y=5　の2Dベクトルを１つ保持
+        nextPinDist = -10; // 次のbox生成トリガーに利用　画面に表示されそうになった時点で次の新規生成を行う
     }
 
-    box_list.forEach((pos) => {
+    //box_list.forEach((pos) => {
+    remove(box_list, (pos) => {　//これはライブラリの独自メソッド？
         pos.y += scroll_y; // 画面下方向にｙが増加するため。　右下座標が(99,99)
         box(pos, boxsize);// box の描画
+        return 100 + boxsize < pos.y // 条件にマッチした要素は自動的に box_list からremove される
     });
 
     nextPinDist += scroll_y; //他のbox同様にスクロールさせる 
