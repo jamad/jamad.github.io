@@ -19,19 +19,18 @@ function update() { //1 秒に 60 回呼び出される
     }
 
     box_list.forEach((pos) => {
-        pos.y += scroll_y; // 画面下方向にｙが増加する　右下座標が(99,99)
-        box(pos, boxsize);// draw box objects
+        pos.y += scroll_y; // 画面下方向にｙが増加するため。　右下座標が(99,99)
+        box(pos, boxsize);// box の描画
     });
 
     nextPinDist += scroll_y; //他のbox同様にスクロールさせる 
 
-    while (-boxsize * 2 < nextPinDist) { //boxが画面に表示されそうになったので新規生成
-        let pos_x = rnd(10, 90);// random value range(10,90)
-        let pos_y = nextPinDist; // 必ず画面外に新規boxは描画されるはず
-
+    while (-boxsize * 2 < nextPinDist) { //boxが画面に表示されそうになったので実体化
+        let pos_x = rnd(10, 90);// ｘ座標はランダムな値 range(10,90)　画面がrange(0,100)なので。
+        let pos_y = nextPinDist; // 条件から、必ず画面外に新規boxは描画されるはず
         box_list.push(vec(pos_x, pos_y));// box_list にドットを追加
 
-        nextPinDist = -rnd(5, 15);// 次の生成距離ｙをランダムに決定する
+        nextPinDist = -rnd(5, 15);// 次の生成距離ｙをランダムに決定しつつ更新
     }
 
 }
