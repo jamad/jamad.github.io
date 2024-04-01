@@ -1,4 +1,4 @@
-<body style="background: #222;">
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
  
 たまたま見かけたライブラリだが、面白そうだと思ったのでメモしておく。
 
