@@ -3,15 +3,15 @@
 たまたま見かけたライブラリだが、とても面白いと思ったのでメモしておく。
 アイデアの具現化に集中できるよう、スコアやBGMやインプットなどの処理がライブラリで整えられているのが素晴らしい。
 
-# Quick test 
+# 早速試してみた
 * https://abagames.github.io/literate-diff-viewer/pinclimb/index.html?lang=ja は非常に丁寧なチュートリアル。なので、その手順通りに試してみた
-* [https://jamad.github.io/crisp_game_lib/?game001_helloworld](https://jamad.github.io/crisp_game_lib/?game001_helloworld) によりゲーム画面を表示できるようだ
-* <img src="https://github.com/jamad/jamad.github.io/assets/949913/b47cbeb7-5f1c-48ac-8106-1e10d38b70d9" width="20%" /> iphone でも期待通りプレイできた。
+* [https://jamad.github.io/crisp_game_lib/?game001_helloworld](https://jamad.github.io/crisp_game_lib/?game001_helloworld) によりゲームをプレイできた
+* iphone でも期待通りプレイできた。<img src="https://github.com/jamad/jamad.github.io/assets/949913/b47cbeb7-5f1c-48ac-8106-1e10d38b70d9" width="20%" /> 
 * ファイル構成は ![image](https://github.com/jamad/jamad.github.io/assets/949913/cce7632e-d5c1-4628-b8c8-6cbbe7d7ed97)
-* コードの更新は　[main.js](https://github.com/jamad/jamad.github.io/blob/master/crisp_game_lib/game001_helloworld/main.js) のEditでも可能だが、実作業としてはローカルのindex.htmlを開き　`index.html?game001_helloworld` のように変更して動作確認をしてはcommit を繰り返す手順となった
+* コードの更新は　[main.js](https://github.com/jamad/jamad.github.io/blob/master/crisp_game_lib/game001_helloworld/main.js) のEditでも可能だが、実際はVScodeで編集しつつ、ローカルのindex.htmlを開いた後に`index.html?game001_helloworld`としてRefreshして動作確認してからcommit という手順を繰り返した
 * たまに、ブラウザをRefreshしてフリーズした場合はInspectorを表示してエラーメッセージを確認することでデバッグできた。
 * 着色は　https://abagames.github.io/crisp-game-lib/ref_document/modules.html　を参考にしてcolorを見つけた。
-* サウンドやピクセルレンダリングはoptionに記述するだけで設定できる。素晴らしい。
+* サウンドやピクセルレンダリング、画面サイズはoptionに記述するだけで設定できる。素晴らしい。
 
 
 # 後で読みたいドキュメント
