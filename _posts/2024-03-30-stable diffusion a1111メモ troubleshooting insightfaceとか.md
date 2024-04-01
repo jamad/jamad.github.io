@@ -1,4 +1,3 @@
-<link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 # controlnet reference_only を使った時のメモ
 * txt2img で prompt を通常通り設定

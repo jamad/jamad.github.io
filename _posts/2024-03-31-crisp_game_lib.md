@@ -1,0 +1,12 @@
+たまたま見かけたライブラリだが、面白そうだと思ったのでメモしておく。
+
+# 後で読みたいドキュメント
+* https://github.com/abagames/crisp-game-lib/blob/master/README_ja.md
+* https://abagames.github.io/joys-of-small-game-development/fun_to_make_small_games.html
+* https://abagames.github.io/literate-diff-viewer/pinclimb/index.html?lang=ja は丁寧なチュートリアル。後で試してみよう。
+* https://aba.hatenablog.com/entry/2021/08/08/195706 ワンボタンゲーム
+* 凄い数のサンプルだ、、、　
+  * <img src="https://github.com/jamad/jamad.github.io/assets/949913/c11f2beb-647d-428b-ab0c-3549e18ea615" width="25%" />
+  * https://www.asahi-net.or.jp/~cs8k-cyu/browser.html
+
+
