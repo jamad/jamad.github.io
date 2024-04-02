@@ -10,7 +10,8 @@
 * https://abagames.github.io/literate-diff-viewer/pinclimb/index.html?lang=ja は非常に丁寧なチュートリアル。なので、その手順通りに試してみた
 * [https://jamad.github.io/crisp_game_lib/?game001_helloworld](https://jamad.github.io/crisp_game_lib/?game001_helloworld) によりゲームをプレイできた
 * iphone でも期待通りプレイできた。<img src="https://github.com/jamad/jamad.github.io/assets/949913/b47cbeb7-5f1c-48ac-8106-1e10d38b70d9" width="20%" /> 
-* ファイル構成は ![image](https://github.com/jamad/jamad.github.io/assets/949913/cce7632e-d5c1-4628-b8c8-6cbbe7d7ed97)
+* ファイル構成は ![image](https://github.com/jamad/jamad.github.io/assets/949913/8f5cbb92-81b6-4ea7-9fff-690225abf7a7) が最初だけは位置が必要だが、
+ ![image](https://github.com/jamad/jamad.github.io/assets/949913/cce7632e-d5c1-4628-b8c8-6cbbe7d7ed97)のファイルだけで完結できる
 * コードの更新は　[main.js](https://github.com/jamad/jamad.github.io/blob/master/crisp_game_lib/game001_helloworld/main.js) のEditでも可能だが、実際はVScodeで編集しつつ、ローカルのindex.htmlを開いた後に`index.html?game001_helloworld`としてRefreshして動作確認してからcommit という手順を繰り返した
 * たまに、ブラウザをRefreshしてフリーズした場合はInspectorを表示してエラーメッセージを確認することでデバッグできた。
 * 着色は　https://abagames.github.io/crisp-game-lib/ref_document/modules.html　を参考にしてcolorを見つけた。
