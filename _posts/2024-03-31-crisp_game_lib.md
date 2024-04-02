@@ -3,7 +3,10 @@
 たまたま見かけたライブラリだが、とても面白いと思ったのでメモしておく。
 アイデアの具現化に集中できるよう、スコアやBGMやインプットなどの処理がライブラリで整えられているのが素晴らしい。
 
-# 早速試してみた
+# 2024-04-02 もう少し慣れよう。wip
+* [https://jamad.github.io/crisp_game_lib/?game002_abc](https://jamad.github.io/crisp_game_lib/?game002_abc)
+
+# 2024-04-01 早速試してみた
 * https://abagames.github.io/literate-diff-viewer/pinclimb/index.html?lang=ja は非常に丁寧なチュートリアル。なので、その手順通りに試してみた
 * [https://jamad.github.io/crisp_game_lib/?game001_helloworld](https://jamad.github.io/crisp_game_lib/?game001_helloworld) によりゲームをプレイできた
 * iphone でも期待通りプレイできた。<img src="https://github.com/jamad/jamad.github.io/assets/949913/b47cbeb7-5f1c-48ac-8106-1e10d38b70d9" width="20%" /> 
