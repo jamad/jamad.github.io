@@ -1,16 +1,30 @@
 body {
-  background-color: #101233; /* ダーク背景色 */
-  color: white; /* テキストカラー白*/
-  
-  background-image: url("https://jamad.github.io/assets/css/pics/background/xv.png"); /* 画像パス指定 absolute path に変更してみた (https://jamad.github.io/codepen_porting/maze の背景に画像が表示されなかったため)*/
-  background-repeat: repeat; /* 画像をタイリング */
+  background-color: #101233;
+  /* ダーク背景色 */
+  color: white;
+  /* テキストカラー白*/
+
+  background-image: url("https://jamad.github.io/assets/css/pics/background/xv.png");
+  /* 画像パス指定 absolute path に変更してみた (https://jamad.github.io/codepen_porting/maze の背景に画像が表示されなかったため)*/
+  background-repeat: repeat;
+  /* 画像をタイリング */
 }
 
 /* 未訪問リンクのスタイル */
-a:link {  color: #0077FF; }
+a:link {
+  color: #0077FF;
+}
 
 /* 訪問済みリンクのスタイル */
-a:visited {  color: #008833; }
+a:visited {
+  color: #008833;
+}
 
 /* ```で囲まれたコードブロック内の文字色を黒に変更 */
-pre.highlight code {  color: black;}
+pre.highlight code {
+  color: black;
+}
+
+code.language-plaintext.highlighter-rouge {
+  color: black;
+}
