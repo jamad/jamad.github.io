@@ -29,3 +29,7 @@ pre.highlight code {
 code.language-plaintext.highlighter-rouge {
   color: rgb(70, 2, 36);
 }
+
+button {
+  color: rgb(2, 58, 107);
+}
