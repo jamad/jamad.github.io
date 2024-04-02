@@ -25,6 +25,7 @@ pre.highlight code {
   color: black;
 }
 
+/* `で囲まれたコードブロック内の文字色を黒に変更 */
 code.language-plaintext.highlighter-rouge {
-  color: black;
+  color: rgb(19, 1, 112);
 }
