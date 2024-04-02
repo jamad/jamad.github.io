@@ -10,6 +10,12 @@ date: 2023-12-12
 
 ## 上記は、front matter のテスト --- の前後には改行があった方がいい？　タイトルは front matter に変わってはいない。.mdのファイル名のままだ。 
 
+# `で囲まれたブロックがiPhoneで読めなかったのを修正した時のメモ
+* まずはinspectorで右記のような情報をゲット　![image](https://github.com/jamad/jamad.github.io/assets/949913/21df9df4-5514-4120-a692-a6ff64f692a1)
+* それを参考に右記のようなコードを記述　![image](https://github.com/jamad/jamad.github.io/assets/949913/d2ed96e7-ae37-4b05-b2f5-e510ec0acb00)
+
+
+
 ### History
 * 2023-12-12 theme.scss は使っていないので削除
 * 2023-10-24 最新の状態では　href="/assets/css/styles.css" として .css を利用している。複数の.css があれば複数の記事それぞれで異なるスタイルをアサインできるということ
