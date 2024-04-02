@@ -18,3 +18,17 @@ options = {
     isReplayEnabled: true,
     seed: 3000,
 };
+
+// https://github.com/JunoNgx/crisp-game-lib-tutorial?tab=readme-ov-file#step-013-container-variable-and-jsdoc
+
+/**
+* @typedef {{
+* pos: Vector,
+* speed: number
+* }} Star
+*/
+
+/**
+* @type  { Star [] }
+*/
+let stars;
