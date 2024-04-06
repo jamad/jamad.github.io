@@ -4,7 +4,7 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
-2018/01/14 
+2018/03/04 ![GoodSetting](https://github.com/jamad/jamad.github.io/assets/949913/7728bf89-f31b-4ae6-bc0e-5724ada1c790)
 2018/02/11 ![bestRasterSetting](https://github.com/jamad/jamad.github.io/assets/949913/39b2cfea-eca4-488c-977d-18cc0f4fb7ec)
 
 
