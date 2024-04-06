@@ -4,10 +4,12 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
-2018/12/28
+
+
 
 | y/m/d | image |
 | - | - |
+| 2018/12/28 |![setting1](https://github.com/jamad/jamad.github.io/assets/949913/547d6fbe-570b-44ad-8400-d1686ec29ef8)|
 | 2018/08/27 |![005_setting_3mmMDF_final](https://github.com/jamad/jamad.github.io/assets/949913/23364bf6-e3c3-4bd0-a235-86b081a27607)|
 | 2024/03/11 |![setting_today](https://github.com/jamad/jamad.github.io/assets/949913/4b444f50-618d-4a22-8665-ed10f41c529e)|
 | 2024/01/26 |![setting_today (1)](https://github.com/jamad/jamad.github.io/assets/949913/bbd27643-1985-4cd9-a27c-f0aec828bc16)|
