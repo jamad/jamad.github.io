@@ -7,14 +7,14 @@
 
 | y/m/d | image |
 | - | - |
-| 2000/00/00 |![settingToday2](https://github.com/jamad/jamad.github.io/assets/949913/8c9ae967-9a9e-4d0b-9065-0c10043c0119)|
-| 2000/00/00 |![settingToday (3)](https://github.com/jamad/jamad.github.io/assets/949913/0219fb9d-379a-4d3a-b64d-ddb6d59f4d20)|
-| 2000/00/00 |![settingToday (2)](https://github.com/jamad/jamad.github.io/assets/949913/7fde7e30-34ef-4901-8f19-9545eac1a407)|
-| 2000/00/00 |![settingToday (1)](https://github.com/jamad/jamad.github.io/assets/949913/00343b21-b5b5-4d6e-abf6-088274e9afe2)|
-| 2000/00/00 |![setting_today2](https://github.com/jamad/jamad.github.io/assets/949913/cdde6a7d-4d1e-485c-b8cc-68a26582311e)|
-| 2000/00/00 |![setting_today](https://github.com/jamad/jamad.github.io/assets/949913/90ccb877-db72-443d-9981-3f7b09080775)|
-| 2000/00/00 |![todays_settings](https://github.com/jamad/jamad.github.io/assets/949913/a90ad75c-153f-4d69-bbe3-8ae435f3a3d3)|
-| 2000/00/00 |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/efbf0bc2-75fd-4554-a612-40ec34766df4)|
+| 2019/06/01 |![settingToday2](https://github.com/jamad/jamad.github.io/assets/949913/8c9ae967-9a9e-4d0b-9065-0c10043c0119)|
+| 2019/06/01 |![settingToday (3)](https://github.com/jamad/jamad.github.io/assets/949913/0219fb9d-379a-4d3a-b64d-ddb6d59f4d20)|
+| 2019/05/19 |![settingToday (2)](https://github.com/jamad/jamad.github.io/assets/949913/7fde7e30-34ef-4901-8f19-9545eac1a407)|
+| 2019/05/05 |![settingToday (1)](https://github.com/jamad/jamad.github.io/assets/949913/00343b21-b5b5-4d6e-abf6-088274e9afe2)|
+| 2019/04/27 |![setting_today2](https://github.com/jamad/jamad.github.io/assets/949913/cdde6a7d-4d1e-485c-b8cc-68a26582311e)|
+| 2019/04/27 |![setting_today](https://github.com/jamad/jamad.github.io/assets/949913/90ccb877-db72-443d-9981-3f7b09080775)|
+| 2019/04/07 |![todays_settings](https://github.com/jamad/jamad.github.io/assets/949913/a90ad75c-153f-4d69-bbe3-8ae435f3a3d3)|
+| 2019/03/17 |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/efbf0bc2-75fd-4554-a612-40ec34766df4)|
 | 2000/00/00 |![settingToday_retake](https://github.com/jamad/jamad.github.io/assets/949913/f0259ab4-bf6b-4de4-93f1-a10e00f11cfd)|
 | 2000/00/00 |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/f157b5ae-816e-4d64-8668-bf77e40ec66a)|
 | 2000/00/00 |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/3810ba69-7bff-4e9f-a81d-95d3b7e8efb2)|
