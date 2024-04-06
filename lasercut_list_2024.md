@@ -7,7 +7,7 @@
 
 | y/m/d | image |
 | - | - |
-| - |![settingTodayOodi](https://github.com/jamad/jamad.github.io/assets/949913/9f953c14-203b-4c00-85af-24b2b699f0c9)|
+| 2020/02/20 |![settingTodayOodi](https://github.com/jamad/jamad.github.io/assets/949913/9f953c14-203b-4c00-85af-24b2b699f0c9)|
 | - |![settingToday_isoOmena](https://github.com/jamad/jamad.github.io/assets/949913/b1897b19-b0ba-40af-b24d-d756b53e2d84)|
 | - |![setting_today_oodi](https://github.com/jamad/jamad.github.io/assets/949913/25830b4f-14e1-46f4-92a0-536615ab15f3)|
 | - |![settingToday (5)](https://github.com/jamad/jamad.github.io/assets/949913/e9f5b754-ee4e-4365-afd1-8df8946aa06a)|
