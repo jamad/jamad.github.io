@@ -1,9 +1,13 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+* note : ここまで確認した。次回はこの下から
+![image](https://github.com/jamad/jamad.github.io/assets/949913/36a23999-8674-40ed-a14a-5f8ed0e3ab06)
+
+
+
 今までの作業リスト
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
-
 
 
 | y/m/d | image |
