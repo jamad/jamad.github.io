@@ -4,6 +4,7 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+2019/01/27 ![setting](https://github.com/jamad/jamad.github.io/assets/949913/7fedcc72-2e82-4d89-a526-f6a9baeceb61)
 2019/02/10 ![setting](https://github.com/jamad/jamad.github.io/assets/949913/b8a47abc-bfb5-497a-88de-bf706b4bae8f)
 2019/02/03 ![setting](https://github.com/jamad/jamad.github.io/assets/949913/46836523-d718-4d93-be84-1f29f88e5663)
 2018/10/14 ![earringSetting_4mmMDF](https://github.com/jamad/jamad.github.io/assets/949913/71408a67-3f03-448b-bf82-24d7ba8689b6)
