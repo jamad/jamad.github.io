@@ -62,6 +62,5 @@
 | 2019/03/10 a |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/f157b5ae-816e-4d64-8668-bf77e40ec66a)|
 | 2019/03/10 b |![settingToday_retake](https://github.com/jamad/jamad.github.io/assets/949913/f0259ab4-bf6b-4de4-93f1-a10e00f11cfd)|
 | 2019/02/17 a |![settingToday_isoOmena](https://github.com/jamad/jamad.github.io/assets/949913/b1897b19-b0ba-40af-b24d-d756b53e2d84)|
-| 2019/02/17 b |![settingToday (14)](https://github.com/jamad/jamad.github.io/assets/949913/5f418f57-c838-42eb-8fec-78c78699d97f)|
 | 2019/01/20 |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/3810ba69-7bff-4e9f-a81d-95d3b7e8efb2)|
 | 2019/01/13 |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/ce4054dd-3906-47d8-bc0f-82b3b001bcee)|
