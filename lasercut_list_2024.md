@@ -3,8 +3,11 @@
 今までの作業リスト
 
 * .md でないと画像のコピペ（つーかファイルドラッグの方が簡単だった）できんかったわ。.htmlだとダメなんだな。
-* 
-![settingToday (19)](https://github.com/jamad/jamad.github.io/assets/949913/d8d6ef73-27a5-4fae-9dd3-7bd29859b581)
+
+| ymd | image |
+| - | - |
+| 20231007 |![settingToday (19)](https://github.com/jamad/jamad.github.io/assets/949913/d8d6ef73-27a5-4fae-9dd3-7bd29859b581)|
+
 ![settingToday3](https://github.com/jamad/jamad.github.io/assets/949913/c54c495c-f232-4afd-9c3d-62a368e12260)
 ![settingToday2 (11)](https://github.com/jamad/jamad.github.io/assets/949913/6d07de9b-02c2-47fd-801c-1f895208421f)
 ![settingToday1 (5)](https://github.com/jamad/jamad.github.io/assets/949913/e66df179-8aad-4342-a589-4b70aacd2dd2)
