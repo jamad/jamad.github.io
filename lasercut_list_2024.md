@@ -10,11 +10,8 @@
 | 2024/03/11 |![setting_today](https://github.com/jamad/jamad.github.io/assets/949913/4b444f50-618d-4a22-8665-ed10f41c529e)|
 | 2024/01/26 |![setting_today (1)](https://github.com/jamad/jamad.github.io/assets/949913/bbd27643-1985-4cd9-a27c-f0aec828bc16)|
 | 2023/10/07 |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/aba86bb5-e7af-4065-88de-c4e43a45f60a)|
-| 2023/10/07 |![settingToday (19)](https://github.com/jamad/jamad.github.io/assets/949913/d8d6ef73-27a5-4fae-9dd3-7bd29859b581)|
 | 2023/09/09 |![settingToday3](https://github.com/jamad/jamad.github.io/assets/949913/c54c495c-f232-4afd-9c3d-62a368e12260)|
-| 2023/09/09 |![settingToday3](https://github.com/jamad/jamad.github.io/assets/949913/1c1619e0-7651-4c8e-b690-a25efb64ee3d)|
 | 2023/09/09 |![settingToday2](https://github.com/jamad/jamad.github.io/assets/949913/c3381efc-b8d1-498d-a068-5eec28b4a47e)|
-| 2023/09/09 |![settingToday2 (11)](https://github.com/jamad/jamad.github.io/assets/949913/6d07de9b-02c2-47fd-801c-1f895208421f)|
 | 2023/09/09 |![settingToday1](https://github.com/jamad/jamad.github.io/assets/949913/1d498ab7-b653-407c-891a-97cc57c28b26)|
 | 2023/09/09 |![settingToday1 (5)](https://github.com/jamad/jamad.github.io/assets/949913/e66df179-8aad-4342-a589-4b70aacd2dd2)|
 | 2023/09/02 |![settingToday2 (10)](https://github.com/jamad/jamad.github.io/assets/949913/46ec534e-dab1-4cf1-b5cb-e5fe8978e151)|
