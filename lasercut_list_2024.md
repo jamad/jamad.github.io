@@ -4,6 +4,8 @@
 
 * .md でないと画像のコピペ（つーかファイルドラッグの方が簡単だった）できんかったわ。.htmlだとダメなんだな。
 
+2018/01/07 ![setting](https://github.com/jamad/jamad.github.io/assets/949913/a26cdbd3-9a06-49cc-98de-7204fd1d4fe5)
+
 
 | y/m/d | image |
 | - | - |
