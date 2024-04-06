@@ -4,6 +4,20 @@
 
 * .md でないと画像のコピペ（つーかファイルドラッグの方が簡単だった）できんかったわ。.htmlだとダメなんだな。
 
+![settingSuccess](https://github.com/jamad/jamad.github.io/assets/949913/703a826d-a582-459c-be81-f165970af732)
+
+![swanSetting_Success](https://github.com/jamad/jamad.github.io/assets/949913/1ff43787-9733-44ce-bd50-d3fffd354848)
+
+
+![setting_darkFirst](https://github.com/jamad/jamad.github.io/assets/949913/c84d86f0-8627-44aa-ba3a-ad0d28a28bde)
+
+
+
+![settingLetterTemplate](https://github.com/jamad/jamad.github.io/assets/949913/61b9cb44-c8ef-49b7-8367-218e3b03840c)
+
+
+
+![success_finalSettings](https://github.com/jamad/jamad.github.io/assets/949913/41cc74fe-adc7-4ef7-a283-f8887bf46260)
 
 
 2018/01/14 ![epilogSetting](https://github.com/jamad/jamad.github.io/assets/949913/6ad25581-4a80-437f-9293-e6170408380f)
