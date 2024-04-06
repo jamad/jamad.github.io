@@ -32,13 +32,10 @@
 | 2020/02/09 |![setting_today_great](https://github.com/jamad/jamad.github.io/assets/949913/b880d174-5bbd-4d6b-aa7d-72b2c37e9b16)|
 | 2020/01/19 a |![settingToday (13)](https://github.com/jamad/jamad.github.io/assets/949913/4186ce12-c545-48c4-b9c0-3d0d1cc00a39)|
 | 2020/01/04 a |![settingToday2 (6)](https://github.com/jamad/jamad.github.io/assets/949913/96c0a382-3104-4db1-994d-5e5f11ee15ba)|
-| 2020/01/04 b |![settingToday2 (5)](https://github.com/jamad/jamad.github.io/assets/949913/2713df3e-be77-4aee-8708-64985202f46c)|
 | 2020/01/04 c |![settingToday1 (2)](https://github.com/jamad/jamad.github.io/assets/949913/88cbdd4a-9cb8-4b70-8715-310fb59a3a95)|
-| 2020/01/04 d |![settingToday1 (1)](https://github.com/jamad/jamad.github.io/assets/949913/a86e860a-b848-42e0-b186-f0b1c1d6d3e4)|
 | 2020/01/02 a |![settingToday2020b](https://github.com/jamad/jamad.github.io/assets/949913/63dac272-4be9-4c1c-b31e-30b2edc65f3a)|
 | 2020/01/02 b |![settingToday2020](https://github.com/jamad/jamad.github.io/assets/949913/0f1c959b-dcd0-484a-be71-60a217809d96)|
 | 2019/12/28 a |![settingToday (12)](https://github.com/jamad/jamad.github.io/assets/949913/bffbb4eb-0b82-4458-a227-f3d95d273ebe)|
-| 2019/12/28 b |![settingToday (10)](https://github.com/jamad/jamad.github.io/assets/949913/dc7c4910-6af2-4143-9a23-a56239b05392)|
 | 2019/12/08 a |![setting_today2 (1)](https://github.com/jamad/jamad.github.io/assets/949913/7d9d7585-2e7b-49cf-b8a4-3df1adfd3ddc)|
 | 2019/12/08 b |![setting_today1](https://github.com/jamad/jamad.github.io/assets/949913/e7f6019e-5577-4c19-be14-0c9d5442a4d8)|
 | 2019/10/27 a |![settingsToday2](https://github.com/jamad/jamad.github.io/assets/949913/3e17f5e9-537e-4861-ad75-093d30308427)|
