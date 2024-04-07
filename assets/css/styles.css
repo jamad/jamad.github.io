@@ -1,4 +1,4 @@
-img[alt=drawing] { height: 128px; }/* デフォルトサイズを変更 */
+/* img[alt=drawing] { height: 128px; } デフォルトサイズを変更しようと思ったが、効果が見受けられなかったのでコメントアウトした */
 
 body {
   background-color: #101233;
