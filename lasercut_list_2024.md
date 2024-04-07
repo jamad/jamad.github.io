@@ -3,13 +3,10 @@
 
 * 2020/02/20 のフレームを次回やる可能性高し　４/１１イソオメナ
 
-* note : ここまで確認した。次回はこの下から
-![image](https://github.com/jamad/jamad.github.io/assets/949913/36a23999-8674-40ed-a14a-5f8ed0e3ab06)
+* note :　 \project_lasercutter　で画像検索するが吉
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/ad8fffc2-c4e7-47ad-aeea-19022be24772)
 
-
-
-
-今までの作業リスト
+## 今までの作業リスト
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
