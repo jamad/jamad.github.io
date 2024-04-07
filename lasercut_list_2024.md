@@ -4,6 +4,7 @@
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/36a23999-8674-40ed-a14a-5f8ed0e3ab06)
 
 2022/08/28 ![setting_success_speed_should_be5](https://github.com/jamad/jamad.github.io/assets/949913/e69a871c-9a3b-4ef8-8ca7-7fd660c59c71)
+2017/12/09 ![lasercutterSettings20171209](https://github.com/jamad/jamad.github.io/assets/949913/debc13a1-859d-4493-b3c6-181dfe1ea811)
 
 
 
