@@ -12,6 +12,10 @@
 * https://docs.github.com/en/pages/getting-started-with-github-pages
 
 
+# テーブルの幅固定のsyntax
+* `| y/m/d <img width=60/>| image |` のようにして右記のように目的を達成できた。　![image](https://github.com/jamad/jamad.github.io/assets/949913/8b208908-e5ca-4fc1-9ced-ad304f0ca27c)
+
+
 # テーブルの揃えのsyntax
 
 ##  [参考](https://kramdown.gettalong.org/syntax.html#tables)
