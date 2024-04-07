@@ -2,7 +2,9 @@
 
 
 
-| 2016/06/09 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c2e9503e-ebf7-4c5f-8c73-792919ef35e9)|zakkaShelfSmall|
+
+
+
 
 
 * 2020/02/20 のフレームを次回やる可能性高し　４/１１イソオメナ
@@ -100,6 +102,8 @@
 | 2017/12/09 a |![lasercutterSettings20171209](https://github.com/jamad/jamad.github.io/assets/949913/debc13a1-859d-4493-b3c6-181dfe1ea811)|
 | 2017/11/25 |![settingLetterTemplate](https://github.com/jamad/jamad.github.io/assets/949913/61b9cb44-c8ef-49b7-8367-218e3b03840c)|
 | 2017/08/05 |![test4workedSetting20170805](https://github.com/jamad/jamad.github.io/assets/949913/fcc2aae4-21f7-46e4-9ce0-00da78d6762c)|
+| 2016/06/09 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c2e9503e-ebf7-4c5f-8c73-792919ef35e9)|zakkaShelfSmall|
+| 2016/06/09 ![image](https://github.com/jamad/jamad.github.io/assets/949913/a02ea6b9-7959-44d0-a056-5c986f5737f7)|zakkaShelfBig|
 
 
 
