@@ -1,3 +1,5 @@
+img[alt=drawing] { height: 128px; }/* デフォルトサイズを変更 */
+
 body {
   background-color: #101233;
   /* ダーク背景色 */
