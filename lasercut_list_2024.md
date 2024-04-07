@@ -1,6 +1,10 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 
+
+| 2016/06/09 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c2e9503e-ebf7-4c5f-8c73-792919ef35e9)|zakkaShelfSmall|
+
+
 * 2020/02/20 のフレームを次回やる可能性高し　４/１１イソオメナ
 
 * note :　 \project_lasercutter　で画像検索するが吉
