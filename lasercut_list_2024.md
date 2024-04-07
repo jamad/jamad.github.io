@@ -2,8 +2,6 @@
 
 
 
-  
-
 
 * 2020/02/20 のフレームを次回やる可能性高し　４/１１イソオメナ
 
@@ -104,5 +102,8 @@
 | 2017/08/05 |![test4workedSetting20170805](https://github.com/jamad/jamad.github.io/assets/949913/fcc2aae4-21f7-46e4-9ce0-00da78d6762c)|
 | 2016/06/09 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c2e9503e-ebf7-4c5f-8c73-792919ef35e9)|zakkaShelfSmall|
 | 2016/06/09 ![image](https://github.com/jamad/jamad.github.io/assets/949913/a02ea6b9-7959-44d0-a056-5c986f5737f7)|zakkaShelfBig|
+| 2016/06/09 ![image](https://github.com/jamad/jamad.github.io/assets/949913/08027bb7-03b2-4bd4-878c-0ffc9b9283ea)|zakkaBoxVersion3|
+
+
 
 
