@@ -13,7 +13,7 @@
 
 
 # テーブルの幅固定のsyntax
-* `| y/m/d <img width=60/>| image |` のようにして右記のように目的を達成できた。　![image](https://github.com/jamad/jamad.github.io/assets/949913/8b208908-e5ca-4fc1-9ced-ad304f0ca27c)
+* `| y/m/d <img width=60/>| image |` にて目的を達成。（otherwise, 空白部分で自動的に改行）　![image](https://github.com/jamad/jamad.github.io/assets/949913/8b208908-e5ca-4fc1-9ced-ad304f0ca27c)
 
 
 # テーブルの揃えのsyntax
