@@ -13,6 +13,8 @@
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
 
+*　zakkaBoxVersion2　![image](https://github.com/jamad/jamad.github.io/assets/949913/9cdfebd4-6ecb-4f3e-9a24-7f2173223065)
+
 * sideTable ![image](https://github.com/jamad/jamad.github.io/assets/949913/fe9776af-668d-43cc-beb0-967103e12d87)
 
 
