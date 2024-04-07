@@ -11,6 +11,8 @@
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
 
+* Kerros4 2019/09/08 ![image](https://github.com/jamad/jamad.github.io/assets/949913/a8b87d87-e713-459d-b85d-91d8b3c13a68)
+
 * shop_suuri_snadi2019 2019/09/15 ![image](https://github.com/jamad/jamad.github.io/assets/949913/11b09117-7436-4b43-9863-3c9c17284986)
 
 * sideTable ![image](https://github.com/jamad/jamad.github.io/assets/949913/fe9776af-668d-43cc-beb0-967103e12d87)
