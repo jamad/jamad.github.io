@@ -8,6 +8,7 @@
 
 
 
+
 今までの作業リスト
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
@@ -15,7 +16,7 @@
 
 | y/m/d <img width=60/>| image |
 | ------------- | ------------- |
-| 2024/03/11 |![setting_today](https://github.com/jamad/jamad.github.io/assets/949913/4b444f50-618d-4a22-8665-ed10f41c529e)|
+| 2024/03/11 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c17e15de-01df-4958-923b-c5e77e6de189)|![setting_today](https://github.com/jamad/jamad.github.io/assets/949913/4b444f50-618d-4a22-8665-ed10f41c529e)|
 | 2024/01/26 |![setting_today (1)](https://github.com/jamad/jamad.github.io/assets/949913/bbd27643-1985-4cd9-a27c-f0aec828bc16)|
 | 2023/10/07 |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/aba86bb5-e7af-4065-88de-c4e43a45f60a)|
 | 2023/09/09 c |![settingToday3](https://github.com/jamad/jamad.github.io/assets/949913/c54c495c-f232-4afd-9c3d-62a368e12260)|
