@@ -3,12 +3,6 @@
 * note : ここまで確認した。次回はこの下から
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/36a23999-8674-40ed-a14a-5f8ed0e3ab06)
 
-2022/08/28 ![setting_success_speed_should_be5](https://github.com/jamad/jamad.github.io/assets/949913/e69a871c-9a3b-4ef8-8ca7-7fd660c59c71)
-2017/12/09 ![lasercutterSettings20171209](https://github.com/jamad/jamad.github.io/assets/949913/debc13a1-859d-4493-b3c6-181dfe1ea811)
-2017/08/05 ![test4workedSetting20170805](https://github.com/jamad/jamad.github.io/assets/949913/fcc2aae4-21f7-46e4-9ce0-00da78d6762c)
-
-
-
 今までの作業リスト
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
@@ -37,6 +31,7 @@
 | 2023/01/03 |![settingToday (4)](https://github.com/jamad/jamad.github.io/assets/949913/4c24ed28-a0af-476e-8cd5-cc3e0a10003b)|
 | 2022/12/27 |![settingToday (5)](https://github.com/jamad/jamad.github.io/assets/949913/e9f5b754-ee4e-4365-afd1-8df8946aa06a)|
 | 2022/12/18 |![setting_today_oodi](https://github.com/jamad/jamad.github.io/assets/949913/25830b4f-14e1-46f4-92a0-536615ab15f3)|
+| 2022/08/28 |![setting_success_speed_should_be5](https://github.com/jamad/jamad.github.io/assets/949913/e69a871c-9a3b-4ef8-8ca7-7fd660c59c71)|
 | 2020/02/20 |![settingTodayOodi](https://github.com/jamad/jamad.github.io/assets/949913/9f953c14-203b-4c00-85af-24b2b699f0c9)|
 | 2020/02/09 |![setting_today_great](https://github.com/jamad/jamad.github.io/assets/949913/b880d174-5bbd-4d6b-aa7d-72b2c37e9b16)|
 | 2020/01/19 |![settingToday (13)](https://github.com/jamad/jamad.github.io/assets/949913/4186ce12-c545-48c4-b9c0-3d0d1cc00a39)|
@@ -84,9 +79,9 @@
 | 2018/01/14 | ![epilogSetting](https://github.com/jamad/jamad.github.io/assets/949913/6ad25581-4a80-437f-9293-e6170408380f)|
 | 2018/01/07 | ![setting](https://github.com/jamad/jamad.github.io/assets/949913/a26cdbd3-9a06-49cc-98de-7204fd1d4fe5)|
 | 2017/12/23 |![success_finalSettings](https://github.com/jamad/jamad.github.io/assets/949913/41cc74fe-adc7-4ef7-a283-f8887bf46260)|
-| 2017/12/16 |![swanSetting_Success](https://github.com/jamad/jamad.github.io/assets/949913/1ff43787-9733-44ce-bd50-d3fffd354848)|
+| 2017/12/16 c |![swanSetting_Success](https://github.com/jamad/jamad.github.io/assets/949913/1ff43787-9733-44ce-bd50-d3fffd354848)|
 | 2017/12/16 b |![settingSuccess](https://github.com/jamad/jamad.github.io/assets/949913/703a826d-a582-459c-be81-f165970af732)|
 | 2017/12/16 a |![setting_darkFirst](https://github.com/jamad/jamad.github.io/assets/949913/c84d86f0-8627-44aa-ba3a-ad0d28a28bde)|
+| 2017/12/09 |![lasercutterSettings20171209](https://github.com/jamad/jamad.github.io/assets/949913/debc13a1-859d-4493-b3c6-181dfe1ea811)|
 | 2017/11/25 |![settingLetterTemplate](https://github.com/jamad/jamad.github.io/assets/949913/61b9cb44-c8ef-49b7-8367-218e3b03840c)|
-
-
+| 2017/08/05 |![test4workedSetting20170805](https://github.com/jamad/jamad.github.io/assets/949913/fcc2aae4-21f7-46e4-9ce0-00da78d6762c)|
