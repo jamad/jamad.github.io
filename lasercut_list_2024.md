@@ -3,6 +3,9 @@
 * note : ここまで確認した。次回はこの下から
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/36a23999-8674-40ed-a14a-5f8ed0e3ab06)
 
+
+| 2017/12/09 |![4filesAsLayers](https://github.com/jamad/jamad.github.io/assets/949913/165a84e2-4fcb-4bd6-bf41-5f6189d66694)|
+
 今までの作業リスト
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
