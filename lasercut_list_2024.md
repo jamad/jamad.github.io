@@ -83,8 +83,8 @@
 | 2018/01/07 | ![setting](https://github.com/jamad/jamad.github.io/assets/949913/a26cdbd3-9a06-49cc-98de-7204fd1d4fe5)|
 | 2017/12/23 |![success_finalSettings](https://github.com/jamad/jamad.github.io/assets/949913/41cc74fe-adc7-4ef7-a283-f8887bf46260)|
 | 2017/12/16 |![swanSetting_Success](https://github.com/jamad/jamad.github.io/assets/949913/1ff43787-9733-44ce-bd50-d3fffd354848)|
-| 2017/12/16 |![settingSuccess](https://github.com/jamad/jamad.github.io/assets/949913/703a826d-a582-459c-be81-f165970af732)|
-| 2017/12/16 |![setting_darkFirst](https://github.com/jamad/jamad.github.io/assets/949913/c84d86f0-8627-44aa-ba3a-ad0d28a28bde)|
+| 2017/12/16 b |![settingSuccess](https://github.com/jamad/jamad.github.io/assets/949913/703a826d-a582-459c-be81-f165970af732)|
+| 2017/12/16 a |![setting_darkFirst](https://github.com/jamad/jamad.github.io/assets/949913/c84d86f0-8627-44aa-ba3a-ad0d28a28bde)|
 | 2017/11/25 |![settingLetterTemplate](https://github.com/jamad/jamad.github.io/assets/949913/61b9cb44-c8ef-49b7-8367-218e3b03840c)|
 
 
