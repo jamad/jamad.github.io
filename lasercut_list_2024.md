@@ -3,6 +3,7 @@
 * note : ここまで確認した。次回はこの下から
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/36a23999-8674-40ed-a14a-5f8ed0e3ab06)
 
+2022/08/28 ![setting_success_speed_should_be5](https://github.com/jamad/jamad.github.io/assets/949913/e69a871c-9a3b-4ef8-8ca7-7fd660c59c71)
 
 
 今までの作業リスト
