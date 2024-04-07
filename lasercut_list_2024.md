@@ -11,7 +11,7 @@
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
 
-![image](https://github.com/jamad/jamad.github.io/assets/949913/fe9776af-668d-43cc-beb0-967103e12d87)
+* sideTable ![image](https://github.com/jamad/jamad.github.io/assets/949913/fe9776af-668d-43cc-beb0-967103e12d87)
 
 
 | y/m/d <img width=60/>| image |
