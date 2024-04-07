@@ -11,7 +11,7 @@
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
 
-* Kerros4 2019/09/08 ![image](https://github.com/jamad/jamad.github.io/assets/949913/a8b87d87-e713-459d-b85d-91d8b3c13a68)
+*  2019/09/08 ![image](https://github.com/jamad/jamad.github.io/assets/949913/a8b87d87-e713-459d-b85d-91d8b3c13a68)
 
 * shop_suuri_snadi2019 2019/09/15 ![image](https://github.com/jamad/jamad.github.io/assets/949913/11b09117-7436-4b43-9863-3c9c17284986)
 
@@ -59,6 +59,7 @@
 | 2019/09/28 b ![image](https://github.com/jamad/jamad.github.io/assets/949913/127104c4-d4d8-4ccf-9b80-5e1867dd077b)|![settingToday (9)](https://github.com/jamad/jamad.github.io/assets/949913/786ac7d5-2b96-411e-bd2a-c34e09a1951f)|
 | 2019/09/28 a |![settingToday2 (3)](https://github.com/jamad/jamad.github.io/assets/949913/8589b9e3-d1a2-474c-87c0-444c5c93d5e6)|
 | 2019/09/22 |![settingToday (8)](https://github.com/jamad/jamad.github.io/assets/949913/c96b1b26-28e6-4469-a81b-3b316873042c)|
+| 2019/09/08 ![image](https://github.com/jamad/jamad.github.io/assets/949913/a8b87d87-e713-459d-b85d-91d8b3c13a68)|Kerros4|
 | 2019/07/14 b |![settingToday (7)](https://github.com/jamad/jamad.github.io/assets/949913/1bc2b614-03dd-4a30-8b59-4ab019663857)|
 | 2019/07/14 a |![settingToday2 (2)](https://github.com/jamad/jamad.github.io/assets/949913/6141b88c-1b54-4bdc-85ab-0fcdeb14e3b7)|
 | 2019/07/07 b |![settingToday (6)](https://github.com/jamad/jamad.github.io/assets/949913/c75dd6df-2d45-49b4-9404-184f8f3b44dc)|
