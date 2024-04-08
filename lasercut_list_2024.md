@@ -13,6 +13,10 @@
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
 2016/11/27
+trayFor1.5mm
+![image](https://github.com/jamad/jamad.github.io/assets/949913/c062161f-9e88-40e5-bc86-89546274730c)
+
+2016/11/27
 bagHandle
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/1e041efd-9525-423e-a452-6e1577a1bb3c)
 
