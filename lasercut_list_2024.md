@@ -12,6 +12,8 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+bagHandle
+![image](https://github.com/jamad/jamad.github.io/assets/949913/1e041efd-9525-423e-a452-6e1577a1bb3c)
 
 
 | y/m/d <img width=60/>| image |
