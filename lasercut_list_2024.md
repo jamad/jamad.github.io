@@ -12,6 +12,12 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+
+2016/10/04
+trayLeg
+![image](https://github.com/jamad/jamad.github.io/assets/949913/56a7998a-15b9-4af7-9834-55f752c1aeed)
+
+
 2016/10/04
 wagon
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/78c37801-057a-4599-9098-1e5ce05276b1)
