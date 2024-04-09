@@ -12,6 +12,11 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+2018/05/18
+puppetTheatre
+![image](https://github.com/jamad/jamad.github.io/assets/949913/c386ce30-1e23-4d16-a845-5333786c9405)
+
+
 2017/05/13
 JohannaGullichsen
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/9f4ecaac-4d09-4264-8654-77c1c2e43c87)
