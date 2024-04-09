@@ -14,6 +14,11 @@
 
 
 2016/06/19
+kasse_2.0mm
+![image](https://github.com/jamad/jamad.github.io/assets/949913/c85af4b3-82e0-49d4-8441-b4d02c770478)
+
+
+2016/06/19
 makiita_1.5mm
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/31befdcf-da79-404f-bbd1-7fbcf6f75be5)
 
