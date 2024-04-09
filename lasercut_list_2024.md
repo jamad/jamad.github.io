@@ -3,8 +3,7 @@
 
 * 2020/02/20 のフレームを次回やる可能性高し　４/12 イソオメナ
 
-* note :　 \project_lasercutter　で画像検索するが吉
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/ad8fffc2-c4e7-47ad-aeea-19022be24772)
+* note :　 \project_lasercutter　検索するが吉
 
 ## 今までの作業リスト
 
@@ -12,7 +11,6 @@
 
 
 | 2018/07/02 ![image](https://github.com/jamad/jamad.github.io/assets/949913/33421244-39d5-490b-8ac4-76d152631695) | mirrorStand | 
-
 
 
 | y/m/d <img width=60/>| image |
