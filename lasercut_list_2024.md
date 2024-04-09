@@ -13,6 +13,11 @@
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
 
+2017/10/22
+dollhouseCornerCleanup
+![image](https://github.com/jamad/jamad.github.io/assets/949913/59c31ba4-6d8f-449a-81b2-de980eac3d1b)
+
+
 2017/04/23
 2017_04_rhombus
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/1a6a521b-8311-4c21-851f-e93d40a797fc)
