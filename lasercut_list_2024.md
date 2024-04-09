@@ -12,6 +12,10 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+2016/10/04
+dollHouseBox
+![image](https://github.com/jamad/jamad.github.io/assets/949913/1e746995-e4db-4397-8f97-d551ed39088e)
+
 
 2016/10/04
 ladderVer2
