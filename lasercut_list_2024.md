@@ -28,7 +28,7 @@ thermometer
 | 2023/09/09 b |![settingToday2](https://github.com/jamad/jamad.github.io/assets/949913/c3381efc-b8d1-498d-a068-5eec28b4a47e)|
 | 2023/09/09 a ![image](https://github.com/jamad/jamad.github.io/assets/949913/2b53561e-9e54-4890-959d-ed096e03ee01)|![settingToday1](https://github.com/jamad/jamad.github.io/assets/949913/1d498ab7-b653-407c-891a-97cc57c28b26)|
 | 2023/09/02 b |![settingToday1 (4)](https://github.com/jamad/jamad.github.io/assets/949913/fad8be89-b539-45d1-a410-4d9ca548b1ac)|
-| 2023/09/02 a |![settingToday2 (10)](https://github.com/jamad/jamad.github.io/assets/949913/46ec534e-dab1-4cf1-b5cb-e5fe8978e151)|
+| 2023/09/02 a |setcasse_stand_v3 ![settingToday2 (10)](https://github.com/jamad/jamad.github.io/assets/949913/46ec534e-dab1-4cf1-b5cb-e5fe8978e151)|
 | 2023/07/21 b |![settingToday2 (9)](https://github.com/jamad/jamad.github.io/assets/949913/a413c500-4061-46e4-88ed-9d324141a7c7)|
 | 2023/07/21 a |![settingToday (18)](https://github.com/jamad/jamad.github.io/assets/949913/69b049c7-8753-4007-9edc-8569f7b86c2f)|
 | 2023/07/13 b |![settingToday1 (3)](https://github.com/jamad/jamad.github.io/assets/949913/2a3c3dc8-7a26-4e16-9f19-829c2a358c92)|
