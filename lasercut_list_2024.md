@@ -12,6 +12,11 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+2016/06/19
+tray_2.0mm_4.0mm
+![image](https://github.com/jamad/jamad.github.io/assets/949913/542b0b11-b511-4c80-a295-f32352726008)
+
+
 2016/10/04
 dollHouseBox
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/1e746995-e4db-4397-8f97-d551ed39088e)
