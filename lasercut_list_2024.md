@@ -1,9 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 
-
-
-* 2020/02/20 のフレームを次回やる可能性高し　４/１１イソオメナ
+* 2020/02/20 のフレームを次回やる可能性高し　４/12 イソオメナ
 
 * note :　 \project_lasercutter　で画像検索するが吉
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/ad8fffc2-c4e7-47ad-aeea-19022be24772)
