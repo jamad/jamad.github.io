@@ -12,6 +12,10 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+2017/07/30
+jamadStand2017
+![image](https://github.com/jamad/jamad.github.io/assets/949913/3586274c-a300-4129-b6bf-d02c0211883b)
+
 
 2017/10/22
 dollhouseCornerCleanup
