@@ -12,6 +12,11 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+2022/05/11
+box_1.5mm_ver2022_x1.5
+![image](https://github.com/jamad/jamad.github.io/assets/949913/1337bcf3-4e94-434f-9f0e-43d0fd102994)
+
+
 2016/06/19
 desk_1.5mm_3mm
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/0ea1a201-94df-45a5-95c0-4d78ba919dc5)
