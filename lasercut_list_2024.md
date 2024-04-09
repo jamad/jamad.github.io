@@ -13,6 +13,9 @@
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
 
+| 2018/07/02 ![image](https://github.com/jamad/jamad.github.io/assets/949913/33421244-39d5-490b-8ac4-76d152631695) | mirrorStand | 
+
+
 
 | y/m/d <img width=60/>| image |
 | ------------- | ------------- |
