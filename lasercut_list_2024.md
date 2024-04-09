@@ -12,6 +12,12 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+
+2016/06/19
+makiita_1.5mm
+![image](https://github.com/jamad/jamad.github.io/assets/949913/31befdcf-da79-404f-bbd1-7fbcf6f75be5)
+
+
 2016/06/19
 tray_2.0mm_4.0mm
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/542b0b11-b511-4c80-a295-f32352726008)
