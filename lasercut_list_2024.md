@@ -9,6 +9,7 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+| 2023/07/11 ![image](https://github.com/jamad/jamad.github.io/assets/949913/189b67b1-c9b2-4723-9871-1f0754a4224c)| sauna_corner| 
 
 | 2023/10/14 ![image](https://github.com/jamad/jamad.github.io/assets/949913/45e894d4-e01f-4124-8800-390d5db8220c) | sauna_thermometer_baseonly_at_paja |
 
