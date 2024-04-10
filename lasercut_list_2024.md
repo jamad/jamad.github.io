@@ -9,6 +9,7 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+| 2023/10/27 ![image](https://github.com/jamad/jamad.github.io/assets/949913/716240de-7e6e-438b-9af2-ee4188aecf89)| svensktennChestStand2023 |
 
 | 2023/09/01 ![image](https://github.com/jamad/jamad.github.io/assets/949913/680898d1-bfe7-4806-a7a4-1c493400a971)| coaster_table | 
 
