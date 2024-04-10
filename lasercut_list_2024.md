@@ -9,6 +9,8 @@
 
 * .md でないと画像のコピペ（後、更にファイルドラッグドロップの方が簡単だったと判明）できんかった。.htmlだとダメなんだな。
 
+| 2023/10/14 ![image](https://github.com/jamad/jamad.github.io/assets/949913/46541a84-d73e-4776-8fc2-130d1d6948e1) |gift_charm_at_paja |
+
 | 2023/10/26 ![image](https://github.com/jamad/jamad.github.io/assets/949913/b47ffde7-bc0d-4534-a691-564234e6ed76) | zakkaBox2023 |
 
 | 2023/10/27 ![image](https://github.com/jamad/jamad.github.io/assets/949913/716240de-7e6e-438b-9af2-ee4188aecf89)| svensktennChestStand2023 |
