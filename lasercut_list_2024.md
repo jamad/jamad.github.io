@@ -12,6 +12,9 @@
 
 
 
+
+| 2023/01/22 ![image](https://github.com/jamad/jamad.github.io/assets/949913/f5fb9127-d6dc-499e-af72-b467e6a91475)  | box_bag_deco_ready_oodi_1line| 
+
 | 2023/01/21 ![image](https://github.com/jamad/jamad.github.io/assets/949913/3c89c295-cda4-404c-8f00-c6d7be93adc0)| boxbag_deco| 
 
 | 2023/07/11 ![image](https://github.com/jamad/jamad.github.io/assets/949913/189b67b1-c9b2-4723-9871-1f0754a4224c)| sauna_corner| 
