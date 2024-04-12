@@ -1,6 +1,12 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-* note :　 \project_lasercutter　検索するが吉
+## better to move
+* https://github.com/jamad/practicePython/issues/105#issuecomment-1866439013 
+
+
+## note :　 \project_lasercutter　de検索するが吉
+
+
 
 ## 今までの作業リスト
 
