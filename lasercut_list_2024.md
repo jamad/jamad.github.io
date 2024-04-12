@@ -2,6 +2,10 @@
 
 
 * 2020/02/20 のフレームを次回やる可能性高し　４/12 イソオメナ
+* regular https://github.com/jamad/practicePython/issues/105#issuecomment-2051900436
+* large https://github.com/jamad/practicePython/issues/105#issuecomment-2052003691
+
+
 
 * note :　 \project_lasercutter　検索するが吉
 
