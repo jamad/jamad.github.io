@@ -1,3 +1,19 @@
+```mermaid
+graph TD;
+    NaClO2[NaClO₂] --> ClO2;
+    ClO2[ClO₂] --> O;
+    ClO2 --> Cl;
+    O --> |2x|O;
+    Cl --> |2x|Cl;
+    NaClO[NaClO] --> ClO;
+    ClO[ClO] --> O;
+    ClO --> Cl;
+    Na[Na] --> NaClO2;
+    Na --> NaClO;
+```
+
+
+
 https://jamad.github.io/
 
 # README.md　を作成した public document
