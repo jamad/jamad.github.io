@@ -3,10 +3,9 @@
 
 # https://codepen.io/jamad/pen/MWRgvqZ をここに表示してみる　
 * expected result ![image](https://github.com/jamad/jamad.github.io/assets/949913/e23d4041-14a8-40be-952f-253c5128a7ea)
-* css は `<style>`(body部分は全体に影響するので外した) , javascript は`<script>` に入れるように記述した。 ```html で　コード全体をマークしたら、ソースコード表示になってしまったので、外した。 `---` で区切ることにしてみた。
+* css は `<style>`(body部分は全体に影響するので外した) , javascript は`<script>` に入れるように記述した。 ```html で　コード全体をマークしたら、ソースコード表示になってしまったので、外した。`コードここから` と  `コードここまで` で可視化してみた。
 
----
-
+`コードここから`
 <div class="health-bar">
   <div class="inner-bar" id="health"></div>
 </div>
@@ -57,7 +56,7 @@ window.onload = function() {
 };
 </script> 
 
----
+`コードここまで`
 
 
 # my works
