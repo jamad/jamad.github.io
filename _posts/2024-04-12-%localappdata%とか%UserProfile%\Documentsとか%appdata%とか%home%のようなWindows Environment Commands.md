@@ -10,14 +10,14 @@
 |-|-|
 |%AppData%|`C:\Users\{username}\AppData\Roaming`|
 |%LocalAppData%|`C:\Users\{username}\AppData\Local`|
+|%Temp%|`%LocalAppData%\Temp`|
 |%UserProfile%|`C:\Users\{username}`|
+|%Public%|`C:\Users\Public`|
 |%ProgramFiles%|`C:\Program Files`|
 |%ProgramFiles(x86)%|`C:\Program Files (x86)`|
+|%ProgramData%|`C:\ProgramData`|
 |%AllUsersProfile% |`C:\ProgramData`|
 |%HomeDrive%|`C:\`|
 |%SystemDrive%|`C:\`|
 |%SystemRoot%|`C:\Windows`|
-|%ProgramData%|`C:\ProgramData`|
-|%Public%|`C:\Users\Public`|
-|%Temp%|`%LocalAppData%\Temp`|
 
