@@ -17,7 +17,7 @@
 |%ProgramFiles(x86)%|`C:\Program Files (x86)`|
 |%ProgramData%|`C:\ProgramData`|
 |%AllUsersProfile% |`C:\ProgramData`|
+|%SystemRoot%|`C:\Windows`|
 |%HomeDrive%|`C:\`|
 |%SystemDrive%|`C:\`|
-|%SystemRoot%|`C:\Windows`|
 
