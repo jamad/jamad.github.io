@@ -2,7 +2,7 @@
 
 * styleを適用している理由はiOSのデフォルトSafariでダークモードにならないから
 
-* github . による dithub.dev モード（テンキーのピリオドでの起動が楽）はプレビューを見るのに便利かも　特に共有PCでのincognito mode とかで使えそう
+* github . による dithub.dev モード（テンキーのピリオドでの起動が楽）はプレビューを見るのに便利(.md ファイルだけ？)　特に共有PCでのincognito mode とかで使えそう
 * 右上のここから　![image](https://github.com/jamad/jamad.github.io/assets/949913/373dca2f-3872-465f-9245-2d8693d9cddd)
 
 
