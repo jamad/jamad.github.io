@@ -1,5 +1,68 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
+
+# https://codepen.io/jamad/pen/MWRgvqZ をここに表示してみる
+
+```html
+<div class="health-bar">
+  <div class="inner-bar" id="health"></div>
+</div>
+
+<style>
+body { 
+  background: #222;
+  display: grid;  
+  place-items: center;
+  text-align: center;   
+}
+
+.health-bar {
+  width: 200px;
+  height: 10px;
+  background-color: #500;
+  border: 1px solid #666;
+}
+
+.inner-bar {
+  width: 100%;
+  height: 100%;
+  background-color: #050;
+  transition: width 0.5s ease;
+}
+</style>
+
+<script>
+let currentHealth = 100.0;
+function takeDamage() {
+  currentHealth -= 20;
+  if (currentHealth <= 0) {
+    currentHealth = 0;
+  }
+  updateHealthBar();
+}
+function updateHealthBar() {
+  const healthBar = document.getElementById('health');
+  healthBar.style.width = currentHealth + '%';
+}
+
+function damageLoop() {
+  setInterval(function() {   
+    if (currentHealth === 0) {
+      currentHealth = 120; // 100 だと何故かフルにならないので
+      updateHealthBar();
+    }
+    takeDamage();// can keep 0 health
+  }, 1000);// every second
+}
+
+// ページが読み込まれたときにダメージループを開始
+window.onload = function() {
+  damageLoop();
+};
+</script> 
+```
+
+
 # my works
 * [https://codepen.io/your-work/（Github でログイン）](https://codepen.io/your-work/)
 * [文字列内の全ての{}を()に置き換え](https://codepen.io/jamad/pen/NWmwpVm)
