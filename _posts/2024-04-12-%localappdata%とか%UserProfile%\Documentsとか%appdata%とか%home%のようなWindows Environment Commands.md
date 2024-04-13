@@ -10,7 +10,7 @@
 |-|-|
 |%AppData%|`C:\Users\{username}\AppData\Roaming`|
 |%LocalAppData%|`C:\Users\{username}\AppData\Local`|
-|%Temp%|`%LocalAppData%\Temp`|
+|%Temp%|`C:\Users\{username}\AppData\Local\Temp`|
 |%UserProfile%|`C:\Users\{username}`|
 |%Public%|`C:\Users\Public`|
 |%ProgramFiles%|`C:\Program Files`|
