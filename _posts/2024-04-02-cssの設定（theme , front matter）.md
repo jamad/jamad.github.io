@@ -8,6 +8,19 @@ date: 2023-12-12
 
 ---
 
+# 下記に `<style>`タグを入れて、センタリングしてみるテスト。jkyll でhtml化された時だけ有効になるはず。
+
+<style>
+body { 
+  background: #282;
+  display: grid;  
+  place-items: center;
+  text-align: center;   
+}
+</style>
+
+
+
 ## 上記は、front matter のテスト --- の前後には改行があった方がいい？　タイトルは front matter に変わってはいない。.mdのファイル名のままだ。 
 
 # `で囲まれたブロックがiPhoneで読めなかったのを修正した時のメモ
