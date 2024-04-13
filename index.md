@@ -22,9 +22,7 @@
 ---
 
 <button onclick="copyT()" id="buttonlabel">dummy</button>
-
 <button onclick="copyText2()"><span id="mystr">dummy</span></button>
-
 <input type="text" id="my_userInput"> <button onclick="copyT2()" id="buttonlabel2">urlで画像をwidth=25%表示させるタグをコピーするボタン</button>
 
 * javascript による簡易時計
@@ -39,12 +37,12 @@
   document.getElementById("mystr").innerText ='CSSタグをコピーするボタン : '+mystr;
   function copyText2() { navigator.clipboard.writeText(mystr);}
   
- //example :  https://jamad.github.io/jam_clock_icon.png
- userInput = document.getElementById("my_userInput");
- // input要素の内容が変化した時に実行される関数を定義
- userInput.addEventListener("input", function() {  document.getElementById("buttonlabel2").textContent = `<img src="${userInput.value}" width="25%">`});
- function copyT2() {navigator.clipboard.writeText(document.getElementById("buttonlabel2").textContent);}
+  //example :  https://jamad.github.io/jam_clock_icon.png
+  userInput = document.getElementById("my_userInput");
+  userInput.addEventListener("input", function() {  document.getElementById("buttonlabel2").textContent = `<img src="${userInput.value}" width="25%">`}); // input要素の内容が変化した時に実行される関数を定義
+  function copyT2() {navigator.clipboard.writeText(document.getElementById("buttonlabel2").textContent);}
 
+  // 簡易時計
   f=(x)=>String(x).padStart(2,'0');
   g=(d=new Date())=>`${f(d.getHours())}:${f(d.getMinutes())}:${f(d.getSeconds())}`;
   u=()=>document.getElementById('tm').textContent=g();
@@ -52,6 +50,7 @@
 </script>
 
 ---
+
 
 * [日々のメモ](https://jamad.github.io/%E6%97%A5%E3%80%85%E3%81%AE%E3%83%A1%E3%83%A2)
 
