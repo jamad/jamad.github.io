@@ -2,6 +2,8 @@
 
 * styleを適用している理由はiOSのデフォルトSafariでダークモードにならないから
 
+* github . による dithub.dev モードはプレビューを見るのに便利かも　特に共有PCでのincognito mode とかで使えそう
+
 # このindex.htmlの更新方法 
 1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　から編集 (index.html が既存だと index.md が上書きできないので削除)
 1. [jekyllのconversion完了を待つ](https://github.com/jamad/jamad.github.io/actions)
