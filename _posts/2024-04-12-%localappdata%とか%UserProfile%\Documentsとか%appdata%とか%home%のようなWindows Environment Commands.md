@@ -10,8 +10,7 @@
 * %AppData% - Opens AppData folder C:\Users\{username}\AppData\Roaming
 * %LocalAppData% - Opens local AppData folder C:\Users\{username}\AppData\Local
 
-* %UserProfile% - Opens your user's profile C:\Users\{username}
-* %home%  も一緒？　短いので楽。
+* %UserProfile% で開くのは C:\Users\{username}
 
 * %ProgramFiles% - C:\Program Files or C:\Program Files (x86)
 
