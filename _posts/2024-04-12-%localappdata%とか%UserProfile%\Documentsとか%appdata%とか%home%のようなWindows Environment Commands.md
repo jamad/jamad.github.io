@@ -12,9 +12,7 @@
 |%LocalAppData%| C:\Users\{username}\AppData\Local|
 |%UserProfile%|C:\Users\{username}|
 |%ProgramFiles%|C:\Program Files or C:\Program Files (x86)|
-
-
-* %AllUsersProfile% - Open the All User's Profile C:\ProgramData
+|%AllUsersProfile% | C:\ProgramData|
 
 * %CommonProgramFiles% - C:\Program Files\Common Files
 * %CommonProgramFiles(x86)% - C:\Program Files (x86)\Common Files
