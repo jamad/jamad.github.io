@@ -12,8 +12,7 @@ date: 2023-12-12
 
 <style>
 body { 
-  background: #282;
-  display: grid;  
+  background: #232;
   place-items: center;
   text-align: center;   
 }
