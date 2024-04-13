@@ -12,15 +12,12 @@
 |%LocalAppData%|`C:\Users\{username}\AppData\Local`|
 |%UserProfile%|`C:\Users\{username}`|
 |%ProgramFiles%|`C:\Program Files`|
+|%ProgramFiles(x86)%|`C:\Program Files (x86)`|
 |%AllUsersProfile% |`C:\ProgramData`|
+|%HomeDrive%|`C:\`|
+|%SystemDrive%|`C:\`|
+|%SystemRoot%|`C:\Windows`|
+|%ProgramData%|`C:\ProgramData`|
+|%Public%|`C:\Users\Public`|
+|%Temp%|`%LocalAppData%\Temp`|
 
-* %CommonProgramFiles% - C:\Program Files\Common Files
-* %CommonProgramFiles(x86)% - C:\Program Files (x86)\Common Files
-* %HomeDrive% - Opens your home drive C:\
-* %ProgramData% - C:\ProgramData
-
-* %ProgramFiles(x86)% - C:\Program Files (x86)
-* %Public% - C:\Users\Public
-* %SystemDrive% - C:
-* %SystemRoot% - Opens Windows folder C:\Windows
-* %Temp% - Opens temporary file Folder C:\Users\{Username}\AppData\Local\Temp
