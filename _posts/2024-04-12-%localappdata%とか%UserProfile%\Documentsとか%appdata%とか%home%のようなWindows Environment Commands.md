@@ -7,12 +7,13 @@
 
 # Windows Environment Commands
 
-* %AppData% - Opens AppData folder C:\Users\{username}\AppData\Roaming
-* %LocalAppData% - Opens local AppData folder C:\Users\{username}\AppData\Local
+|変数|例|
+|-|-|
+|%AppData%|C:\Users\{username}\AppData\Roaming|
+|%LocalAppData%| C:\Users\{username}\AppData\Local|
+|%UserProfile%|C:\Users\{username}|
+|%ProgramFiles%|C:\Program Files or C:\Program Files (x86)|
 
-* %UserProfile% で開くのは C:\Users\{username}
-
-* %ProgramFiles% - C:\Program Files or C:\Program Files (x86)
 
 * %AllUsersProfile% - Open the All User's Profile C:\ProgramData
 
