@@ -1,7 +1,10 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 
-# https://codepen.io/jamad/pen/MWRgvqZ をここに表示してみる
+# https://codepen.io/jamad/pen/MWRgvqZ をここに表示してみる　
+* expected result ![image](https://github.com/jamad/jamad.github.io/assets/949913/e23d4041-14a8-40be-952f-253c5128a7ea)
+* css は <style> , javascript は<script> に入れるように記述した。 ```html で　コード全体を定義もした。
+
 
 ```html
 <div class="health-bar">
