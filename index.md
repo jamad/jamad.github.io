@@ -27,6 +27,7 @@
   function copyT() {navigator.clipboard.writeText(str_to_copy);}
 </script>
 
+---
 <button onclick="copyText2()"><span id="mystr">dummy</span></button>
 
 <script>
@@ -34,6 +35,8 @@
   document.getElementById("mystr").innerText ='CSSタグをコピーするボタン : '+mystr;
   function copyText2() { navigator.clipboard.writeText(mystr);}
 </script>
+
+---
 
 <input type="text" id="my_userInput"> <button onclick="copyT2()" id="buttonlabel2">urlで画像をwidth=25%表示させるタグをコピーするボタン</button>
 <script> 
