@@ -1,11 +1,10 @@
-これよりもっといいドキュメントがあると思うので、見つけたら上に追加していく。つまり下ほど役に立たなかったページという意味 
 
+* https://superuser.com/questions/217504/is-there-a-list-of-windows-special-directories-shortcuts-like-temp
 * https://learn.microsoft.com/en-us/windows/win32/shell/knownfolderid?redirectedfrom=MSDN
 * https://learn.microsoft.com/en-us/windows/deployment/usmt/usmt-recognized-environment-variables
 
 
-
-# Windows Environment Commands
+# Windows Environment Commands　のまとめ
 
 |変数|例|
 |-|-|
