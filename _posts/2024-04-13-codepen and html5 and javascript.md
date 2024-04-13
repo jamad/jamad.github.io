@@ -6,7 +6,6 @@
 * css は <style> , javascript は<script> に入れるように記述した。 ```html で　コード全体を定義もした。
 
 
-```html
 <div class="health-bar">
   <div class="inner-bar" id="health"></div>
 </div>
@@ -63,7 +62,8 @@ window.onload = function() {
   damageLoop();
 };
 </script> 
-```
+
+---
 
 
 # my works
