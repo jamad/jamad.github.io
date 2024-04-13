@@ -2,12 +2,11 @@
 
 * styleを適用している理由はiOSのデフォルトSafariでダークモードにならないから
 
-* github . による dithub.dev モード（テンキーのピリオドでの起動が楽）はプレビューを見るのに便利(.md ファイルだけ？)　特に共有PCでのincognito mode とかで使えそう
-  * 右上のここでpreviewを開けた　![image](https://github.com/jamad/jamad.github.io/assets/949913/373dca2f-3872-465f-9245-2d8693d9cddd)
 
 
 # このindex.htmlの更新方法 
 1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　から編集 (index.html が既存だと index.md が上書きできないので削除)
+2. github . による dithub.dev モード（テンキーのピリオドでの起動が楽）はプレビューを見るのに便利(.md ファイルだけ？)　特に共有PCでのincognito mode とかで使えそう　右上のここでpreviewを開けた　![image](https://github.com/jamad/jamad.github.io/assets/949913/373dca2f-3872-465f-9245-2d8693d9cddd)
 1. [jekyllのconversion完了を待つ](https://github.com/jamad/jamad.github.io/actions)
 1. [https://jamad.github.io](https://jamad.github.io/)を再読み込みして確認。Chromeなら `ctrl+shift+R` でキャッシュクリア可能。
 
