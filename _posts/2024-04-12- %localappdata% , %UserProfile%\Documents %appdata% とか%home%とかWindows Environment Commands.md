@@ -1,6 +1,4 @@
-
-
-%localappdata%
+%localappdata% , %UserProfile%\Documents %appdata% とか%home%とかWindows Environment Commands.md
 
 
 これよりもっといいドキュメントがあると思うので、見つけたら上に追加していく。つまり下ほど役に立たなかったページという意味 
