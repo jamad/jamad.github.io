@@ -8,12 +8,12 @@ date: 2023-12-12
 
 ---
 
-# 下記に `<style>`タグを入れて、センタリングしてみるテスト。jkyll でhtml化された時だけ有効になるはず。
+# 下記に `<style>`タグを入れて、センタリングしてみるテスト。jekyll でhtml化された時だけ有効になるはず。`place-items: center;` を外してみた。
 
 <style>
 body { 
   background: #232;
-  place-items: center;
+  text-align: center;   
 }
 </style>
 
