@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-## better to move
+## 下記の情報をこちらにまとめよう
 * https://github.com/jamad/practicePython/issues/105#issuecomment-1866439013 
 
 
