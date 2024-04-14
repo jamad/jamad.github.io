@@ -8,18 +8,11 @@ date: 2023-12-12
 
 ---
 
-# 下記に `<style>`タグを入れて、センタリングしてみるテスト。jekyll でhtml化された時だけ有効になるはず。`place-items: center;` を外してみた。
-
-<style>
-body { 
-  background: #232;
-  text-align: center;   
-}
-</style>
-
-
 
 ## 上記は、front matter のテスト --- の前後には改行があった方がいい？　タイトルは front matter に変わってはいない。.mdのファイル名のままだ。 
+
+* [md内でcssを適用する例](https://github.com/jamad/jamad.github.io/blob/master/_posts/2024-04-14-md%E5%86%85%E3%81%A7css%E3%82%92%E9%81%A9%E7%94%A8%E3%81%99%E3%82%8B%E4%BE%8B.md)
+
 
 # `で囲まれたブロックがiPhoneで読めなかったのを修正した時のメモ
 * まずはinspectorで右記のような情報をゲット　![image](https://github.com/jamad/jamad.github.io/assets/949913/21df9df4-5514-4120-a692-a6ff64f692a1)
