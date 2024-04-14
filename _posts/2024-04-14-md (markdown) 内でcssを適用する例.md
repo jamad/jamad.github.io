@@ -1,7 +1,8 @@
+`<style>`タグを入れて、センタリングしてみるテスト。<br>
+jekyll でhtml化された時だけ見た目に影響する。<br>
+`place-items: center;` は外してみた。<br>
+formatが崩れるので`*`は使わない
 
-* `<style>`タグを入れて、センタリングしてみるテスト。
-* jekyll でhtml化された時だけ見た目に影響する。
-* `place-items: center;` は外してみた。
 
 ```html
 <style>
