@@ -8,11 +8,9 @@ body {
 
 ```html
 <style>
-body { 
-  background: #232;
-  text-align: center;   
-}
+body {   background: #232;  text-align: center;   }
 </style>
+
 ```
 
 `<style>`タグを入れて、センタリングしてみるテスト。<br>
