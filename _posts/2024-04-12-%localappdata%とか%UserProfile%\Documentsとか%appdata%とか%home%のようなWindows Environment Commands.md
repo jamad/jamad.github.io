@@ -22,3 +22,6 @@
 |%HomeDrive%|`C:\`|
 |%SystemDrive%|`C:\`|
 
+# cmdでの使用例
+* `echo %computername%`　でマシン名を表示
+* `echo %date%`　で日付を表示
