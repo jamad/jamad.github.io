@@ -1,4 +1,6 @@
+* 例：mydocumentは `%UserProfile%\Documents`
 
+  
 * https://superuser.com/questions/217504/is-there-a-list-of-windows-special-directories-shortcuts-like-temp
 * https://learn.microsoft.com/en-us/windows/win32/shell/knownfolderid?redirectedfrom=MSDN
 * https://learn.microsoft.com/en-us/windows/deployment/usmt/usmt-recognized-environment-variables
