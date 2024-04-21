@@ -1,6 +1,24 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 
+* mermaid でのグラフ表示
+
+```mermaid
+graph TD;
+    NaClO2[NaClO₂] --> ClO2;
+    ClO2[ClO₂] --> O;
+    ClO2 --> Cl;
+    O --> |2x|O;
+    Cl --> |2x|Cl;
+    NaClO[NaClO] --> ClO;
+    ClO[ClO] --> O;
+    ClO --> Cl;
+    Na[Na] --> NaClO2;
+    Na --> NaClO;
+```
+
+
+
 * example and [reference](https://guides.github.com/features/mastering-markdown/)
 
 * javascript で リンク入れたら50%表示するタグを作るツールをcodepenで作ったほうがいいな
