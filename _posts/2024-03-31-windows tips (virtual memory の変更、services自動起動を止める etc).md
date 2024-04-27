@@ -1,6 +1,6 @@
 
 # 入力方法がスウェーデン語しかなかったので日本語を追加する
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/342be92d-242f-40b9-bc02-96f570b50d99)
+* この後に再起動が必要だった。![image](https://github.com/jamad/jamad.github.io/assets/949913/342be92d-242f-40b9-bc02-96f570b50d99)
 
 
 # Oculus のツールが自動的に起動しないように変更する
