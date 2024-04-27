@@ -1,3 +1,10 @@
+# 全ての文字列を一括で置換する
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/99f49849-8901-420a-867c-f90a77538cdc)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/04a53f53-e388-41c4-9f46-a40d45cca52b)
+
+
+
+
 # 用紙の向きの変更（A4縦をA4横に変更）が面倒だった。
 * 解決方法は、Artboard をwindow から開き、右端の用紙のようなボタン（アートボードツールと呼ばれている？）を押してアートボードオプションと呼ばれるダイアログを開いたら見つかった。
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/73506b92-b3ec-4658-b8a1-79579f57d10e)
