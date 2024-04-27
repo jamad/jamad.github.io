@@ -1,4 +1,5 @@
 # 全ての文字列を一括で置換する
+* 「編集」＞「検索と置換」で実行できる　
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/99f49849-8901-420a-867c-f90a77538cdc)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/04a53f53-e388-41c4-9f46-a40d45cca52b)
 
