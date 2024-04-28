@@ -1,5 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+
+* [wallpaper_list_2024](https://jamad.github.io/wallpaper_list_2024.html)
+
 ## 下記の情報をこちらにまとめよう
 * https://github.com/jamad/practicePython/issues/105#issuecomment-1866439013 
 
