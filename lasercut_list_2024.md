@@ -62,6 +62,7 @@
 | 2022/12/18 |![setting_today_oodi](https://github.com/jamad/jamad.github.io/assets/949913/25830b4f-14e1-46f4-92a0-536615ab15f3)|
 | 2022/08/28 |![setting_success_speed_should_be5](https://github.com/jamad/jamad.github.io/assets/949913/e69a871c-9a3b-4ef8-8ca7-7fd660c59c71)|
 | 2022/05/27 ![image](https://github.com/jamad/jamad.github.io/assets/949913/7f80845b-0179-40c7-84e7-c808d25501fe) | paperboxPart2 | 
+| 2022/05/19 ![image](https://github.com/jamad/jamad.github.io/assets/949913/64a02e7f-a8cf-43e0-a6ab-2a08d14c9947) | dish_stand | 
 | 2022/05/14 ![image](https://github.com/jamad/jamad.github.io/assets/949913/ebf7459f-1b6b-443f-932e-0a6e5a0c7bff) | box_top | 
 | 2022/05/11 ![image](https://github.com/jamad/jamad.github.io/assets/949913/a208bea6-0f9a-4a74-af31-f5e5c40784ee)| box_1.5mm_ver2022_typeB |
 | 2022/05/11 ![image](https://github.com/jamad/jamad.github.io/assets/949913/1337bcf3-4e94-434f-9f0e-43d0fd102994)| box_1.5mm_ver2022_x1.5 |
