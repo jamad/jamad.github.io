@@ -84,7 +84,7 @@
 | 2019/09/15 ![image](https://github.com/jamad/jamad.github.io/assets/949913/11b09117-7436-4b43-9863-3c9c17284986)|shop_suuri_snadi2019|
 | 2019/09/08 ![image](https://github.com/jamad/jamad.github.io/assets/949913/a8b87d87-e713-459d-b85d-91d8b3c13a68)|Kerros4|
 | 2019/07/27 |  ![image](https://github.com/jamad/jamad.github.io/assets/949913/55ffee37-9f77-4688-b017-439f4576ecf8)  project2019Jul27_curved_shelf_before\shelf_upd.pdf |
-| 2019/07/27 ![image](https://github.com/jamad/jamad.github.io/assets/949913/64a02e7f-a8cf-43e0-a6ab-2a08d14c9947) |  ![image](https://github.com/jamad/jamad.github.io/assets/949913/aa6aa5b0-2c9e-4f5d-ad85-c5d0836e7996)  dish_stand| 
+| 2019/07/27 ![image](https://github.com/jamad/jamad.github.io/assets/949913/64a02e7f-a8cf-43e0-a6ab-2a08d14c9947) |  ![image](https://github.com/jamad/jamad.github.io/assets/949913/aa6aa5b0-2c9e-4f5d-ad85-c5d0836e7996) project2019Jul27_curved_shelf_before\dish_stand.pdf| 
 | 2019/07/14 b |![settingToday (7)](https://github.com/jamad/jamad.github.io/assets/949913/1bc2b614-03dd-4a30-8b59-4ab019663857)|
 | 2019/07/14 a |![settingToday2 (2)](https://github.com/jamad/jamad.github.io/assets/949913/6141b88c-1b54-4bdc-85ab-0fcdeb14e3b7)|
 | 2019/07/07 b |![settingToday (6)](https://github.com/jamad/jamad.github.io/assets/949913/c75dd6df-2d45-49b4-9404-184f8f3b44dc)|
