@@ -31,7 +31,7 @@
 | 2023/10/20 | ![image](https://github.com/jamad/jamad.github.io/assets/949913/d4c6da65-5f40-4a6b-a393-8ba44fafe628) | 
 | 2023/10/14 ![image](https://github.com/jamad/jamad.github.io/assets/949913/46541a84-d73e-4776-8fc2-130d1d6948e1) |gift_charm_at_paja |
 | 2023/10/14 ![image](https://github.com/jamad/jamad.github.io/assets/949913/45e894d4-e01f-4124-8800-390d5db8220c) | sauna_thermometer_baseonly_at_paja |
-| 2023/10/07 |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/aba86bb5-e7af-4065-88de-c4e43a45f60a)|
+| 2023/10/07 |![settingToday](https://github.com/jamad/jamad.github.io/assets/949913/aba86bb5-e7af-4065-88de-c4e43a45f60a)  project2023Sep28_D_CurveRuler_at_paja\dcurveRuler_paja.pdf|
 | 2023/09/09 c |![settingToday3](https://github.com/jamad/jamad.github.io/assets/949913/c54c495c-f232-4afd-9c3d-62a368e12260)|
 | 2023/09/09 b |![settingToday2](https://github.com/jamad/jamad.github.io/assets/949913/c3381efc-b8d1-498d-a068-5eec28b4a47e)|
 | 2023/09/09 a ![image](https://github.com/jamad/jamad.github.io/assets/949913/2b53561e-9e54-4890-959d-ed096e03ee01)|setcasse_stand_v3 ![settingToday1](https://github.com/jamad/jamad.github.io/assets/949913/1d498ab7-b653-407c-891a-97cc57c28b26)|
