@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-https://jamad.github.io/lasercut_list_2024.html
+[https://jamad.github.io/lasercut_list_2024.html](https://jamad.github.io/lasercut_list_2024.html)
 
 
 | 作業日 | image | file path info|
