@@ -5,6 +5,7 @@
 * HP Z27n　のモニターの場合　（公式情報：2560 x 1440 at 60 Hz、16:9、PanelActiveArea　59.67 x 33.56 cm　即ちインチだと　23.49 × 13.21　）
 * `wmic path Win32_VideoController get CurrentHorizontalResolution,CurrentVerticalResolution`
 * 72ppi で100%になるようにIllustratorが設定されているらしい。つまり x ppi ならば x/72*100 % にすればいいとのこと
+* 結局、88%にして 実寸表示の代わりにすることにした。能書きよりも、結果が正しくなるものを見つけるのが一番早かったのだ。
 
 
 # 全ての文字列を一括で置換する
