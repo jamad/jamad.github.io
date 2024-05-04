@@ -1,5 +1,8 @@
 # 画面上のActualSize表示が実寸と異なる問題
 * メインのPCだと　正しく表示された　![image](https://github.com/jamad/jamad.github.io/assets/949913/5d27f4e4-0cec-4735-93d0-7722ac6f879d)
+* 問題の解決を試みる。
+* まずはWindowsPCの解像度をCMDで知る方法
+* `wmic path Win32_VideoController get CurrentHorizontalResolution,CurrentVerticalResolution`
 
 
 # 全ての文字列を一括で置換する
