@@ -1,9 +1,11 @@
+# 画面上のActualSize表示が実寸と異なる問題
+* メインのPCだと　正しく表示された　![image](https://github.com/jamad/jamad.github.io/assets/949913/5d27f4e4-0cec-4735-93d0-7722ac6f879d)
+
+
 # 全ての文字列を一括で置換する
 * 「編集」＞「検索と置換」で実行できる　
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/99f49849-8901-420a-867c-f90a77538cdc)
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/04a53f53-e388-41c4-9f46-a40d45cca52b)
-
-
 
 
 # 用紙の向きの変更（A4縦をA4横に変更）が面倒だった。
