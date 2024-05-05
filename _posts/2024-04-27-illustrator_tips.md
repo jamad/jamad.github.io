@@ -1,11 +1,11 @@
 # 画面上のActualSize表示が実寸と異なる問題
 * メインのPCだと　正しく表示された　![image](https://github.com/jamad/jamad.github.io/assets/949913/5d27f4e4-0cec-4735-93d0-7722ac6f879d)
 * 問題の解決を試みる。＞＞ 結局、88%にして 実寸表示の代わりにすることにした。能書きよりも、結果が正しくなるものを見つけるのが一番早かったのだ。
-* 以下、能書き。
-* 72ppi で100%になるようにIllustratorが設定されているらしい。つまり x ppi ならば x/72*100 % にすればいいとのこと
-* WindowsPCの解像度をCMDで知る方法　`wmic path Win32_VideoController get CurrentHorizontalResolution,CurrentVerticalResolution`
-* だが、結局物理的に表示エリアのサイズを測るのがアナログのため、公式情報を得るのが一番早い。HP Z27n　のモニターの場合（2560 x 1440 at 60 Hz、16:9、PanelActiveArea　59.67 x 33.56 cm　即ちインチだと　23.49 × 13.21　）
-* つまり 
+* 以下、役に立たなかった能書き。
+  * 72ppi で100%になるようにIllustratorが設定されているらしい。つまり x ppi ならば x/72*100 % にすればいいとのこと
+  * WindowsPCの解像度をCMDで知る方法　`wmic path Win32_VideoController get CurrentHorizontalResolution,CurrentVerticalResolution`
+  * だが、結局物理的に表示エリアのサイズを測るのがアナログのため、公式情報を得るのが一番早い。HP Z27n　のモニターの場合（2560 x 1440、PanelActiveArea　59.67 x 33.56 cm、てゆーかPPIが　108.8　と記載　）
+  * 72 :100=108.8 : x なので、 x=72/108.8*100 かと思ったが、それだと６６％になる。108.8/72*100 だと１５１％になる。どちらも全然８８％からは程遠い。
 
 # 全ての文字列を一括で置換する
 * 「編集」＞「検索と置換」で実行できる　
