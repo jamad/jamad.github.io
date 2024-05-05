@@ -1,5 +1,5 @@
 # 画面上のActualSize表示が実寸と異なる問題
-* メインのPCだと　正しく表示された　![image](https://github.com/jamad/jamad.github.io/assets/949913/5d27f4e4-0cec-4735-93d0-7722ac6f879d)
+* メインのPCだと　正しく実寸で表示された　![image](https://github.com/jamad/jamad.github.io/assets/949913/5d27f4e4-0cec-4735-93d0-7722ac6f879d)　問題が発生する環境はM720QをHPZ17nで表示する場合だ。
 * 問題の解決を試みる。＞＞ 結局、88%にして 実寸表示の代わりにすることにした。能書きよりも、結果が正しくなるものを見つけるのが一番早かったのだ。
 * 以下、役に立たなかった能書き。
   * 72ppi で100%になるようにIllustratorが設定されているらしい。つまり x ppi ならば x/72*100 % にすればいいとのこと
