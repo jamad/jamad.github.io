@@ -1,3 +1,7 @@
+# startup にClockを入れた時の方法
+* %appdata%\Microsoft\Windows\Start Menu\Programs\Startup を開いて、そこにショートカットを作成したら　Startupに表示されるようになったぜ
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/cd8b98ac-f86e-4d62-a3e7-202bf855852e)
+
 
 # 入力方法がスウェーデン語しかなかったので日本語を追加する
 * この後に再起動が必要だった。![image](https://github.com/jamad/jamad.github.io/assets/949913/342be92d-242f-40b9-bc02-96f570b50d99)
