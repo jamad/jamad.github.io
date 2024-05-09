@@ -14,7 +14,7 @@
 
 # 順次移していくべき内容
 * ツール
-  * pyqt5 :  image_base64_converter.py
+  * (　.mdでコピペによる作成できるから後回しだな　)　pyqt5 :  image_base64_converter.py
     * ![image](https://github.com/jamad/jamad.github.io/assets/949913/b0e8517b-e8db-4e77-b1c2-11266c88e603)
   * filepath_joint_swapper.py
     * ![image](https://github.com/jamad/jamad.github.io/assets/949913/7ba8e25b-ac96-4ba3-acf9-0b03f35fd0e8)
