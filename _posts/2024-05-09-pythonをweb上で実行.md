@@ -3,9 +3,9 @@
 
 # pythonanywhereによりweb上で実行する
 ## exmaple ( gist + pythonanywhere )
-* gist - https://gist.github.com/jamad/a081f2e9cc0c23dcfcadcfde704984b6
-* create a console for the gist - https://www.pythonanywhere.com/gists/
-* the result on pythonanywhere - https://www.pythonanywhere.com/gists/a081f2e9cc0c23dcfcadcfde704984b6/test%20py%20code/ipython3/
+* まずgistを作成する - https://gist.github.com/jamad/a081f2e9cc0c23dcfcadcfde704984b6
+* そのgistからconsole　を作成する - https://www.pythonanywhere.com/gists/
+* pythonanywhere　で実行できる - https://www.pythonanywhere.com/gists/a081f2e9cc0c23dcfcadcfde704984b6/test%20py%20code/ipython3/
 
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/af9a3e8e-6422-491b-b66a-260e44cd4e75)|
 |-|
