@@ -1,6 +1,8 @@
 
 # user account に画像を入れた時の方法
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/0f4e780d-c0fe-4bd9-81f1-89282834ae8f)
+* 画像を選択した時に、このような凄くエラーっぽいメッセージが出たが、実際には画像が追加された。バグか？　![image](https://github.com/jamad/jamad.github.io/assets/949913/a86f030c-6a46-40f9-a32b-8c35eca4e88e)
+
 
 
 # startup にClockを入れた時の方法
