@@ -1,3 +1,8 @@
+
+# user account に画像を入れた時の方法
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/0f4e780d-c0fe-4bd9-81f1-89282834ae8f)
+
+
 # startup にClockを入れた時の方法
 * %appdata%\Microsoft\Windows\Start Menu\Programs\Startup を開いて、そこにショートカットを作成したら　Startupに表示されるようになったぜ
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/cd8b98ac-f86e-4d62-a3e7-202bf855852e)
