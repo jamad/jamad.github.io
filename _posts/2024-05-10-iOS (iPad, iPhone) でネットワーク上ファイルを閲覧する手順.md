@@ -1,3 +1,5 @@
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+
 # iOS デバイスから　windows マシンのファイルを閲覧する手順
 * 例： iPad からWindowsマシン（m720q）にある動画を見たい場合
   * 初回のみに必要な操作（初期設定）
