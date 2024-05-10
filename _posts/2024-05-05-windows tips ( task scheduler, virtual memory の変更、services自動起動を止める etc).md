@@ -1,5 +1,9 @@
 # task scheduler 
-* wip
+* まず自分で作成したものを明確にできるように、作成日時を冒頭に移動させた。
+
+|![image](https://github.com/jamad/jamad.github.io/assets/949913/1710a38c-ade5-495f-b782-029da2721d84)|
+|-|
+
 
 # user account に画像を入れた時の方法
 
