@@ -13,6 +13,9 @@
 
 
 ---
+１
+
+
 
 2
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/59267f83-8ea0-4dbe-bd38-44293d5db49a)
@@ -99,6 +102,9 @@
 
 
 10
+![image](https://github.com/jamad/jamad.github.io/assets/949913/2dcff51e-45d2-4f38-9acb-274d40aa2675)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/c9c578f5-e1d9-47f5-8c01-90c20719a54e)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/2942a52c-2fcb-4bf3-8d6e-085742880a94)
 
 
 
