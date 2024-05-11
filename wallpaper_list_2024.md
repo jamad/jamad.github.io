@@ -133,3 +133,15 @@ e
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/575c3e57-1921-4263-9ba2-955243d9fc5e)
 
 
+
+8
+![image](https://github.com/jamad/jamad.github.io/assets/949913/5ae71a06-5e6c-4211-b452-e95a9acebbaa)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/58b73004-0120-425c-8ec9-5e182eb959df)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/22df7cd5-cb99-4292-ad88-30233b9929d9)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/f8cbd197-d593-4cc9-b2a5-e68477f9b68b)
+
+
+9
+
+
+
