@@ -157,5 +157,17 @@ e
 
 
 
+12
+![image](https://github.com/jamad/jamad.github.io/assets/949913/f7621647-85c4-4ba3-8694-e608e1e63505)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/8b13ded0-d6f5-463f-b137-f0ffefb163d9)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/0130ac3f-6dbd-4758-8efd-cda9d65fc124)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/6fdd3195-277c-4513-916f-74795991862c)
+
+
+
+
+
+
+
 
 
