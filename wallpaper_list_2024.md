@@ -39,3 +39,8 @@
 
 18
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/5eea5ab5-cbd2-4622-bffe-0edbd2c910ec)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/cc828439-fd46-4686-b0b2-17b99faaa743)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/dc380c3f-07b3-4cee-982e-7304a33064c5)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/0358060c-476d-4519-9fb6-d748a2b8b047)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/72445293-51a6-409e-9d2c-20121eff1c43)
+
