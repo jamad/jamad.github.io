@@ -212,7 +212,7 @@
 
 ---
 
-22
+# 22
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/256d3127-f5fd-4b78-9bd9-a9afb50e3052)
 
 
@@ -223,6 +223,10 @@
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/a24bbaeb-b831-407e-abf7-f0b4e548e193)
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/89824f5c-1627-45b4-a743-337376d8ebd1)
 
+---
+
+# 23 内部のエリアを32mmに大きく修正　外枠は50ｍｍのまま
+![image](https://github.com/jamad/jamad.github.io/assets/949913/38e4fa82-0814-419a-b97a-33e83091025f)
 
 
 
