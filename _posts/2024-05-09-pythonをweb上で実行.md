@@ -4,7 +4,9 @@
 # pythonanywhereによりweb上で実行する
 
 ## case_20240513ymd password generator
-* https://www.pythonanywhere.com/gists/56fcf34b7fb0bf1499cfe3ab17817fd2/gistfile1.txt/ipython/ 
+* https://www.pythonanywhere.com/gists/56fcf34b7fb0bf1499cfe3ab17817fd2/gistfile1.txt/ipython/
+* by https://gist.github.com/jamad/56fcf34b7fb0bf1499cfe3ab17817fd2
+* 
 
 ## exmaple ( gist + pythonanywhere )
 * まずgistを作成する - https://gist.github.com/jamad/a081f2e9cc0c23dcfcadcfde704984b6
