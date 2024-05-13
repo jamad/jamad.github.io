@@ -3,7 +3,7 @@
 
 # pythonanywhereによりweb上で実行する
 
-## case_20240513ymd password generator
+## case_20240513ymd パスワード生成コードをテスト
 * https://www.pythonanywhere.com/gists/56fcf34b7fb0bf1499cfe3ab17817fd2/gist_test/ipython/
 * by https://gist.github.com/jamad/56fcf34b7fb0bf1499cfe3ab17817fd2#file-gist_test
 
