@@ -2,9 +2,9 @@
 
 # Q&A 
 ## タイトルだけのメールを送りたい。
-* `practicePython\scraping\varaamo_checker_2024.py`　でやった
+* `practicePython\scraping\varaamo_checker_2024.py`　でやったのでそれを確認しよう
 ## ダウンロード系処理はマルチスレッドで高速化したい　
-* `practicePython\XML\rss_checker.py` でやった
+* `practicePython\XML\rss_checker.py` でやったのでそれを確認しよう
 ## 質問できるサイト等
 * `https://teratail.com/` を使ってみよう（未登録）
 * `https://qiita.com/cannorin/items/eb062aae88bfe2ad6fe5`が参考になった　`エラーメッセージの読み方と対処，検索や質問の原則`
