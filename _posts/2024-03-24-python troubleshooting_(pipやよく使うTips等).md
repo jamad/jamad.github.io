@@ -1,7 +1,11 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 # Q&A 
-* タイトルだけのメールを送りたい。　`practicePython\scraping\varaamo_checker_2024.py`　でやった
+## タイトルだけのメールを送りたい。
+* `practicePython\scraping\varaamo_checker_2024.py`　でやった
+## ダウンロード系処理はマルチスレッドで高速化したい　
+* `practicePython\XML\rss_checker.py` でやった
+## 質問できるサイト等
 * `https://teratail.com/` を使ってみよう（未登録）
 * `https://qiita.com/cannorin/items/eb062aae88bfe2ad6fe5`が参考になった　`エラーメッセージの読み方と対処，検索や質問の原則`
 
