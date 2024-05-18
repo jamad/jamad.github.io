@@ -18,6 +18,10 @@
 ちゃんとインストールされていることを確認した
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c2ff6be5-27ae-4bbd-a6b0-94b6eee43dd8)
 
+gemのインストールも確認した
+![image](https://github.com/jamad/jamad.github.io/assets/949913/67fa8bab-cf3d-4d68-8948-50c856303e4f)
+
+
 
  
 
