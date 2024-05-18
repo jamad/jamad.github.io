@@ -32,4 +32,9 @@
 |jekyll のバージョンを`bundle exec jekyll -v`で確認できた|![image](https://github.com/jamad/jamad.github.io/assets/949913/e6479c95-d687-4a6d-9a5e-3ea3a2e19ece)|
 |新規プロジェクトを作成|![image](https://github.com/jamad/jamad.github.io/assets/949913/9c0847d1-c6cd-45d6-8c7f-18a9748c98af)|
 |`bundle exec jekyll s` を実行したらまた別のエラーに遭遇|Could not find gem 'tzinfo-data mingw, x64_mingw, mswin, jruby' in cached gems or installed locally.|
+|ああ、gemファイルを確認したら勝手に更新されているじゃないか|![image](https://github.com/jamad/jamad.github.io/assets/949913/fc48e5e1-129d-468f-a5b8-2d057cb5f187)|
+|またインストールし直し|![image](https://github.com/jamad/jamad.github.io/assets/949913/f73b468b-46e2-4770-9eba-787f408af2da)|
+
+
+
 
