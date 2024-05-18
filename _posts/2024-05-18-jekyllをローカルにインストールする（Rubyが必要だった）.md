@@ -1,9 +1,12 @@
 * wip
 
-＃ jekyll の前に Ruby をインストールする必要あるんかい！
+＃ てゆーか　jekyll の前に Ruby をインストールする必要あるんかい！
+
+
 
 |手順|参考画像|
 |-|-|
+|ruby が入っているかを確認したら、入ってなかった|![image](https://github.com/jamad/jamad.github.io/assets/949913/dc437b23-81ff-4f23-bc0b-b3155ae0b2ac)|
 |ダウンロードサイトへ行き、おすすめのバージョンをダウンロード|![image](https://github.com/jamad/jamad.github.io/assets/949913/31bad4b1-6d26-4cae-a968-9fe2e2b1ba8f)|
 |exeをダウンロードしたら警告が|![image](https://github.com/jamad/jamad.github.io/assets/949913/642d8693-305c-41f1-b477-d2cab9da4981)|
 |KeepAnywayを選択|![image](https://github.com/jamad/jamad.github.io/assets/949913/fb40fda2-f80a-4a8a-9e11-d89b6dd3c47c)|
