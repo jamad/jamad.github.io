@@ -35,6 +35,6 @@
 |ああ、gemファイルを確認したら勝手に更新されているじゃないか|![image](https://github.com/jamad/jamad.github.io/assets/949913/fc48e5e1-129d-468f-a5b8-2d057cb5f187)|
 |またインストールし直し|![image](https://github.com/jamad/jamad.github.io/assets/949913/f73b468b-46e2-4770-9eba-787f408af2da)|
 |結局、また　gem "webrick"　を追加する必要があった。|![image](https://github.com/jamad/jamad.github.io/assets/949913/6ff5f39d-2704-450a-b6f7-e9cef025d851)|
-|`bundle install`でインストールし直して　`bundle exec jekyll s` を実行して　http://127.0.0.1:4000/　にアクセスしたら、ついにページを閲覧できた！|![image](https://github.com/jamad/jamad.github.io/assets/949913/403fd1c7-ced8-4073-8373-2d80eb7681fe)|
+|`bundle install`でインストールし直して　`bundle exec jekyll s` を実行して　http://127.0.0.1:4000/ にアクセスしたら、ついにページを閲覧できた！|![image](https://github.com/jamad/jamad.github.io/assets/949913/403fd1c7-ced8-4073-8373-2d80eb7681fe)|
 
 
