@@ -33,3 +33,5 @@
 
 
 
+jekyll のバージョンを確認した
+![image](https://github.com/jamad/jamad.github.io/assets/949913/e6479c95-d687-4a6d-9a5e-3ea3a2e19ece)
