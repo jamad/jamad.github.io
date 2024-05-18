@@ -1,9 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-
-＃ てゆーか　jekyll の前に Ruby をインストールする必要あるんかい！
-
-
+# てゆーか　jekyll の前に Ruby をインストールする必要あるんかい！
 
 
 |手順|参考画像|
