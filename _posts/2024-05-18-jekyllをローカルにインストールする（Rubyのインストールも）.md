@@ -19,7 +19,7 @@
 |ridk enable　はした方が良かった。何故なら mingw64.exe が　Startメニューに見つからないから。cmdで実行できた方が楽だ。|![image](https://github.com/jamad/jamad.github.io/assets/949913/69f2822a-3a4c-467f-93ed-27d59bdbdd88)|
 |cmd で pacman -V の実行を確認できた|![image](https://github.com/jamad/jamad.github.io/assets/949913/fe55aef7-ca5f-4d3d-b712-474d56e435a2)|
 |でも mingw64 は cygwin みたいで使いやすいかも！|![image](https://github.com/jamad/jamad.github.io/assets/949913/02b065a4-1f5f-409a-b3e9-dbaf8ae9b6b5)|
-|gemコマンドが利用できるようになったので、まずは bundler を入れる。 python のpip みたいなものかね？　gem install bundler|![image](https://github.com/jamad/jamad.github.io/assets/949913/5694505a-4a64-4bfa-a4e7-13128222f2cf)|
+|gemコマンドが利用できるようになったので、まずは bundler を入れる。 python のpip みたいなもののようだ　gem install bundler|![image](https://github.com/jamad/jamad.github.io/assets/949913/5694505a-4a64-4bfa-a4e7-13128222f2cf)|
 
 
 
