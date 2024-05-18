@@ -13,13 +13,10 @@
 |インストールは全てデフォルト。パスの追加がオンを確認した|![image](https://github.com/jamad/jamad.github.io/assets/949913/27d42233-920e-4274-89c7-8e7fa8f1cda1)|
 |Finish直前のオプションもデフォルトがオンになっているのを確認した|![image](https://github.com/jamad/jamad.github.io/assets/949913/b57bc822-3f27-4235-a5eb-d0232c30a0f4)|
 |こんなのが起動するので、最初はデフォルトのままEnterでいいらしい|![image](https://github.com/jamad/jamad.github.io/assets/949913/50292012-c971-47fa-81b4-89902c9e8457)|
+|インストールが終わるとメッセージが。Enterを押した|![image](https://github.com/jamad/jamad.github.io/assets/949913/2c337a3b-7201-4499-b2d6-594014d97068)|
+|ちゃんとインストールされていることを確認した|![image](https://github.com/jamad/jamad.github.io/assets/949913/c2ff6be5-27ae-4bbd-a6b0-94b6eee43dd8)|
+|gemのインストールも確認した|![image](https://github.com/jamad/jamad.github.io/assets/949913/67fa8bab-cf3d-4d68-8948-50c856303e4f)|
 
-
-ちゃんとインストールされていることを確認した
-![image](https://github.com/jamad/jamad.github.io/assets/949913/c2ff6be5-27ae-4bbd-a6b0-94b6eee43dd8)
-
-gemのインストールも確認した
-![image](https://github.com/jamad/jamad.github.io/assets/949913/67fa8bab-cf3d-4d68-8948-50c856303e4f)
 
 
 
