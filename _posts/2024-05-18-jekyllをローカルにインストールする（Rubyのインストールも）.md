@@ -24,7 +24,5 @@
 |そこにGemfile　を作成し　インストール内容を記述した|![image](https://github.com/jamad/jamad.github.io/assets/949913/915dfb15-1fd7-4e69-a6c2-b049734e5fa8) <br> ![image](https://github.com/jamad/jamad.github.io/assets/949913/b9987910-e7d7-4112-ab28-fd71da9349e4)|
 |そこで　cmdを開き、bundler のコマンドを実行した|![image](https://github.com/jamad/jamad.github.io/assets/949913/0e7b00ed-bdf3-48c4-b255-c4c55bf2e40d)|
 |インストールが終了した時の様子はこんな感じ　|![image](https://github.com/jamad/jamad.github.io/assets/949913/f8513b31-e3ec-48f8-a70d-bc8cfdcd9194)|
-|実行するコマンドは`bundle config set path 'vendor/bundle'` 更に`bundle install` なぜなら`bundle install --path vendor/bundle`はdeprecatedだから|-|
-
-
+|実行するコマンドは`bundle config set path 'vendor/bundle'` 更に`bundle install` なぜなら`bundle install --path vendor/bundle`はdeprecatedだから|![image](https://github.com/jamad/jamad.github.io/assets/949913/d03b70c8-372e-4d39-ae6b-37ceb31061d8)|
 
