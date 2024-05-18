@@ -8,6 +8,8 @@
 |exeをダウンロードしたら警告が|![image](https://github.com/jamad/jamad.github.io/assets/949913/642d8693-305c-41f1-b477-d2cab9da4981)|
 |KeepAnywayを選択|![image](https://github.com/jamad/jamad.github.io/assets/949913/fb40fda2-f80a-4a8a-9e11-d89b6dd3c47c)|
 |インストールは全てデフォルト。パスの追加がオンを確認した|![image](https://github.com/jamad/jamad.github.io/assets/949913/27d42233-920e-4274-89c7-8e7fa8f1cda1)|
+|Finish直前のオプションもデフォルトがオンになっているのを確認した|![image](https://github.com/jamad/jamad.github.io/assets/949913/b57bc822-3f27-4235-a5eb-d0232c30a0f4)|
+
 
  
 
