@@ -29,9 +29,4 @@
 |解決方法は　webrickを明示的にインストールすることだった |![image](https://github.com/jamad/jamad.github.io/assets/949913/a1569bbc-c50a-4ce2-9071-07974e5a1c52)|
 |`bundle install`を実行しなおしたら `bundle exec jekyll s`でエラー出なくなった！|![image](https://github.com/jamad/jamad.github.io/assets/949913/fbb3aa29-d1a2-48e1-9dbe-cc0e7d4789d0)|
 |`http://127.0.0.1:4000/`にアクセスすると、こんな状態だった|![image](https://github.com/jamad/jamad.github.io/assets/949913/ade23b5d-d21f-4a13-9774-eef744196c4c)|
-
-
-
-
-jekyll のバージョンを確認した
-![image](https://github.com/jamad/jamad.github.io/assets/949913/e6479c95-d687-4a6d-9a5e-3ea3a2e19ece)
+|jekyll のバージョンを`bundle exec jekyll -v`で確認できた|![image](https://github.com/jamad/jamad.github.io/assets/949913/e6479c95-d687-4a6d-9a5e-3ea3a2e19ece)|
