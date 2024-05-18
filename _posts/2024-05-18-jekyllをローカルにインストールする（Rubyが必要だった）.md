@@ -15,6 +15,10 @@
 |こんなのが起動するので、最初はデフォルトのままEnterでいいらしい|![image](https://github.com/jamad/jamad.github.io/assets/949913/50292012-c971-47fa-81b4-89902c9e8457)|
 
 
+ちゃんとインストールされていることを確認した
+![image](https://github.com/jamad/jamad.github.io/assets/949913/c2ff6be5-27ae-4bbd-a6b0-94b6eee43dd8)
+
+
  
 
 
