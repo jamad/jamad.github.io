@@ -25,4 +25,10 @@
 |そこで　cmdを開き、bundler のコマンドを実行した|![image](https://github.com/jamad/jamad.github.io/assets/949913/0e7b00ed-bdf3-48c4-b255-c4c55bf2e40d)|
 |インストールが終了した時の様子はこんな感じ　|![image](https://github.com/jamad/jamad.github.io/assets/949913/f8513b31-e3ec-48f8-a70d-bc8cfdcd9194)|
 |実行するコマンドは`bundle config set path 'vendor/bundle'` 更に`bundle install` なぜなら`bundle install --path vendor/bundle`はdeprecatedだから|![image](https://github.com/jamad/jamad.github.io/assets/949913/d03b70c8-372e-4d39-ae6b-37ceb31061d8)|
+|エラーに遭遇| `<internal:C:/Ruby32-x64/lib/ruby/3.2.0/rubygems/core_ext/kernel_require.rb>:38:in `require': cannot load such file -- webrick (LoadError)` |
+|解決方法は　webrickを明示的にインストールすることだった |![image](https://github.com/jamad/jamad.github.io/assets/949913/a1569bbc-c50a-4ce2-9071-07974e5a1c52)|
+
+
+
+
 
