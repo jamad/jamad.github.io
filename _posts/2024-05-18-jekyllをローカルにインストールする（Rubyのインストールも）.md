@@ -19,6 +19,8 @@
 |gemのインストールも確認した|![image](https://github.com/jamad/jamad.github.io/assets/949913/67fa8bab-cf3d-4d68-8948-50c856303e4f)|
 |"C:\Ruby32-x64\msys64\mingw64.exe"　を起動して　pacman -V を確認した|![image](https://github.com/jamad/jamad.github.io/assets/949913/ea52e651-b34d-481b-a50e-5b67213ad638)|
 |ridk enable　はした方が良かった。何故なら mingw64.exe が　Startメニューに見つからないから。cmdで実行できた方が楽だ。|![image](https://github.com/jamad/jamad.github.io/assets/949913/69f2822a-3a4c-467f-93ed-27d59bdbdd88)|
+|cmd で pacman -V の実行を確認できた|![image](https://github.com/jamad/jamad.github.io/assets/949913/fe55aef7-ca5f-4d3d-b712-474d56e435a2)|
+
 
 
 
