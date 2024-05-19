@@ -1,5 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+todo here
+
+
 * styleを適用している理由はiOSのデフォルトSafariでダークモードにならないから
 
 
