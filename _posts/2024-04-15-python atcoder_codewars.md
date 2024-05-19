@@ -120,88 +120,52 @@ print(ng) # (1, 3, 9)
 </tbody>
 </table>
 
-<h1>
-<span id="2-3-分野別初中級者が解くべき過去問精選-100-問" class="fragment"></span><a href="#2-3-%E5%88%86%E9%87%8E%E5%88%A5%E5%88%9D%E4%B8%AD%E7%B4%9A%E8%80%85%E3%81%8C%E8%A7%A3%E3%81%8F%E3%81%B9%E3%81%8D%E9%81%8E%E5%8E%BB%E5%95%8F%E7%B2%BE%E9%81%B8-100-%E5%95%8F"><i class="fa fa-link"></i></a>2-3. 分野別　初中級者が解くべき過去問精選 100 問</h1>
+# 2-3. 分野別　初中級者が解くべき過去問精選 100 問
+* [記事へのリンク](https://qiita.com/e869120/items/eb50fdaece12be418faa#2-3-%E5%88%86%E9%87%8E%E5%88%A5%E5%88%9D%E4%B8%AD%E7%B4%9A%E8%80%85%E3%81%8C%E8%A7%A3%E3%81%8F%E3%81%B9%E3%81%8D%E9%81%8E%E5%8E%BB%E5%95%8F%E7%B2%BE%E9%81%B8-100-%E5%95%8F)
 
-<p>AtCoder で<font color="#00AAAA" data-darkreader-inline-color="" style="--darkreader-inline-color: #55ffff;"><strong>水色コーダー</strong></font>、つまり<font color="#00AAAA" data-darkreader-inline-color="" style="--darkreader-inline-color: #55ffff;"><strong>レーティング 1200</strong></font> を少ない問題数で達成するために、<font color="#774400" data-darkreader-inline-color="" style="--darkreader-inline-color: #ffc579;"><strong>茶色コーダー</strong></font>・<font color="#007700" data-darkreader-inline-color="" style="--darkreader-inline-color: #79ff79;"><strong>緑コーダー</strong></font>にとって適切な教育的良問を 100 問集めました。</p>
-
-<p>分野ごとに問題が分けられています。また、アルゴリズムの確認問題から応用問題まで幅広い層の問題がありますので、是非解いてみることをおすすめします。<strong>難しい問題もあるので、水色コーダーを目指す人は 100 問中 70 問正解を目安に頑張ってください。</strong></p>
-
-<p>100 問全部解けたら、<font color="#00AAAA" data-darkreader-inline-color="" style="--darkreader-inline-color: #55ffff;"><strong>水色コーダー</strong></font>どころか<font color="#0000FF" data-darkreader-inline-color="" style="--darkreader-inline-color: #337dff;"><strong>青色コーダー</strong></font>くらいの実力が付くと思います。そのため、既に水色コーダー以上であっても、100 問全部を解いていない場合は、解く価値が大きいと思います。</p>
+* AtCoder 水色コーダー を少ない問題数で達成するために、適切な100 問
+* 分野ごとに問題が分けられています。また、アルゴリズムの確認問題から応用問題まで幅広い層の問題がありますので、是非解いてみることをおすすめします。
+* 難しい問題もあるので、水色コーダーを目指す人は 100 問中 70 問正解を目安に頑張ってください。
+* 100 問全部解けたら、水色コーダー どころか 青色コーダー くらいの実力
 
 <h4>
 <span id="全探索全列挙" class="fragment"></span><a href="#%E5%85%A8%E6%8E%A2%E7%B4%A2%E5%85%A8%E5%88%97%E6%8C%99"><i class="fa fa-link"></i></a>全探索：全列挙</h4>
 
-<p><strong>1</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_7_B&amp;lang=ja" rel="nofollow noopener" target="_blank">ITP1_7_B - How Many Ways?</a>　基本問題です。<br>
-<strong>2</strong>　<a href="https://atcoder.jp/contests/abc106/tasks/abc106_b" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 106 B - 105</a><br>
-<strong>3</strong>　<a href="https://atcoder.jp/contests/abc122/tasks/abc122_b" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 122 B - ATCoder</a><br>
-<strong>4</strong>　<a href="https://atcoder.jp/contests/pakencamp-2019-day3/tasks/pakencamp_2019_day3_c" rel="nofollow noopener" target="_blank">パ研杯2019 C - カラオケ</a>　これが解ければ全探索に慣れたと思って良いです。</p>
-
 <h4>
 <span id="全探索工夫して通り数を減らす全列挙" class="fragment"></span><a href="#%E5%85%A8%E6%8E%A2%E7%B4%A2%E5%B7%A5%E5%A4%AB%E3%81%97%E3%81%A6%E9%80%9A%E3%82%8A%E6%95%B0%E3%82%92%E6%B8%9B%E3%82%89%E3%81%99%E5%85%A8%E5%88%97%E6%8C%99"><i class="fa fa-link"></i></a>全探索：工夫して通り数を減らす全列挙</h4>
-
-<p><strong>5</strong>　<a href="https://atcoder.jp/contests/abc095/tasks/arc096_a" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 095 C - Half and Half</a><br>
-<strong>6</strong>　<a href="https://atcoder.jp/contests/sumitrust2019/tasks/sumitb2019_d" rel="nofollow noopener" target="_blank">三井住友信託銀行プログラミングコンテスト 2019 D - Lucky PIN</a><br>
 <strong>7</strong>　<a href="https://atcoder.jp/contests/joi2007ho/tasks/joi2007ho_c" rel="nofollow noopener" target="_blank">JOI 2007 本選 3 - 最古の遺跡</a>　面白いです。Python3 だと想定解法が TLE する可能性があります。<br>
-<strong>8</strong>　<a href="https://atcoder.jp/contests/s8pc-6/tasks/s8pc_6_b" rel="nofollow noopener" target="_blank">Square869120Contest #6 B - AtCoder Markets</a>　全探索すると無数に通り数があるように見えますが、ひとつ工夫すると現実的な通り数で全列挙できる問題です。<br>
-<strong>9</strong>　<a href="https://atcoder.jp/contests/joi2008yo/tasks/joi2008yo_d" rel="nofollow noopener" target="_blank">JOI 2008 予選 4 - 星座探し</a></p>
+
 
 <h4>
 <span id="全探索ビット全探索" class="fragment"></span><a href="#%E5%85%A8%E6%8E%A2%E7%B4%A2%E3%83%93%E3%83%83%E3%83%88%E5%85%A8%E6%8E%A2%E7%B4%A2"><i class="fa fa-link"></i></a>全探索：ビット全探索</h4>
-
-<p><strong>10</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_5_A&amp;lang=ja" rel="nofollow noopener" target="_blank">ALDS_5_A - 総当たり</a>　基本問題です。<br>
-<strong>11</strong>　<a href="https://atcoder.jp/contests/abc128/tasks/abc128_c" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 128 C - Switches</a><br>
-<strong>12</strong>　<a href="https://atcoder.jp/contests/abc002/tasks/abc002_4" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 002 D - 派閥</a><br>
-<strong>13</strong>　<a href="https://atcoder.jp/contests/joi2008yo/tasks/joi2008yo_e" rel="nofollow noopener" target="_blank">JOI 2008 予選 5 - おせんべい</a>　茶色コーダーにはやや難問ですが解くことをおすすめします。<br>
 <strong>14</strong>　<a href="https://atcoder.jp/contests/s8pc-4/tasks/s8pc_4_b" rel="nofollow noopener" target="_blank">Square869120Contest #4 B - Buildings are Colorful!</a>　工夫も必要で、一筋縄では解けない難問ですが、解けば確実に力がつきます。</p>
 
 <h4>
 <span id="全探索順列全探索" class="fragment"></span><a href="#%E5%85%A8%E6%8E%A2%E7%B4%A2%E9%A0%86%E5%88%97%E5%85%A8%E6%8E%A2%E7%B4%A2"><i class="fa fa-link"></i></a>全探索：順列全探索</h4>
-
-<p><strong>15</strong>　<a href="https://atcoder.jp/contests/abc145/tasks/abc145_c" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 145 C - Average Length</a><br>
-<strong>16</strong>　<a href="https://atcoder.jp/contests/abc150/tasks/abc150_c" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 150 C - Count Order</a><br>
 <strong>17</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_13_A&amp;lang=ja" rel="nofollow noopener" target="_blank">ALDS_13_A - 8 クイーン問題</a>　面白いです。</p>
 
 <h4>
 <span id="二分探索-1" class="fragment"></span><a href="#%E4%BA%8C%E5%88%86%E6%8E%A2%E7%B4%A2-1"><i class="fa fa-link"></i></a>二分探索</h4>
-
-<p><strong>18</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_4_B&amp;lang=ja" rel="nofollow noopener" target="_blank">ALDS_4_B - 二分探索</a>　基本問題です。map でも解けますが二分探索で解いてみてください。<br>
-<strong>19</strong>　<a href="https://atcoder.jp/contests/joi2009ho/tasks/joi2009ho_b" rel="nofollow noopener" target="_blank">JOI 2009 本選 2 - ピザ</a><br>
-<strong>20</strong>　<a href="https://atcoder.jp/contests/abc077/tasks/arc084_a" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 077 C - Snuke Festival</a>　面白いです。<br>
 <strong>21</strong>　<a href="https://atcoder.jp/contests/abc023/tasks/abc023_d" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 023 D - 射撃王</a>　教育的に良いです。<br>
 <strong>22</strong>　<a href="https://atcoder.jp/contests/arc054/tasks/arc054_b" rel="nofollow noopener" target="_blank">AtCoder Regular Contest 054 B - ムーアの法則</a>　微分して二分法をすると解けます。<a href="https://qiita.com/ganariya/items/1553ff2bf8d6d7789127" id="reference-6eb6dc9afa0310a9ec9e">三分探索</a>と話が繋がってくるので、それも調べてみると良いと思います。<br>
 <strong>23</strong>　<a href="https://atcoder.jp/contests/joi2008ho/tasks/joi2008ho_c" rel="nofollow noopener" target="_blank">JOI 2008 本選 3 - ダーツ</a>　工夫して二分探索する、チャレンジ問題です。</p>
 
 <h4>
 <span id="深さ優先探索" class="fragment"></span><a href="#%E6%B7%B1%E3%81%95%E5%84%AA%E5%85%88%E6%8E%A2%E7%B4%A2"><i class="fa fa-link"></i></a>深さ優先探索</h4>
-
-<p><strong>24</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_11_B" rel="nofollow noopener" target="_blank">ALDS_11_B - 深さ優先探索</a>　基本問題です。<br>
-<strong>25</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1160&amp;lang=jp" rel="nofollow noopener" target="_blank">AOJ 1160 - 島はいくつある？</a>　グラフの連結成分数は、深さ優先探索で計算できます。<br>
 <strong>26</strong>　<a href="https://atcoder.jp/contests/abc138/tasks/abc138_d" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 138 D - Ki</a>　木構造の問題の多くは、深さ優先探索を使います。<br>
 <strong>27</strong>　<a href="https://atcoder.jp/contests/joi2009yo/tasks/joi2009yo_d" rel="nofollow noopener" target="_blank">JOI 2009 予選 4 - 薄氷渡り</a>　深さ優先探索は、木構造だけではありません、ということを教えてくれる問題です。再帰関数を使って解けます。</p>
 
 <h4>
 <span id="幅優先探索" class="fragment"></span><a href="#%E5%B9%85%E5%84%AA%E5%85%88%E6%8E%A2%E7%B4%A2"><i class="fa fa-link"></i></a>幅優先探索</h4>
-
-<p><strong>28</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_11_C&amp;lang=ja" rel="nofollow noopener" target="_blank">ALDS_11_C - 幅優先探索</a>　基本問題です。<br>
-<strong>29</strong>　<a href="https://atcoder.jp/contests/abc007/tasks/abc007_3" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 007 C - 幅優先探索</a>　重み無しグラフの最短経路問題は、幅優先探索で解けます。<br>
-<strong>30</strong>　<a href="https://atcoder.jp/contests/joi2011yo/tasks/joi2011yo_e" rel="nofollow noopener" target="_blank">JOI 2011 予選 5 - チーズ</a><br>
 <strong>31</strong>　<a href="https://atcoder.jp/contests/joi2012yo/tasks/joi2012yo_e" rel="nofollow noopener" target="_blank">JOI 2012 予選 5 - イルミネーション</a>　少し実装が重いですが、頑張れば解けます。<br>
 <strong>32</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1166&amp;lang=jp" rel="nofollow noopener" target="_blank">AOJ 1166 - 迷図と命ず</a>　実装が少し重いです。<br>
 <strong>33</strong>　<a href="https://atcoder.jp/contests/abc088/tasks/abc088_d" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 088 D - Grid Repainting</a>　これが解ければ、幅優先探索に慣れたと思って良いです。</p>
 
 <h4>
 <span id="動的計画法ナップザック-dp" class="fragment"></span><a href="#%E5%8B%95%E7%9A%84%E8%A8%88%E7%94%BB%E6%B3%95%E3%83%8A%E3%83%83%E3%83%97%E3%82%B6%E3%83%83%E3%82%AF-dp"><i class="fa fa-link"></i></a>動的計画法：ナップザック DP</h4>
-
-<p><strong>34</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_10_A&amp;lang=ja" rel="nofollow noopener" target="_blank">ALDS_10_A - フィボナッチ数</a>　超基本。「DP とは何か」を感じることができます。<br>
-<strong>35</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DPL_1_B&amp;lang=ja" rel="nofollow noopener" target="_blank">DPL_1_B - 0,1ナップザック問題</a>　基本問題です。<br>
 <strong>36</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DPL_1_C&amp;lang=ja" rel="nofollow noopener" target="_blank">DPL_1_C - ナップザック問題</a>　基本問題です。<br>
-<strong>37</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DPL_1_A&amp;lang=ja" rel="nofollow noopener" target="_blank">DPL_1_A - コイン問題</a>　基本問題です。<br>
 <strong>38</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_10_C&amp;lang=ja" rel="nofollow noopener" target="_blank">ALDS_10_C - 最長共通部分列</a>　基本問題です。</p>
-
 <p>(ここから先は、どのような DP で解けるのかは書きませんが、全部ナップザック DP またはその亜種で解くことができます。)</p>
-
-<p><strong>39</strong>　<a href="https://atcoder.jp/contests/joi2011yo/tasks/joi2011yo_d" rel="nofollow noopener" target="_blank">JOI 2011 予選 4 - 1 年生</a><br>
 <strong>40</strong>　<a href="https://atcoder.jp/contests/joi2012yo/tasks/joi2012yo_d" rel="nofollow noopener" target="_blank">JOI 2012 予選 4 - パスタ</a><br>
 <strong>41</strong>　<a href="https://atcoder.jp/contests/joi2013yo/tasks/joi2013yo_d" rel="nofollow noopener" target="_blank">JOI 2013 予選 4 - 暑い日々</a><br>
 <strong>42</strong>　<a href="https://atcoder.jp/contests/joi2015yo/tasks/joi2015yo_d" rel="nofollow noopener" target="_blank">JOI 2015 予選 4 - シルクロード</a><br>
@@ -211,14 +175,12 @@ print(ng) # (1, 3, 9)
 
 <h4>
 <span id="動的計画法区間-dp" class="fragment"></span><a href="#%E5%8B%95%E7%9A%84%E8%A8%88%E7%94%BB%E6%B3%95%E5%8C%BA%E9%96%93-dp"><i class="fa fa-link"></i></a>動的計画法：区間 DP</h4>
-
 <p><strong>46</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_10_B&amp;lang=ja" rel="nofollow noopener" target="_blank">ALDS_10_B - 連鎖行列積</a>　基本問題です。<br>
 <strong>47</strong>　<a href="https://atcoder.jp/contests/joi2015ho/tasks/joi2015ho_b" rel="nofollow noopener" target="_blank">JOI 2015 本選 2 - ケーキの切り分け 2</a>　<mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="31" style="font-size: 113.1%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D442 TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n"><mjx-c class="mjx-c28"></mjx-c></mjx-mo><mjx-msup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D441 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: 0.363em; margin-left: 0.054em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c32"></mjx-c></mjx-mn></mjx-script></mjx-msup><mjx-mo class="mjx-n"><mjx-c class="mjx-c29"></mjx-c></mjx-mo></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>O</mi><mo stretchy="false">(</mo><msup><mi>N</mi><mn>2</mn></msup><mo stretchy="false">)</mo></math></mjx-assistive-mml></mjx-container> の区間 DP です。<br>
 <strong>48</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1611&amp;lang=jp" rel="nofollow noopener" target="_blank">AOJ 1611 ダルマ落とし</a>　<mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="32" style="font-size: 113.1%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D442 TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n"><mjx-c class="mjx-c28"></mjx-c></mjx-mo><mjx-msup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D441 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: 0.363em; margin-left: 0.054em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c33"></mjx-c></mjx-mn></mjx-script></mjx-msup><mjx-mo class="mjx-n"><mjx-c class="mjx-c29"></mjx-c></mjx-mo></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>O</mi><mo stretchy="false">(</mo><msup><mi>N</mi><mn>3</mn></msup><mo stretchy="false">)</mo></math></mjx-assistive-mml></mjx-container> の区間 DP です。</p>
 
 <h4>
 <span id="動的計画法bit-dp" class="fragment"></span><a href="#%E5%8B%95%E7%9A%84%E8%A8%88%E7%94%BB%E6%B3%95bit-dp"><i class="fa fa-link"></i></a>動的計画法：bit DP</h4>
-
 <p><strong>49</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DPL_2_A&amp;lang=ja" rel="nofollow noopener" target="_blank">DPL_2_A - 巡回セールスマン問題</a>　基本問題です。<br>
 <strong>50</strong>　<a href="https://atcoder.jp/contests/s8pc-1/tasks/s8pc_1_g" rel="nofollow noopener" target="_blank">Square869120Contest #1 G - Revenge of Traveling Salesman Problem</a>　巡回セールスマン問題を少し変えた問題です。<br>
 <strong>51</strong>　<a href="https://atcoder.jp/contests/joi2014yo/tasks/joi2014yo_d" rel="nofollow noopener" target="_blank">JOI 2014 予選 4 - 部活のスケジュール表</a>　bitDP に含まれるか微妙ですが、一応入れておきます。<br>
@@ -234,9 +196,6 @@ print(ng) # (1, 3, 9)
 
 <h4>
 <span id="最短経路問題ダイクストラ法" class="fragment"></span><a href="#%E6%9C%80%E7%9F%AD%E7%B5%8C%E8%B7%AF%E5%95%8F%E9%A1%8C%E3%83%80%E3%82%A4%E3%82%AF%E3%82%B9%E3%83%88%E3%83%A9%E6%B3%95"><i class="fa fa-link"></i></a>最短経路問題：ダイクストラ法</h4>
-
-<p><strong>56</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_1_A&amp;lang=ja" rel="nofollow noopener" target="_blank">GRL_1_A - 単一始点最短経路</a>　基本問題です。<br>
-<strong>57</strong>　<a href="https://atcoder.jp/contests/joi2008yo/tasks/joi2008yo_f" rel="nofollow noopener" target="_blank">JOI 2008 予選 6 - 船旅</a>　後述のワーシャルフロイド法でも解けます。<br>
 <strong>58</strong>　<a href="https://atcoder.jp/contests/joi2016yo/tasks/joi2016yo_e" rel="nofollow noopener" target="_blank">JOI 2016 予選 5 - ゾンビ島</a>　前述の幅優先探索も使います。実装がやや重めです。<br>
 <strong>59</strong>　<a href="https://atcoder.jp/contests/joi2014yo/tasks/joi2014yo_e" rel="nofollow noopener" target="_blank">JOI 2014 予選 5 - タクシー</a></p>
 
