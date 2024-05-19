@@ -1,4 +1,5 @@
-# [A - 旅人](https://atcoder.jp/contests/joi2010ho/tasks/joi2010ho_a)
+# A - 旅人
+* [問題へのリンク](https://atcoder.jp/contests/joi2010ho/tasks/joi2010ho_a)
 
 
 * 最初の提出結果は　WA。原因はケアレスミス　mod 忘れ
