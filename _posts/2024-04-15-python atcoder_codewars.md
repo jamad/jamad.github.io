@@ -2,8 +2,6 @@
 
 * [このページの edit](https://github.com/jamad/jamad.github.io/tree/master/_posts)
 
-# bitDP
-* 
 
 ## 二重ループをbreakできるtipsは初めて知った　確かにbreakしなかった場合は  else:continue を通るよなあ 
 * 競プロでよく使うけど空で書けないフレーズ `https://qiita.com/do_an/items/e5a202cac4fc69fe849d`
@@ -64,6 +62,9 @@ print(ng) # (1, 3, 9)
 
 
 ---
+
+
+# 分野別　初中級者が解くべき過去問精選 100 問 
 
 <h2 id="全探索：全列挙"><a href="#全探索：全列挙" class="headerlink" title="全探索：全列挙"></a>全探索：全列挙</h2><ol>
 <li><p><a href="https://kakedashi-engineer.appspot.com/2020/05/08/itp1-7b/">ITP1 7B 組み合わせの数</a></p></li>
