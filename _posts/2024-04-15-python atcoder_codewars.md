@@ -247,6 +247,8 @@ print(ng) # (1, 3, 9)
 
 <p>(ここから先は、「いもす法」というアルゴリズムを使う場合があります。)</p>
 
+![image](https://github.com/jamad/jamad.github.io/assets/949913/d30d86c0-235b-4f05-a814-e0a368e83979)
+
 <p><strong>81</strong>　<a href="https://atcoder.jp/contests/abc014/tasks/abc014_3" rel="nofollow noopener" target="_blank">AtCoder Beginner Contest 014 C - AtColor</a>　基本問題です。<br>
 <strong>82</strong>　<a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=2013" rel="nofollow noopener" target="_blank">AOJ 2013 - 大崎</a><br>
 <strong>83</strong>　<a href="https://atcoder.jp/contests/joi2015ho/tasks/joi2015ho_a" rel="nofollow noopener" target="_blank">JOI 2015 本選 1 - 鉄道運賃</a><br>
