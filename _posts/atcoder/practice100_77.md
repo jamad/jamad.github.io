@@ -1,7 +1,7 @@
 # [A - 旅人](https://atcoder.jp/contests/joi2010ho/tasks/joi2010ho_a)
 
 
-* 最初の提出結果と、そのコード
+* 最初の提出結果は　WA。原因はケアレスミス　mod 忘れ
 
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/f3d30e2f-c41c-4b05-bff3-bc3317215ead)|
 |-|
@@ -33,7 +33,7 @@ print(ans)
   
 ```
 
-* 二回目
+* 二回目　modを追加して　AC
 
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/713534e6-78a1-4c05-a128-361c15ea0597)|
 |-|
