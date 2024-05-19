@@ -3,11 +3,11 @@
 
 # pythonanywhereによりweb上で実行する
 
-## {} () に置換
+## テキストの　{}　を () に置換するプログラム
 * https://www.pythonanywhere.com/gists/40ff1134fdd03cb06049f1a733bff436/replace_%7B%7D_to_()/ipython/
 * by https://gist.github.com/jamad/40ff1134fdd03cb06049f1a733bff436
 
-## case_20240513ymd パスワード生成コードをテスト
+## case_20240513ymd パスワード生成コードをテストするプログラム　（今後は条件を変更していこう）
 * https://www.pythonanywhere.com/gists/56fcf34b7fb0bf1499cfe3ab17817fd2/gist_test/ipython/
 * by https://gist.github.com/jamad/56fcf34b7fb0bf1499cfe3ab17817fd2#file-gist_test
 
