@@ -1,6 +1,4 @@
-
-
-* https://atcoder.jp/contests/joi2010ho/tasks/joi2010ho_a
+＃ [A - 旅人](https://atcoder.jp/contests/joi2010ho/tasks/joi2010ho_a)
 
 
 * 最初の提出結果と、そのコード 
