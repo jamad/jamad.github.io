@@ -1,6 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 * [このページの edit](https://github.com/jamad/jamad.github.io/tree/master/_posts)
+* [サブディレクトリのページの例　やるべき100問の77番問題](https://github.com/jamad/jamad.github.io/blob/master/_posts/atcoder/practice100_77.md)
 
 
 ## 二重ループをbreakできるtipsは初めて知った　確かにbreakしなかった場合は  else:continue を通るよなあ 
