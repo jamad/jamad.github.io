@@ -61,6 +61,12 @@ print(ng) # (1, 3, 9)
 
 
 
+# 100問をやる
+
+|-|-|
+|-|-|
+|77|https://github.com/jamad/jamad.github.io/blob/master/_posts/atcoder/practice100_77.md#a---%E6%97%85%E4%BA%BA|
+
 
 
 ---
