@@ -5,8 +5,10 @@
 
 * .md での表示は期待通りなんだが、jekyll で　html 化されると　全然違う結果になるな、、、
 
-|![image](https://github.com/jamad/jamad.github.io/assets/949913/1d4c4ac9-35fb-49e2-aff7-1fc1f8dd0cd2)|
+
+| ![image](https://github.com/jamad/jamad.github.io/assets/949913/1d4c4ac9-35fb-49e2-aff7-1fc1f8dd0cd2) |
 |-|
+
 
 
 ```mermaid
