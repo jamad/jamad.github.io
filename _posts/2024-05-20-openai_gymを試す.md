@@ -76,5 +76,8 @@
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/11d4c871-4a3d-472b-9da4-7c96779d1d3e)|
 |-|
 
-
+* 再起動した後に開けるよう　リンクをメモ 
+* `https://spinningup.openai.com/en/latest/user/installation.html#installing-spinning-up`
+* `https://github.com/openai/spinningup/issues/23`
+* `https://qiita.com/coffee_g9/items/b5789a7e3b555122f079`
 
