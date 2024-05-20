@@ -31,3 +31,8 @@
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/bd6b2247-fa91-41f2-8f2a-70e40a0ac439)
 
+
+windows の　Cドライブに該当する場所に移動するには　`cd /mnt/c` を実行する
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/9fe40d8a-8fdc-4a6f-a01b-656dc0aeb9a6)
+
