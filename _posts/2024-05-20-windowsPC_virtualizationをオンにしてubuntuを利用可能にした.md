@@ -22,3 +22,12 @@
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/e2ed3225-40ec-49af-98ba-e1242ce1afff)
 
 
+
+おまけメモ
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/b5946f82-c4a7-4483-854b-e33775cab184)
+
+最後のラインに　追加して ctrl+O で保存し、ctrl+X でnanoをエスケープ
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/bd6b2247-fa91-41f2-8f2a-70e40a0ac439)
+
