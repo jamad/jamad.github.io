@@ -95,4 +95,10 @@ Press any key to continue...
 * `https://github.com/openai/spinningup/issues/23`
 * `https://qiita.com/coffee_g9/items/b5789a7e3b555122f079`
 
+* 再起動してもエラーで進めない。
+
+chatgpt に聞いたが　既に、オンになっている
+  ![image](https://github.com/jamad/jamad.github.io/assets/949913/d3e768d0-e13b-4420-9954-e62477f27fff)
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/a786e85f-cee4-43ab-bc9f-88726b05cf20)
 
