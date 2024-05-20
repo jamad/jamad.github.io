@@ -1,5 +1,14 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+# インストール後にすべきアクション
+* 先日、環境を作成したので、実際に運用しようとした時のメモ
+
+|手順|参考画像|
+|-|-|
+|-|-|
+
+
+
 # てゆーか　jekyll の前に Ruby をインストールする必要あるんかい！
 
 |手順|参考画像|
