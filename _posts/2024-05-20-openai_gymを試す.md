@@ -104,6 +104,9 @@ chatgpt に聞いたが　既に、オンになっている
 
 後で試すことに。
 
+でも、とにかくタスクマネージャーで確認したら、仮想化がオンになってないやんけ！
+![image](https://github.com/jamad/jamad.github.io/assets/949913/2d4f5032-08d1-4c2c-be8c-3ea8c8f9b62d)
+
 
 
 ---
