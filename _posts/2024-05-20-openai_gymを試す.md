@@ -115,4 +115,5 @@ chatgpt に聞いたが　既に、オンになっている
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/81629b49-35fb-4f18-a588-69577e4a95a2)
 
+![image](https://github.com/jamad/jamad.github.io/assets/949913/f3d036cd-31b5-445e-bc05-23fa2c39d705)
 
