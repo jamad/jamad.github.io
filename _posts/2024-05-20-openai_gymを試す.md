@@ -72,4 +72,9 @@
 * まず admin で `wsl --install`
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/1349d4b2-096f-458c-8317-f0245bd6eb27)
 
+* 再起動が必要なのかよ！
+|![image](https://github.com/jamad/jamad.github.io/assets/949913/11d4c871-4a3d-472b-9da4-7c96779d1d3e)|
+|-|
+
+
 
