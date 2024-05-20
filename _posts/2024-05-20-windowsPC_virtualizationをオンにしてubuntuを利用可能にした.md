@@ -68,7 +68,13 @@ GPT からの情報を試す
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/598b0a26-6b30-439f-bd37-323128103a37)
 
 サーバーが起動していることは確認した
+
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/b1f28c17-c455-4b1e-9eb9-77d838832984)
+
+
+firewall の確認もした
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/36ca8f76-885f-42af-a3de-6680a4f597f9)
 
 
 ---
