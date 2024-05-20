@@ -1,5 +1,5 @@
 
-* WSL を使うために　windows を virtualization しないといけなかったのでメモ
+# WSL を使うために　windows を virtualization しないといけなかったのでメモ
 * 目的は `https://github.com/openai/spinningup/issues/23` 
   
 
