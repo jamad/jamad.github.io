@@ -5,6 +5,8 @@
 * `https://qiita.com/God_KonaBanana/items/c2cee09bc35cca722f2b`
 * `https://qiita.com/nsd24/items/7758410128872d684e05`
 
+* `https://spinningup.openai.com/en/latest/index.html` という学習サイトを知ったぞ。
+
 
 ## まず行ったのはpip
 
@@ -39,6 +41,9 @@
 
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/9f195fe9-b78c-4916-9761-a9edde3517c1)|
 |-|
+  
+* `pip3 install gym[all]`してみることに
+
   
 
 
