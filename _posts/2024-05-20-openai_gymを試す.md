@@ -10,6 +10,11 @@ ERROR: Could not find a version that satisfies the requirement tensorflow<2.0,>=
 ERROR: No matching distribution found for tensorflow<2.0,>=1.8.0
 ```
 
+*　今回試したのは  `Python 3.10.9` をキープするのを優先した作業
+* `pip install --upgrade spinup`
+* `pip install tensorflow`
+* `pip install spinup`
+* 
 
 
 ---
