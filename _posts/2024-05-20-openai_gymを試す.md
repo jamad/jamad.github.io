@@ -52,6 +52,11 @@
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/9146a28b-ad18-4866-aae0-55676b301d28)|
 |-|
 
+* そして　`ERROR: No matching distribution found for tensorflow<2.0,>=1.8.0` に遭遇
+
+|![image](https://github.com/jamad/jamad.github.io/assets/949913/75c25224-a551-4358-9474-22fd17dc2d72)|
+|-|
+
 
 
 
