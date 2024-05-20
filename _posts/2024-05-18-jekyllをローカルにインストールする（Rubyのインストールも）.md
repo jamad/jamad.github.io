@@ -7,6 +7,8 @@
 |-|-|
 |cmd にて`ruby -v`を確認|ruby 3.2.4 と表示されたので `ridk install` する必要も無し|
 |cmd にて`ridk enable` と続けた　| `pacman -V`　で正しいアスキーアートが出力されることを確認した|
+|mingw64　を起動して `explorer .` で開いたhomeで cmd し直してから　`bundle exec jekyll s` |しばらく待つ|
+
 
 
 # （初回）てゆーか　jekyll の前に Ruby をインストールする必要あるんかい！
