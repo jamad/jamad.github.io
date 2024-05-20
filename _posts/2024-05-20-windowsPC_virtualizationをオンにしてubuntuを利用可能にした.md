@@ -49,7 +49,7 @@ GPTからの情報を試す
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c81d75d4-0dc0-4bca-afbc-8b7afcc7c27a)
 
-
+エラーでてるやんけ　`E: Unable to locate package dos2unix`
 
 
 * とりあえず
