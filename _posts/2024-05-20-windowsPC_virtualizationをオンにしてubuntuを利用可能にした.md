@@ -56,3 +56,8 @@ windows の　Cドライブに該当する場所に移動するには　`cd /mnt
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/87611f9a-fa06-4072-b930-3c6ae1911573)
 
+
+* どうも　xming は WSLに必要なツールのようだ。
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/79ee38f8-c7c9-4f2e-a627-6c3521314a5e)
+
