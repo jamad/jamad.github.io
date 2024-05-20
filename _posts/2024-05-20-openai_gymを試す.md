@@ -102,3 +102,14 @@ chatgpt に聞いたが　既に、オンになっている
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/a786e85f-cee4-43ab-bc9f-88726b05cf20)
 
+後で試すことに。
+
+
+
+---
+
+別の方法を模索。gpt に聞いた時のメモ通りにやってみる　　　まずは、PRIME B450M-A のマシンにて　cmdで直接`pip install gym`
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/81629b49-35fb-4f18-a588-69577e4a95a2)
+
+
