@@ -1,5 +1,20 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+
+* もう一度やってみる
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/3be28cf1-d452-4397-9b4a-032e0b28e2b7)
+* やっぱり同じエラーだ
+
+```
+ERROR: Could not find a version that satisfies the requirement tensorflow<2.0,>=1.8.0 (from spinup) (from versions: 2.8.0rc1, 2.8.0, 2.8.1, 2.8.2, 2.8.3, 2.8.4, 2.9.0rc0, 2.9.0rc1, 2.9.0rc2, 2.9.0, 2.9.1, 2.9.2, 2.9.3, 2.10.0rc0, 2.10.0rc1, 2.10.0rc2, 2.10.0rc3, 2.10.0, 2.10.1, 2.11.0rc0, 2.11.0rc1, 2.11.0rc2, 2.11.0, 2.11.1, 2.12.0rc0, 2.12.0rc1, 2.12.0, 2.12.1, 2.13.0rc0, 2.13.0rc1, 2.13.0rc2, 2.13.0, 2.13.1, 2.14.0rc0, 2.14.0rc1, 2.14.0, 2.14.1, 2.15.0rc0, 2.15.0rc1, 2.15.0, 2.15.1, 2.16.0rc0, 2.16.1)
+ERROR: No matching distribution found for tensorflow<2.0,>=1.8.0
+```
+
+
+
+---
+
+
 # まとめ
 * openai_gym を初めて聞いたので試していくうちに、`spinningup.openai.com` に教材があることを知る。そして windows は公式にサポートされていないので、WSL でLinux環境を作ることに。
 * WSL をインストールしたが bash が使えない。下記のようなエラーでストップ中 
