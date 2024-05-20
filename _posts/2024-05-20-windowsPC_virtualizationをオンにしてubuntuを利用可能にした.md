@@ -55,6 +55,10 @@ GPT からの情報を試す
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/71435c5f-2d59-46ec-bbe5-f1ef5b9e7c51)
 
+おお、エラー出なくなった
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/389f6748-f21c-4cfc-aaf9-1e1d7a22c57c)
+
 
 ---
 
