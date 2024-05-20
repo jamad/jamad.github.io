@@ -60,6 +60,15 @@ GPT からの情報を試す
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/389f6748-f21c-4cfc-aaf9-1e1d7a22c57c)
 
 
+でも、xclock をテストしたらエラーになったぞ。
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/4479c621-4d11-4bd8-8569-f00f2c5639e2)
+
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/598b0a26-6b30-439f-bd37-323128103a37)
+
+
+
 ---
 
 * とりあえず
