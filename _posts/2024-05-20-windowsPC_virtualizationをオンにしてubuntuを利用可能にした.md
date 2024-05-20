@@ -45,6 +45,13 @@ windows の　Cドライブに該当する場所に移動するには　`cd /mnt
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/1829d266-9ca9-4ba9-bcc3-279c1309230e)
 
 
+GPTからの情報を試す
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/c81d75d4-0dc0-4bca-afbc-8b7afcc7c27a)
+
+
+
+
 * とりあえず
 * ` https://sourceforge.net/projects/xming/files/latest/download` から　Xming-6-9-0-31-setup.exe　を実行してみることにした
 
