@@ -1,5 +1,19 @@
+<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+
 # まとめ
-* openai_gym を初めて聞いたので試していくうちに、`spinningup.openai.com` に教材があることを知る。そして windows は公式にサポートされていないので、WSL でLinux環境を作ることに。 
+* openai_gym を初めて聞いたので試していくうちに、`spinningup.openai.com` に教材があることを知る。そして windows は公式にサポートされていないので、WSL でLinux環境を作ることに。
+* WSL をインストールしたが bash が使えない。下記のようなエラーでストップ中 
+
+```
+C:\Windows\System32>wsl --install
+Ubuntu is already installed.
+Launching Ubuntu...
+Installing, this may take a few minutes...
+WslRegisterDistribution failed with error: 0x80370102
+Please enable the Virtual Machine Platform Windows feature and ensure virtualization is enabled in the BIOS.
+For information please visit https://aka.ms/enablevirtualization
+Press any key to continue...
+```
 
 # 参考にする資料
 * `https://qiita.com/ishizakiiii/items/75bc2176a1e0b65bdd16`
@@ -80,4 +94,5 @@
 * `https://spinningup.openai.com/en/latest/user/installation.html#installing-spinning-up`
 * `https://github.com/openai/spinningup/issues/23`
 * `https://qiita.com/coffee_g9/items/b5789a7e3b555122f079`
+
 
