@@ -45,6 +45,13 @@
 * `pip3 install gym[all]`してみることに
 
   
+---
+
+* spinningup というサイトを知ったので、最初から、別のディレクトリを作成して試してみることに。 
+
+|![image](https://github.com/jamad/jamad.github.io/assets/949913/9146a28b-ad18-4866-aae0-55676b301d28)|
+|-|
+
 
 
 
