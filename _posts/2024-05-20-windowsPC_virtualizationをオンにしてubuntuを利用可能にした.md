@@ -1,5 +1,7 @@
 
 * WSL を使うために　windows を virtualization しないといけなかったのでメモ
+* 目的は `https://github.com/openai/spinningup/issues/23` 
+  
 
 * まず 下記の２つはオンになっていることを確認。
 
