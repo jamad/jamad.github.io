@@ -1,6 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 # Q&A 
+## pyenv で 一時的に古いバージョンのpython を使いたい
+* tensorflow が　古いバージョンだったので。俺のデフォルト環境は　Python 3.9.6
 ## タイトルだけのメールを送りたい。
 * `practicePython\scraping\varaamo_checker_2024.py`　でやったのでそれを確認しよう
 ## ダウンロード系処理はマルチスレッドで高速化したい　
