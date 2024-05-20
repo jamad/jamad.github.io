@@ -30,6 +30,10 @@
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/5ff8705f-a2d0-484d-8acb-86d2cf73a9ae)|
 |-|
 
+* でも　`cartpole.py` を実行したが、何も起こらない。エラーすら発生しない。何故だろう？
+
+|![image](https://github.com/jamad/jamad.github.io/assets/949913/7250c03f-c027-4ed9-93f1-9d6507032445)|
+|-|
 
 
 
