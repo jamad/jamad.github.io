@@ -43,3 +43,7 @@ windows の　Cドライブに該当する場所に移動するには　`cd /mnt
 * うーん、またエラーか
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/1829d266-9ca9-4ba9-bcc3-279c1309230e)
+
+
+* とりあえず
+* ` https://sourceforge.net/projects/xming/files/latest/download` から　Xming-6-9-0-31-setup.exe　を実行してみることにした
