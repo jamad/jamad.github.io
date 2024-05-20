@@ -58,6 +58,9 @@
 |-|
 
 
+* `D:\self_development_spinningup\spinningup>pip install tensorflow .` を試したら
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/3fefc9c1-9445-442a-9b75-e74ed0196c91)
 
 
 
