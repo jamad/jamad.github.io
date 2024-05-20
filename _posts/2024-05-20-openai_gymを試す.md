@@ -6,9 +6,13 @@
 * `https://qiita.com/nsd24/items/7758410128872d684e05`
 
 
-* まずしたのはpip
+## まず行ったのはpip
 
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/3085220e-1b09-47b1-9eaa-6021539b8982)|
 |-|
+
+|![image](https://github.com/jamad/jamad.github.io/assets/949913/73a03e1e-e323-4c4c-b2cf-0bd4389ad52d)|
+|-|
+
 
 
