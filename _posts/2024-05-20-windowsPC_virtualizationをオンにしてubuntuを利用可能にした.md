@@ -51,6 +51,12 @@ GPTからの情報を試す
 
 エラーでてるやんけ　`E: Unable to locate package dos2unix`
 
+GPT からの情報を試す
+
+![image](https://github.com/jamad/jamad.github.io/assets/949913/71435c5f-2d59-46ec-bbe5-f1ef5b9e7c51)
+
+
+---
 
 * とりあえず
 * ` https://sourceforge.net/projects/xming/files/latest/download` から　Xming-6-9-0-31-setup.exe　を実行してみることにした
