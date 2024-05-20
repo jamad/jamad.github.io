@@ -14,7 +14,7 @@ ERROR: No matching distribution found for tensorflow<2.0,>=1.8.0
 * `pip install --upgrade spinup`
 * `pip install tensorflow`
 * `pip install spinup`
-* 
+* `pip install -e .`
 
 
 ---
