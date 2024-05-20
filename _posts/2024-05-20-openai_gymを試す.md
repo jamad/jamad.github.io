@@ -66,5 +66,7 @@
 
 だめだ、公式のドキュメントに従おう
 * そして `https://github.com/openai/spinningup/issues/23` を見つけた。Windowsで実行するには重要そうだぞ！ 
+* まず admin で `wsl --install`
+![image](https://github.com/jamad/jamad.github.io/assets/949913/1349d4b2-096f-458c-8317-f0245bd6eb27)
 
 
