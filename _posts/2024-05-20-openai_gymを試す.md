@@ -107,7 +107,7 @@ chatgpt に聞いたが　既に、オンになっている
 でも、とにかくタスクマネージャーで確認したら、仮想化がオンになってないやんけ！
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/2d4f5032-08d1-4c2c-be8c-3ea8c8f9b62d)
 
-
+[BIOSの設定変更で、目的を達成できた。](https://github.com/jamad/jamad.github.io/blob/master/_posts/2024-05-20-windowsPC_virtualization%E3%82%92%E3%82%AA%E3%83%B3%E3%81%AB%E3%81%97%E3%81%A6ubuntu%E3%82%92%E5%88%A9%E7%94%A8%E5%8F%AF%E8%83%BD%E3%81%AB%E3%81%97%E3%81%9F.md)
 
 ---
 
