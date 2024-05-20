@@ -1,3 +1,6 @@
+# まとめ
+* openai_gym を初めて聞いたので試していくうちに、`spinningup.openai.com` に教材があることを知る。そして windows は公式にサポートされていないので、WSL でLinux環境を作ることに。 
+
 # 参考にする資料
 * `https://qiita.com/ishizakiiii/items/75bc2176a1e0b65bdd16`
 * `https://qiita.com/shu223/items/a9cfe9107447b327b564`
