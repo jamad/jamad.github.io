@@ -10,9 +10,11 @@
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/5b324f91-ee55-4c1c-8dbd-572c6e6e1733)
 
 * 期待通りの結果になった。素晴らしい
+
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/f5939a09-8c80-4c90-b03b-2362a13b637b)
 
 * ubuntu を起動してみる
+
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/e131b052-5051-4cfe-b90e-e11348a78718)
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/e2ed3225-40ec-49af-98ba-e1242ce1afff)
