@@ -36,6 +36,7 @@ windows の　Cドライブに該当する場所に移動するには　`cd /mnt
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/9fe40d8a-8fdc-4a6f-a01b-656dc0aeb9a6)
 
+* 改めて　`https://spinningup.openai.com/en/latest/user/installation.html#installing-spinning-up`　の手順を実行してみる
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/30bc1420-54b3-4e5c-9d30-2b87275a0d85)
 
