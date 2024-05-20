@@ -4,7 +4,7 @@
 # pythonanywhereによりweb上で実行する
 
 ## テキストの　{}　を () に置換するプログラム
-* (てゆーか、前に作ったけど見つからなかったやつはcodepenだったか　https://codepen.io/jamad/pen/NWmwpVm　)
+* (てゆーか、前に作ったけど見つからなかったやつはcodepenだったか　https://codepen.io/jamad/pen/NWmwpVm)
 * https://www.pythonanywhere.com/gists/40ff1134fdd03cb06049f1a733bff436/replace_%7B%7D_to_()/ipython/
 * by https://gist.github.com/jamad/40ff1134fdd03cb06049f1a733bff436
 
