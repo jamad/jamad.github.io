@@ -62,6 +62,9 @@
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/3fefc9c1-9445-442a-9b75-e74ed0196c91)
 
+---
 
+だめだ、公式のドキュメントに従おう
+* そして `https://github.com/openai/spinningup/issues/23` を見つけた。Windowsで実行するには重要そうだぞ！ 
 
 
