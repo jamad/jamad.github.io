@@ -14,9 +14,15 @@
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/73a03e1e-e323-4c4c-b2cf-0bd4389ad52d)|
 |-|
 
+* てゆーか、先にすべきはこっちだったかも？
 
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/36863790-682d-486b-8d4d-b1365aa7278e)|
 |-|
+
+|![image](https://github.com/jamad/jamad.github.io/assets/949913/a4684ea7-6b36-4ebd-ada0-2bbc52dae4c7)|
+|-|
+
+
 
 
 
