@@ -8,7 +8,7 @@
   * `pip install gym[atari]` をしたが、今度は`gym.error.Error: We're Unable to find the game "SpaceInvaders". Note: Gym no longer distributes ROMs`
   * なので、もう一度　`https://spinningup.openai.com/en/latest/user/installation.html#installing-spinning-up` の手順を行い　`ERROR: No matching distribution found for tensorflow<2.0,>=1.8.0`までを確認した
   * そして　setup.py の中を　`'tensorflow', 'torch',`のようにバージョンを削ったものにしてから、再び　`pip install -e .` を実行 `error: command 'swig.exe' failed: None` に遭遇
-  * 
+  * `pip install swig` を実行してから再び　`pip install -e .` を実行
 * `https://github.com/Kojoley/atari-py`
 * invader 等が起動するようになった今、やっと
   * `https://github.com/openai/gym/wiki/Pendulum-v1`とか
