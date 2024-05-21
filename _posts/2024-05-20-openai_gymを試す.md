@@ -137,3 +137,10 @@ chatgpt に聞いたが　既に、オンになっている
 
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/f3d036cd-31b5-445e-bc05-23fa2c39d705)
 
+
+---
+
+* 次の日 再びチャレンジ
+* "D:\self_development_spinningup\spinningup\setup.py" の中でバージョンを削ってみた
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/40e316ab-947c-4335-bf73-36066e5b35a3)
+
