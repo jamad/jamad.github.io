@@ -15,6 +15,8 @@
 * だめだ、一旦中止する。
 * ちょい待て　`https://stackoverflow.com/a/46739299` を見つけたので　`pip install git+https://github.com/Kojoley/atari-py.git` を実行してみた
 * そして　![image](https://github.com/jamad/jamad.github.io/assets/949913/98134f3e-ca5c-43b5-a536-1eadb592ff9e)
+* おお、起動できたぞ！　![image](https://github.com/jamad/jamad.github.io/assets/949913/fb2cd0cd-ce60-4586-9014-e48228dea8fa)
+
 
 
 ---
