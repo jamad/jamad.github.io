@@ -12,7 +12,7 @@
 * `pip uninstall mpi4py` してから`msmpisdk.msi` を実行したが　今度は `ModuleNotFoundError: No module named 'mpi4py'` 認識されていないようだ。
 * `https://stackoverflow.com/a/57781714` を見つけたので　色々試すが、解決方法は不明だった。
 * `pip install -e .` をもう一度実行した。 そして`python -m spinup.run ppo --hid "[32,32]" --env LunarLander-v2 --exp_name installtest --gamma 0.999` を実行。 解決せず。
- 
+*　だめだ、一旦中止する。 
 
 ---
 
