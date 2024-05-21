@@ -24,10 +24,7 @@
 
 
 ---
-# 以下は古い情報
-
----
-
+# 以下は古い情報 (紛らわしくなる前に削除しよう)
 
 * もう一度やってみる
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/3be28cf1-d452-4397-9b4a-032e0b28e2b7)
