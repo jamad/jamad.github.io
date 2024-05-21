@@ -10,7 +10,8 @@
 * 暫く経過して　エラーが発生　`ImportError: DLL load failed while importing MPI: The specified module could not be found.` なので　`pip install mpi4py`を実行したが `Requirement already satisfied: mpi4py`
 * `https://stackoverflow.com/a/54907810` を見つけたので　`https://www.microsoft.com/en-us/download/details.aspx?id=105289` から`msmpisdk.msi` をダウンロードした
 * `pip uninstall mpi4py` してから`msmpisdk.msi` を実行したが　今度は `ModuleNotFoundError: No module named 'mpi4py'` 認識されていないようだ。
-* `https://stackoverflow.com/a/57781714` を見つけたので　
+* `https://stackoverflow.com/a/57781714` を見つけたので　色々試すが、解決方法は不明だった。
+* `pip install -e .` をもう一度実行した。 そして`python -m spinup.run ppo --hid "[32,32]" --env LunarLander-v2 --exp_name installtest --gamma 0.999` を実行。 解決せず。
  
 
 ---
