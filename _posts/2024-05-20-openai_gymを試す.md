@@ -1,6 +1,10 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-* 次の日 再びチャレンジ
+# まとめ
+* 結局、一番参考になった情報は　`https://stackoverflow.com/a/46739299`
+
+
+## 次の日 再びチャレンジ
 * "D:\self_development_spinningup\spinningup\setup.py" の中でバージョンを削ってみた
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/40e316ab-947c-4335-bf73-36066e5b35a3)
 * `pip install -e .`を実行したら　`error: command 'swig.exe' failed: None` に遭遇したので、`pip install swig` してみた
@@ -19,6 +23,8 @@
 * env = gym.make('CartPole-v0') に変更すると別のゲームになった
 
 
+---
+# 以下は古い情報
 
 ---
 
