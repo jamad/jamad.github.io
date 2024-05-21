@@ -9,6 +9,7 @@
   * `https://qiita.com/nsd24/items/7758410128872d684e05`とか
   * `https://uu64.hatenablog.jp/entry/2018/05/13/233959` に注目できるようになった
 * `https://www.youtube.com/watch?v=gMgj4pSHLww` の動画も参考になるかもしれない (`https://gymnasium.farama.org/content/basic_usage/` という派生も今日知った)
+* `https://github.com/pybox2d/pybox2d` も個別に興味がわいた
 
 
 ## 次の日 再びチャレンジ
