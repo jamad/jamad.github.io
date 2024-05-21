@@ -11,7 +11,7 @@
   * `pip install swig` を実行してから再び　`pip install -e .` を実行　`Failed to build matplotlib` に遭遇
   * setup.py の中を `'matplotlib',`のようにバージョンを削ったものにしてから、再び　`pip install -e .` を実行
   * この段階で、やっと`pip install -e .`のコマンドでエラーが出なくった　![image](https://github.com/jamad/jamad.github.io/assets/949913/49f1372d-0e90-4472-b671-3d3bea64c9db)
-  * そして　`W:\openai_gym>python MountainCar-v0.py` のようにして　ゲームが起動できるようになった　![image](https://github.com/jamad/jamad.github.io/assets/949913/7eefc88c-7615-4466-9e32-e65baf26f89e)
+  * そして　`W:\openai_gym>python MountainCar-v0.py` のようにして　[ゲームの起動コード](https://gist.github.com/jamad/20d537edc3ab887dbb24e0f0432e6928)が作動するようになった　![image](https://github.com/jamad/jamad.github.io/assets/949913/7eefc88c-7615-4466-9e32-e65baf26f89e)
 
 
 * `https://github.com/Kojoley/atari-py`
