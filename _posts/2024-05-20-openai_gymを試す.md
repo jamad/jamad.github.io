@@ -143,4 +143,5 @@ chatgpt に聞いたが　既に、オンになっている
 * 次の日 再びチャレンジ
 * "D:\self_development_spinningup\spinningup\setup.py" の中でバージョンを削ってみた
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/40e316ab-947c-4335-bf73-36066e5b35a3)
-
+* `pip install -e .`をじっこうしたら　`error: command 'swig.exe' failed: None` に遭遇したので、`pip install swig` してみた
+* `pip install -e .`をじっこうしたら  ` ERROR: Failed building wheel for matplotlib` に遭遇した
