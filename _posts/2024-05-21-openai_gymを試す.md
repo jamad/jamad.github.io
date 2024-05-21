@@ -10,6 +10,8 @@
   * そして　setup.py の中を　`'tensorflow', 'torch',`のようにバージョンを削ったものにしてから、再び　`pip install -e .` を実行 `error: command 'swig.exe' failed: None` に遭遇
   * `pip install swig` を実行してから再び　`pip install -e .` を実行　`Failed to build matplotlib` に遭遇
   * setup.py の中を `'matplotlib',`のようにバージョンを削ったものにしてから、再び　`pip install -e .` を実行
+  * この段階で、やっと`pip install -e .`のコマンドでエラーが出なくった　![image](https://github.com/jamad/jamad.github.io/assets/949913/49f1372d-0e90-4472-b671-3d3bea64c9db)
+
 * `https://github.com/Kojoley/atari-py`
 * invader 等が起動するようになった今、やっと
   * `https://github.com/openai/gym/wiki/Pendulum-v1`とか
