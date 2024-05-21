@@ -4,7 +4,8 @@
 * [サブディレクトリのページの例　やるべき100問の77番問題](https://github.com/jamad/jamad.github.io/blob/master/_posts/atcoder/practice100_77.md)
 
 ## 文字列の整形メモ
-* `for i in range(6, 15): print(f'{"geeks" :*<{i}}')` で文字埋めできたぞ　`print(f'observation: {str(observation): <36} ')`　のように　strでないタイプは文字列に変換すれば空白埋めできた
+* `for i in range(6, 15): print(f'{"geeks" :*<{i}}')` で文字埋めできたぞ　![image](https://github.com/jamad/jamad.github.io/assets/949913/c12608d4-449a-47a3-846e-390945ed73f4)
+* `print(f'observation: {str(observation): <36} ')`　のように　strでないタイプは文字列に変換すれば空白埋めできた
 
 ## 二重ループをbreakできるtipsは初めて知った　確かにbreakしなかった場合は  else:continue を通るよなあ 
 * 競プロでよく使うけど空で書けないフレーズ `https://qiita.com/do_an/items/e5a202cac4fc69fe849d`
