@@ -1,6 +1,12 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-# まとめ
+# まとめ 2nd version
+* 1stの流れからして、動くようになった最短の手順はおそらく
+* `https://spinningup.openai.com/en/latest/user/installation.html#installing-spinning-up` の手順を`ERROR: No matching distribution found for tensorflow<2.0,>=1.8.0`に遭遇するまで進める
+* [setup.py を変更](https://gist.github.com/jamad/49bfad5731e973d286438f622fdde972)　して　再び　`pip install -e .` を実行
+
+
+# まとめ 1st version
 * 結局、一番参考になった情報は　`https://stackoverflow.com/a/46739299`
   * メインマシンでも試した
   * `pip install -f https://github.com/Kojoley/atari-py/releases atari_py` してから
