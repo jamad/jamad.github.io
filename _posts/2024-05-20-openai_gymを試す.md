@@ -3,7 +3,7 @@
 # まとめ
 * 結局、一番参考になった情報は　`https://stackoverflow.com/a/46739299`
 * `https://github.com/Kojoley/atari-py`
-* invader 等が起動するようになった今、やっと`https://qiita.com/ishizakiiii/items/75bc2176a1e0b65bdd16` に注目できるようになった
+* invader 等が起動するようになった今、やっと`https://github.com/openai/gym/wiki/Pendulum-v1`とか`https://qiita.com/ishizakiiii/items/75bc2176a1e0b65bdd16` に注目できるようになった
 * `https://www.youtube.com/watch?v=gMgj4pSHLww` の動画も参考になるかもしれない (`https://gymnasium.farama.org/content/basic_usage/` という派生も今日知った)
 
 
