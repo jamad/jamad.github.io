@@ -147,5 +147,5 @@ chatgpt に聞いたが　既に、オンになっている
 * `pip install -e .`を実行したら  ` ERROR: Failed building wheel for matplotlib` に遭遇したので　`==3.1.1` を削った　（"D:\self_development_spinningup\spinningup\setup.py"）
 * 結局　![image](https://github.com/jamad/jamad.github.io/assets/949913/9381066c-dd92-4de9-ad90-2b067ac1ddcd)
 * 先に進めたので `python -m spinup.run ppo --hid "[32,32]" --env LunarLander-v2 --exp_name installtest --gamma 0.999` を実行してみた。 
-* 暫く経過して　エラーが発生　`ImportError: DLL load failed while importing MPI: The specified module could not be found.`
+* 暫く経過して　エラーが発生　`ImportError: DLL load failed while importing MPI: The specified module could not be found.` なので　`pip install mpi4py`を実行したが `Requirement already satisfied: mpi4py`
  
