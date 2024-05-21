@@ -1,5 +1,20 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+* 次の日 再びチャレンジ
+* "D:\self_development_spinningup\spinningup\setup.py" の中でバージョンを削ってみた
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/40e316ab-947c-4335-bf73-36066e5b35a3)
+* `pip install -e .`を実行したら　`error: command 'swig.exe' failed: None` に遭遇したので、`pip install swig` してみた
+* `pip install -e .`を実行したら  ` ERROR: Failed building wheel for matplotlib` に遭遇したので　`==3.1.1` を削った　（"D:\self_development_spinningup\spinningup\setup.py"）
+* 結局　![image](https://github.com/jamad/jamad.github.io/assets/949913/9381066c-dd92-4de9-ad90-2b067ac1ddcd)
+* 先に進めたので `python -m spinup.run ppo --hid "[32,32]" --env LunarLander-v2 --exp_name installtest --gamma 0.999` を実行してみた。 
+* 暫く経過して　エラーが発生　`ImportError: DLL load failed while importing MPI: The specified module could not be found.` なので　`pip install mpi4py`を実行したが `Requirement already satisfied: mpi4py`
+* `https://stackoverflow.com/a/54907810` を見つけたので　`https://www.microsoft.com/en-us/download/details.aspx?id=105289` から`msmpisdk.msi` をダウンロードした
+* `pip uninstall mpi4py` してから`msmpisdk.msi` を実行したが　今度は `ModuleNotFoundError: No module named 'mpi4py'` 認識されていないようだ。
+* `https://stackoverflow.com/a/57781714` を見つけたので　
+ 
+
+---
+
 
 * もう一度やってみる
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/3be28cf1-d452-4397-9b4a-032e0b28e2b7)
@@ -139,15 +154,3 @@ chatgpt に聞いたが　既に、オンになっている
 
 
 ---
-
-* 次の日 再びチャレンジ
-* "D:\self_development_spinningup\spinningup\setup.py" の中でバージョンを削ってみた
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/40e316ab-947c-4335-bf73-36066e5b35a3)
-* `pip install -e .`を実行したら　`error: command 'swig.exe' failed: None` に遭遇したので、`pip install swig` してみた
-* `pip install -e .`を実行したら  ` ERROR: Failed building wheel for matplotlib` に遭遇したので　`==3.1.1` を削った　（"D:\self_development_spinningup\spinningup\setup.py"）
-* 結局　![image](https://github.com/jamad/jamad.github.io/assets/949913/9381066c-dd92-4de9-ad90-2b067ac1ddcd)
-* 先に進めたので `python -m spinup.run ppo --hid "[32,32]" --env LunarLander-v2 --exp_name installtest --gamma 0.999` を実行してみた。 
-* 暫く経過して　エラーが発生　`ImportError: DLL load failed while importing MPI: The specified module could not be found.` なので　`pip install mpi4py`を実行したが `Requirement already satisfied: mpi4py`
-* `https://stackoverflow.com/a/54907810` を見つけたので　`https://www.microsoft.com/en-us/download/details.aspx?id=105289` から`msmpisdk.msi` をダウンロードした
-* `pip uninstall mpi4py` してから`msmpisdk.msi` を実行
- 
