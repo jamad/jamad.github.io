@@ -1,5 +1,7 @@
 # disk cleanup
 * [old_temp_files_remover.py を作成してみたよ](https://gist.github.com/jamad/ca5da80a168e8a47bd080b5f55dffc87)
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/b5648b67-60a0-4488-8b26-6c73ab806c4c) >> wip
+
 
 # task scheduler 
 * まず自分で作成したものを明確にできるように、作成日時を冒頭に移動させた。
