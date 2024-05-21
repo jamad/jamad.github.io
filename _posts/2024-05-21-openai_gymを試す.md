@@ -1,7 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 # まとめ
-* 結局、一番参考になった情報は　`https://stackoverflow.com/a/46739299`  >> メインマシンでも試した `pip install -f https://github.com/Kojoley/atari-py/releases atari_py`
+* 結局、一番参考になった情報は　`https://stackoverflow.com/a/46739299`  >> メインマシンでも試した `pip install -f https://github.com/Kojoley/atari-py/releases atari_py` してから　`pip install git+https://github.com/Kojoley/atari-py.git`
 * `https://github.com/Kojoley/atari-py`
 * invader 等が起動するようになった今、やっと
   * `https://github.com/openai/gym/wiki/Pendulum-v1`とか
