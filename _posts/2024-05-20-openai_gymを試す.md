@@ -37,7 +37,8 @@ ERROR: No matching distribution found for tensorflow<2.0,>=1.8.0
 
 
 # まとめ
-* openai_gym を初めて聞いたので試していくうちに、`spinningup.openai.com` に教材があることを知る。そして windows は公式にサポートされていないので、WSL でLinux環境を作ることに。
+* openai_gym と、その教材に該当する`spinningup.openai.com` を知る。
+* だが windows は公式にサポートされていないので、WSL でLinux環境を作ることに。
 * WSL をインストールしたが bash が使えない。下記のようなエラーでストップ中 
 
 ```
