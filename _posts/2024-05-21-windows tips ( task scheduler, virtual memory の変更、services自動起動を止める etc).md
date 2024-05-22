@@ -3,11 +3,14 @@
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/b5648b67-60a0-4488-8b26-6c73ab806c4c) >> 実行後にドライブが軽くなったのを確認した
 
 
-# task scheduler 
-* まず自分で作成したものを明確にできるように、作成日時を冒頭に移動させた。
+# task scheduler  
 
-|![image](https://github.com/jamad/jamad.github.io/assets/949913/1710a38c-ade5-495f-b782-029da2721d84)|
-|-|
+|メモ  |画像 |
+|-|-|
+|まず自分で作成したものを明確にできるように、作成日時を冒頭に移動させた。|![image](https://github.com/jamad/jamad.github.io/assets/949913/1710a38c-ade5-495f-b782-029da2721d84)|
+|History を確認することは重要　右のようになっていなければToggleすること|　　![image](https://github.com/jamad/jamad.github.io/assets/949913/6f66c2c6-eade-4624-a29a-034981e0d911)
+
+
 
 
 # user account に画像を入れた時の方法
