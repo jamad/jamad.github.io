@@ -32,7 +32,11 @@
 
 
 # 入力方法がスウェーデン語しかなかったので日本語を追加する
-* この後に再起動が必要だった。![image](https://github.com/jamad/jamad.github.io/assets/949913/342be92d-242f-40b9-bc02-96f570b50d99)
+
+|メモ  |画像 |
+|-|-|
+|この後に再起動が必要だった。|![image](https://github.com/jamad/jamad.github.io/assets/949913/342be92d-242f-40b9-bc02-96f570b50d99)|
+|でも未だにログイン画面がスウェーデン語になったり日本語になったり安定しない。何でだろう？|-|
 
 
 # Oculus のツールが自動的に起動しないように変更する
