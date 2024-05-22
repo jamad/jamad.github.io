@@ -3,8 +3,10 @@
 |メモ  |画像 |
 |-|-|
 |Startup app は 時計のような自作アプリと Windows security 以外全部をオフにした　|![image](https://github.com/jamad/jamad.github.io/assets/949913/34ae9fd4-15ad-4dab-bd24-ec35f27e0b2f)|
+|視覚効果は一旦全オフにしてみた　気に入らないことがあったら更新する方針で|![image](https://github.com/jamad/jamad.github.io/assets/949913/bae8b42d-68e7-4b3e-a1f5-6f9be5b71c99)|
 |不要なプログラムを削除する|-|
 |不要なファイルを削除する|-|
+
 
 
 
