@@ -3,7 +3,10 @@
 |メモ |画像 |
 |-|-|
 |とりあえず最新版をインストール|![image](https://github.com/jamad/jamad.github.io/assets/949913/77fb1e14-2b84-43df-9bde-ba7d5fe1622d)|
-|-|-|
+|plugin（blenderと同様に解凍不要 ） を　`https://www.interstice.cloud/plugin` の手順でインストール|![image](https://github.com/jamad/jamad.github.io/assets/949913/2d05fae0-6ef9-4b66-ae03-819055443ea5)|
+
+
+
 
 # controlnet reference_only を使った時のメモ
 * txt2img で prompt を通常通り設定
