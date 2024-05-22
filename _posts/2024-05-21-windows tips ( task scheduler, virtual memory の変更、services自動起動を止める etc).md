@@ -13,11 +13,11 @@
 
 
 
-# user account 
+# user account にアイコンを追加した時
 
 |メモ  |画像 |
 |-|-|
-|画像を入れた時の方法|![image](https://github.com/jamad/jamad.github.io/assets/949913/0f4e780d-c0fe-4bd9-81f1-89282834ae8f)|
+|画像の追加はここで行った|![image](https://github.com/jamad/jamad.github.io/assets/949913/0f4e780d-c0fe-4bd9-81f1-89282834ae8f)|
 |画像を選択した時に、このような凄くエラーっぽいメッセージが出たが、実際には画像が追加された。バグか？|![image](https://github.com/jamad/jamad.github.io/assets/949913/a86f030c-6a46-40f9-a32b-8c35eca4e88e)|
 |どうやらバグのようだ|　`https://windowsreport.com/microsoft-confirms-the-0x80070520-account-picture-error-in-windows-11-kb5036980/`|
 |%appdata%\Microsoft\Windows\AccountPictures に.png を入れてみた。再起動前でも一応画像は見えていた|![image](https://github.com/jamad/jamad.github.io/assets/949913/47b1e712-1603-48bc-8e91-5458514f2c04)|
@@ -25,8 +25,10 @@
 
 
 # startup にClockを入れた時の方法
-* %appdata%\Microsoft\Windows\Start Menu\Programs\Startup を開いて、そこにショートカットを作成したら　Startupに表示されるようになったぜ
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/cd8b98ac-f86e-4d62-a3e7-202bf855852e)
+
+|メモ  |画像 |
+|-|-|
+|%appdata%\Microsoft\Windows\Start Menu\Programs\Startup を開いて、そこにショートカットを作成したら　Startupに表示されるようになったぜ| ![image](https://github.com/jamad/jamad.github.io/assets/949913/cd8b98ac-f86e-4d62-a3e7-202bf855852e)|
 
 
 # 入力方法がスウェーデン語しかなかったので日本語を追加する
