@@ -2,7 +2,7 @@
 
 |メモ  |画像 |
 |-|-|
-|Startup app は Windows security 以外全部をオフにした　|![image](https://github.com/jamad/jamad.github.io/assets/949913/34ae9fd4-15ad-4dab-bd24-ec35f27e0b2f)|
+|Startup app は 時計のような自作アプリと Windows security 以外全部をオフにした　|![image](https://github.com/jamad/jamad.github.io/assets/949913/34ae9fd4-15ad-4dab-bd24-ec35f27e0b2f)|
 |不要なプログラムを削除する|-|
 |不要なファイルを削除する|-|
 
