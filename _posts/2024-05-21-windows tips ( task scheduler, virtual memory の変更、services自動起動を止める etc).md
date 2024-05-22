@@ -3,9 +3,10 @@
 |メモ  |画像 |
 |-|-|
 |Startup app は 時計のような自作アプリと Windows security 以外全部をオフにした　|![image](https://github.com/jamad/jamad.github.io/assets/949913/34ae9fd4-15ad-4dab-bd24-ec35f27e0b2f)|
-|視覚効果は一旦全オフにしてみた　気に入らないことに気づいたら個別に更新する方針で|![image](https://github.com/jamad/jamad.github.io/assets/949913/bae8b42d-68e7-4b3e-a1f5-6f9be5b71c99)|
+|視覚効果は一旦全オフにしてみた。その後、ドラッグ中のウインドウはそのままにしたいのでオンに戻した|![image](https://github.com/jamad/jamad.github.io/assets/949913/d055ce5b-2621-4efd-87df-c626c740725b)|
 |不要なプログラムを削除する|-|
 |不要なファイルを削除する|-|
+
 
 
 
