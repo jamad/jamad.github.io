@@ -4,7 +4,7 @@
 |-|-|
 |Startup app は 時計のような自作アプリと Windows security 以外全部をオフにした　|![image](https://github.com/jamad/jamad.github.io/assets/949913/34ae9fd4-15ad-4dab-bd24-ec35f27e0b2f)|
 |視覚効果は一旦全オフにしてみた。その後、幾つか戻した。<br><br> iconでなく画像をサムネイルとして表示<br>ドラッグ中のpreview<br>ブラウザのテキストのジャギーをなくす|![image](https://github.com/jamad/jamad.github.io/assets/949913/2f80780e-5348-49ee-80b3-8db801d00810)|
-|不要なプログラムを削除する|-|
+|不要なプログラムを削除する　appwiz.cpl　|![image](https://github.com/jamad/jamad.github.io/assets/949913/3eab7ed2-2954-4fec-b5c1-86c452388bf6)|
 |不要なファイルを削除する|-|
 
 
