@@ -4,10 +4,9 @@
 |起動できるゲームのリスト|　https://gist.github.com/jamad/03e13abf5e1ab122ba578020957bfdcf|
 |-|-|
 |てゆーか、[gym は　Gymnasium に移行している](https://github.com/openai/gym?tab=readme-ov-file#the-team-that-has-been-maintaining-gym-since-2021-has-moved-all-future-development-to-gymnasium-a-drop-in-replacement-for-gym-import-gymnasium-as-gym-and-gym-will-not-be-receiving-any-future-updates-please-switch-over-to-gymnasium-as-soon-as-youre-able-to-do-so-if-youd-like-to-read-more-about-the-story-behind-this-switch-please-check-out-this-blog-post)んだよな。また、そちらをやり直した方が将来的には近道なのかもしれない。|例えば　`Pooyan-v0`を試そうとして　`https://stackoverflow.com/q/63080326` に遭遇した。|
-
-
-
-* `https://qiita.com/ishizakiiii/items/5eff79b59bce74fdca0d#q-learning` は図になっているので理解の助けになりそう
+|`https://qiita.com/ishizakiiii/items/5eff79b59bce74fdca0d#q-learning` は図になっているので理解の助けになりそう|-|
+|20240522ymd `pip install gymnasium`を実行した|![image](https://github.com/jamad/jamad.github.io/assets/949913/62399012-f5eb-48b0-be53-ad7da4364a33)|
+ 
 
 # まとめ 2nd version
 * 1stの流れからして、動くようになった最短の手順はおそらく下記のようになるだろう　（Windows11, Python 3.10.9, cmdにてコマンドを実行）
