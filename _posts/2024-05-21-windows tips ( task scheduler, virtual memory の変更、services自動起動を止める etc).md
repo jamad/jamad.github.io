@@ -6,6 +6,7 @@
 |視覚効果は一旦全オフにしてみた。その後、幾つか戻した。<br><br> iconでなく画像をサムネイルとして表示<br>ドラッグ中のpreview<br>ブラウザのテキストのジャギーをなくす|![image](https://github.com/jamad/jamad.github.io/assets/949913/2f80780e-5348-49ee-80b3-8db801d00810)|
 |不要なプログラムを削除する　appwiz.cpl　|![image](https://github.com/jamad/jamad.github.io/assets/949913/3eab7ed2-2954-4fec-b5c1-86c452388bf6)|
 |不要なファイルを削除する wiztreeを使った `https://diskanalyzer.com/download`|-|
+|不要なbackgroun process をオフる|`https://www.reddit.com/r/pcmasterrace/comments/15b0p8v/does_anyone_know_why_there_are_so_many_background/` を後で読もう |
 
 
 
