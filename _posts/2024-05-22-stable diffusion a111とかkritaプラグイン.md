@@ -8,7 +8,11 @@
 |docker でAI画像生成があるのか。面白い。|![image](https://github.com/jamad/jamad.github.io/assets/949913/fb4dfe1d-1c86-49d4-8734-7bd9294f83ca)|
 |dockerは、ほぼパネルなんだな。とにかくconfigureボタンを押してローカルを選択|![image](https://github.com/jamad/jamad.github.io/assets/949913/4c365130-dda1-4e5c-9fb1-d434b5c81323)|
 |LocalなのでOKする前に、 サーバーをインストールする必要があった。かなり時間かかるぞ|![image](https://github.com/jamad/jamad.github.io/assets/949913/ac217c34-67c6-41ea-838b-2516404744e8)|
-|-|-|
+|起動したら 1,2,3,4 の順に変更したら画像が生成された (参考 `https://www.youtube.com/watch?v=AF2VyqSApjA`)   |![image](https://github.com/jamad/jamad.github.io/assets/949913/ce4c9da6-cd47-4584-9349-a9d1c8950777)|
+
+
+
+
 
 # controlnet reference_only を使った時のメモ
 * txt2img で prompt を通常通り設定
