@@ -1,8 +1,12 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-* 起動できるゲームのリスト　https://gist.github.com/jamad/03e13abf5e1ab122ba578020957bfdcf
-* てゆーか、[gym は　Gymnasium に移行している](https://github.com/openai/gym?tab=readme-ov-file#the-team-that-has-been-maintaining-gym-since-2021-has-moved-all-future-development-to-gymnasium-a-drop-in-replacement-for-gym-import-gymnasium-as-gym-and-gym-will-not-be-receiving-any-future-updates-please-switch-over-to-gymnasium-as-soon-as-youre-able-to-do-so-if-youd-like-to-read-more-about-the-story-behind-this-switch-please-check-out-this-blog-post)んだよな。また、そちらをやり直した方が将来的には近道なのかもしれない。
-  * 例えば　`Pooyan-v0`を試そうとして　`https://stackoverflow.com/q/63080326` に遭遇した。
+
+|起動できるゲームのリスト|　https://gist.github.com/jamad/03e13abf5e1ab122ba578020957bfdcf|
+|-|-|
+|てゆーか、[gym は　Gymnasium に移行している](https://github.com/openai/gym?tab=readme-ov-file#the-team-that-has-been-maintaining-gym-since-2021-has-moved-all-future-development-to-gymnasium-a-drop-in-replacement-for-gym-import-gymnasium-as-gym-and-gym-will-not-be-receiving-any-future-updates-please-switch-over-to-gymnasium-as-soon-as-youre-able-to-do-so-if-youd-like-to-read-more-about-the-story-behind-this-switch-please-check-out-this-blog-post)んだよな。また、そちらをやり直した方が将来的には近道なのかもしれない。|例えば　`Pooyan-v0`を試そうとして　`https://stackoverflow.com/q/63080326` に遭遇した。|
+
+
+
 * `https://qiita.com/ishizakiiii/items/5eff79b59bce74fdca0d#q-learning` は図になっているので理解の助けになりそう
 
 # まとめ 2nd version
