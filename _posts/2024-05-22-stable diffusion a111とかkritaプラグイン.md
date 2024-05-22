@@ -5,9 +5,7 @@
 |とりあえず最新版をインストール|![image](https://github.com/jamad/jamad.github.io/assets/949913/77fb1e14-2b84-43df-9bde-ba7d5fe1622d)|
 |plugin（blenderと同様に解凍不要 ） を　`https://www.interstice.cloud/plugin` の手順でインストールしたらKrita再起動|![image](https://github.com/jamad/jamad.github.io/assets/949913/2d05fae0-6ef9-4b66-ae03-819055443ea5)|
 |新規画像は512角を選んだ  |![image](https://github.com/jamad/jamad.github.io/assets/949913/a03694a1-eedb-4a17-9f49-5ff0431de334)|
-
-
-
+|docker でAI画像生成があるのか。面白い。|![image](https://github.com/jamad/jamad.github.io/assets/949913/fb4dfe1d-1c86-49d4-8734-7bd9294f83ca)|
 
 
 # controlnet reference_only を使った時のメモ
