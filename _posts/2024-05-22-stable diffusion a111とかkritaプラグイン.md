@@ -11,6 +11,7 @@
 |起動したら 1,2,3,4 の順に変更したら`man in a black suit, standing in a well-lit hotel lobby`　の画像が生成された (参考 `https://www.youtube.com/watch?v=AF2VyqSApjA`)   |![image](https://github.com/jamad/jamad.github.io/assets/949913/ce4c9da6-cd47-4584-9349-a9d1c8950777)|
 |次に、Vectorレイヤーを追加してから|![image](https://github.com/jamad/jamad.github.io/assets/949913/a4472a44-3f45-4e7c-99fc-bdeca9bd4806)|
 |コントロールレイヤーを追加　（前回の操作により、自動的にVectorレイヤーが参照される ）　poseに切り替えた|![image](https://github.com/jamad/jamad.github.io/assets/949913/6b24b591-b4db-42b3-8dbb-a4407b1be384)|
+|うーむ、骨を動かしていたらKritaがフリーズした。放置していたが、戻る気配がないな、、、ログは無いのか？|![image](https://github.com/jamad/jamad.github.io/assets/949913/cb52e0c8-775b-4f53-905a-7c065041266d)|
 
 
 
