@@ -12,7 +12,7 @@
 |次に、Vectorレイヤーを追加してから|![image](https://github.com/jamad/jamad.github.io/assets/949913/a4472a44-3f45-4e7c-99fc-bdeca9bd4806)|
 |コントロールレイヤーを追加　（前回の操作により、自動的にVectorレイヤーが参照される ）　poseに切り替えた|![image](https://github.com/jamad/jamad.github.io/assets/949913/6b24b591-b4db-42b3-8dbb-a4407b1be384)|
 |うーむ、骨を動かしていたらKritaがフリーズした。放置していたが、戻る気配がないな、、、ログは無いのか？|![image](https://github.com/jamad/jamad.github.io/assets/949913/cb52e0c8-775b-4f53-905a-7c065041266d)|
-|後で、見てみよう|`https://www.youtube.com/watch?v=9UyNT_F18Do`|
+|後で、見てみよう|`https://youtu.be/AF2VyqSApjA`の続きと `https://www.youtube.com/watch?v=9UyNT_F18Do`|
 
 
 
