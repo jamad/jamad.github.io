@@ -6,6 +6,9 @@
 |てゆーか、[gym は　Gymnasium に移行している](https://github.com/openai/gym?tab=readme-ov-file#the-team-that-has-been-maintaining-gym-since-2021-has-moved-all-future-development-to-gymnasium-a-drop-in-replacement-for-gym-import-gymnasium-as-gym-and-gym-will-not-be-receiving-any-future-updates-please-switch-over-to-gymnasium-as-soon-as-youre-able-to-do-so-if-youd-like-to-read-more-about-the-story-behind-this-switch-please-check-out-this-blog-post)んだよな。また、そちらをやり直した方が将来的には近道なのかもしれない。|例えば　`Pooyan-v0`を試そうとして　`https://stackoverflow.com/q/63080326` に遭遇した。|
 |`https://qiita.com/ishizakiiii/items/5eff79b59bce74fdca0d#q-learning` は図になっているので理解の助けになりそう|-|
 |20240522ymd `pip install gymnasium`を実行した|![image](https://github.com/jamad/jamad.github.io/assets/949913/62399012-f5eb-48b0-be53-ad7da4364a33)|
+|`InvertedDoublePendulum-v4`を試した時、mujoco のインストールは `pip install gymnasium[mujoco]`を指示通りに実行したが、まだエラーに遭遇した。|![image](https://github.com/jamad/jamad.github.io/assets/949913/c15e98a9-4dd8-4cfb-ad2b-514e84e9090c)|
+
+
  
 
 # まとめ 2nd version
