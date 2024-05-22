@@ -1,7 +1,9 @@
-# 20240522ymd
-* ![image](https://github.com/jamad/jamad.github.io/assets/949913/77fb1e14-2b84-43df-9bde-ba7d5fe1622d)
+# 20240522ymd  Krita のプラグインを試す。
 
-
+|メモ |画像 |
+|-|-|
+|とりあえず最新版をインストール|![image](https://github.com/jamad/jamad.github.io/assets/949913/77fb1e14-2b84-43df-9bde-ba7d5fe1622d)|
+|-|-|
 
 # controlnet reference_only を使った時のメモ
 * txt2img で prompt を通常通り設定
