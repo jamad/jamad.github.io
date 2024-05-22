@@ -1,7 +1,12 @@
 # windows を軽くするために行ったこと
-* wip
-* 不要なプログラムを削除する
-* 不要なファイルを削除する
+
+|メモ  |画像 |
+|-|-|
+|Startup app は Windows security 以外全部をオフにした　|![image](https://github.com/jamad/jamad.github.io/assets/949913/34ae9fd4-15ad-4dab-bd24-ec35f27e0b2f)|
+|不要なプログラムを削除する|-|
+|不要なファイルを削除する|-|
+
+
 
 # disk cleanup （役立たずな印象）
 
