@@ -1,4 +1,4 @@
-<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+https://gymnasium.farama.org/environments/classic_control/mountain_car/<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 
 |起動できるゲームのリスト|　https://gist.github.com/jamad/03e13abf5e1ab122ba578020957bfdcf|
@@ -7,8 +7,10 @@
 |`https://qiita.com/ishizakiiii/items/5eff79b59bce74fdca0d#q-learning` は図になっているので理解の助けになりそう|![image](https://github.com/jamad/jamad.github.io/assets/949913/31077af8-2715-4fb5-b2f8-cf9a8515ef45)|
 |20240522ymd `pip install gymnasium`を実行した|![image](https://github.com/jamad/jamad.github.io/assets/949913/62399012-f5eb-48b0-be53-ad7da4364a33)|
 |`InvertedDoublePendulum-v4`を試した時、mujoco のインストールは `pip install gymnasium[mujoco]`を指示通りに実行したが、まだエラーに遭遇した。<br><br>最終的に`pip install mujoco==2.3.7 `で解決したぞ|![image](https://github.com/jamad/jamad.github.io/assets/949913/c15e98a9-4dd8-4cfb-ad2b-514e84e9090c)|
-|自動でなく手動でゲームをプレイするには`python C:\Users\jamad\.pyenv\pyenv-win\versions\3.10.9\Lib\site-packages\gymnasium\envs\box2d\car_racing.py`をすれば良かった|![image](https://github.com/jamad/jamad.github.io/assets/949913/397a6ffb-706d-4708-b9eb-6b86ab2ed0cd)<br>![image](https://github.com/jamad/jamad.github.io/assets/949913/83f6030b-9c35-4c21-b0c9-ae958cffffc4)
-|
+|自動でなく手動でゲームをプレイするには`python C:\Users\jamad\.pyenv\pyenv-win\versions\3.10.9\Lib\site-packages\gymnasium\envs\box2d\car_racing.py`をすれば良かった|![image](https://github.com/jamad/jamad.github.io/assets/949913/397a6ffb-706d-4708-b9eb-6b86ab2ed0cd)<br>![image](https://github.com/jamad/jamad.github.io/assets/949913/83f6030b-9c35-4c21-b0c9-ae958cffffc4)|
+|gymnasium の場合は　MountainCar-v0 のドキュメントは`https://gymnasium.farama.org/environments/classic_control/mountain_car`だった|![image](https://github.com/jamad/jamad.github.io/assets/949913/7403f42e-3945-48e8-acff-4b962fe3d271)|
+
+
 
  
 
