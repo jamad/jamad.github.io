@@ -229,9 +229,17 @@
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/38e4fa82-0814-419a-b97a-33e83091025f)
 
 ---
+
 # 24 project2024Apr27_wrapping_ribbon
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/d8e4219c-eaf3-4fa3-adb4-7b1bfe63512c)
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/d16a6296-8336-4faf-a3f8-de34ee1ae8bd)
+
+# 25 project20240504ymd_ai_image\A3
+![image](https://github.com/jamad/jamad.github.io/assets/949913/903bd416-3225-4257-8dff-f50e7a05ecf8)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/8366d6d8-febf-451d-ad18-5b5a59998def)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/9d9734e5-9441-4249-bd1c-aa77bd6f1101)
+
+
 
 
 
