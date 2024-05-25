@@ -242,6 +242,7 @@
 
 
 # 26 project20240526ymd_ribbon
+* https://github.com/jamad/jamad/wiki/Illustrator-%E3%81%A7-font-%E3%82%92%E8%BF%BD%E5%8A%A0%E3%81%99%E3%82%8B
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/98bb67a5-684b-4076-897f-d3303a70d2d7)
 
 
