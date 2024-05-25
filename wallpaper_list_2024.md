@@ -228,5 +228,10 @@
 # 23 一度出力したものの、期待した結果ではなかったので、内部のエリアを32mmに大きく修正　外枠は50ｍｍのまま
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/38e4fa82-0814-419a-b97a-33e83091025f)
 
+---
+# 24 project2024Apr27_wrapping_ribbon
+![image](https://github.com/jamad/jamad.github.io/assets/949913/d8e4219c-eaf3-4fa3-adb4-7b1bfe63512c)
+![image](https://github.com/jamad/jamad.github.io/assets/949913/d16a6296-8336-4faf-a3f8-de34ee1ae8bd)
+
 
 
