@@ -241,6 +241,8 @@
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/d11a6d3e-85b6-4f08-9976-5a3ddfc40f2d)
 
 
+# 26 project20240526ymd_ribbon
+![image](https://github.com/jamad/jamad.github.io/assets/949913/98bb67a5-684b-4076-897f-d3303a70d2d7)
 
 
 
