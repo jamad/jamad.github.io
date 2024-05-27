@@ -241,7 +241,7 @@
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/d11a6d3e-85b6-4f08-9976-5a3ddfc40f2d)
 
 
-# 26 project20240526ymd_ribbon
+# 26 project20240526ymd_ribbon　タイルパターン画像の作成26 猫と私
 * [Illustrator で font を追加する](https://github.com/jamad/jamad/wiki/Illustrator-%E3%81%A7-font-%E3%82%92%E8%BF%BD%E5%8A%A0%E3%81%99%E3%82%8B)
 ![image](https://github.com/jamad/jamad.github.io/assets/949913/0ee326b5-c53a-49ca-96b0-c3e87cc27da1)
 
