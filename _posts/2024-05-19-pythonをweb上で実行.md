@@ -11,6 +11,9 @@
 ## case_20240513ymd パスワード生成コードをテストするプログラム　（今後は条件を変更していこう）
 * https://www.pythonanywhere.com/gists/56fcf34b7fb0bf1499cfe3ab17817fd2/gist_test/ipython/
 * by https://gist.github.com/jamad/56fcf34b7fb0bf1499cfe3ab17817fd2#file-gist_test
+* version2
+* https://www.pythonanywhere.com/gists/e1229d49279b8575eae96bfaf1fc5e16/gistfile1.txt/ipython/
+* by https://gist.github.com/jamad/e1229d49279b8575eae96bfaf1fc5e16  
 
 ## exmaple ( gist + pythonanywhere )
 * まずgistを作成する - https://gist.github.com/jamad/a081f2e9cc0c23dcfcadcfde704984b6
