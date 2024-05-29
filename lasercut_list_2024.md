@@ -22,7 +22,7 @@
 
 | y/m/d <img width=60/>| image |
 | ------------- | ------------- |
-| 次回のリマインダ | Dcurveルーラーの内部の丸が切り抜きされていなかったので、ヘアラインの太さに指定するようにしよう |
+| 次回のリマインダ | Dcurveルーラーの内部の丸が切り抜かれていなかったので、ヘアラインの太さに指定するようにしよう |
 | 2024/04/21 oodi ![image](https://github.com/jamad/jamad.github.io/assets/949913/ab9a854f-ae6d-4e06-b283-eaf9292e6794)| project2024Apr21_dollhouseCornerAgain |
 | 2024/04/12 iso omena<br> picture frame mini  |2020/02/20 のフレーム variation <br> [regular](https://github.com/jamad/practicePython/issues/105#issuecomment-2051900436)  <br> [large](https://github.com/jamad/practicePython/issues/105#issuecomment-2052003691)  |
 | 2024/03/11 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c17e15de-01df-4958-923b-c5e77e6de189)| ![setting_today](https://github.com/jamad/jamad.github.io/assets/949913/4b444f50-618d-4a22-8665-ed10f41c529e)|
