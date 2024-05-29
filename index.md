@@ -1,7 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-todo here !
 
+todo here !
+* [gist を活用しよう](https://gist.github.com/jamad/0ebf32c2425be4568a680feb776ae149) 
 
 * styleを適用している理由はiOSのデフォルトSafariでダークモードにならないから
 
