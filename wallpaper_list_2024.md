@@ -3,8 +3,11 @@
 [https://jamad.github.io/lasercut_list_2024.html](https://jamad.github.io/lasercut_list_2024.html)
 
 
+
+
 | 作業日 | image | file path info|
 | -------------| ------------- | ------------- |
+| 2024/05/30 tapiola princh| ![image](https://github.com/jamad/jamad.github.io/assets/949913/92280e78-141f-4f31-8f4f-a746bf76d772)| project_lasercutter\project20240526ymd_ribbon | 
 | 2024/05/30 tapiola princh| ![image](https://github.com/jamad/jamad.github.io/assets/949913/f1269232-3cdd-4360-8071-b467ae30f042)| project_lasercutter\project20240526ymd_ribbon | 
 | 2024/05/30 tapiola princh| ![image](https://github.com/jamad/jamad.github.io/assets/949913/77739a85-60a5-489f-a04e-26e2d774183f)| project_lasercutter\project20240526ymd_ribbon | 
 | 2024/05/09 tapiola princh| ![image](https://github.com/jamad/jamad.github.io/assets/949913/7e7c449b-df50-4f36-8467-e783cc216293)| project_lasercutter\project20240504ymd_ai_image | 
