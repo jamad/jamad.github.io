@@ -4,7 +4,7 @@
 # pythonanywhereによりweb上で実行する
 
 ## `.......\AppData\Roaming\` を置換するプログラムを作ろう
-* wip
+* [作ったぞ](https://gist.github.com/jamad/347b45f6a77288afa1b058991d0fc477)
 
 ## テキストの　{}　を () に置換するプログラム
 * (てゆーか、前に作ったけど見つからなかったやつはcodepenだったか　https://codepen.io/jamad/pen/NWmwpVm)
