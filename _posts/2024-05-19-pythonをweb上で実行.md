@@ -13,7 +13,7 @@
 #### [case_20240513ymd パスワード生成コードをテストするプログラム　（今後は条件を変更していこう）](https://gist.github.com/jamad/56fcf34b7fb0bf1499cfe3ab17817fd2#file-gist_test)
  * https://www.pythonanywhere.com/gists/56fcf34b7fb0bf1499cfe3ab17817fd2/gist_test/ipython/
 * version2
- * https://www.pythonanywhere.com/gists/e1229d49279b8575eae96bfaf1fc5e16/gistfile1.txt/ipython/
+ * 
 
 
 ## exmaple ( gist + pythonanywhere )
