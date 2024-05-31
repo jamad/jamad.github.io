@@ -3,7 +3,7 @@
 
 # pythonanywhereによりweb上で実行する
 
-## `.......\AppData\Roaming\` を置換するプログラムを作ろう
+## `.......\AppData\Roaming\` を`%appdata%`に置換するプログラムを作ろう
 * [作ったぞ](https://gist.github.com/jamad/347b45f6a77288afa1b058991d0fc477)
 
 ## テキストの　{}　を () に置換するプログラム
