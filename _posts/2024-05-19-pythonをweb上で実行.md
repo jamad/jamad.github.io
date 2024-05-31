@@ -2,6 +2,7 @@
 
 
 # pythonanywhereによりweb上で実行する
+* https://www.pythonanywhere.com/gists/ でgist のURLを入力すればOK　gistにコメントを追加しても問題無いことを確認済。素晴らしい。
 
 #### [`.......\AppData\Roaming\` を`%appdata%`に置換するプログラム](https://gist.github.com/jamad/347b45f6a77288afa1b058991d0fc477)
 
