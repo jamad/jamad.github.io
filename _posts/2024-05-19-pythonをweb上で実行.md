@@ -9,7 +9,7 @@
 #### [テキストの　{}　を () に置換するプログラム](https://gist.github.com/jamad/40ff1134fdd03cb06049f1a733bff436)
 * (てゆーか、前に作ったけど見つけられなかったやつはcodepenだったか　https://codepen.io/jamad/pen/NWmwpVm)
 
-#### [case_20240513ymd パスワード生成コードをテストするプログラム　version2](https://gist.github.com/jamad/e1229d49279b8575eae96bfaf1fc5e16  )
+#### [case_20240513ymd パスワード生成コードをテストするプログラム　version2](https://gist.github.com/jamad/e1229d49279b8575eae96bfaf1fc5e16  )　使っていないが生成例：`gG3_2!hdHD6g%a!SX7gT`
 #### [case_20240513ymd パスワード生成コードをテストするプログラム　（今後は条件を変更していこう）](https://gist.github.com/jamad/56fcf34b7fb0bf1499cfe3ab17817fd2#file-gist_test)
  * https://www.pythonanywhere.com/gists/56fcf34b7fb0bf1499cfe3ab17817fd2/gist_test/ipython/
 * version2
