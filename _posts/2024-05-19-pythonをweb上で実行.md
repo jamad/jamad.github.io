@@ -2,7 +2,7 @@
 
 
 # pythonanywhereによりweb上で実行する
-* https://www.pythonanywhere.com/gists/ でgist のURLを入力すればOK　gistにコメントを追加しても問題無いことを確認済。素晴らしい。
+* https://www.pythonanywhere.com/gists/ で.py を記述したgist のURLを入力すればOK　[例](https://gist.github.com/jamad/a081f2e9cc0c23dcfcadcfde704984b6)　gistにコメントを追加しても問題無いことを確認済。素晴らしい。
 
 #### [`.......\AppData\Roaming\` を`%appdata%`に置換するプログラム](https://gist.github.com/jamad/347b45f6a77288afa1b058991d0fc477)
 
@@ -13,8 +13,6 @@
 #### 20240513ymd　[パスワード生成コードをテストするプログラム　（今後は条件を変更していこう）](https://gist.github.com/jamad/56fcf34b7fb0bf1499cfe3ab17817fd2#file-gist_test)
 
 ## exmaple ( gist + pythonanywhere )
-* まずgistを作成する - https://gist.github.com/jamad/a081f2e9cc0c23dcfcadcfde704984b6
-* そのgistからconsole　を作成する - https://www.pythonanywhere.com/gists/
 * pythonanywhere　で実行できる - https://www.pythonanywhere.com/gists/a081f2e9cc0c23dcfcadcfde704984b6/test%20py%20code/ipython3/
 
 |![image](https://github.com/jamad/jamad.github.io/assets/949913/af9a3e8e-6422-491b-b66a-260e44cd4e75)|
