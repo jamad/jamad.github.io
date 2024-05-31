@@ -9,12 +9,12 @@
 #### [テキストの　{}　を () に置換するプログラム](https://gist.github.com/jamad/40ff1134fdd03cb06049f1a733bff436)
 * (てゆーか、前に作ったけど見つけられなかったやつはcodepenだったか　https://codepen.io/jamad/pen/NWmwpVm)
 
-## case_20240513ymd パスワード生成コードをテストするプログラム　（今後は条件を変更していこう）
-* https://www.pythonanywhere.com/gists/56fcf34b7fb0bf1499cfe3ab17817fd2/gist_test/ipython/
-* by https://gist.github.com/jamad/56fcf34b7fb0bf1499cfe3ab17817fd2#file-gist_test
+#### [case_20240513ymd パスワード生成コードをテストするプログラム　version2](https://gist.github.com/jamad/e1229d49279b8575eae96bfaf1fc5e16  )
+#### [case_20240513ymd パスワード生成コードをテストするプログラム　（今後は条件を変更していこう）](https://gist.github.com/jamad/56fcf34b7fb0bf1499cfe3ab17817fd2#file-gist_test)
+ * https://www.pythonanywhere.com/gists/56fcf34b7fb0bf1499cfe3ab17817fd2/gist_test/ipython/
 * version2
-* https://www.pythonanywhere.com/gists/e1229d49279b8575eae96bfaf1fc5e16/gistfile1.txt/ipython/
-* by https://gist.github.com/jamad/e1229d49279b8575eae96bfaf1fc5e16  
+ * https://www.pythonanywhere.com/gists/e1229d49279b8575eae96bfaf1fc5e16/gistfile1.txt/ipython/
+
 
 ## exmaple ( gist + pythonanywhere )
 * まずgistを作成する - https://gist.github.com/jamad/a081f2e9cc0c23dcfcadcfde704984b6
