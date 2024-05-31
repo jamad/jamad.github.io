@@ -6,10 +6,8 @@
 
 #### [`.......\AppData\Roaming\` を`%appdata%`に置換するプログラム](https://gist.github.com/jamad/347b45f6a77288afa1b058991d0fc477)
 
-## テキストの　{}　を () に置換するプログラム
-* (てゆーか、前に作ったけど見つからなかったやつはcodepenだったか　https://codepen.io/jamad/pen/NWmwpVm)
-* https://www.pythonanywhere.com/gists/40ff1134fdd03cb06049f1a733bff436/replace_%7B%7D_to_()/ipython/
-* by https://gist.github.com/jamad/40ff1134fdd03cb06049f1a733bff436
+#### [テキストの　{}　を () に置換するプログラム](https://gist.github.com/jamad/40ff1134fdd03cb06049f1a733bff436)
+* (てゆーか、前に作ったけど見つけられなかったやつはcodepenだったか　https://codepen.io/jamad/pen/NWmwpVm)
 
 ## case_20240513ymd パスワード生成コードをテストするプログラム　（今後は条件を変更していこう）
 * https://www.pythonanywhere.com/gists/56fcf34b7fb0bf1499cfe3ab17817fd2/gist_test/ipython/
