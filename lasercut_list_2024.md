@@ -7,7 +7,7 @@
 * https://github.com/jamad/practicePython/issues/105#issuecomment-1866439013 
 
 
-## note :　 \project_lasercutter　de検索するが吉
+## note :　 \project_lasercutter　で検索するが吉
 
 
 
