@@ -22,7 +22,7 @@
 
 | y/m/d <img width=60/>| image |
 | ------------- | ------------- |
-| 2024/06/09　project20240609ymd_kerros2024| ![image](https://github.com/jamad/jamad.github.io/assets/949913/5303856d-67fd-4380-a5af-82c1532e9686)|
+| 2024/06/09　[project20240609ymd_kerros2024](https://github.com/jamad/practicePython/issues/105#issuecomment-2089064566)  | ![image](https://github.com/jamad/jamad.github.io/assets/949913/5303856d-67fd-4380-a5af-82c1532e9686)|
 | 2024/06/01 ![image](https://github.com/jamad/jamad.github.io/assets/949913/05621227-8476-48e1-9515-52fef0711367)| table_half_nets in `project20240531ymd_desk_half` 3mm板用データ 脚の長さは63mm |
 | 次回のリマインダ | Dcurveルーラーの内部の丸が切り抜かれていなかったので、ヘアラインの太さに指定するようにしよう |
 | 2024/04/21 oodi ![image](https://github.com/jamad/jamad.github.io/assets/949913/ab9a854f-ae6d-4e06-b283-eaf9292e6794)| project2024Apr21_dollhouseCornerAgain |
