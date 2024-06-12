@@ -11,26 +11,15 @@
 
     <!-- 画像を選択するフォーム -->
     <input type="file" accept="image/*" onchange="handleFileSelect(event)" lang="ja" aria-label="ファイルを選択">
-    <div id="imageContainer" style="border: 2px dashed #ccc; width: 300px; height: 300px;">
-        <img id="uploadedImage" style="display: none;">
-    </div>
+
+    <div style="border: 2px dashed #ccc; width: 120px; height: 120px;"><img style="display: none;"> </div>
+
     <canvas id="tileCanvas" style="border: 2px solid #000;"></canvas>
 
     <script>
         const canvas = document.getElementById('tileCanvas');
         const context = canvas.getContext('2d');
 
-        // 画像をタイリングして描画する関数
-        function drawTiledImage(img) {
-            const tileSize = img.width;
-            canvas.width = img.width * 3;
-            canvas.height = img.height * 3;
-            for (let i = 0; i < 3; i++) {
-                for (let j = 0; j < 3; j++) {
-                    context.drawImage(img, 0, 0, img.width, img.height, j * tileSize, i * tileSize, tileSize, tileSize);
-                }
-            }
-        }
 
         // ファイル選択用フォームのイベントハンドラ
         function handleFileSelect(event) {
@@ -40,14 +29,32 @@
             // 画像の読み込みが完了した時の処理
             reader.onload = function (e) {
                 const img = new Image();
+                // 画像の読み込みが完了した時の処理
                 img.onload = function () {
+                    // キャンバスをクリア
                     context.clearRect(0, 0, canvas.width, canvas.height);
-                    drawTiledImage(img); // 画像をタイリングして描画
+
+                    // 画像をタイリングして描画
+                    // キャンバスの幅と高さを元の画像の3倍に設定
+                    canvas.width = img.width * 3;
+                    canvas.height = img.height * 3;
+                    // 3x3のタイルを描画
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = 0; j < 3; j++) {
+                            context.drawImage(
+                                img,
+                                0, 0, img.width, img.height, // コピー元画像のrect
+                                j * img.width, i * img.height, img.width, img.height //　コピー先画像のrect　描画位置、 描画サイズ（タイルサイズ）
+                            );
+                        }
+                    }
                 }
+                // 画像のソースを設定
                 img.src = e.target.result;
             }
 
             if (file) {
+                // ファイルをデータURLとして読み込む
                 reader.readAsDataURL(file);
             }
         }
