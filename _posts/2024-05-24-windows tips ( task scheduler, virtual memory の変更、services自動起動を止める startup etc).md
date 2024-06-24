@@ -1,5 +1,6 @@
 # startup folder を開く方法
 * cmd+R してから　`shell:startup` を実行すれば　フォルダが開く
+* ![image](https://github.com/jamad/jamad.github.io/assets/949913/425ef815-d7ab-4cd0-88a1-16537034db50)
 
 # windows を軽くするために行ったこと
 
