@@ -1,6 +1,8 @@
 # startup folder を開く方法
 * cmd+R してから　`shell:startup` を実行すれば　フォルダが開く
 * ![image](https://github.com/jamad/jamad.github.io/assets/949913/425ef815-d7ab-4cd0-88a1-16537034db50)
+* jamad_clock.pyw なんて直に入れたもんね。6KBだからいいだろ ![image](https://github.com/jamad/jamad.github.io/assets/949913/da9b1772-d500-454e-94f2-231467113c59) 
+
 
 # windows を軽くするために行ったこと
 
