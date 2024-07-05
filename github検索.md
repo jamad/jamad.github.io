@@ -1,4 +1,4 @@
-# [github検索ページ](https://jamad.github.io/github%E6%A4%9C%E7%B4%A2)
+# [github検索ページ](https://jamad.github.io/github%E6%A4%9C%E7%B4%A2) そして　[ソースの.md](https://github.com/jamad/jamad.github.io/blob/master/github%E6%A4%9C%E7%B4%A2.md)
 
 # github もしくは gistでの文字列検索ボタン  数行のコードで機能を作れたの素晴らしい！　そして入力フィールドも共通でいいんだ！
 * [テストしたcodepen](https://codepen.io/jamad/pen/GRbKQxm)
