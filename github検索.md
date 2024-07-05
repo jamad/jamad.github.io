@@ -4,10 +4,11 @@
 * [テストしたcodepen](https://codepen.io/jamad/pen/GRbKQxm)
 
 
+
+
 `コードここから`
 
-<input id="iT1" placeholder="gist用検索文字列を入力">
-<button onclick="window.open('https://github.com/search?q=user%3Ajamad+'+encodeURIComponent(iT1.value),'_blank')">user:jamad でgithubを検索</button>
+
 
 `コードここまで`
 
@@ -16,11 +17,13 @@
 
 `コードここから`
 
-<button onclick="window.open('https://gist.github.com/search?q=user%3Ajamad+'+encodeURIComponent(iT1.value),'_blank')">user:jamad でgistを検索</button>
+
 
 `コードここまで`
 
-|-|-|
-|-|-|
-|-|-|
-|-|-|
+
+
+|<input id="iT1" placeholder="検索用文字列を入力">|
+|-|
+|<button onclick="window.open('https://github.com/search?q=user%3Ajamad+'+encodeURIComponent(iT1.value),'_blank')">user:jamad でgithubを検索</button>|
+|<button onclick="window.open('https://gist.github.com/search?q=user%3Ajamad+'+encodeURIComponent(iT1.value),'_blank')">user:jamad でgistを検索</button>|
