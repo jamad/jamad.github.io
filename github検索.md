@@ -1,27 +1,7 @@
 # [github検索ページ](https://jamad.github.io/github%E6%A4%9C%E7%B4%A2)
 
-# github内文字列検索
+# github もしくは gistでの文字列検索ボタン  数行のコードで機能を作れたの素晴らしい！　そして入力フィールドも共通でいいんだ！
 * [テストしたcodepen](https://codepen.io/jamad/pen/GRbKQxm)
-
-
-
-
-`コードここから`
-
-
-
-`コードここまで`
-
-
-# gistでの検索ボタン  二行のコードで機能を作れたの素晴らしい
-
-`コードここから`
-
-
-
-`コードここまで`
-
-
 
 |<input id="iT1" placeholder="検索用文字列を入力">|
 |-|
