@@ -14,3 +14,8 @@
 </script>
 
 `コードここまで`
+
+
+
+<input id="iT2" placeholder="検索文字列を入力">
+<button onclick="window.open('https://github.com/search?q=user%3Ajamad+'+encodeURIComponent(iT2.value),'_blank')">user:jamad でgithubを検索</button>
