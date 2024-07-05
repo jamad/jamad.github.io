@@ -1,9 +1,10 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 
-# github検索のテスト
+# github検索のテスト  https://codepen.io/jamad/pen/GRbKQxm 
 
 `コードここから`
+
 <input type="text" id="inputText" placeholder="検索文字列を入力">
 <button onclick="openURL()">user:jamad でgithubを検索</button>
 <script>
@@ -13,7 +14,6 @@
     window.open(url, '_blank');//新規ページとして開く
   }
 </script>
-
 
 `コードここまで`
 
