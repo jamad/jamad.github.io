@@ -1,6 +1,23 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css" />
 
 
+# github検索のテスト
+
+`コードここから`
+<input type="text" id="inputText" placeholder="検索文字列を入力">
+<button onclick="openURL()">user:jamad でgithubを検索</button>
+<script>
+  function openURL() {
+    const inputText = document.getElementById('inputText').value;
+    const url = 'https://github.com/search?q=user%3Ajamad+' + encodeURIComponent(inputText);
+    window.open(url, '_blank');//新規ページとして開く
+  }
+</script>
+
+
+`コードここまで`
+
+
 # https://codepen.io/jamad/pen/MWRgvqZ をここに表示してみる　
 * expected result ![image](https://github.com/jamad/jamad.github.io/assets/949913/e23d4041-14a8-40be-952f-253c5128a7ea)
 * css は `<style>`(body部分は全体に影響するので外した) , javascript は`<script>` に入れるように記述した。 ```html で　コード全体をマークしたら、ソースコード表示になってしまったので、外した。`コードここから` と  `コードここまで` で可視化してみた。
