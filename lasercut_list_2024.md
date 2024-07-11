@@ -21,8 +21,7 @@
 
 | y/m/d <img width=60/>| image |
 | ------------- | ------------- |
-| 2024/07/11　![image](https://github.com/jamad/jamad.github.io/assets/949913/59af4b32-ad86-4824-9dda-3e00f21176e0)　　![image](https://github.com/jamad/jamad.github.io/assets/949913/4069cb82-f91d-4957-8f27-7b34675de0a1)
-　| 椅子の改良作業中　脚を板二枚分高く、そして厚みだけ１ｍｍ増やした　project_lasercutter\project20240618_chair2024\chair_net_v2024.skp　 　![image](https://github.com/jamad/jamad.github.io/assets/949913/c5c4d2fb-2d1f-478b-8b73-632e9cb9021b)
+| 2024/07/11　![image](https://github.com/jamad/jamad.github.io/assets/949913/59af4b32-ad86-4824-9dda-3e00f21176e0)　　![image](https://github.com/jamad/jamad.github.io/assets/949913/4069cb82-f91d-4957-8f27-7b34675de0a1)　| 椅子の改良作業中　脚を6mm高く、そして厚みだけ１ｍｍ増やした　project_lasercutter\project20240618_chair2024\chair_net_v2024.skp　 　![image](https://github.com/jamad/jamad.github.io/assets/949913/c5c4d2fb-2d1f-478b-8b73-632e9cb9021b)
 　 |
 | 2024/06/09　[project20240609ymd_kerros2024](https://github.com/jamad/practicePython/issues/105#issuecomment-2156452192)  | ![image](https://github.com/jamad/jamad.github.io/assets/949913/5303856d-67fd-4380-a5af-82c1532e9686)  <br><br>and plates for embroidery<br> ![image](https://github.com/jamad/jamad.github.io/assets/949913/75a9ee5d-81fd-43a0-a88a-2e0a41bdf0ba)|
 | 2024/06/01 ![image](https://github.com/jamad/jamad.github.io/assets/949913/05621227-8476-48e1-9515-52fef0711367)| table_half_nets in `project20240531ymd_desk_half` 3mm板用データ 脚の長さは63mm |
