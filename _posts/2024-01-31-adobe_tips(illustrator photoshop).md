@@ -5,9 +5,9 @@
 
 # tips2023_02_24_001  (illustrator ) 輪郭でmaskingされた画像を作成する　　　クリッピングマスクの作成
 
-|Q|![image](https://github.com/user-attachments/assets/c23ed2b1-9e16-4787-a700-db2b9c7580af)|
+|Q|A|
 |-|-|
-|A: オリジナルと、パスのオブジェクトの両方を選択してから    image trace  > make|![image](https://github.com/user-attachments/assets/33094f70-b291-4d85-9c2d-3a15df546e64)|
+| ![image](https://github.com/user-attachments/assets/c23ed2b1-9e16-4787-a700-db2b9c7580af)| オリジナルと、パスのオブジェクトの両方を選択してから    image trace  > make ![image](https://github.com/user-attachments/assets/33094f70-b291-4d85-9c2d-3a15df546e64)|
 
 
 # PNG の配置
