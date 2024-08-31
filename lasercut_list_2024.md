@@ -119,7 +119,7 @@
 | 2018/06/17 |![today'sWorkFinal20180617](https://github.com/jamad/jamad.github.io/assets/949913/30883eb0-7642-4b80-8c90-95682cb95fd1)|
 | 2018/06/03 ![image](https://github.com/jamad/jamad.github.io/assets/949913/fe9776af-668d-43cc-beb0-967103e12d87)| sideTable|
 | 2018/05/18 ![image](https://github.com/jamad/jamad.github.io/assets/949913/c386ce30-1e23-4d16-a845-5333786c9405) | puppetTheatre | 
-| 2018/03/04 | ![GoodSetting](https://github.com/jamad/jamad.github.io/assets/949913/7728bf89-f31b-4ae6-bc0e-5724ada1c790)|
+| [2018/03/04](https://github.com/jamad/project_lasercutter/tree/master/project2018Mar4_Hexagon_Nameplate_After) |   ![GoodSetting](https://github.com/jamad/jamad.github.io/assets/949913/7728bf89-f31b-4ae6-bc0e-5724ada1c790)|
 | 2018/02/11 | ![bestRasterSetting](https://github.com/jamad/jamad.github.io/assets/949913/39b2cfea-eca4-488c-977d-18cc0f4fb7ec)|
 | 2018/02/11 ![image](https://github.com/jamad/jamad.github.io/assets/949913/eb9ca22d-5f31-4262-b9ce-4ab1d7af65aa)|![5mmAnd3mmCut](https://github.com/jamad/jamad.github.io/assets/949913/390609f8-f267-454c-9831-9f88f85cb0cc)|
 | 2018/01/14 | ![epilogSetting](https://github.com/jamad/jamad.github.io/assets/949913/6ad25581-4a80-437f-9293-e6170408380f)|
