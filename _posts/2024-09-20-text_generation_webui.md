@@ -1,5 +1,10 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+
+* renamed from 2024-02-08-text_generation_webui.md
+* ooba is not for me, deleted it for cdrive space 
+
+
 # 第一日目 
   * `https://github.com/oobabooga/text-generation-webui` からzipをダウンロード、解凍して、start_windows.batを起動。その後、GPUを選択し、Cudaはスキップして、サーバーに接続するまでを済ませた。
   * ![image](https://github.com/jamad/jamad.github.io/assets/949913/d02b4db1-6054-4da2-8a2d-7fb7581e6ae5)
