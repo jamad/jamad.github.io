@@ -1,6 +1,8 @@
 # krita の情報は `krita に関するメモ` に移動させよう
 
-C:\Users\j\AppData\Roaming\krita\ai_diffusion\ がデフォルトだったので、変えた。Cドライブの容量が減りすぎるから。
+* C:\Users\j\AppData\Roaming\krita\ai_diffusion\ がデフォルトだったので、変えた。Cドライブの容量が減りすぎるから。
+* vivox でkritaによる生成AIを実行しようと思ったが、そもそも comfiUI がインストールできない感じだ。RAMが８GBは少なすぎるな。今の時代。
+
 
 
 # 20240522ymd  Krita のプラグインを試す。
