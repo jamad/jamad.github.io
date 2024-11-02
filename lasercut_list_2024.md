@@ -2,6 +2,9 @@
 
 
 * [wallpaper_list_2024](https://jamad.github.io/wallpaper_list_2024.html)
+* https://jamad.github.io/devlog/devlog.html
+* https://github.com/jamad/project_lasercutter
+* https://github.com/users/jamad/projects/4/views/1?pane=issue&itemId=40867285
 
 ## 下記の情報をこちらにまとめよう
 * https://github.com/jamad/practicePython/issues/105#issuecomment-1866439013 
