@@ -5,6 +5,7 @@
 * https://jamad.github.io/devlog/devlog.html
 * https://github.com/jamad/project_lasercutter
 * https://github.com/users/jamad/projects/4/views/1?pane=issue&itemId=40867285
+* https://gist.github.com/jamad/e9740e2ea574c7c01a0ee1e35d7d046d
 
 ## 下記の情報をこちらにまとめよう
 * https://github.com/jamad/practicePython/issues/105#issuecomment-1866439013 
