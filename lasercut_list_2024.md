@@ -5,6 +5,7 @@
 * 入っていた予約をキャンセルした
 
 # たくさんあるページをまとめないと
+* [markdown_files/lasercut関連.md](https://github.com/jamad/markdown_devlog/blob/main/markdown_files/lasercut%E9%96%A2%E9%80%A3.md)
 * [レーザーカッター作業でのメモ](https://gist.github.com/jamad/e9740e2ea574c7c01a0ee1e35d7d046d)
 * https://github.com/chunkocafeengel/lasercutter
 * [レーザーカッター lasercut 総合/まとめ](https://github.com/users/jamad/projects/4/views/1?pane=issue&itemId=40867285)
