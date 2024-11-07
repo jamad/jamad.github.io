@@ -5,6 +5,7 @@
 * 入っていた予約をキャンセルした
 
 # たくさんあるページをまとめないと
+* https://github.com/chunkocafeengel/lasercutter
 * [レーザーカッター lasercut 総合/まとめ](https://github.com/users/jamad/projects/4/views/1?pane=issue&itemId=40867285)
 * [wallpaper_list_2024](https://jamad.github.io/wallpaper_list_2024.html)
 * https://jamad.github.io/devlog/devlog.html
