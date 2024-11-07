@@ -1,7 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 # OOdiの予約方法 junichi の場合 ymd20241107現在
-* https://tilavaraus.hel.fi/en/reservations に Nordeaのアカウントを使ってログイン
+* https://tilavaraus.hel.fi/en/reservations に Nordeaのアカウントを使ってログイン  by  `suomi.fi identification`
 * 入っていた予約をキャンセルした
 
 # たくさんあるページをまとめないと
