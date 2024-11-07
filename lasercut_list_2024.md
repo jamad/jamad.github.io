@@ -2,7 +2,7 @@
 
 # OOdiの予約方法 junichi の場合 ymd20241107現在
 * https://tilavaraus.hel.fi/en/reservations に Nordeaのアカウントを使ってログイン  by  `suomi.fi identification`
-* lasercut のページは　https://tilavaraus.hel.fi/en/reservation-unit/634
+* [Laser cutter (independent use)](https://tilavaraus.hel.fi/en/reservation-unit/634)　
 * 入っていた予約をキャンセルした
 
 # たくさんあるページをまとめないと
