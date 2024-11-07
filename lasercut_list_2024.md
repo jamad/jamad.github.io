@@ -1,6 +1,10 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+# OOdiの予約方法 ymd20241107現在
+* https://tilavaraus.hel.fi/en/reservations に Nordeaのアカウントを使ってログイン
+* 入っていた予約をキャンセルした
 
+# その他のメモ
 * [wallpaper_list_2024](https://jamad.github.io/wallpaper_list_2024.html)
 * https://jamad.github.io/devlog/devlog.html
 * https://github.com/jamad/project_lasercutter
