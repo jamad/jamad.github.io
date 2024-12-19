@@ -4,7 +4,8 @@
 * https://varaamo.espoo.fi/my-reservations に googleのアカウントを使ってログイン  
 
 # OOdiの予約方法 junichi の場合 ymd20241107現在
-* https://tilavaraus.hel.fi/en/reservation-unit/634 がレーザーカッターのリンク　![image](https://github.com/user-attachments/assets/e39b5114-9cf0-4a4e-8533-580fcb18d67f)
+* https://tilavaraus.hel.fi/en/reservation-unit/634 がレーザーカッターのリンク
+  * ![image](https://github.com/user-attachments/assets/e39b5114-9cf0-4a4e-8533-580fcb18d67f)
 * https://tilavaraus.hel.fi/en/reservations に Nordeaのアカウントを使ってログイン  by  `suomi.fi identification`
 
 # たくさんあるページをまとめないと
