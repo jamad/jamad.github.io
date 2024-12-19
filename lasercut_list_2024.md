@@ -1,7 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
 # isoOmenaの予約方法 junichi の場合 ymd20241219現在
-* https://varaamo.espoo.fi/my-reservations に googleのアカウントを使ってログイン  
+* https://varaamo.espoo.fi/my-reservations に googleのアカウントを使ってログイン  m720q だとgoogleのボタンクリックだけでOK
 
 # OOdiの予約方法 junichi の場合 ymd20241107現在
 * https://tilavaraus.hel.fi/en/reservation-unit/634 がレーザーカッターのリンク
