@@ -1,5 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
+# ここは https://jamad.github.io/lasercut_list_2024 でオープンな情報
+
 
 ## 下記の情報をこちらにまとめよう
 * https://github.com/jamad/practicePython/issues/105#issuecomment-1866439013 
