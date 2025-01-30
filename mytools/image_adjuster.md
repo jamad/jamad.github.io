@@ -1,7 +1,7 @@
 <link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
 
 
-これは古いやつだった。 
+これは古いやつだった。 [こっちへ](https://gist.github.com/jamad/93835b686492d1423f5e9aeb8b432c86)
 
 # image adjuster
 * example ![image](https://github.com/jamad/jamad.github.io/assets/949913/065c1238-c85c-4e89-92f6-6c20aada056b)
