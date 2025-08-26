@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>画像ズーム分割 + Crop + タイル表示</title>
+<style>
+body { font-family: sans-serif; background:#111; color:#eee; padding:20px; }
+#controls { margin-bottom:12px; }
+#g { display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:500px; margin-top:12px; }
+button { width:100%; border:0; border-radius:12px; background-size:cover; background-position:center; cursor:pointer; }
+#undo { margin-left:8px; padding:6px 12px; border-radius:8px; border:0; cursor:pointer; width:auto; aspect-ratio:auto; background:#444; color:#fff; }
+#cropResult { margin-top:20px; display:grid; grid-template-columns: repeat(2, 1fr); gap:4px; }
+#cropResult h2 { grid-column: 1 / span 2; }
+#cropResult img { width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<h1>クリックでズーム分割 + Crop + タイル表示</h1>
+<div id="controls">
+  <input id="f" type="file" accept="image/*">
+  <button id="undo" disabled>Undo</button>
+</div>
+<div id="g"></div>
+<canvas id="c" style="display:none"></canvas>
+<div id="cropResult"><h2>Crop結果 4タイル</h2></div>
+<script>
+let ctx = c.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+let originalImg = null;
+let cropRegion = null;
+let cropHistory = [];
+let zoomHistory = [];
+
+function splitAndShow(img){
+  c.width=img.width; c.height=img.height;
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.drawImage(img,0,0);
+
+  let hw=img.width/2, hh=img.height/2;
+  let g=document.getElementById('g');
+  g.innerHTML='';
+  const quads=[['lu',0,0],['ru',hw,0],['ld',0,hh],['rd',hw,hh]];
+
+  quads.forEach(([quad,x,y])=>{
+    let cc=document.createElement('canvas'); cc.width=hw; cc.height=hh;
+    let cxCtx=cc.getContext('2d'); cxCtx.imageSmoothingEnabled=false;
+    cxCtx.drawImage(c,x,y,hw,hh,0,0,hw,hh);
+
+    let b=document.createElement('button');
+    b.style.backgroundImage=`url(${cc.toDataURL()})`;
+    b.style.aspectRatio=hw+'/'+hh;
+    b.onclick=()=>{
+      if(hw<=1||hh<=1){ alert('限界まで大きくしました'); return; }
+      cropHistory.push({...cropRegion});
+      zoomHistory.push(img);
+      switch(quad){
+        case 'lu': cropRegion={x:cropRegion.x, y:cropRegion.y, w:hw, h:hh}; break;
+        case 'ru': cropRegion={x:cropRegion.x+hw, y:cropRegion.y, w:hw, h:hh}; break;
+        case 'ld': cropRegion={x:cropRegion.x, y:cropRegion.y+hh, w:hw, h:hh}; break;
+        case 'rd': cropRegion={x:cropRegion.x+hw, y:cropRegion.y+hh, w:hw, h:hh}; break;
+      }
+      let {cx,cy}=getCropCenter();
+      showCropTiled(cx,cy);
+
+      let nextImg=new Image();
+      nextImg.onload=()=>splitAndShow(nextImg);
+      nextImg.src=cc.toDataURL();
+      document.getElementById('undo').disabled=false;
+    };
+    g.appendChild(b);
+  });
+}
+
+function getCropCenter(){ return {cx:cropRegion.x+cropRegion.w/2, cy:cropRegion.y+cropRegion.h/2}; }
+
+function showCropTiled(cx,cy){
+  let cropsDiv=document.getElementById('cropResult');
+  cropsDiv.innerHTML='<h2>Crop結果 4タイル</h2>';
+
+  let cw=originalImg.width-cx; let ch=originalImg.height-cy;
+  if(cw<=0||ch<=0) return;
+
+  let canvas=document.createElement('canvas'); canvas.width=cw; canvas.height=ch;
+  let ctx2=canvas.getContext('2d'); ctx2.imageSmoothingEnabled=false;
+  ctx2.drawImage(originalImg,cx,cy,cw,ch,0,0,cw,ch);
+
+  for(let i=0;i<4;i++){
+    let imgEl=new Image(); imgEl.src=canvas.toDataURL();
+    cropsDiv.appendChild(imgEl);
+  }
+}
+
+document.getElementById('undo').onclick=()=>{
+  if(cropHistory.length){
+    cropRegion=cropHistory.pop();
+    let img=zoomHistory.pop();
+    let {cx,cy}=getCropCenter();
+    showCropTiled(cx,cy);
+    splitAndShow(img);
+  }
+  if(cropHistory.length===0) document.getElementById('undo').disabled=true;
+};
+
+f.onchange=e=>{
+  let file=f.files[0]; if(!file) return;
+  let img=new Image();
+  img.onload=()=>{
+    originalImg=img;
+    cropRegion={x:0,y:0,w:img.width,h:img.height};
+    cropHistory=[]; zoomHistory=[];
+    document.getElementById('undo').disabled=true;
+    splitAndShow(img);
+    let {cx,cy}=getCropCenter();
+    showCropTiled(cx,cy);
+  };
+  img.src=URL.createObjectURL(file);
+};
+</script>
+</body>
+</html>
