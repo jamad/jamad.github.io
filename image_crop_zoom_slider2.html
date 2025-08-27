@@ -66,12 +66,16 @@ ctx.imageSmoothingEnabled = false;
 
 function updateCrop() {
   if (!originalImg) return;
-  let x = parseInt(sliderX.value);
-  let y = parseInt(sliderY.value);
-  let rx = Math.max(parseInt(sliderRX.value), x+1);
-  let ry = Math.max(parseInt(sliderRY.value), y+1);
-  sliderRX.min = x+1;
-  sliderRY.min = y+1;
+  let x1 = parseInt(sliderX.value);
+  let y1 = parseInt(sliderY.value);
+  let x2 = parseInt(sliderRX.value);
+  let y2 = parseInt(sliderRY.value);
+
+  // 常に左上(x1,y1), 右下(x2,y2)になるよう正規化
+  let x = Math.min(x1, x2);
+  let y = Math.min(y1, y2);
+  let rx = Math.max(x1, x2);
+  let ry = Math.max(y1, y2);
 
   let cw = rx - x;
   let ch = ry - y;
@@ -89,6 +93,7 @@ function updateCrop() {
     cropResult.appendChild(imgEl);
   }
 }
+
 
 f.onchange = e => {
   let file = f.files[0]; if (!file) return;
