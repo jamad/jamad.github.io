@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>スライダーCrop + タイル表示</title>
+<style>
+body { font-family: sans-serif; background:#111; color:#eee; padding:20px; }
+#controls { margin-bottom:12px; }
+#sliders { display:flex; flex-direction:column; gap:12px; margin-top:12px; }
+#sliders label { display:flex; align-items:center; gap:12px; }
+#sliders input[type=range] { width:1024px; }
+#cropResult {
+  margin-top:20px;
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:4px;
+  max-width:1024px;
+}
+#cropResult h2 { grid-column: 1 / span 2; }
+#cropResult img { width:100%; height:auto; display:block; }
+</style>
+</head>
+<body>
+<h1>スライダーCrop + 4タイル表示</h1>
+<div id="controls">
+  <input id="f" type="file" accept="image/*">
+</div>
+<div id="sliders">
+  <label>横方向: <input id="sliderX" type="range" min="0" value="0"></label>
+  <label>縦方向: <input id="sliderY" type="range" min="0" value="0"></label>
+</div>
+<canvas id="c" style="display:none"></canvas>
+<div id="cropResult"><h2>Crop結果 4タイル</h2></div>
+
+<script>
+let originalImg = null;
+let sliderX = document.getElementById("sliderX");
+let sliderY = document.getElementById("sliderY");
+let cropResult = document.getElementById("cropResult");
+let ctx = c.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+function updateCrop() {
+  if (!originalImg) return;
+  let x = parseInt(sliderX.value);
+  let y = parseInt(sliderY.value);
+  let cw = originalImg.width - x;
+  let ch = originalImg.height - y;
+  if (cw <= 0 || ch <= 0) return;
+
+  c.width = cw; c.height = ch;
+  ctx.clearRect(0, 0, cw, ch);
+  ctx.drawImage(originalImg, x, y, cw, ch, 0, 0, cw, ch);
+  let url = c.toDataURL();
+
+  cropResult.innerHTML = "<h2>Crop結果 4タイル</h2>";
+  for (let i=0;i<4;i++) {
+    let imgEl = new Image();
+    imgEl.src = url;
+    cropResult.appendChild(imgEl);
+  }
+}
+
+f.onchange = e => {
+  let file = f.files[0]; if (!file) return;
+  let img = new Image();
+  img.onload = () => {
+    originalImg = img;
+    sliderX.max = img.width-1;
+    sliderY.max = img.height-1;
+    sliderX.value = 0;
+    sliderY.value = 0;
+    updateCrop();
+  };
+  img.src = URL.createObjectURL(file);
+};
+
+sliderX.oninput = updateCrop;
+sliderY.oninput = updateCrop;
+</script>
+</body>
+</html>
