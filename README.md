@@ -13,6 +13,24 @@
 
 
 
+---
+
+# 新規postの方法
+* pc の場合 : [_posts](https://github.com/jamad/jamad.github.io/tree/master/_posts) > add file
+* iOS app の場合 : profile > pinned repo > code > _posts > create file as yyyy-mm-dd-title.md > commit > wait
+
+# コピーボタン各種
+* [codepen](https://codepen.io/your-work/) で動作確認したhtmlを.mdに直接記述し、jekyllで実装するのが最も効率良い
+  
+---
+
+<button onclick="copyT()" id="buttonlabel">dummy</button>
+<button onclick="copyText2()"><span id="mystr">dummy</span></button>
+<input type="text" id="my_userInput"> <button onclick="copyT2()" id="buttonlabel2">urlで画像をwidth=25%表示させるタグをコピーするボタン</button>
+
+
+
+---
 
 
 # README.md　を作成した public document
