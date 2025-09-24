@@ -1,7 +1,10 @@
 
+# https://jamad.github.io/
+* 不特定多数が閲覧しても大丈夫なように更新しておこう。
 
 
-https://jamad.github.io/
+
+
 
 # README.md　を作成した public document
 
