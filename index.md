@@ -2,7 +2,6 @@
 
 [tool image_crop_zoom_slider](https://jamad.github.io/image_crop_zoom_slider.html)
 
-
 [tool image_crop_zoom_tiling](https://jamad.github.io/image_crop_zoom_tiling2.html)
 
 todo here !
