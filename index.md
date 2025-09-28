@@ -7,9 +7,9 @@
 [tool image_crop_zoom_tiling](https://jamad.github.io/image_crop_zoom_tiling2.html)
 
 todo here !
-* [gist を活用しよう](https://gist.github.com/jamad/0ebf32c2425be4568a680feb776ae149) 
 
-* styleを適用している理由はiOSのデフォルトSafariでダークモードにならないから
+### note 
+* the reason why I use style here is because I cannot read this page in  Dark mode on iOS Safari 
 
 # このindex.htmlの更新方法 
 1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　から編集 (index.html が既存だと index.md が上書きできないので削除)
