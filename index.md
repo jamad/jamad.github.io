@@ -51,8 +51,6 @@ todo here !
 ---
 
 
-* [日々のメモ](https://jamad.github.io/%E6%97%A5%E3%80%85%E3%81%AE%E3%83%A1%E3%83%A2)
-
 
 
 
