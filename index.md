@@ -1,18 +1,28 @@
 <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
 
-[tool image_crop_zoom_slider](https://jamad.github.io/image_crop_zoom_slider.html)
+<img height="160" alt="{FCE24642-BBA5-4C76-B288-096410F19060}" src="https://github.com/user-attachments/assets/c794ccb3-ddaf-449f-9c65-debe0b4931bd" />　[jamad.github.io/graviton/](https://jamad.github.io/graviton/)
 
-[tool image_crop_zoom_tiling](https://jamad.github.io/image_crop_zoom_tiling2.html)
+
 
 todo here !
-* [gist を活用しよう](https://gist.github.com/jamad/0ebf32c2425be4568a680feb776ae149) 
 
-* styleを適用している理由はiOSのデフォルトSafariでダークモードにならないから
+### note 
+* the reason why I use style here is because I cannot read this page in  Dark mode on iOS Safari 
 
 # このindex.htmlの更新方法 
 1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　から編集 (index.html が既存だと index.md が上書きできないので削除)
 
-* javascript による簡易時計
+
+
+# the following is a quicktest for svg tag
+
+<svg width="100%" height="200">
+  <circle cx="0" cy="100" r="20" fill="blue">
+    <animate attributeName="cx" from="0" to="100%" dur="5s" repeatCount="indefinite" />
+  </circle>
+</svg>
+
+* quick clock by javascript
 <p id="tm"></p>
 
 <script>
@@ -38,8 +48,6 @@ todo here !
 
 ---
 
-
-* [日々のメモ](https://jamad.github.io/%E6%97%A5%E3%80%85%E3%81%AE%E3%83%A1%E3%83%A2)
 
 
 
