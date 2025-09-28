@@ -22,7 +22,7 @@ todo here !
   </circle>
 </svg>
 
-* javascript による簡易時計
+* quick clock by javascript
 <p id="tm"></p>
 
 <script>
