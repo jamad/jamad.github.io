@@ -3,9 +3,6 @@
 <img height="160" alt="{FCE24642-BBA5-4C76-B288-096410F19060}" src="https://github.com/user-attachments/assets/c794ccb3-ddaf-449f-9c65-debe0b4931bd" />　[jamad.github.io/graviton/](https://jamad.github.io/graviton/)
 
 
-[tool image_crop_zoom_slider](https://jamad.github.io/image_crop_zoom_slider.html)
-
-[tool image_crop_zoom_tiling](https://jamad.github.io/image_crop_zoom_tiling2.html)
 
 todo here !
 
