@@ -12,6 +12,16 @@ todo here !
 # このindex.htmlの更新方法 
 1. [index.md](https://github.com/jamad/jamad.github.io/edit/master/index.md)　から編集 (index.html が既存だと index.md が上書きできないので削除)
 
+
+
+# the following is a quicktest for svg tag
+
+<svg width="100%" height="200">
+  <circle cx="0" cy="100" r="20" fill="blue">
+    <animate attributeName="cx" from="0" to="100%" dur="5s" repeatCount="indefinite" />
+  </circle>
+</svg>
+
 * javascript による簡易時計
 <p id="tm"></p>
 
