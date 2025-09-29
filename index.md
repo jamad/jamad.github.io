@@ -19,6 +19,11 @@ todo here !
 </svg>
 
 * quick clock by javascript
+
+<p id="buttonlabel"></p>
+<p id="mystr"></p>
+<input id="my_userInput" type="text" placeholder="画像URLを入力" />
+<p id="buttonlabel2"></p>
 <p id="tm"></p>
 
 <script>
