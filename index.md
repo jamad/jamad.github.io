@@ -4,10 +4,10 @@
 
 
 
-todo here !
+## TODO
+* inkscape tips 
 
-### note 
-* the reason why I use style here is because I cannot read this page in  Dark mode on iOS Safari 
+* A style is used , because iOS Safari cannot show this page in Dark mode  
 
 
 # the following is a quicktest for svg tag
