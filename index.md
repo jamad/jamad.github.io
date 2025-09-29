@@ -19,27 +19,9 @@ todo here !
 </svg>
 
 * quick clock by javascript
-
-<p id="buttonlabel"></p>
-<p id="mystr"></p>
-<input id="my_userInput" type="text" placeholder="画像URLを入力" />
-<p id="buttonlabel2"></p>
 <p id="tm"></p>
 
 <script>
-  str_to_copy=new Date().toISOString().slice(0,10)+'-';
-  document.getElementById("buttonlabel").textContent='post用prefixのコピーボタン : '+str_to_copy;
-  function copyT() {navigator.clipboard.writeText(str_to_copy);}
-  
-  mystr= '<link rel="stylesheet" type="text/css" href="/assets/css/styles.css">';
-  document.getElementById("mystr").innerText ='CSSタグをコピーするボタン : '+mystr;
-  function copyText2() { navigator.clipboard.writeText(mystr);}
-  
-  //example :  https://jamad.github.io/jam_clock_icon.png
-  userInput = document.getElementById("my_userInput");
-  userInput.addEventListener("input", function() {  document.getElementById("buttonlabel2").textContent = `<img src="${userInput.value}" width="25%">`}); // input要素の内容が変化した時に実行される関数を定義
-  function copyT2() {navigator.clipboard.writeText(document.getElementById("buttonlabel2").textContent);}
-
   // 簡易時計
   f=(x)=>String(x).padStart(2,'0');
   g=(d=new Date())=>`${f(d.getHours())}:${f(d.getMinutes())}:${f(d.getSeconds())}`;
