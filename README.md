@@ -1,5 +1,5 @@
 
-ページの編集は https://github.com/jamad/jamad.github.io/blob/master/index.md
+ページの編集は [index.md](https://github.com/jamad/jamad.github.io/blob/master/index.md)から。
 
 ちなみに、このファイルは https://jamad.github.io/readme などで探しても見つからなかったが
 
