@@ -35,3 +35,7 @@ Note 1: actually, duplicated lines looks thicker than single lines
 
 Note 2: too many lines seems to fails , so try smaller number of lines again
 <img width="976" height="463" alt="{4FBFA365-7161-4279-9ABC-D54F89BCF5EF}" src="https://github.com/user-attachments/assets/fc2e8d55-0351-4510-948c-697976b5d826" />
+
+the case with all single lines
+<img width="416" height="517" alt="{E628067A-178C-4DAB-B718-D473B9AA91FD}" src="https://github.com/user-attachments/assets/39f8074c-dde2-4c9e-81a1-de06c078bf54" />
+
