@@ -21,6 +21,17 @@
 * example : 2 rectangles touch like the following
 * <img width="389" height="178" alt="{EEE45871-41E9-4DBF-B904-93528AA35B40}" src="https://github.com/user-attachments/assets/b282e331-b131-406d-b489-e6d6531020d3" />
 
+1. convert from object to path
+<img width="286" height="60" alt="{0BB483F6-32D3-440F-BEDD-FEF172DA4D61}" src="https://github.com/user-attachments/assets/f5dc0824-3908-47f4-ae89-062dc4349c3e" />
+
+2. use remove double
+<img width="1073" height="493" alt="{B2F20569-3A82-4D8A-8BFD-28FFE577DDC6}" src="https://github.com/user-attachments/assets/6de9a78f-5fa2-4e64-896d-f656516e1b89" />
+
+3. see data change
+<img width="544" height="279" alt="{DD7948C8-DC85-4E4F-95F1-6855AA5D3F66}" src="https://github.com/user-attachments/assets/f7c20f23-0088-4863-887c-444b48554266" />
+
+
+
 * Combine
 * <img width="461" height="204" alt="{861D8EF5-3982-425E-A9A3-04E770E09704}" src="https://github.com/user-attachments/assets/866cc964-71b0-4434-a431-d773f0d0c6c9" />
 * <img width="303" height="50" alt="{D5AEEBC7-C31D-4784-A65A-5748ECD3A042}" src="https://github.com/user-attachments/assets/5d5cda17-77e5-48d6-8200-0b639c5a92dd" />
