@@ -30,5 +30,8 @@
 3. see data change
 <img width="544" height="279" alt="{DD7948C8-DC85-4E4F-95F1-6855AA5D3F66}" src="https://github.com/user-attachments/assets/f7c20f23-0088-4863-887c-444b48554266" />
 
-Note: actually, duplicated lines looks thicker than single lines
+Note 1: actually, duplicated lines looks thicker than single lines
 <img width="347" height="340" alt="{CA0EC30E-6FE3-46E1-9017-CC503E3B8324}" src="https://github.com/user-attachments/assets/37cee28c-eab6-4e2c-9626-e68b437a4466" />
+
+Note 2: too many lines seems to fails , so try smaller number of lines again
+<img width="976" height="463" alt="{4FBFA365-7161-4279-9ABC-D54F89BCF5EF}" src="https://github.com/user-attachments/assets/fc2e8d55-0351-4510-948c-697976b5d826" />
