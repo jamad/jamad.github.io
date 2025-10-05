@@ -27,11 +27,11 @@
 
   <img width="286" height="60" alt="{0BB483F6-32D3-440F-BEDD-FEF172DA4D61}" src="https://github.com/user-attachments/assets/f5dc0824-3908-47f4-ae89-062dc4349c3e" />
 
-  3. use remove duplicate lines 
+  2. use remove duplicate lines 
   
   <img height="240" alt="{B2F20569-3A82-4D8A-8BFD-28FFE577DDC6}" src="https://github.com/user-attachments/assets/6de9a78f-5fa2-4e64-896d-f656516e1b89" />
 
-  4. see data change
+  3. see data change
   
   <img height="240" alt="{DD7948C8-DC85-4E4F-95F1-6855AA5D3F66}" src="https://github.com/user-attachments/assets/f7c20f23-0088-4863-887c-444b48554266" />
 
