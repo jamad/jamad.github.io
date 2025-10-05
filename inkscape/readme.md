@@ -29,11 +29,3 @@
 
 3. see data change
 <img width="544" height="279" alt="{DD7948C8-DC85-4E4F-95F1-6855AA5D3F66}" src="https://github.com/user-attachments/assets/f7c20f23-0088-4863-887c-444b48554266" />
-
-
-
-* Combine
-* <img width="461" height="204" alt="{861D8EF5-3982-425E-A9A3-04E770E09704}" src="https://github.com/user-attachments/assets/866cc964-71b0-4434-a431-d773f0d0c6c9" />
-* <img width="303" height="50" alt="{D5AEEBC7-C31D-4784-A65A-5748ECD3A042}" src="https://github.com/user-attachments/assets/5d5cda17-77e5-48d6-8200-0b639c5a92dd" />
-* <img width="418" height="201" alt="{E4DF8BAA-A44C-4E98-AC10-1DE1FA1B4E1E}" src="https://github.com/user-attachments/assets/33493a14-4488-46fa-9340-43add24c12d0" />
-
