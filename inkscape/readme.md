@@ -10,3 +10,9 @@
 * How to remove double line?
 * example : 2 rectangles touch like the following
 * <img width="389" height="178" alt="{EEE45871-41E9-4DBF-B904-93528AA35B40}" src="https://github.com/user-attachments/assets/b282e331-b131-406d-b489-e6d6531020d3" />
+
+* Combine
+* <img width="461" height="204" alt="{861D8EF5-3982-425E-A9A3-04E770E09704}" src="https://github.com/user-attachments/assets/866cc964-71b0-4434-a431-d773f0d0c6c9" />
+* <img width="303" height="50" alt="{D5AEEBC7-C31D-4784-A65A-5748ECD3A042}" src="https://github.com/user-attachments/assets/5d5cda17-77e5-48d6-8200-0b639c5a92dd" />
+* <img width="418" height="201" alt="{E4DF8BAA-A44C-4E98-AC10-1DE1FA1B4E1E}" src="https://github.com/user-attachments/assets/33493a14-4488-46fa-9340-43add24c12d0" />
+
