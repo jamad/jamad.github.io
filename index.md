@@ -5,7 +5,7 @@
 
 
 ## TODO
-* inkscape tips 
+* [inkscape tips](https://jamad.github.io/inkscape/)  
 
 * A style is used , because iOS Safari cannot show this page in Dark mode  
 
