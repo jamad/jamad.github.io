@@ -29,3 +29,6 @@
 
 3. see data change
 <img width="544" height="279" alt="{DD7948C8-DC85-4E4F-95F1-6855AA5D3F66}" src="https://github.com/user-attachments/assets/f7c20f23-0088-4863-887c-444b48554266" />
+
+Note: actually, duplicated lines looks thicker than single lines
+<img width="347" height="340" alt="{CA0EC30E-6FE3-46E1-9017-CC503E3B8324}" src="https://github.com/user-attachments/assets/37cee28c-eab6-4e2c-9626-e68b437a4466" />
