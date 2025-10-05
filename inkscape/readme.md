@@ -9,6 +9,12 @@
 better to change for snapping for lasercut data
 <img width="400" height="190" alt="{58B9EC1B-AF08-40C2-8431-782443B84357}" src="https://github.com/user-attachments/assets/02fa532d-d312-48e5-b8a8-10cc4fedd4be" />
 
+* expected
+<img width="340" height="111" alt="{334A672F-61C1-43C0-84F8-C290F42CFD38}" src="https://github.com/user-attachments/assets/e57a2345-714a-48f8-9a7b-29339b016337" />
+
+* unexpected 
+<img width="379" height="140" alt="{8074D7DB-5E3D-4F54-83C8-75A7ACED62F7}" src="https://github.com/user-attachments/assets/ca282a8f-309c-442b-ad31-4cb0fff4f22f" />
+
 
 ### Q&A
 * How to remove double line?
