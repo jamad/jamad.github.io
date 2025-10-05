@@ -18,8 +18,8 @@
 ### troubleshooting 
 # Issue 1
 ## Problem : How to remove double line?
-  * An example : 2 rectangles touch like the following have 1 duplicated line 
-  * <img width="389" height="178" alt="{EEE45871-41E9-4DBF-B904-93528AA35B40}" src="https://github.com/user-attachments/assets/b282e331-b131-406d-b489-e6d6531020d3" />
+  * An example : 2 rectangles touch like the following have 1 duplicated line
+    <img width="389" height="178" alt="{EEE45871-41E9-4DBF-B904-93528AA35B40}" src="https://github.com/user-attachments/assets/b282e331-b131-406d-b489-e6d6531020d3" />
 
 ## Solution 1: use [inkscape-extension-removeduplicatelines](https://cutlings.datafil.no/inkscape-extension-removeduplicatelines) 
   1. First off, convert object to path for the following operation
