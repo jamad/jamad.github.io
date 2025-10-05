@@ -18,7 +18,7 @@
 ### troubleshooting 
 # Issue 1
 ## Problem : How to remove double line?
-  * example : 2 rectangles touch like the following
+  * An example : 2 rectangles touch like the following have 1 duplicated line 
   * <img width="389" height="178" alt="{EEE45871-41E9-4DBF-B904-93528AA35B40}" src="https://github.com/user-attachments/assets/b282e331-b131-406d-b489-e6d6531020d3" />
 
 ## Solution 1: Do the following
