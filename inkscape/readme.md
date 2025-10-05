@@ -19,16 +19,20 @@
 # Issue 1
 ## Problem : How to remove double line?
   * An example : 2 rectangles touch like the following have 1 duplicated line
-    <img width="389" height="178" alt="{EEE45871-41E9-4DBF-B904-93528AA35B40}" src="https://github.com/user-attachments/assets/b282e331-b131-406d-b489-e6d6531020d3" />
+
+  <img width="389" height="178" alt="{EEE45871-41E9-4DBF-B904-93528AA35B40}" src="https://github.com/user-attachments/assets/b282e331-b131-406d-b489-e6d6531020d3" />
 
 ## Solution 1: use [inkscape-extension-removeduplicatelines](https://cutlings.datafil.no/inkscape-extension-removeduplicatelines) 
   1. First off, convert object to path for the following operation
+
   <img width="286" height="60" alt="{0BB483F6-32D3-440F-BEDD-FEF172DA4D61}" src="https://github.com/user-attachments/assets/f5dc0824-3908-47f4-ae89-062dc4349c3e" />
 
-  2. use remove duplicate lines 
+  3. use remove duplicate lines 
+  
   <img height="240" alt="{B2F20569-3A82-4D8A-8BFD-28FFE577DDC6}" src="https://github.com/user-attachments/assets/6de9a78f-5fa2-4e64-896d-f656516e1b89" />
 
-  3. see data change
+  4. see data change
+  
   <img height="240" alt="{DD7948C8-DC85-4E4F-95F1-6855AA5D3F66}" src="https://github.com/user-attachments/assets/f7c20f23-0088-4863-887c-444b48554266" />
 
   * Note 1: actually, duplicated lines looks thicker than single lines
