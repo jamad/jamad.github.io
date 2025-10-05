@@ -30,7 +30,6 @@
   2. use remove duplicate lines 
 
   <img height="191" alt="{48F84F07-FA18-469F-A087-79C8DF20B1F4}" src="https://github.com/user-attachments/assets/d6e31a35-9d00-4b6c-a7be-389372d28b52" />
-
   <img height="240" alt="{B2F20569-3A82-4D8A-8BFD-28FFE577DDC6}" src="https://github.com/user-attachments/assets/6de9a78f-5fa2-4e64-896d-f656516e1b89" />
 
   3. see data change
