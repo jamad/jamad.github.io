@@ -2,6 +2,11 @@
 * http://tavmjong.free.fr/INKSCAPE/MANUAL/html/
 * https://inkscape.paix.jp/sitemap/
 
+### knowledge
+* SVG definition : 1 px = 1/96 inch ( i.e. 1 px = 25.4 mm / 96 ≒ 0.2645 mm )
+* inkscape precision :  1/1000 px  (i.e. 0.0002646 mm )
+
+
 ### the version I use 
 <img width="748" height="151" alt="{2095F0BA-9981-461C-AC30-86943F5A05CE}" src="https://github.com/user-attachments/assets/7e7b3dab-2a30-4f46-94c0-2e97e48206ad" />
 
