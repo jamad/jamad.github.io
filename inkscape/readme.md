@@ -68,7 +68,7 @@
 <img height="240" alt="{ADED5F06-B80E-434D-88C8-854C1604F183}" src="https://github.com/user-attachments/assets/bf1a3d51-0a8f-4b63-8f8a-bacf3cb044fe" />
 
 ## Solution : wip
-* first , ctrl+K to merge as single path, then extension `remove duplicated nodes`
-<img height="240" alt="{9BF52CD6-285D-45B6-AC32-27F21217998A}" src="https://github.com/user-attachments/assets/630f84b9-757f-4abb-9fc1-234a82fdface" />
-<img height="240" alt="{F4C0D2D5-9CF9-44FC-9886-2D93E01EF3BD}" src="https://github.com/user-attachments/assets/c18b846f-a082-4e5f-8d41-dd7fd233076d" />
-
+* first , ctrl+K to merge as single path, then extension `remove duplicated nodes` , thick line preview might be good improvement
+<img height="160" alt="{D24465F5-D228-420F-A695-693263B2F5B8}" src="https://github.com/user-attachments/assets/01b87120-fc6d-4a1f-98e2-4e6705f067c3" />
+<img height="160" alt="{F4C0D2D5-9CF9-44FC-9886-2D93E01EF3BD}" src="https://github.com/user-attachments/assets/c18b846f-a082-4e5f-8d41-dd7fd233076d" />
+<img height="160" alt="{F6719C58-540D-4A12-A503-950AFDD8D915}" src="https://github.com/user-attachments/assets/7847e481-25bd-4c66-83b0-75202fdfb379" />
