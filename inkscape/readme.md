@@ -5,6 +5,7 @@
 ### knowledge
 * SVG definition : 1 px = 1/96 inch ( i.e. 1 px = 25.4 mm / 96 ≒ 0.2645 mm )
 * inkscape precision :  1/1000 px  (i.e. 0.0002646 mm )
+* lasercut usually ignore 0.001 mm 
 
 
 ### the version I use 
