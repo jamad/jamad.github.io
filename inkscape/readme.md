@@ -7,7 +7,7 @@
 * inkscape internal xml precision :  1/1000 px  (i.e. 0.0002646 mm )
 * but lasercut usually ignore 0.01 mm
 * I decided to use 0.01mm grid for my work based on my output card result
-* <img height="200" alt="image" src="https://github.com/user-attachments/assets/fc87165f-be72-4c81-b065-74e3b2316c03" />
+* <img height="200" alt="image" src="https://github.com/user-attachments/assets/fc87165f-be72-4c81-b065-74e3b2316c03" /> actually, inkscape cannot zoom in after this level
 
 
 
