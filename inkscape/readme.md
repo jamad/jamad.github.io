@@ -36,7 +36,7 @@
 
   <img width="286" height="60" alt="{0BB483F6-32D3-440F-BEDD-FEF172DA4D61}" src="https://github.com/user-attachments/assets/f5dc0824-3908-47f4-ae89-062dc4349c3e" />
 
-  2. use remove duplicate lines ( `%AppData%\inkscape\extensions` should have the extension)
+  2. use remove duplicate lines ( `%AppData%\inkscape\extensions` should have the extension)　with 0.1
   <img height="92" alt="{C8CA67B5-5CFD-42EA-AEF8-F29FF4B28806}" src="https://github.com/user-attachments/assets/46070d7d-22f0-4558-bb59-055d29a05502" />
   <img height="191" alt="{48F84F07-FA18-469F-A087-79C8DF20B1F4}" src="https://github.com/user-attachments/assets/d6e31a35-9d00-4b6c-a7be-389372d28b52" />
   <img height="240" alt="{B2F20569-3A82-4D8A-8BFD-28FFE577DDC6}" src="https://github.com/user-attachments/assets/6de9a78f-5fa2-4e64-896d-f656516e1b89" />
