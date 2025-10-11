@@ -76,9 +76,9 @@
 
 # issue 3
 ## problem : how to prevent sketchup pdf has double lines
-## Solution : use select same fill by selecting a no fill object
+## Solution : use select same fill by selecting a no fill object. Then move and use the lines that has no duplicates. 
 <img height="240" alt="{511EC258-5C9A-457D-A9C7-45035EE7D6EF}" src="https://github.com/user-attachments/assets/3e5d0e42-7b28-425f-ad8b-eaa7bda841c1" />
-
+<img height="240" alt="{EC0CAF33-A9EB-442F-8A79-E1A54DDB764D}" src="https://github.com/user-attachments/assets/18363e35-5f36-443e-a0e5-e58155db6441" />
 
 
 
