@@ -28,7 +28,7 @@
 
 # issue 4
 ## problem : scale was different from original pdf file dimension
-## Solution : added the 50mmx50mm square then check if the size has no difference when opening the .pdf file 
+## Solution : added the 50mmx50mm square then check if the size has no difference when opening the .pdf file
 <img height="240" alt="{44CE620B-B994-4F35-A2B3-1F910C8D6BD3}" src="https://github.com/user-attachments/assets/3a4f0be1-b0f9-4cc7-b5f5-38b9f6e7f2f7" />
 
 # issue 3
@@ -36,6 +36,9 @@
 ## Solution : use select same fill by selecting a no fill object. Then move and use the lines that has no duplicates. 
 <img height="240" alt="{511EC258-5C9A-457D-A9C7-45035EE7D6EF}" src="https://github.com/user-attachments/assets/3e5d0e42-7b28-425f-ad8b-eaa7bda841c1" />
 <img height="240" alt="{EC0CAF33-A9EB-442F-8A79-E1A54DDB764D}" src="https://github.com/user-attachments/assets/18363e35-5f36-443e-a0e5-e58155db6441" />
+
+by the way, ctrl+K helps to unify the line style.
+<img height="240" alt="{7F4ADE2E-37EC-4867-AFF6-5275DA305C84}" src="https://github.com/user-attachments/assets/e8b143c8-d13a-49c7-86a1-abe79dc88d1a" />
 
 # issue 2
 ## problem : how to merge the same position nodes? 
