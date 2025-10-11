@@ -31,7 +31,7 @@
 
   <img width="389" height="178" alt="{EEE45871-41E9-4DBF-B904-93528AA35B40}" src="https://github.com/user-attachments/assets/b282e331-b131-406d-b489-e6d6531020d3" />
 
-## Solution 1: use [inkscape-extension-removeduplicatelines](https://cutlings.datafil.no/inkscape-extension-removeduplicatelines) 
+## Solution 1: use extensions > cutlings > remove duplicate lines  [inkscape-extension-removeduplicatelines](https://cutlings.datafil.no/inkscape-extension-removeduplicatelines) 
   1. First off, convert object to path for the following operation
 
   <img width="286" height="60" alt="{0BB483F6-32D3-440F-BEDD-FEF172DA4D61}" src="https://github.com/user-attachments/assets/f5dc0824-3908-47f4-ae89-062dc4349c3e" />
