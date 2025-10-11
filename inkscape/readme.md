@@ -25,6 +25,31 @@
 ---
 
 ### troubleshooting 
+
+
+# issue 4
+## problem : scale was different from original pdf file dimension
+## Solution : added the 50mmx50mm square then check if the size has no difference when opening the .pdf file 
+<img height="240" alt="{44CE620B-B994-4F35-A2B3-1F910C8D6BD3}" src="https://github.com/user-attachments/assets/3a4f0be1-b0f9-4cc7-b5f5-38b9f6e7f2f7" />
+
+# issue 3
+## problem : how to prevent sketchup pdf has double lines
+## Solution : use select same fill by selecting a no fill object. Then move and use the lines that has no duplicates. 
+<img height="240" alt="{511EC258-5C9A-457D-A9C7-45035EE7D6EF}" src="https://github.com/user-attachments/assets/3e5d0e42-7b28-425f-ad8b-eaa7bda841c1" />
+<img height="240" alt="{EC0CAF33-A9EB-442F-8A79-E1A54DDB764D}" src="https://github.com/user-attachments/assets/18363e35-5f36-443e-a0e5-e58155db6441" />
+
+# issue 2
+## problem : how to merge the same position nodes? 
+<img height="240" alt="{ADED5F06-B80E-434D-88C8-854C1604F183}" src="https://github.com/user-attachments/assets/bf1a3d51-0a8f-4b63-8f8a-bacf3cb044fe" />
+
+## Solution : removeDuplicateNodes.py  [remove-duplicate-nodes/](https://cutlings.datafil.no/remove-duplicate-nodes/)
+* note : I am making the simpler version [here](https://gist.github.com/jamad/ec12541c04789172e8f4cac3cd045f0d) 
+* first , ctrl+K to merge as single path, then extension `remove duplicated nodes` , thick line preview might be good improvement idea because visual helps the change
+<img height="160" alt="{D24465F5-D228-420F-A695-693263B2F5B8}" src="https://github.com/user-attachments/assets/01b87120-fc6d-4a1f-98e2-4e6705f067c3" />
+<img height="160" alt="{F4C0D2D5-9CF9-44FC-9886-2D93E01EF3BD}" src="https://github.com/user-attachments/assets/c18b846f-a082-4e5f-8d41-dd7fd233076d" />
+<img height="160" alt="{F6719C58-540D-4A12-A503-950AFDD8D915}" src="https://github.com/user-attachments/assets/7847e481-25bd-4c66-83b0-75202fdfb379" />
+
+
 # Issue 1
 ## Problem : How to remove double line?
   * An example : 2 rectangles touch like the following have 1 duplicated line
@@ -61,25 +86,5 @@
   <img height="160" alt="{E31B1D59-76A0-40A2-ADBF-95B8DCC10348}" src="https://github.com/user-attachments/assets/e09a5bf6-030f-43ff-826a-0846a8c5ddff" /> 
   <img height="160" alt="{9F67C7F1-2B3E-4610-BCAF-0A7C03DFC4DD}" src="https://github.com/user-attachments/assets/9862b48e-0d72-4abc-85ec-5e8182f52f54" /> 
   <img height="160" alt="{F49ADB42-37F1-4BE4-BFE9-6B8A79CFE9E4}" src="https://github.com/user-attachments/assets/add25342-92ea-4b42-bc4e-1c2f8d9054e0" />
-
-# issue 2
-## problem : how to merge the same position nodes? 
-<img height="240" alt="{ADED5F06-B80E-434D-88C8-854C1604F183}" src="https://github.com/user-attachments/assets/bf1a3d51-0a8f-4b63-8f8a-bacf3cb044fe" />
-
-## Solution : removeDuplicateNodes.py  [remove-duplicate-nodes/](https://cutlings.datafil.no/remove-duplicate-nodes/)
-* note : I am making the simpler version [here](https://gist.github.com/jamad/ec12541c04789172e8f4cac3cd045f0d) 
-* first , ctrl+K to merge as single path, then extension `remove duplicated nodes` , thick line preview might be good improvement idea because visual helps the change
-<img height="160" alt="{D24465F5-D228-420F-A695-693263B2F5B8}" src="https://github.com/user-attachments/assets/01b87120-fc6d-4a1f-98e2-4e6705f067c3" />
-<img height="160" alt="{F4C0D2D5-9CF9-44FC-9886-2D93E01EF3BD}" src="https://github.com/user-attachments/assets/c18b846f-a082-4e5f-8d41-dd7fd233076d" />
-<img height="160" alt="{F6719C58-540D-4A12-A503-950AFDD8D915}" src="https://github.com/user-attachments/assets/7847e481-25bd-4c66-83b0-75202fdfb379" />
-
-
-# issue 3
-## problem : how to prevent sketchup pdf has double lines
-## Solution : use select same fill by selecting a no fill object. Then move and use the lines that has no duplicates. 
-<img height="240" alt="{511EC258-5C9A-457D-A9C7-45035EE7D6EF}" src="https://github.com/user-attachments/assets/3e5d0e42-7b28-425f-ad8b-eaa7bda841c1" />
-<img height="240" alt="{EC0CAF33-A9EB-442F-8A79-E1A54DDB764D}" src="https://github.com/user-attachments/assets/18363e35-5f36-443e-a0e5-e58155db6441" />
-
-
 
 
