@@ -15,7 +15,7 @@
 <img width="748" height="151" alt="{2095F0BA-9981-461C-AC30-86943F5A05CE}" src="https://github.com/user-attachments/assets/7e7b3dab-2a30-4f46-94c0-2e97e48206ad" />
 
 ### important initial settings
-* better to change for snapping for lasercut data (bounding box)
+* better to change for snapping style for lasercut data ( i.e. bounding box ) and new document keeps the same settings 
 <img width="400" height="190" alt="{58B9EC1B-AF08-40C2-8431-782443B84357}" src="https://github.com/user-attachments/assets/02fa532d-d312-48e5-b8a8-10cc4fedd4be" />
 
 * unexpected then expected
