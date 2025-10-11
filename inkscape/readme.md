@@ -24,8 +24,7 @@
 
 ---
 
-### troubleshooting 
-
+# troubleshooting note ( The newer , the upper ) 
 
 # issue 4
 ## problem : scale was different from original pdf file dimension
