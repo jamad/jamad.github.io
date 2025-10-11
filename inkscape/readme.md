@@ -72,3 +72,14 @@
 <img height="160" alt="{D24465F5-D228-420F-A695-693263B2F5B8}" src="https://github.com/user-attachments/assets/01b87120-fc6d-4a1f-98e2-4e6705f067c3" />
 <img height="160" alt="{F4C0D2D5-9CF9-44FC-9886-2D93E01EF3BD}" src="https://github.com/user-attachments/assets/c18b846f-a082-4e5f-8d41-dd7fd233076d" />
 <img height="160" alt="{F6719C58-540D-4A12-A503-950AFDD8D915}" src="https://github.com/user-attachments/assets/7847e481-25bd-4c66-83b0-75202fdfb379" />
+
+
+# issue 3
+## problem : how to prevent sketchup pdf has double lines
+## Solution : use select same fill by selecting a no fill object
+<img height="240" alt="{511EC258-5C9A-457D-A9C7-45035EE7D6EF}" src="https://github.com/user-attachments/assets/3e5d0e42-7b28-425f-ad8b-eaa7bda841c1" />
+
+
+
+
+
