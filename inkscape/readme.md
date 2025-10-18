@@ -59,6 +59,11 @@ by the way, ctrl+K helps to unify the line style.
 
   <img width="389" height="178" alt="{EEE45871-41E9-4DBF-B904-93528AA35B40}" src="https://github.com/user-attachments/assets/b282e331-b131-406d-b489-e6d6531020d3" />
 
+  * and found how to check the double line by stroke color
+
+  <img height="160" alt="{3E0F3BE1-3D0A-464A-9792-2E310C4CBA5D}" src="https://github.com/user-attachments/assets/107e4d9a-2c93-487b-820d-6a44ae538444" />
+
+
 ## Solution 1: use extensions > cutlings > remove duplicate lines  [inkscape-extension-removeduplicatelines](https://cutlings.datafil.no/inkscape-extension-removeduplicatelines) 
   1. First off, convert object to path for the following operation ( ctrl+K to merge data could be safer )
 
