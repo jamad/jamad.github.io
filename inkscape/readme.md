@@ -27,7 +27,7 @@
 # troubleshooting note ( The newer , the upper ) 
 
 # issue 4
-## problem : scale was different from original pdf file dimension
+## problem : scale was different from original pdf file dimension  (adobe 72dpi vs w3c 96dpi , aka 75 : 100 )
 ## Solution : added the 50mmx50mm square then check if the size has no difference when opening the .pdf file
 <img height="240" alt="{735E3D99-81D0-4B62-ACF7-9E892B03971C}" src="https://github.com/user-attachments/assets/1fc0cc46-a2df-4fcf-bbf3-558e1d6ba65c" />
 <img height="240" alt="{44CE620B-B994-4F35-A2B3-1F910C8D6BD3}" src="https://github.com/user-attachments/assets/3a4f0be1-b0f9-4cc7-b5f5-38b9f6e7f2f7" />
