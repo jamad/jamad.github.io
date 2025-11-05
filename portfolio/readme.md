@@ -61,6 +61,7 @@ misc old data
 <img height="120" alt="{66E5F2F9-1B6D-4315-A0CC-F34B62893E62}" src="https://github.com/user-attachments/assets/80ce60b0-bb20-4111-9820-19f3053905e5" />
 <img height="120" alt="{0A39E797-95F6-4D49-A9F6-B6602C199672}" src="https://github.com/user-attachments/assets/8093fc40-d527-4caf-aeeb-910408ac3166" />
 <img height="120" alt="{B7811683-449C-4F09-AA75-53F12D34B26E}" src="https://github.com/user-attachments/assets/d482af84-befa-40f9-88ff-0183c919d55e" />
+<img height="120" alt="{1E3F55A6-8B8D-45F4-8196-D9E9FDAB21C5}" src="https://github.com/user-attachments/assets/19b3455e-186b-4ac4-b385-6170dba7385a" />
 
 
 モンキーの図面と実際のゲーム画像。
