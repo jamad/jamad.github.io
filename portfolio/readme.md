@@ -25,7 +25,7 @@ misc old data
 <img height="120" alt="{7B0E9CD0-5303-412D-AAD6-B0BBBADCC990}" src="https://github.com/user-attachments/assets/ee9feb27-24fc-444b-8d07-f9413e247093" />
 <img height="120" alt="{5328E6DC-50F9-478C-A48F-3E60A91E750B}" src="https://github.com/user-attachments/assets/45b3d053-df89-416c-89ee-72d913e45d59" />
 <img height="120" alt="{60228B76-1D26-4FDB-9309-4E54BF4FB37F}" src="https://github.com/user-attachments/assets/d3a42783-0486-4894-bfb6-f04e9b9bad12" />
-
+<img height="120" alt="{3C78E646-074D-4571-82B7-079FD6E42DFE}" src="https://github.com/user-attachments/assets/e2e2793f-0c49-4995-8fa0-3e53446b87bb" />
 
 ### 2017 lasercut data production
 <img height="120" alt="{64AF2D1A-4309-4253-A274-423E30553312}" src="https://github.com/user-attachments/assets/9095a954-7f0c-4e9f-b805-10c8f51a4c41" />
