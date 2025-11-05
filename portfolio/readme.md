@@ -29,7 +29,7 @@ some other works
 
 ### 2020 (to be updated soon)
 * ex wip
-* <img height="120" alt="{D04E91A1-471C-4807-AA3C-DE36692C984B}" src="https://github.com/user-attachments/assets/2c465782-5bdd-4de5-8cbe-9839c084f157" />
+* <img  height="120" alt="{9E636B24-32BB-4D29-A25F-CFD956E247D9}" src="https://github.com/user-attachments/assets/e059e577-cfe3-4f9e-8aac-04a7083289fb" />
 
 
 ### 2019 (to be updated soon)
