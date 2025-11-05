@@ -14,7 +14,7 @@
 
 misc old data 
 
-### 2016 unity VR app assets
+### 2016 unity VR app asset production
 <img height="240" alt="{43056DD1-238E-437D-BDCA-B4C820AEB310}" src="https://github.com/user-attachments/assets/7e12f465-4058-45ec-9d8f-c0e010917c03" />
 <img height="240" alt="{0AAD686B-4715-4317-8293-D4B71680F274}" src="https://github.com/user-attachments/assets/e089e382-748e-4265-8758-319d3c1c6281" />
 <img height="240" alt="{FC4194DB-B93F-4426-A832-41356B48BAB4}" src="https://github.com/user-attachments/assets/c3e11653-832d-448c-8926-30f1661ca824" />
@@ -32,7 +32,7 @@ misc old data
 <img height="240" alt="{498F42AA-A563-41E9-852C-7F6BB8F87059}" src="https://github.com/user-attachments/assets/40987a5f-0f2d-488d-a1e8-6ea8d191c753" />
 <img height="240" alt="{5A27B57A-7514-4C73-9951-5C9B56F98DE0}" src="https://github.com/user-attachments/assets/4f948e69-c6a8-45cf-b572-21c1b348c645" />
 
-### 2016 lasercut
+### 2016 lasercut data production
 <img height="120" alt="{967483E8-D311-41DD-B5FE-F68838826041}" src="https://github.com/user-attachments/assets/59401c8b-5618-45f2-a2bf-f8673a7c1a31" />
 <img height="120" alt="{7425C211-96C4-40C3-9FEE-17C28245A53D}" src="https://github.com/user-attachments/assets/2be5c21d-d612-43c8-93e3-396efffde087" />
 <img height="120" alt="{11F78C50-C603-4E78-B696-DB66E10A4735}" src="https://github.com/user-attachments/assets/6f25b0d7-0c63-4f5f-836b-cabec78ca78b" />
