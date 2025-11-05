@@ -11,3 +11,6 @@
 
 
 モンキーの図面と実際のゲーム画像。
+
+
+<img height="240" alt="{43056DD1-238E-437D-BDCA-B4C820AEB310}" src="https://github.com/user-attachments/assets/7e12f465-4058-45ec-9d8f-c0e010917c03" />
