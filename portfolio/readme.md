@@ -16,6 +16,9 @@
 
 misc old data 
 
+### 2018 lasercut data production
+<img height="120" alt="{CBF342D0-30A9-4857-869D-7F2874880CD7}" src="https://github.com/user-attachments/assets/8b471b1b-ee4d-45a7-bb51-10a16ff2c4c2" />
+
 ### 2017 lasercut data production
 <img height="120" alt="{64AF2D1A-4309-4253-A274-423E30553312}" src="https://github.com/user-attachments/assets/9095a954-7f0c-4e9f-b805-10c8f51a4c41" />
 <img height="120" alt="{27E98842-8818-4CBE-9180-ECEAB65F2F14}" src="https://github.com/user-attachments/assets/9b2643e2-bed9-4b79-ab7b-0ff83e1f8332" />
@@ -30,7 +33,6 @@ misc old data
 <img height="120" alt="{1D32273A-912B-420D-BE9B-84570258CAE0}" src="https://github.com/user-attachments/assets/d7e61444-2d33-4187-b9a5-45a62f5f574c" />
 <img height="120" alt="{EE3CF928-A573-4F9E-9E0E-06E8A25F1054}" src="https://github.com/user-attachments/assets/96b4a5ca-0b49-49b0-8d72-1a24e3cf71f4" />
 <img height="120" alt="{33794E47-6E15-40B9-A29B-BD0317632B5D}" src="https://github.com/user-attachments/assets/6802bbd7-9e0b-4d01-af57-bf0155914c53" />
-<img height="120" alt="{CBF342D0-30A9-4857-869D-7F2874880CD7}" src="https://github.com/user-attachments/assets/8b471b1b-ee4d-45a7-bb51-10a16ff2c4c2" />
 
 
 ### 2016 lasercut data production
