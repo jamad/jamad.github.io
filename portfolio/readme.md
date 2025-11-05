@@ -11,15 +11,7 @@
 | <img height="160"  alt="{DF47F9E5-F07B-47CE-845B-FECF93CA6627}" src="https://github.com/user-attachments/assets/fb99ab46-3dda-4c67-b064-597e21ebfd1b" />|  <img height="160" alt="{19294CAB-5613-4DB8-A529-649852D7771C}" src="https://github.com/user-attachments/assets/98e1a4ac-76fb-400a-8b38-2e1d770bebbf" />|
 
 
-
-
-
-
-
-
-
-
-misc old data 
+some other works
 
 ### 2025 (to be updated soon)
 
