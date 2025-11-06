@@ -42,6 +42,7 @@ some other works
 
 ### 2019 (to be updated soon)
 <img height="120" alt="{CAAEAD1D-6902-49BC-A53C-E6E33351536D}" src="https://github.com/user-attachments/assets/acf14f6b-d6a8-4db5-aa06-5545695af1c5" />
+<img height="120" alt="{BCACA381-37A8-43B9-840C-8753FFF95B0F}" src="https://github.com/user-attachments/assets/48945b06-0fdb-4102-960e-8f114d0648eb" />
 
 
 ### 2018 lasercut data production
