@@ -74,6 +74,7 @@ some other works
 <img height="120" alt="{4574862B-B361-49D2-BF48-9C0AA4F192C3}" src="https://github.com/user-attachments/assets/c41a25ce-be5a-4735-96ac-6399c8040d6d" />
 <img height="120" alt="{F509F5E2-F4AE-476F-A969-AE4AD1198ECD}" src="https://github.com/user-attachments/assets/d1ff906c-b230-4b1d-b48a-1e097f00fa91" />
 <img height="120" alt="{B79E7647-9118-41AC-AF44-6274C590EA58}" src="https://github.com/user-attachments/assets/d4b8a01d-c761-4062-9f73-234a823798aa" />
+<img height="120"  alt="{D4BE206E-7033-4888-99AE-33995428E30F}" src="https://github.com/user-attachments/assets/0f8ce8ad-3a59-431e-b3cf-6e4ac9d6517d" />
 
 
 ### 2018 lasercut data production
