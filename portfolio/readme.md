@@ -88,6 +88,7 @@ some other works
 <img height="120" alt="{901653F4-38CA-49A8-B3DF-8DEDE4BDC368}" src="https://github.com/user-attachments/assets/2d54ebf8-374e-44b2-8c0d-600a61345c7a" />
 <img height="120" alt="{908FE248-8F12-4D52-846C-6430EDED9416}" src="https://github.com/user-attachments/assets/44f7aa72-7ff2-4159-b194-e2e950d3b964" />
 <img height="120" alt="{67EFD99D-2D20-401C-8C7F-F652340F9DDB}" src="https://github.com/user-attachments/assets/f899c616-1eb4-4e0f-934d-5714ccf70415" />
+<img height="120" alt="{7DD4FC0B-E52A-47AD-B1CD-DFB3A3F38A69}" src="https://github.com/user-attachments/assets/ba7a2659-2bb6-49af-8191-b77b4e262031" />
 
 
 
