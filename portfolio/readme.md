@@ -90,6 +90,7 @@ some other works
 <img height="120" alt="{67EFD99D-2D20-401C-8C7F-F652340F9DDB}" src="https://github.com/user-attachments/assets/f899c616-1eb4-4e0f-934d-5714ccf70415" />
 <img height="120" alt="{7DD4FC0B-E52A-47AD-B1CD-DFB3A3F38A69}" src="https://github.com/user-attachments/assets/ba7a2659-2bb6-49af-8191-b77b4e262031" />
 <img height="120" alt="{F80E7739-3A5B-471C-9C4C-CBD1DFCE6DA9}" src="https://github.com/user-attachments/assets/ca2a182b-af42-4b33-a32c-aebe2f014a67" />
+<img height="120" alt="{9C44CEEA-EECD-4B33-9DD1-6C286F0A8C73}" src="https://github.com/user-attachments/assets/1838e711-1e42-47a1-965c-aa6c989ff7cd" />
 
 
 
