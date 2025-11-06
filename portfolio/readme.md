@@ -136,7 +136,6 @@ some other works
 <img height="120" alt="{1E3F55A6-8B8D-45F4-8196-D9E9FDAB21C5}" src="https://github.com/user-attachments/assets/19b3455e-186b-4ac4-b385-6170dba7385a" />
 <img height="120" alt="{959BF3D4-C658-4D16-A3EE-19CA79C8D906}" src="https://github.com/user-attachments/assets/b4841a1c-50fa-4e4b-839d-03c6931fb541" />
 
-
 ### 2013 unity VR app asset production
 <img height="120" alt="{43056DD1-238E-437D-BDCA-B4C820AEB310}" src="https://github.com/user-attachments/assets/7e12f465-4058-45ec-9d8f-c0e010917c03" />
 <img height="120" alt="{0AAD686B-4715-4317-8293-D4B71680F274}" src="https://github.com/user-attachments/assets/e089e382-748e-4265-8758-319d3c1c6281" />
@@ -155,5 +154,16 @@ some other works
 <img height="120" alt="{498F42AA-A563-41E9-852C-7F6BB8F87059}" src="https://github.com/user-attachments/assets/40987a5f-0f2d-488d-a1e8-6ea8d191c753" />
 <img height="120" alt="{5A27B57A-7514-4C73-9951-5C9B56F98DE0}" src="https://github.com/user-attachments/assets/4f948e69-c6a8-45cf-b572-21c1b348c645" />
 
-
+### before 2013 (to be updated soon)
+* Quantum break level design works and Tools QA at Remedy
+* Hitman Absolution level design works at IO Interactive
+* Watchmen level design works at Deadline games
+* Chili con carnage level design works at Deadline games
+* F-zero GX / F-zero AX course design works at SEGA
+* Monkey ball / Super Monkey ball / Super Monkey ball 2 level design works at SEGA
+* Shenmu cinematics works at SEGA (incl. a million polygons demo)
+* Planet Harriors level design works at SEGA
+* Spikeout DBO / FE level design works at SEGA
+* Daytona USA 2 effect works at SEGA
+* Scudrace / Scudrace plus assets at SEGA
 
