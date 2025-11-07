@@ -68,6 +68,7 @@ some other works
 <img height="120" alt="{D4AB25EE-1094-4838-B6B7-0F27FD227194}" src="https://github.com/user-attachments/assets/d93aec78-8760-44fd-a2cf-aa8d0765b8ee" />
 <img height="120"  alt="{3D031458-7009-4314-B36F-1049E15158EB}" src="https://github.com/user-attachments/assets/38ed395a-de2d-4d15-8009-ae65b9ba2059" />
 <img height="120"  alt="{778F0CF9-F5B1-4064-BB09-92E167CBEB36}" src="https://github.com/user-attachments/assets/0138e80d-205c-44c6-ac36-5c680a2fe34c" />
+<img height="120"  alt="{4A0C20E9-2369-4C9E-804F-93169A61B38B}" src="https://github.com/user-attachments/assets/32478603-143c-4a6c-a4d9-d3fa95f57977" />
 
 ### 2019 VR GameJam asset production
 <img height="120"  alt="{52F27EFF-C39C-4CB3-BE6D-40DE02574728}" src="https://github.com/user-attachments/assets/2b50fbce-a973-4de3-a8ae-e5af40465654" />
@@ -85,8 +86,6 @@ some other works
 <img height="120" alt="{3954185C-6617-4AB3-8D94-0BC3482F223E}" src="https://github.com/user-attachments/assets/b79980fe-3881-487f-8f85-7b59212928e5" />
 <img height="120"  alt="{B8BE5140-CB21-4AE1-9C0A-C31F54A70B31}" src="https://github.com/user-attachments/assets/f38bff46-b9fb-4365-8f7f-86c5396611dd" />
 <img height="120"  alt="{6BE947A0-470F-4BDE-A9E9-874D8D7E7A29}" src="https://github.com/user-attachments/assets/daee8650-ec85-4dfe-bcee-438398398b8a" />
-abc
-<img height="120"  alt="{4A0C20E9-2369-4C9E-804F-93169A61B38B}" src="https://github.com/user-attachments/assets/32478603-143c-4a6c-a4d9-d3fa95f57977" />
 
 
 ### 2018 lasercut data production
