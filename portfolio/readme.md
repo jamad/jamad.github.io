@@ -72,6 +72,7 @@ some other works
 <img height="120" alt="{840B7953-39CF-4B12-A904-86012B957AA7}" src="https://github.com/user-attachments/assets/d639ffb3-2750-4069-adb5-37572e47613e" />
 <img height="120"  alt="{E2F44EFC-6C95-431C-8EDF-83ACAF7D8AE1}" src="https://github.com/user-attachments/assets/1af7b3ea-4167-4be1-bd86-ded82b6bc8bb" />
 <img height="120"   alt="{A6AD7304-6311-4C6A-9AD5-325E34700C5C}" src="https://github.com/user-attachments/assets/7067acb3-09ad-4dc2-b8a1-76e301d24f05" />
+<img height="120"  alt="{C9DE15CF-26ED-4FFB-ACDD-0753DE8F72B1}" src="https://github.com/user-attachments/assets/023e51c9-9b24-41a7-93ea-8966db5bd165" />
 
 ### 2019 VR GameJam asset production
 <img height="120"  alt="{52F27EFF-C39C-4CB3-BE6D-40DE02574728}" src="https://github.com/user-attachments/assets/2b50fbce-a973-4de3-a8ae-e5af40465654" />
