@@ -38,6 +38,7 @@ some other works
 <img  height="120" alt="hoop" src="https://github.com/user-attachments/assets/db39b216-14a0-4be5-a6c9-2b0d8fe46b26" />
 <img  height="120" alt="planets" src="https://github.com/user-attachments/assets/fa9e14de-8d37-4eb0-abec-75866369d531" />
 <img  height="120" alt="arcs" src="https://github.com/user-attachments/assets/0648d414-7320-44f2-abd2-caa912822cb5" />
+<img  height="120" alt="reflection" src="https://github.com/user-attachments/assets/c1a2cdb1-cddb-41d4-95d1-988c890d2bb5" />
 
 
 ### 2021 3D print
