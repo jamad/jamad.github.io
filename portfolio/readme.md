@@ -25,7 +25,7 @@ some other works
 
 ### 2022 (to be updated soon)
 
-### 2021 2D Game Assets
+### 2021 2D Game Level Design
 <img  height="120" alt="stage10" src="https://github.com/user-attachments/assets/18bd91e9-4aa7-4d60-9f39-22fcd5125d29" />
 <img  height="120" alt="alpha_stage01" src="https://github.com/user-attachments/assets/01a18385-60fe-4a20-b425-d286b65c2312" />
 <img  height="120" alt="alpha_stage03" src="https://github.com/user-attachments/assets/555cadb9-f40e-42e4-8cb7-ff859b5d06a8" />
