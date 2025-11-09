@@ -19,6 +19,7 @@ some other works
 
 ### 2025 
 <img  height="120" alt="fix2nd" src="https://github.com/user-attachments/assets/809c96b8-b0ac-41bb-a985-0aeb5820f989" />
+<img  height="120" alt="dollhouse_corner_simple" src="https://github.com/user-attachments/assets/ddd5f683-0ff4-48cc-8cae-3658e2c9eecb" />
 
 
 ### 2024 (to be updated soon)
