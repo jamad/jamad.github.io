@@ -66,12 +66,11 @@ some other works
 <img  height="120" alt="{71ED5CC4-9875-4FF3-B25F-F72B77DA418E}" src="https://github.com/user-attachments/assets/7217444b-7734-45fe-883a-4ca596ec193a" />
 <img  height="120" alt="{30E67F5F-E6E1-4EBB-B3A9-7A5E92B5E2B6}" src="https://github.com/user-attachments/assets/7dca5cda-9151-422c-b141-404d9275810a" />
 <img  height="120" alt="{58DF8848-3290-40C5-BF07-78E18E018826}" src="https://github.com/user-attachments/assets/a99b8755-b866-4ba2-8f5d-b1de0868cd80" />
-<img  height="120"  alt="{CD992345-C50D-4030-A694-6050F5534CBF}" src="https://github.com/user-attachments/assets/108d9999-8715-43c9-8d8d-12ebdb1f01c9" />
-<img  height="120"　alt="{1FB229D0-62A8-4240-A3A9-EB9EA9340E41}" src="https://github.com/user-attachments/assets/a423fd49-3115-4813-8189-307a0480fe4e" />
+<img  height="120" alt="{CD992345-C50D-4030-A694-6050F5534CBF}" src="https://github.com/user-attachments/assets/108d9999-8715-43c9-8d8d-12ebdb1f01c9" />
+<img  height="120" alt="{1FB229D0-62A8-4240-A3A9-EB9EA9340E41}" src="https://github.com/user-attachments/assets/a423fd49-3115-4813-8189-307a0480fe4e" />
 <img  height="120" alt="{B27D6482-1ABF-485B-A076-D4BF8B0A01C6}" src="https://github.com/user-attachments/assets/3aabb130-af23-4bfd-a58b-accc3bbf1746" />
 <img  height="120" alt="{F01C3202-7A73-4C92-99AC-E09F1FDD34A6}" src="https://github.com/user-attachments/assets/74917299-278c-4aac-9165-88c0ca25ebf0" />
 <img  height="120" alt="{261B2094-EED2-4F3C-9BF4-C62E6152672B}" src="https://github.com/user-attachments/assets/9f90d0bd-96dc-4d1e-b0d7-4d09a4598006" />
-
 <img  height="120" alt="D03" src="https://github.com/user-attachments/assets/41dae17b-b292-45fc-b0a4-7822ed48bab4" />
 <img  height="120" alt="C08" src="https://github.com/user-attachments/assets/30b4d2b2-0e35-48f6-af98-a576e2a2e9f1" />
 
