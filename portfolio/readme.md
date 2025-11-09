@@ -76,6 +76,7 @@ some other works
 <img  height="120" alt="J04" src="https://github.com/user-attachments/assets/c4e25db9-e7f1-4bfe-8dd8-44e7bd009ee7" />
 <img  height="120" alt="B03" src="https://github.com/user-attachments/assets/00c0f0a4-1c52-4d54-8f63-a24151641f7e" />
 <img  height="120" alt="B04" src="https://github.com/user-attachments/assets/0f1247b1-e131-4992-9c11-930210a7facd" />
+<img  height="120" alt="A04" src="https://github.com/user-attachments/assets/ccc081eb-cd52-4e70-af8d-dcdda801a2c9" />
 
 
 ### 2020 misc data
