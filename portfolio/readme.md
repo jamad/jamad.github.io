@@ -31,6 +31,7 @@ some other works
 <img  height="120" alt="stage99" src="https://github.com/user-attachments/assets/db0a115d-1018-46b3-840f-f4730f0cc5d5" />
 <img  height="120" alt="GameOver" src="https://github.com/user-attachments/assets/95820bf9-b374-4ae0-8198-3e3bf82a97fb" />
 <img  height="120" alt="stage01" src="https://github.com/user-attachments/assets/9bb42712-18fd-4fa8-9836-cb2a744653ad" />
+<img  height="120" alt="stage05" src="https://github.com/user-attachments/assets/f9e35e9c-b1ee-4a00-a1b5-df1a41d4ea43" />
 
 
 ### 2021 3D print
