@@ -68,6 +68,8 @@ some other works
 <img  height="120" alt="{58DF8848-3290-40C5-BF07-78E18E018826}" src="https://github.com/user-attachments/assets/a99b8755-b866-4ba2-8f5d-b1de0868cd80" />
 <img  height="120"  alt="{CD992345-C50D-4030-A694-6050F5534CBF}" src="https://github.com/user-attachments/assets/108d9999-8715-43c9-8d8d-12ebdb1f01c9" />
 
+<img  height="120"　alt="{1FB229D0-62A8-4240-A3A9-EB9EA9340E41}" src="https://github.com/user-attachments/assets/a423fd49-3115-4813-8189-307a0480fe4e" />
+
 ### 2020 misc data
 <img height="120" alt="{7E8C1F12-ED8E-40E0-AED9-1BCB36C8BE30}" src="https://github.com/user-attachments/assets/0c2e59cd-8abe-44d1-85ac-8ab44080907f" />
 
