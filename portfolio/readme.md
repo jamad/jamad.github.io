@@ -41,6 +41,7 @@ some other works
 <img  height="120" alt="reflection" src="https://github.com/user-attachments/assets/c1a2cdb1-cddb-41d4-95d1-988c890d2bb5" />
 <img  height="120" alt="onion" src="https://github.com/user-attachments/assets/4ecd3fb9-0c40-4aea-a375-d8b7af4b83d1" />
 <img  height="120" alt="digestion" src="https://github.com/user-attachments/assets/02840bb4-dc23-4406-805b-53968f36deb0" />
+<img  height="120" alt="chonmage" src="https://github.com/user-attachments/assets/4dbcd0f1-2f50-48cc-88fc-62e0797bf3fd" />
 
 
 ### 2021 3D print
