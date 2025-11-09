@@ -58,7 +58,6 @@ some other works
 <img  height="120" alt="{EA28515D-11E4-4BEE-8A12-435FF26A5C12}" src="https://github.com/user-attachments/assets/bf32d059-8c6c-4bb5-8e79-a61ed5ee21a1" />
 <img  height="120" alt="{EA9E9780-5BF4-4B61-B71B-D2632D932327}" src="https://github.com/user-attachments/assets/bb400e3c-4233-466a-b2d5-1a2a844ddd10" />
 <img  height="120" alt="{C6DD37B9-905E-453B-A4B5-3157AFC5EAF6}" src="https://github.com/user-attachments/assets/0d0db959-8b58-4d16-82a4-b988c1805d1c" />
-
 <img  height="120" alt="{9E636B24-32BB-4D29-A25F-CFD956E247D9}" src="https://github.com/user-attachments/assets/e059e577-cfe3-4f9e-8aac-04a7083289fb" />
 <img  height="120" alt="{4E60CE67-4D7D-45D0-87D5-B87FDF91CA3D}" src="https://github.com/user-attachments/assets/4c726242-ba6a-476c-a606-2e4cdb0988b8" />
 <img  height="120" alt="{8D077666-800F-43B8-A6CB-FBCDCC82FA36}" src="https://github.com/user-attachments/assets/45041c93-0f3e-4d95-b23f-a7f707a2694f" />
@@ -67,6 +66,7 @@ some other works
 <img  height="120" alt="{71ED5CC4-9875-4FF3-B25F-F72B77DA418E}" src="https://github.com/user-attachments/assets/7217444b-7734-45fe-883a-4ca596ec193a" />
 <img  height="120" alt="{30E67F5F-E6E1-4EBB-B3A9-7A5E92B5E2B6}" src="https://github.com/user-attachments/assets/7dca5cda-9151-422c-b141-404d9275810a" />
 <img  height="120" alt="{58DF8848-3290-40C5-BF07-78E18E018826}" src="https://github.com/user-attachments/assets/a99b8755-b866-4ba2-8f5d-b1de0868cd80" />
+<img  height="120"  alt="{CD992345-C50D-4030-A694-6050F5534CBF}" src="https://github.com/user-attachments/assets/108d9999-8715-43c9-8d8d-12ebdb1f01c9" />
 
 ### 2020 misc data
 <img height="120" alt="{7E8C1F12-ED8E-40E0-AED9-1BCB36C8BE30}" src="https://github.com/user-attachments/assets/0c2e59cd-8abe-44d1-85ac-8ab44080907f" />
