@@ -18,6 +18,8 @@
 some other works
 
 ### 2025 (to be updated soon)
+<img  height="120" alt="fix2nd" src="https://github.com/user-attachments/assets/809c96b8-b0ac-41bb-a985-0aeb5820f989" />
+
 
 ### 2024 (to be updated soon)
 <img  height="120" alt="openbox" src="https://github.com/user-attachments/assets/fda2881f-3f42-4b60-b90e-ce2774d1e0cd" />
