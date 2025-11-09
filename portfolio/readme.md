@@ -23,6 +23,7 @@ some other works
 
 ### 2023 (to be updated soon)
 <img  height="120" alt="sauna" src="https://github.com/user-attachments/assets/29082f9d-dba2-4e06-b216-de58fa3456ff" />
+<img  height="120" alt="miniature_can" src="https://github.com/user-attachments/assets/95845548-d0f8-4acc-8f80-1aad677e53f1" />
 
 ### 2022 (to be updated soon)
 <img  height="120" alt="shelf_simulation" src="https://github.com/user-attachments/assets/058fc8f0-3d49-4713-ba17-cd9688078d39" />
