@@ -38,7 +38,7 @@ some other works
 <img height="120" alt="{971161A8-9CA0-4A33-9A17-9F7D23C794B8}" src="https://github.com/user-attachments/assets/9d7ac050-a9bd-4141-a10f-058c61a54618" />
 <img height="120" alt="{A8AA1E56-C7B7-44F4-AB6A-F26340BE0224}" src="https://github.com/user-attachments/assets/516466f1-c992-44b9-91e5-38bc07629e04" />
 
-### 2020 level design help ( Nintendo Switch game title)
+### 2020 level design help ( Nintendo Switch Game Title)
 <img  height="120" alt="{EAC713B9-BE4B-41EA-8BDD-4482D70DE50F}" src="https://github.com/user-attachments/assets/1a679ca1-8bc6-4e42-ab9e-1e3f9eff9f80" />
 <img  height="120" alt="{6BB49FC3-E94F-44F0-B8A8-FB1DABE6C6ED}" src="https://github.com/user-attachments/assets/57599c08-18c8-41c8-9ebb-24ed17dae0f8" />
 <img  height="120" alt="{B308D00B-CC09-4C9C-8A17-25BBB5CA59A4}" src="https://github.com/user-attachments/assets/0dc7d271-723f-436f-b80d-542c2206ec69" />
