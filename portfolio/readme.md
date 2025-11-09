@@ -21,6 +21,7 @@ some other works
 
 ### 2024 (to be updated soon)
 <img  height="120" alt="openbox" src="https://github.com/user-attachments/assets/fda2881f-3f42-4b60-b90e-ce2774d1e0cd" />
+<img  height="120" alt="miniaturebox_shelf" src="https://github.com/user-attachments/assets/7de57f66-27fd-49be-9e6d-41829dc38f52" />
 
 
 ### 2023 (to be updated soon)
