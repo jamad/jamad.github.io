@@ -30,6 +30,7 @@ some other works
 <img  height="120" alt="kerros2024" src="https://github.com/user-attachments/assets/e9261f4f-2b8b-4629-9f64-3fa91a9abf4f" />
 <img  height="120" alt="table_even_smaller" src="https://github.com/user-attachments/assets/4a0c598b-3149-4cda-94c6-55ef17882c21" />
 <img  height="120" alt="dollhouse_simple" src="https://github.com/user-attachments/assets/2c8b9701-f5ec-44d3-b985-c6a128106465" />
+<img  height="120" alt="miniature_box_marimekko" src="https://github.com/user-attachments/assets/3a160ab4-6f71-48f4-a269-c970982a6fe7" />
 
 
 
