@@ -55,6 +55,7 @@ some other works
 <img  height="120" alt="{73D2B9E9-F5E2-4AE4-8E14-BCDFF8DAEB3A}" src="https://github.com/user-attachments/assets/ea7aa0e2-c4e4-4fd8-acd9-f2ded86d473d" />
 <img  height="120" alt="{FC0946E1-04B0-47FC-A439-7EC6A3F26938}" src="https://github.com/user-attachments/assets/47f3f7dd-069a-4924-8cad-0c45bc4199b9" />
 <img  height="120" alt="{FD6F7218-3B68-4551-A853-A975FC1F86E0}" src="https://github.com/user-attachments/assets/423864d1-fb5d-41da-b2e4-9d18bb333759" />
+<img  height="120" alt="{EA28515D-11E4-4BEE-8A12-435FF26A5C12}" src="https://github.com/user-attachments/assets/bf32d059-8c6c-4bb5-8e79-a61ed5ee21a1" />
 
 <img  height="120" alt="{9E636B24-32BB-4D29-A25F-CFD956E247D9}" src="https://github.com/user-attachments/assets/e059e577-cfe3-4f9e-8aac-04a7083289fb" />
 <img  height="120" alt="{4E60CE67-4D7D-45D0-87D5-B87FDF91CA3D}" src="https://github.com/user-attachments/assets/4c726242-ba6a-476c-a606-2e4cdb0988b8" />
