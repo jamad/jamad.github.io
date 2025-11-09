@@ -45,6 +45,7 @@ some other works
 <img  height="120" alt="slope" src="https://github.com/user-attachments/assets/95533a8e-9d34-4259-84df-38d8397580c2" />
 <img  height="120" alt="polylines" src="https://github.com/user-attachments/assets/37a7703b-863e-4c29-a37f-cde3c615c2e5" />
 <img  height="120" alt="peaks" src="https://github.com/user-attachments/assets/52cfa8cf-db01-4db5-a55b-38180155517a" />
+<img  height="120" alt="switches" src="https://github.com/user-attachments/assets/e884195d-cce2-475e-b6d6-886708d9b466" />
 
 
 ### 2021 3D print
