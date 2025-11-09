@@ -30,6 +30,7 @@ some other works
 ### 2020 lasercut (to be updated soon)
 <img height="120" alt="{5DE7DD96-686B-4EBE-BF0E-D540049830CE}" src="https://github.com/user-attachments/assets/75b4a3ba-f805-44cf-b5bc-62c741707e4e" />
 <img height="120" alt="{F7C52DA9-E871-4268-9A4C-BD45EC38CC09}" src="https://github.com/user-attachments/assets/1c19d807-90c4-48d0-9ef4-a4502218dbd4" />
+<img height="120" alt="{BAFD5D80-F118-4838-A9EF-7B9B641EB835}" src="https://github.com/user-attachments/assets/906f5bd7-3d23-4c76-a462-c8d149dec891" />
 
 ### 2020 level design help ( Nintendo Switch game title)
 <img  height="120"  alt="{EAC713B9-BE4B-41EA-8BDD-4482D70DE50F}" src="https://github.com/user-attachments/assets/1a679ca1-8bc6-4e42-ab9e-1e3f9eff9f80" />
