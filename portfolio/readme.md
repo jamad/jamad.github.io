@@ -28,6 +28,11 @@ some other works
 ### 2021 2D Game Assets
 <img  height="120" alt="GameOver" src="https://github.com/user-attachments/assets/95820bf9-b374-4ae0-8198-3e3bf82a97fb" />
 
+### 2021 3D print
+<img height="120" alt="trunk" src="https://github.com/user-attachments/assets/a0a6c2fa-9b2c-46a0-a353-c5b500b04602" />
+<img height="120" alt="tv" src="https://github.com/user-attachments/assets/fad99afa-7a2f-45a7-a5b5-1cadf69d6354" />
+<img height="120" alt="tv2" src="https://github.com/user-attachments/assets/268713d6-fa26-4cb4-bf83-aefa1485b07a" />
+<img height="120" alt="tv3" src="https://github.com/user-attachments/assets/93ee95b2-ca16-4a93-b050-7e16740241ce" />
 
 ### 2020 lasercut
 <img height="120" alt="{5DE7DD96-686B-4EBE-BF0E-D540049830CE}" src="https://github.com/user-attachments/assets/75b4a3ba-f805-44cf-b5bc-62c741707e4e" />
@@ -39,13 +44,6 @@ some other works
 <img height="120" alt="{113E0527-153B-4C49-8A57-9526E869200A}" src="https://github.com/user-attachments/assets/aff1b6c6-6a50-454e-9ab2-2519a9f7d194" />
 <img height="120" alt="{971161A8-9CA0-4A33-9A17-9F7D23C794B8}" src="https://github.com/user-attachments/assets/9d7ac050-a9bd-4141-a10f-058c61a54618" />
 <img height="120" alt="{A8AA1E56-C7B7-44F4-AB6A-F26340BE0224}" src="https://github.com/user-attachments/assets/516466f1-c992-44b9-91e5-38bc07629e04" />
-
-### 2020 3D print
-<img height="120" alt="trunk" src="https://github.com/user-attachments/assets/a0a6c2fa-9b2c-46a0-a353-c5b500b04602" />
-<img height="120" alt="tv" src="https://github.com/user-attachments/assets/fad99afa-7a2f-45a7-a5b5-1cadf69d6354" />
-<img height="120" alt="tv2" src="https://github.com/user-attachments/assets/268713d6-fa26-4cb4-bf83-aefa1485b07a" />
-<img height="120" alt="tv3" src="https://github.com/user-attachments/assets/93ee95b2-ca16-4a93-b050-7e16740241ce" />
-
 
 ### 2020 level design help ( Nintendo Switch Game Title)
 <img  height="120" alt="{EAC713B9-BE4B-41EA-8BDD-4482D70DE50F}" src="https://github.com/user-attachments/assets/1a679ca1-8bc6-4e42-ab9e-1e3f9eff9f80" />
