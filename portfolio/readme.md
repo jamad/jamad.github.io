@@ -40,6 +40,7 @@ some other works
 <img  height="120" alt="arcs" src="https://github.com/user-attachments/assets/0648d414-7320-44f2-abd2-caa912822cb5" />
 <img  height="120" alt="reflection" src="https://github.com/user-attachments/assets/c1a2cdb1-cddb-41d4-95d1-988c890d2bb5" />
 <img  height="120" alt="onion" src="https://github.com/user-attachments/assets/4ecd3fb9-0c40-4aea-a375-d8b7af4b83d1" />
+<img  height="120" alt="digestion" src="https://github.com/user-attachments/assets/02840bb4-dc23-4406-805b-53968f36deb0" />
 
 
 ### 2021 3D print
