@@ -24,6 +24,8 @@ some other works
 ### 2023 (to be updated soon)
 
 ### 2022 (to be updated soon)
+<img  height="120" alt="shelf_simulation" src="https://github.com/user-attachments/assets/058fc8f0-3d49-4713-ba17-cd9688078d39" />
+
 
 ### 2021 2D Game Level Design
 <img  height="120" alt="stage10" src="https://github.com/user-attachments/assets/18bd91e9-4aa7-4d60-9f39-22fcd5125d29" />
