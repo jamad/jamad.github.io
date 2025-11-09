@@ -43,6 +43,7 @@ some other works
 <img  height="120" alt="digestion" src="https://github.com/user-attachments/assets/02840bb4-dc23-4406-805b-53968f36deb0" />
 <img  height="120" alt="chonmage" src="https://github.com/user-attachments/assets/4dbcd0f1-2f50-48cc-88fc-62e0797bf3fd" />
 <img  height="120" alt="slope" src="https://github.com/user-attachments/assets/95533a8e-9d34-4259-84df-38d8397580c2" />
+<img  height="120" alt="polylines"  src="https://github.com/user-attachments/assets/37a7703b-863e-4c29-a37f-cde3c615c2e5" />
 
 
 ### 2021 3D print
