@@ -27,6 +27,7 @@ some other works
 <img  height="120" alt="hay_arcs" src="https://github.com/user-attachments/assets/1a3c54cb-72fd-4fd8-8aa1-0295e6634c3f" />
 <img  height="120" alt="chair_nets"  src="https://github.com/user-attachments/assets/9ddccd78-a287-4d43-b6be-47816f15fd19" />
 <img  height="120" alt="scale_cube"  src="https://github.com/user-attachments/assets/d8cad755-bc16-45dd-89c3-b5324237b880" />
+<img  height="120" alt="kerros2024" src="https://github.com/user-attachments/assets/e9261f4f-2b8b-4629-9f64-3fa91a9abf4f" />
 
 
 ### 2023 (to be updated soon)
