@@ -58,8 +58,6 @@ some other works
 <img  height="120" alt="{71ED5CC4-9875-4FF3-B25F-F72B77DA418E}" src="https://github.com/user-attachments/assets/7217444b-7734-45fe-883a-4ca596ec193a" />
 <img  height="120" alt="{30E67F5F-E6E1-4EBB-B3A9-7A5E92B5E2B6}" src="https://github.com/user-attachments/assets/7dca5cda-9151-422c-b141-404d9275810a" />
 <img  height="120" alt="{58DF8848-3290-40C5-BF07-78E18E018826}" src="https://github.com/user-attachments/assets/a99b8755-b866-4ba2-8f5d-b1de0868cd80" />
-<img  height="120" alt="{FEA42FDB-7C42-469C-A7F4-79B600A9D1E8}" src="https://github.com/user-attachments/assets/aa2457fd-b501-4555-957f-0c7ba072c511" />
-<img height="120"  alt="{1704B9FD-85A2-46A8-8FE1-42DB5143C034}" src="https://github.com/user-attachments/assets/8d017046-f463-4e92-b630-c5ae2fade630" />
 
 ### 2020 misc data
 <img height="120" alt="{7E8C1F12-ED8E-40E0-AED9-1BCB36C8BE30}" src="https://github.com/user-attachments/assets/0c2e59cd-8abe-44d1-85ac-8ab44080907f" />
@@ -95,13 +93,14 @@ some other works
 <img height="120"  alt="{E2F44EFC-6C95-431C-8EDF-83ACAF7D8AE1}" src="https://github.com/user-attachments/assets/1af7b3ea-4167-4be1-bd86-ded82b6bc8bb" />
 <img height="120"   alt="{A6AD7304-6311-4C6A-9AD5-325E34700C5C}" src="https://github.com/user-attachments/assets/7067acb3-09ad-4dc2-b8a1-76e301d24f05" />
 <img height="120"  alt="{C9DE15CF-26ED-4FFB-ACDD-0753DE8F72B1}" src="https://github.com/user-attachments/assets/023e51c9-9b24-41a7-93ea-8966db5bd165" />
-
 <img height="120" alt="{CE2F85E2-3BDD-475D-AAFC-2C466812F28D}" src="https://github.com/user-attachments/assets/d1ab3aae-3cc5-4aea-a286-a05d5ab1212e" />
 <img height="120" alt="{84F4F892-661E-4A65-806F-6D087736EA7E}" src="https://github.com/user-attachments/assets/4fbea382-3a65-4be4-a409-31bb1c5402c4" />
 <img height="120" alt="{4146878C-31C7-41AE-AF79-498861563575}" src="https://github.com/user-attachments/assets/c1c66bcf-be84-419a-960f-d6a987f36e31" />
 <img height="120"  alt="{7DEF1C62-29D3-43CE-9A09-435CE0EC3C3C}" src="https://github.com/user-attachments/assets/deefa35b-edf8-4220-92e7-c0d5e6b40f5b" />
 <img height="120" alt="{2FDCB725-75F7-4D3B-8EB4-DDB5696890F9}" src="https://github.com/user-attachments/assets/6d91bc7a-d611-4e64-9bb2-e79787623c1d" />
 <img height="120" alt="{3B794EB0-B27E-4E04-995F-D423EC8A89C7}" src="https://github.com/user-attachments/assets/0f86a3cb-77d2-419e-82e4-10cd76cd7f68" />
+<img  height="120" alt="{FEA42FDB-7C42-469C-A7F4-79B600A9D1E8}" src="https://github.com/user-attachments/assets/aa2457fd-b501-4555-957f-0c7ba072c511" />
+<img height="120"  alt="{1704B9FD-85A2-46A8-8FE1-42DB5143C034}" src="https://github.com/user-attachments/assets/8d017046-f463-4e92-b630-c5ae2fade630" />
 
 
 ### 2019 VR GameJam asset production
