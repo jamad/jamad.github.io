@@ -39,7 +39,8 @@ some other works
 <img height="120" alt="{A8AA1E56-C7B7-44F4-AB6A-F26340BE0224}" src="https://github.com/user-attachments/assets/516466f1-c992-44b9-91e5-38bc07629e04" />
 
 ### 2020 3D print
-<img height="120" alt="{8A29D398-950E-4F24-B524-A736777540A0}" src="https://github.com/user-attachments/assets/a0a6c2fa-9b2c-46a0-a353-c5b500b04602" />
+<img height="120" alt="trunk" src="https://github.com/user-attachments/assets/a0a6c2fa-9b2c-46a0-a353-c5b500b04602" />
+<img height="120" alt="tv" src="https://github.com/user-attachments/assets/fad99afa-7a2f-45a7-a5b5-1cadf69d6354" />
 
 
 ### 2020 level design help ( Nintendo Switch Game Title)
