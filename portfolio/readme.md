@@ -70,6 +70,8 @@ some other works
 <img  height="120"　alt="{1FB229D0-62A8-4240-A3A9-EB9EA9340E41}" src="https://github.com/user-attachments/assets/a423fd49-3115-4813-8189-307a0480fe4e" />
 <img  height="120" alt="{B27D6482-1ABF-485B-A076-D4BF8B0A01C6}" src="https://github.com/user-attachments/assets/3aabb130-af23-4bfd-a58b-accc3bbf1746" />
 <img  height="120" alt="{F01C3202-7A73-4C92-99AC-E09F1FDD34A6}" src="https://github.com/user-attachments/assets/74917299-278c-4aac-9165-88c0ca25ebf0" />
+<img  height="120" alt="{261B2094-EED2-4F3C-9BF4-C62E6152672B}" src="https://github.com/user-attachments/assets/9f90d0bd-96dc-4d1e-b0d7-4d09a4598006" />
+
 
 ### 2020 misc data
 <img height="120" alt="{7E8C1F12-ED8E-40E0-AED9-1BCB36C8BE30}" src="https://github.com/user-attachments/assets/0c2e59cd-8abe-44d1-85ac-8ab44080907f" />
