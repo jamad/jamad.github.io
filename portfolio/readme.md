@@ -28,6 +28,7 @@ some other works
 <img  height="120" alt="chair_nets"  src="https://github.com/user-attachments/assets/9ddccd78-a287-4d43-b6be-47816f15fd19" />
 <img  height="120" alt="scale_cube"  src="https://github.com/user-attachments/assets/d8cad755-bc16-45dd-89c3-b5324237b880" />
 <img  height="120" alt="kerros2024" src="https://github.com/user-attachments/assets/e9261f4f-2b8b-4629-9f64-3fa91a9abf4f" />
+<img  height="120" alt="table_even_smaller" src="https://github.com/user-attachments/assets/4a0c598b-3149-4cda-94c6-55ef17882c21" />
 
 
 ### 2023 (to be updated soon)
