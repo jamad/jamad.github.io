@@ -25,9 +25,11 @@ some other works
 
 ### 2022 (to be updated soon)
 
-### 2021 (to be updated soon)
+### 2021 2D Game Assets
+<img  height="120" alt="GameOver" src="https://github.com/user-attachments/assets/95820bf9-b374-4ae0-8198-3e3bf82a97fb" />
 
-### 2020 lasercut (to be updated soon)
+
+### 2020 lasercut
 <img height="120" alt="{5DE7DD96-686B-4EBE-BF0E-D540049830CE}" src="https://github.com/user-attachments/assets/75b4a3ba-f805-44cf-b5bc-62c741707e4e" />
 <img height="120" alt="{F7C52DA9-E871-4268-9A4C-BD45EC38CC09}" src="https://github.com/user-attachments/assets/1c19d807-90c4-48d0-9ef4-a4502218dbd4" />
 <img height="120" alt="{BAFD5D80-F118-4838-A9EF-7B9B641EB835}" src="https://github.com/user-attachments/assets/906f5bd7-3d23-4c76-a462-c8d149dec891" />
