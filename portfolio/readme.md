@@ -40,6 +40,7 @@ some other works
 <img  height="120"  alt="{80A7FCD6-4213-458A-BA9D-E62278DC35E7}" src="https://github.com/user-attachments/assets/023ae05c-fa2b-4357-acdb-0d3f008daa8b" />
 <img  height="120"  alt="{21F19117-42D6-4DF6-B3AE-C2F0ECBDDA9E}" src="https://github.com/user-attachments/assets/cbe82640-1fc5-4a02-a097-385df879276f" />
 <img  height="120"  alt="{D3F85330-7F47-47A8-9C9E-65062E89BCBB}" src="https://github.com/user-attachments/assets/edcf1d65-1376-4cb8-932f-3198fe8c5927" />
+<img  height="120"   alt="{F53F9438-64B7-4B25-B5CB-EC07A14C084B}" src="https://github.com/user-attachments/assets/54f0d03e-5d26-4232-b0d9-aa5469eb76b4" />
 
 <img  height="120" alt="{9E636B24-32BB-4D29-A25F-CFD956E247D9}" src="https://github.com/user-attachments/assets/e059e577-cfe3-4f9e-8aac-04a7083289fb" />
 <img  height="120" alt="{4E60CE67-4D7D-45D0-87D5-B87FDF91CA3D}" src="https://github.com/user-attachments/assets/4c726242-ba6a-476c-a606-2e4cdb0988b8" />
