@@ -22,7 +22,7 @@ some other works
 <img  height="120" alt="dollhouse_corner_simple" src="https://github.com/user-attachments/assets/ddd5f683-0ff4-48cc-8cae-3658e2c9eecb" />
 
 
-### 2024 (to be updated soon)
+### 2024 
 <img  height="120" alt="openbox" src="https://github.com/user-attachments/assets/fda2881f-3f42-4b60-b90e-ce2774d1e0cd" />
 <img  height="120" alt="miniaturebox_shelf" src="https://github.com/user-attachments/assets/7de57f66-27fd-49be-9e6d-41829dc38f52" />
 <img  height="120" alt="hay_arcs" src="https://github.com/user-attachments/assets/1a3c54cb-72fd-4fd8-8aa1-0295e6634c3f" />
@@ -36,11 +36,11 @@ some other works
 
 
 
-### 2023 (to be updated soon)
+### 2023 (to be added soon)
 <img  height="120" alt="sauna" src="https://github.com/user-attachments/assets/29082f9d-dba2-4e06-b216-de58fa3456ff" />
 <img  height="120" alt="miniature_can" src="https://github.com/user-attachments/assets/95845548-d0f8-4acc-8f80-1aad677e53f1" />
 
-### 2022 (to be updated soon)
+### 2022 (to be added soon)
 <img  height="120" alt="shelf_simulation" src="https://github.com/user-attachments/assets/058fc8f0-3d49-4713-ba17-cd9688078d39" />
 
 
