@@ -39,6 +39,7 @@ some other works
 <img  height="120" alt="planets" src="https://github.com/user-attachments/assets/fa9e14de-8d37-4eb0-abec-75866369d531" />
 <img  height="120" alt="arcs" src="https://github.com/user-attachments/assets/0648d414-7320-44f2-abd2-caa912822cb5" />
 <img  height="120" alt="reflection" src="https://github.com/user-attachments/assets/c1a2cdb1-cddb-41d4-95d1-988c890d2bb5" />
+<img  height="120" alt="onion" src="https://github.com/user-attachments/assets/4ecd3fb9-0c40-4aea-a375-d8b7af4b83d1" />
 
 
 ### 2021 3D print
