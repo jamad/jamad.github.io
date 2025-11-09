@@ -25,6 +25,7 @@ some other works
 <img  height="120" alt="openbox" src="https://github.com/user-attachments/assets/fda2881f-3f42-4b60-b90e-ce2774d1e0cd" />
 <img  height="120" alt="miniaturebox_shelf" src="https://github.com/user-attachments/assets/7de57f66-27fd-49be-9e6d-41829dc38f52" />
 <img  height="120" alt="hay_arcs" src="https://github.com/user-attachments/assets/1a3c54cb-72fd-4fd8-8aa1-0295e6634c3f" />
+<img  height="120" alt="chair_nets"  src="https://github.com/user-attachments/assets/9ddccd78-a287-4d43-b6be-47816f15fd19" />
 
 
 ### 2023 (to be updated soon)
