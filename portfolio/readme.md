@@ -36,6 +36,7 @@ some other works
 <img  height="120" alt="stage05" src="https://github.com/user-attachments/assets/f9e35e9c-b1ee-4a00-a1b5-df1a41d4ea43" />
 <img  height="120" alt="characters" src="https://github.com/user-attachments/assets/736766c7-6fa5-45b7-b308-ea4d50295722" />
 <img  height="120" alt="hoop" src="https://github.com/user-attachments/assets/db39b216-14a0-4be5-a6c9-2b0d8fe46b26" />
+<img  height="120" alt="planets" src="https://github.com/user-attachments/assets/fa9e14de-8d37-4eb0-abec-75866369d531" />
 
 
 ### 2021 3D print
