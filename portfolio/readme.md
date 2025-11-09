@@ -86,6 +86,7 @@ some other works
 <img  height="120" alt="F02" src="https://github.com/user-attachments/assets/2d595d36-aa14-4f54-a9fc-4887d5f57ea5" />
 <img  height="120" alt="F07" src="https://github.com/user-attachments/assets/6181fa28-b6bc-4aa7-915e-0668c623204e" />
 <img  height="120" alt="G01" src="https://github.com/user-attachments/assets/27f4b425-d019-4a94-bb88-0e8a54bdd7d6" />
+<img  height="120" alt="G06" src="https://github.com/user-attachments/assets/aeefcfc0-9d18-4d96-bf6a-9a2bdaea5cbf" />
 
 
 ### 2020 misc data
