@@ -309,6 +309,8 @@ some other works
 <img height="120" alt="{959BF3D4-C658-4D16-A3EE-19CA79C8D906}" src="https://github.com/user-attachments/assets/b4841a1c-50fa-4e4b-839d-03c6931fb541" />
 <img height="120" alt="{1CF57C9C-1484-4F3E-9AF8-555030CC259B}" src="https://github.com/user-attachments/assets/b330d61f-1d01-4a2e-b2d8-7004376b32cc" />
 
+### 2014-2015 Quantum break level design works and Tools QA at Remedy
+* WED Editor / Dialogue Editor 
 
 ### 2013 unity VR app asset production
 <img height="120" alt="{43056DD1-238E-437D-BDCA-B4C820AEB310}" src="https://github.com/user-attachments/assets/7e12f465-4058-45ec-9d8f-c0e010917c03" />
@@ -329,7 +331,6 @@ some other works
 <img height="120" alt="{5A27B57A-7514-4C73-9951-5C9B56F98DE0}" src="https://github.com/user-attachments/assets/4f948e69-c6a8-45cf-b572-21c1b348c645" />
 
 ### before 2013 (to be updated soon)
-* Quantum break level design works and Tools QA at Remedy
 * Hitman Absolution level design works at IO Interactive
 * Watchmen level design works at Deadline games
 * Chili con carnage level design works at Deadline games
