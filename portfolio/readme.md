@@ -1,13 +1,4 @@
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-QEJBQQMWT9"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-QEJBQQMWT9');
-</script>
 
 
 <!--ダークモード-->
@@ -354,4 +345,23 @@ some other works
 * Spikeout DBO / FE level design works at SEGA
 * Daytona USA 2 effect works at SEGA
 * Scudrace / Scudrace plus assets at SEGA
+
+
+
+
+
+---
+
+
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-QEJBQQMWT9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-QEJBQQMWT9');
+</script>
+
 
