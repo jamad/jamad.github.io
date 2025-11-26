@@ -1,4 +1,15 @@
 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-QEJBQQMWT9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-QEJBQQMWT9');
+</script>
+
+
 <!--ダークモード-->
   <meta name="color-scheme" content="dark light">
 
