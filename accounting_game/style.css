@@ -1,0 +1,21 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+h1 {
+    color: #2c3e50;
+}
+
+#game {
+    margin-top: 20px;
+}
+
+label {
+    display: block;
+    margin: 10px 0;
+}
+
+button {
+    margin-top: 10px;
+}

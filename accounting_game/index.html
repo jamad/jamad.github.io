@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>簿記ゲーム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>簿記ミニゲーム</h1>
+    <div id="game">
+        <p id="transaction"></p>
+        <label>借方:
+            <select id="debit">
+                <option value="Cash">Cash</option>
+                <option value="Rent Expense">Rent Expense</option>
+                <option value="Inventory">Inventory</option>
+            </select>
+        </label>
+        <label>貸方:
+            <select id="credit">
+                <option value="Sales">Sales</option>
+                <option value="Cash">Cash</option>
+                <option value="Accounts Payable">Accounts Payable</option>
+            </select>
+        </label>
+        <label>金額: <input type="number" id="amount" value="0"></label>
+        <button id="submit">送信</button>
+        <p id="result"></p>
+        <p>スコア: <span id="score">0</span></p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
