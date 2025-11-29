@@ -12,6 +12,7 @@
 
     <div id="transaction-area">
         <p id="transaction">取引がここに表示されます</p>
+
         <label>借方 / Debit:
             <select id="debit">
                 <option value="Cash">Cash / 現金</option>
@@ -19,6 +20,7 @@
                 <option value="Inventory">Inventory / 商品在庫</option>
             </select>
         </label>
+
         <label>貸方 / Credit:
             <select id="credit">
                 <option value="Sales">Sales / 売上</option>
@@ -26,69 +28,81 @@
                 <option value="AccountsPayable">Accounts Payable / 買掛金</option>
             </select>
         </label>
+
         <label>金額 / Amount: <input type="number" id="amount" value="0"></label>
+
         <button id="submit">送信 / Submit</button>
         <p id="result"></p>
     </div>
 
     <div id="ledger-area">
-        <h2>Cash / 現金</h2>
-        <div class="ledger" id="Cash-ledger">
-            <div class="debit">
-                <h3>Debit / 借方</h3>
-                <ul id="Cash-debit-list"></ul>
-            </div>
-            <div class="credit">
-                <h3>Credit / 貸方</h3>
-                <ul id="Cash-credit-list"></ul>
-            </div>
-        </div>
-
-        <h2>Sales / 売上</h2>
-        <div class="ledger" id="Sales-ledger">
-            <div class="debit">
-                <h3>Debit / 借方</h3>
-                <ul id="Sales-debit-list"></ul>
-            </div>
-            <div class="credit">
-                <h3>Credit / 貸方</h3>
-                <ul id="Sales-credit-list"></ul>
+        <div class="ledger-wrapper" id="Cash-ledger-wrapper">
+            <h2>Cash / 現金</h2>
+            <div class="ledger" id="Cash-ledger">
+                <div class="debit">
+                    <h3>Debit / 借方</h3>
+                    <ul id="Cash-debit-list"></ul>
+                </div>
+                <div class="credit">
+                    <h3>Credit / 貸方</h3>
+                    <ul id="Cash-credit-list"></ul>
+                </div>
             </div>
         </div>
 
-        <h2>Rent Expense / 家賃</h2>
-        <div class="ledger" id="RentExpense-ledger">
-            <div class="debit">
-                <h3>Debit / 借方</h3>
-                <ul id="RentExpense-debit-list"></ul>
-            </div>
-            <div class="credit">
-                <h3>Credit / 貸方</h3>
-                <ul id="RentExpense-credit-list"></ul>
-            </div>
-        </div>
-
-        <h2>Inventory / 商品在庫</h2>
-        <div class="ledger" id="Inventory-ledger">
-            <div class="debit">
-                <h3>Debit / 借方</h3>
-                <ul id="Inventory-debit-list"></ul>
-            </div>
-            <div class="credit">
-                <h3>Credit / 貸方</h3>
-                <ul id="Inventory-credit-list"></ul>
+        <div class="ledger-wrapper" id="Sales-ledger-wrapper">
+            <h2>Sales / 売上</h2>
+            <div class="ledger" id="Sales-ledger">
+                <div class="debit">
+                    <h3>Debit / 借方</h3>
+                    <ul id="Sales-debit-list"></ul>
+                </div>
+                <div class="credit">
+                    <h3>Credit / 貸方</h3>
+                    <ul id="Sales-credit-list"></ul>
+                </div>
             </div>
         </div>
 
-        <h2>Accounts Payable / 買掛金</h2>
-        <div class="ledger" id="AccountsPayable-ledger">
-            <div class="debit">
-                <h3>Debit / 借方</h3>
-                <ul id="AccountsPayable-debit-list"></ul>
+        <div class="ledger-wrapper" id="RentExpense-ledger-wrapper">
+            <h2>Rent Expense / 家賃</h2>
+            <div class="ledger" id="RentExpense-ledger">
+                <div class="debit">
+                    <h3>Debit / 借方</h3>
+                    <ul id="RentExpense-debit-list"></ul>
+                </div>
+                <div class="credit">
+                    <h3>Credit / 貸方</h3>
+                    <ul id="RentExpense-credit-list"></ul>
+                </div>
             </div>
-            <div class="credit">
-                <h3>Credit / 貸方</h3>
-                <ul id="AccountsPayable-credit-list"></ul>
+        </div>
+
+        <div class="ledger-wrapper" id="Inventory-ledger-wrapper">
+            <h2>Inventory / 商品在庫</h2>
+            <div class="ledger" id="Inventory-ledger">
+                <div class="debit">
+                    <h3>Debit / 借方</h3>
+                    <ul id="Inventory-debit-list"></ul>
+                </div>
+                <div class="credit">
+                    <h3>Credit / 貸方</h3>
+                    <ul id="Inventory-credit-list"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="ledger-wrapper" id="AccountsPayable-ledger-wrapper">
+            <h2>Accounts Payable / 買掛金</h2>
+            <div class="ledger" id="AccountsPayable-ledger">
+                <div class="debit">
+                    <h3>Debit / 借方</h3>
+                    <ul id="AccountsPayable-debit-list"></ul>
+                </div>
+                <div class="credit">
+                    <h3>Credit / 貸方</h3>
+                    <ul id="AccountsPayable-credit-list"></ul>
+                </div>
             </div>
         </div>
     </div>

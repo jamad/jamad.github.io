@@ -20,13 +20,16 @@ button {
     margin-top: 10px;
 }
 
+.ledger-wrapper {
+    margin-bottom: 20px;
+}
+
 .ledger {
     display: flex;
     justify-content: space-between;
-    width: 400px;
     border: 1px solid #333;
     padding: 10px;
-    margin-bottom: 20px;
+    width: 400px;
 }
 
 .debit,

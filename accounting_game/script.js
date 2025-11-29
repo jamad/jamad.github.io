@@ -43,6 +43,7 @@ document.getElementById("submit").addEventListener("click", () => {
         addLedgerEntry(debit, "debit", t.description, amount);
         addLedgerEntry(credit, "credit", t.description, amount);
 
+
     } else {
         document.getElementById("result").innerText =
             `❌ 間違い！正解は ${t.debit} / ${t.credit} / ${t.amount} €`;
