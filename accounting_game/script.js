@@ -10,9 +10,10 @@ let score = 0;
 
 function showTransaction() {
     const t = transactions[current];
-    document.getElementById("transaction").innerText = `取引: ${t.description}, 金額: ${t.amount} €`;
+    document.getElementById("transaction").innerText =
+        `取引: ${t.description}, 金額: ${t.amount} €`;
     document.getElementById("amount").value = t.amount;
-    document.getElementById("result").innerText = "";
+    // ★ ここでは result をクリアしない
 }
 
 document.getElementById("submit").addEventListener("click", () => {
@@ -23,14 +24,17 @@ document.getElementById("submit").addEventListener("click", () => {
     const t = transactions[current];
 
     if (debit === t.debit && credit === t.credit && amount === t.amount) {
-        document.getElementById("result").innerText = "✅ 正解！";
+        document.getElementById("result").innerText =
+            `✅ 正解！ (${t.debit} / ${t.credit} / ${t.amount} €)`;
         score += 1;
     } else {
-        document.getElementById("result").innerText = `❌ 間違い！正解は ${t.debit} / ${t.credit} ${t.amount} €`;
+        document.getElementById("result").innerText =
+            `❌ 間違い！ 正解は ${t.debit} / ${t.credit} / ${t.amount} €`;
     }
 
     current = (current + 1) % transactions.length;
     document.getElementById("score").innerText = score;
+
     showTransaction();
 });
 
