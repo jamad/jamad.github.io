@@ -1,9 +1,9 @@
-// サンプル取引リスト
 const transactions = [
-    { description: "商品売上", debit: "Cash", credit: "Sales", amount: 1000 },
-    { description: "家賃支払い", debit: "Rent Expense", credit: "Cash", amount: 500 },
-    { description: "商品仕入れ", debit: "Inventory", credit: "Accounts Payable", amount: 800 }
+    { description: "商品売上 / Sales", debit: "Cash", credit: "Sales", amount: 1000 },
+    { description: "家賃支払い / Rent", debit: "RentExpense", credit: "Cash", amount: 500 },
+    { description: "商品仕入れ / Inventory Purchase", debit: "Inventory", credit: "AccountsPayable", amount: 800 }
 ];
+
 
 let current = 0;
 let score = 0;
@@ -13,28 +13,50 @@ function showTransaction() {
     document.getElementById("transaction").innerText =
         `取引: ${t.description}, 金額: ${t.amount} €`;
     document.getElementById("amount").value = t.amount;
-    // ★ ここでは result をクリアしない
 }
+function addLedgerEntry(account, side, description, amount) {
+    const safeAccount = account.replace(/\s|\//g, ''); // id と一致させる
+    const listId = `${safeAccount}-${side}-list`;
+    const ul = document.getElementById(listId);
+    if (!ul) {
+        console.warn(`Ledger list not found: ${listId}`);
+        return;
+    }
+    const li = document.createElement("li");
+    li.textContent = `${amount} (${description})`;
+    ul.appendChild(li);
+}
+
 
 document.getElementById("submit").addEventListener("click", () => {
     const debit = document.getElementById("debit").value;
     const credit = document.getElementById("credit").value;
     const amount = parseInt(document.getElementById("amount").value);
-
     const t = transactions[current];
 
     if (debit === t.debit && credit === t.credit && amount === t.amount) {
         document.getElementById("result").innerText =
             `✅ 正解！ (${t.debit} / ${t.credit} / ${t.amount} €)`;
         score += 1;
+
+        // T字勘定に反映
+        addLedgerEntry(debit, "debit", t.description, amount);
+        addLedgerEntry(credit, "credit", t.description, amount);
+
     } else {
         document.getElementById("result").innerText =
-            `❌ 間違い！ 正解は ${t.debit} / ${t.credit} / ${t.amount} €`;
+            `❌ 間違い！正解は ${t.debit} / ${t.credit} / ${t.amount} €`;
     }
 
-    current = (current + 1) % transactions.length;
-    document.getElementById("score").innerText = score;
+    current++;
+    if (current >= transactions.length) {
+        document.getElementById("result").innerText += " 🎉 全ての問題が終了しました！";
+        document.getElementById("submit").disabled = true;  // 送信ボタン無効化
+        return;
+    }
 
+
+    document.getElementById("score").innerText = score;
     showTransaction();
 });
 

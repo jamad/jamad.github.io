@@ -7,15 +7,34 @@ h1 {
     color: #2c3e50;
 }
 
-#game {
-    margin-top: 20px;
+#transaction-area {
+    margin-bottom: 30px;
 }
 
 label {
     display: block;
-    margin: 10px 0;
+    margin: 5px 0;
 }
 
 button {
     margin-top: 10px;
+}
+
+.ledger {
+    display: flex;
+    justify-content: space-between;
+    width: 400px;
+    border: 1px solid #333;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.debit,
+.credit {
+    width: 48%;
+}
+
+ul {
+    list-style-type: none;
+    padding-left: 0;
 }
