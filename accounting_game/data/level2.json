@@ -1,0 +1,20 @@
+[
+    {
+        "description": "商品売上 / Sales of goods",
+        "debit": "Cash",
+        "credit": "Sales",
+        "amount": 1000
+    },
+    {
+        "description": "家賃支払い / Paid rent",
+        "debit": "RentExpense",
+        "credit": "Cash",
+        "amount": 500
+    },
+    {
+        "description": "商品仕入れ / Inventory purchase",
+        "debit": "Inventory",
+        "credit": "AccountsPayable",
+        "amount": 800
+    }
+]
