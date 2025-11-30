@@ -2,112 +2,61 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8" />
     <title>Ledger Hero / 元帳ヒーロー</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <h1>Ledger Hero / 元帳ヒーロー</h1>
+    <header>
+        <h1>Ledger Hero / 元帳ヒーロー</h1>
+        <div id="level-info">Level: <span id="level">0</span> — <span id="level-name">Tutorial</span></div>
+    </header>
 
-    <div id="transaction-area">
-        <p id="transaction">取引がここに表示されます</p>
+    <main>
+        <section id="transaction-area" class="card">
+            <p id="instruction">まずはチュートリアル（レベル0）。画面下の「送信」を押すだけで正解になります。</p>
+            <p id="transaction">取引がここに表示されます</p>
 
-        <label>借方 / Debit:
-            <select id="debit">
-                <option value="Cash">Cash / 現金</option>
-                <option value="RentExpense">Rent Expense / 家賃</option>
-                <option value="Inventory">Inventory / 商品在庫</option>
-            </select>
-        </label>
+            <div class="form-row">
+                <label>借方 / Debit:
+                    <select id="debit"></select>
+                </label>
 
-        <label>貸方 / Credit:
-            <select id="credit">
-                <option value="Sales">Sales / 売上</option>
-                <option value="Cash">Cash / 現金</option>
-                <option value="AccountsPayable">Accounts Payable / 買掛金</option>
-            </select>
-        </label>
+                <label>貸方 / Credit:
+                    <select id="credit"></select>
+                </label>
 
-        <label>金額 / Amount: <input type="number" id="amount" value="0"></label>
-
-        <button id="submit">送信 / Submit</button>
-        <p id="result"></p>
-    </div>
-
-    <div id="ledger-area">
-        <div class="ledger-wrapper" id="Cash-ledger-wrapper">
-            <h2>Cash / 現金</h2>
-            <div class="ledger" id="Cash-ledger">
-                <div class="debit">
-                    <h3>Debit / 借方</h3>
-                    <ul id="Cash-debit-list"></ul>
-                </div>
-                <div class="credit">
-                    <h3>Credit / 貸方</h3>
-                    <ul id="Cash-credit-list"></ul>
-                </div>
+                <label>金額 / Amount:
+                    <input type="number" id="amount" />
+                </label>
             </div>
-        </div>
 
-        <div class="ledger-wrapper" id="Sales-ledger-wrapper">
-            <h2>Sales / 売上</h2>
-            <div class="ledger" id="Sales-ledger">
-                <div class="debit">
-                    <h3>Debit / 借方</h3>
-                    <ul id="Sales-debit-list"></ul>
-                </div>
-                <div class="credit">
-                    <h3>Credit / 貸方</h3>
-                    <ul id="Sales-credit-list"></ul>
-                </div>
+            <div class="controls">
+                <button id="submit">送信 / Submit</button>
+                <button id="next-level">次のレベルへ / Next Level</button>
             </div>
-        </div>
 
-        <div class="ledger-wrapper" id="RentExpense-ledger-wrapper">
-            <h2>Rent Expense / 家賃</h2>
-            <div class="ledger" id="RentExpense-ledger">
-                <div class="debit">
-                    <h3>Debit / 借方</h3>
-                    <ul id="RentExpense-debit-list"></ul>
-                </div>
-                <div class="credit">
-                    <h3>Credit / 貸方</h3>
-                    <ul id="RentExpense-credit-list"></ul>
-                </div>
+            <p id="result" class="result"></p>
+        </section>
+
+        <section id="ledger-area" class="card">
+            <h2>Ledgers / 元帳</h2>
+            <div id="ledgers-container" class="ledgers-container">
+                <!-- 勘定は script.js が自動生成 -->
             </div>
-        </div>
+        </section>
 
-        <div class="ledger-wrapper" id="Inventory-ledger-wrapper">
-            <h2>Inventory / 商品在庫</h2>
-            <div class="ledger" id="Inventory-ledger">
-                <div class="debit">
-                    <h3>Debit / 借方</h3>
-                    <ul id="Inventory-debit-list"></ul>
-                </div>
-                <div class="credit">
-                    <h3>Credit / 貸方</h3>
-                    <ul id="Inventory-credit-list"></ul>
-                </div>
-            </div>
-        </div>
+        <aside class="card" id="status">
+            <p>Score / スコア: <span id="score">0</span></p>
+            <p>Progress: <span id="progress">0 / 0</span></p>
+        </aside>
+    </main>
 
-        <div class="ledger-wrapper" id="AccountsPayable-ledger-wrapper">
-            <h2>Accounts Payable / 買掛金</h2>
-            <div class="ledger" id="AccountsPayable-ledger">
-                <div class="debit">
-                    <h3>Debit / 借方</h3>
-                    <ul id="AccountsPayable-debit-list"></ul>
-                </div>
-                <div class="credit">
-                    <h3>Credit / 貸方</h3>
-                    <ul id="AccountsPayable-credit-list"></ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <p>Score / スコア: <span id="score">0</span></p>
+    <footer>
+        <small>Ledger Hero — 簿記入門用ミニゲーム（英語 / 日本語）</small>
+    </footer>
 
     <script src="script.js"></script>
 </body>
