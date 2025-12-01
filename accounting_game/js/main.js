@@ -26,6 +26,14 @@ async function init(level = 1) {
     showTransaction(transactions[current]);
 }
 
+import { toggleLang, updateUI } from "./ui.js";
+
+document.getElementById("toggle-lang").addEventListener("click", () => {
+    toggleLang();
+    updateUI();      // 表示全体を再描画
+});
+
+
 // 送信ボタン処理
 document.getElementById("submit").addEventListener("click", () => {
     const t = transactions[current];

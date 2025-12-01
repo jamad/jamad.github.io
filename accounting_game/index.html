@@ -9,23 +9,25 @@
 
 <body>
 
-    <h1>仕訳トレーニング（T字勘定）</h1>
-
-    <div id="game">
-        <p id="transaction"></p>
-
-        <label>Debit（借方）:</label>
-        <select id="debit"></select>
-
-        <label>Credit（貸方）:</label>
-        <select id="credit"></select>
-
-        <label>Amount（金額）:</label>
-        <input type="number" id="amount">
-
-        <button id="submit">送信</button>
-        <p id="result"></p>
+    <div id="lang-switch" style="text-align:right; padding:10px;">
+        <button id="toggle-lang">日本語 / English</button>
     </div>
+
+    <h1 id="game-title">仕訳トレーニング（T字勘定）</h1>
+
+    <label id="label-debit">借方（Debit）:</label>
+    <select id="debit"></select>
+
+    <label id="label-credit">貸方（Credit）:</label>
+    <select id="credit"></select>
+
+    <label id="label-amount">金額（Amount）:</label>
+    <input id="amount">
+    <button id="submit">送信</button>
+
+    <h2 id="ledger-title">T字勘定</h2>
+
+
 
     <hr>
 
