@@ -5,6 +5,11 @@ export let uiText = {}; // loaded from data/ui.json
 
 export function setUIText(json) { uiText = json; }
 
+
+export function setCurrentLang(lang) {
+    currentLang = lang;
+}
+
 /* simple getter */
 export function t(key) {
     if (!uiText || !uiText[key]) return key;

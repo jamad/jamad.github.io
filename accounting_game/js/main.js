@@ -105,7 +105,10 @@ async function loadAndStartLevel(level) {
     // load level file
     const meta = await game.loadLevel(level);
     // prepare UI
-    ui.currentLang = ui.currentLang || "ja";
+    // すでに値があればそのまま、なければ関数を使って "ja" をセットする
+    if (!ui.currentLang) {
+        ui.setCurrentLang("ja");
+    }
     ui.fillAccountSelect(game.accounts);
     ui.renderLedgers(game.accounts);
     ui.updateStaticUI?.(game.accounts);
