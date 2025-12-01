@@ -63,35 +63,20 @@ async function init() {
     });
 
     el("lang-switch").addEventListener("change", (ev) => {
-        ui.currentLang = ev.target.checked ? "en" : "ja";
-        ui.updateStaticUI?.(); // not required but safe
-        ui.updateStaticUI = ui.updateStaticUI || (() => { }); // noop if missing
-        // refresh UI
-        ui.updateStaticUI = ui.updateStaticUI || (() => { });
-        ui.currentLang = ui.currentLang; // no-op to keep clarity
-        ui.updateStaticUI = ui.updateStaticUI;
-        ui.currentLang = ui.currentLang;
-        ui.currentLang = ui.currentLang;
-        // call update
-        ui.updateStaticUI(accounts); // older compatibility not used, but call for safety
-        ui.currentLang = ui.currentLang;
-        // use recommended method:
-        ui.currentLang = ui.currentLang; // no-op
-        // Instead call updateStaticUI (we implemented updateStaticUI in ui.js as updateStaticUI() equivalent - but to keep compatibility, call updateStaticUI)
-        // But our ui.js uses updateStaticUI named updateStaticUI. Let's call the proper function:
-        ui.currentLang = ui.currentLang; // no-op
-        // actual call:
-        ui.currentLang = ui.currentLang;
-        // To ensure UI updates, call updateStaticUI (same as updateStaticUI)
+        // 1. 言語設定を更新 (Setter関数を使用)
+        // これが一番重要です
+        ui.setCurrentLang(ev.target.checked ? "en" : "ja");
+
+        // 2. UIの静的テキスト（ラベルなど）を更新
+        // updateStaticUI が関数として存在しているか確認してから実行します
         if (typeof ui.updateStaticUI === "function") {
-            ui.currentLang = ui.currentLang; // no-op
-            ui.updateStaticUI(accounts);
-        } else {
-            // fallback to updateStaticUI function we used earlier
             ui.updateStaticUI(accounts);
         }
-        // ensure transaction text updates
-        ui.showTransaction(game.currentProblem());
+
+        // 3. 現在表示中のトランザクション（問題文）を更新
+        if (game && typeof game.currentProblem === "function") {
+            ui.showTransaction(game.currentProblem());
+        }
     });
 
     levelSelect.addEventListener("change", async (e) => {
