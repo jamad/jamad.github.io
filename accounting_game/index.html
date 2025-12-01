@@ -3,38 +3,77 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>仕訳ゲーム（T字勘定）</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Ledger Hero</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        .lang-toggle {
+            margin-bottom: 10px;
+        }
+
+        #ledger-area {
+            margin-top: 20px;
+            border-top: 2px solid #000;
+            padding-top: 10px;
+        }
+
+        .account-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            padding: 8px 0;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .account-title {
+            font-weight: bold;
+        }
+
+        .account-label {
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body>
 
-    <div id="lang-switch" style="text-align:right; padding:10px;">
-        <button id="toggle-lang">日本語 / English</button>
-    </div>
-
     <h1 id="game-title">仕訳トレーニング（T字勘定）</h1>
 
-    <label id="label-debit">借方（Debit）:</label>
-    <select id="debit"></select>
+    <!-- 言語スイッチ -->
+    <label class="lang-toggle">
+        <input type="checkbox" id="lang-switch">
+        <span>English</span>
+    </label>
 
-    <label id="label-credit">貸方（Credit）:</label>
-    <select id="credit"></select>
+    <div id="transaction"></div>
 
-    <label id="label-amount">金額（Amount）:</label>
-    <input id="amount">
+    <div>
+        <label id="label-debit">借方（Debit）</label>
+        <select id="debit"></select>
+    </div>
+
+    <div>
+        <label id="label-credit">貸方（Credit）</label>
+        <select id="credit"></select>
+    </div>
+
+    <div>
+        <label id="label-amount">金額（Amount）</label>
+        <input id="amount" type="number">
+    </div>
+
     <button id="submit">送信</button>
 
+    <p id="result"></p>
+    <p>Score: <span id="score">0</span></p>
+
     <h2 id="ledger-title">T字勘定</h2>
-
-
-
-    <hr>
-
-    <h2>T字勘定</h2>
-    <div id="ledger"></div>
+    <div id="ledger-area"></div>
 
     <script type="module" src="js/main.js"></script>
+
 </body>
 
 </html>

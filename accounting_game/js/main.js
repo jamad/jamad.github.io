@@ -1,65 +1,73 @@
-import { loadTransactions } from "./transactions.js";
-import { createLedger, addLedgerEntry } from "./ledger.js";
-import { showTransaction, showResult, fillAccountSelect } from "./ui.js";
+import {
+    showTransaction,
+    showResult,
+    fillAccountSelect,
+    renderLedger,
+    updateUI,
+    toggleLang,
+    currentLang
+} from "./ui.js";
 
-// 全体変数
+let accounts = {};
 let transactions = [];
 let current = 0;
 let score = 0;
-let accounts = {}; // 勘定科目
 
-// 勘定科目 JSON を読み込む
+/* JSON 読み込み */
 async function loadAccounts() {
     const res = await fetch("./data/accounts.json");
     accounts = await res.json();
 }
 
-async function init(level = 1) {
-    await loadAccounts();                // 勘定科目ロード
-    createLedger(accounts);              // T字勘定作成
-    fillAccountSelect(accounts);         // プルダウン作成
-    transactions = await loadTransactions(level); // 取引ロード
+async function loadTransactions() {
+    const res = await fetch("./data/transactions.json");
+    transactions = await res.json();
+}
 
-    current = 0;
-    score = 0;
+/* 初期化 */
+async function init() {
+    await loadAccounts();
+    await loadTransactions();
 
+    fillAccountSelect(accounts);
+    renderLedger(accounts);
+    updateUI(accounts);
     showTransaction(transactions[current]);
 }
 
-import { toggleLang, updateUI } from "./ui.js";
-
-document.getElementById("toggle-lang").addEventListener("click", () => {
-    toggleLang();
-    updateUI();      // 表示全体を再描画
-});
-
-
-// 送信ボタン処理
+/* 仕訳チェック＆進行 */
 document.getElementById("submit").addEventListener("click", () => {
-    const t = transactions[current];
-
-    const debit = document.getElementById("debit").value;
-    const credit = document.getElementById("credit").value;
+    const d = document.getElementById("debit").value;
+    const c = document.getElementById("credit").value;
     const amount = Number(document.getElementById("amount").value);
 
-    if (debit === t.debit && credit === t.credit && amount === t.amount) {
-        showResult("🎉 正解！");
-        addLedgerEntry(debit, "debit", t.description, t.amount);
-        addLedgerEntry(credit, "credit", t.description, t.amount);
+    const t = transactions[current];
+
+    if (d === t.debit && c === t.credit && amount === t.amount) {
+        showResult("⭕ 正解！");
         score++;
     } else {
-        showResult(`❌ 不正解！ 正解は ${t.debit} / ${t.credit} / ${t.amount}€`);
+        showResult(`❌ 間違い！ 正解は ${t.debit} / ${t.credit} / ${t.amount}€`);
     }
 
     current++;
+    document.getElementById("score").innerText = score;
 
     if (current >= transactions.length) {
-        showResult("✨ 全ての問題が終了しました！");
+        showResult("🎉 全て終了！");
+        document.getElementById("submit").disabled = true;
         return;
     }
 
     showTransaction(transactions[current]);
 });
 
-// レベル1で開始
-init(1);
+/* 言語切替 */
+document.getElementById("lang-switch").addEventListener("change", () => {
+    toggleLang();
+    updateUI(accounts);
+    showTransaction(transactions[current]);
+});
+
+/* 実行 */
+init();

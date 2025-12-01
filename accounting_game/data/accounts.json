@@ -1,7 +1,22 @@
 {
-    "Cash": "現金",
-    "Sales": "売上",
-    "RentExpense": "家賃",
-    "Inventory": "棚卸資産",
-    "AccountsPayable": "買掛金"
+    "Cash": {
+        "ja": "現金",
+        "en": "Cash"
+    },
+    "Sales": {
+        "ja": "売上",
+        "en": "Sales"
+    },
+    "RentExpense": {
+        "ja": "家賃",
+        "en": "Rent Expense"
+    },
+    "Inventory": {
+        "ja": "棚卸資産",
+        "en": "Inventory"
+    },
+    "AccountsPayable": {
+        "ja": "買掛金",
+        "en": "Accounts Payable"
+    }
 }

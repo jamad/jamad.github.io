@@ -1,0 +1,29 @@
+[
+    {
+        "description": {
+            "ja": "商品売上",
+            "en": "Sales"
+        },
+        "debit": "Cash",
+        "credit": "Sales",
+        "amount": 1000
+    },
+    {
+        "description": {
+            "ja": "家賃の支払い",
+            "en": "Rent Payment"
+        },
+        "debit": "RentExpense",
+        "credit": "Cash",
+        "amount": 500
+    },
+    {
+        "description": {
+            "ja": "商品の仕入れ",
+            "en": "Inventory Purchase"
+        },
+        "debit": "Inventory",
+        "credit": "AccountsPayable",
+        "amount": 800
+    }
+]
