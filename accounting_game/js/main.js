@@ -10,7 +10,7 @@ let accounts = {}; // 勘定科目
 
 // 勘定科目 JSON を読み込む
 async function loadAccounts() {
-    const res = await fetch("../data/accounts.json");
+    const res = await fetch("./data/accounts.json");
     accounts = await res.json();
 }
 
