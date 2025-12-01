@@ -1,0 +1,34 @@
+{
+    "trainingTitle": {
+        "ja": "仕訳トレーニング（T字勘定）",
+        "en": "Journal Training (T-Accounts)"
+    },
+    "debit": {
+        "ja": "借方",
+        "en": "Debit"
+    },
+    "credit": {
+        "ja": "貸方",
+        "en": "Credit"
+    },
+    "amount": {
+        "ja": "金額",
+        "en": "Amount"
+    },
+    "submit": {
+        "ja": "送信",
+        "en": "Submit"
+    },
+    "correct": {
+        "ja": "✅ 正解！",
+        "en": "✅ Correct!"
+    },
+    "incorrect": {
+        "ja": "❌ 間違い",
+        "en": "❌ Incorrect"
+    },
+    "finished": {
+        "ja": "🎉 全て終了しました！",
+        "en": "🎉 Finished!"
+    }
+}

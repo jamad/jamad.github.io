@@ -1,90 +1,80 @@
-export let currentLang = "ja";  // デフォルト日本語
+// ui.js - UI helpers and i18n rendering
+export let currentLang = "ja"; // default
 
-export const LANG = {
-    ja: {
-        title: "仕訳トレーニング（T字勘定）",
-        debit: "借方（Debit）",
-        credit: "貸方（Credit）",
-        amount: "金額（Amount）",
-        submit: "送信",
-        ledger: "T字勘定"
-    },
-    en: {
-        title: "Journal Training (T-Accounts)",
-        debit: "Debit",
-        credit: "Credit",
-        amount: "Amount",
-        submit: "Submit",
-        ledger: "T-Accounts"
-    }
-};
+export let uiText = {}; // loaded from data/ui.json
 
+export function setUIText(json) { uiText = json; }
 
-/* 取引を表示 */
-export function showTransaction(t) {
-    document.getElementById("transaction").innerText =
-        `${t.description[currentLang]} / ${t.amount}€`;
-    document.getElementById("amount").value = t.amount;
+/* simple getter */
+export function t(key) {
+    if (!uiText || !uiText[key]) return key;
+    return uiText[key][currentLang] ?? uiText[key].en ?? key;
 }
 
-/* 結果表示 */
-export function showResult(text) {
-    document.getElementById("result").innerText = text;
+/* show current transaction */
+export function showTransaction(tobj) {
+    const descr = tobj.description[currentLang] ?? tobj.description.en ?? "";
+    document.getElementById("transaction").innerText = `${descr} — ${tobj.amount}€`;
+    if (!document.getElementById("amount").readOnly) document.getElementById("amount").value = tobj.amount;
 }
 
-/* プルダウン更新 */
+/* show result message (use keys from ui.json) */
+export function showResultMessage(key) {
+    document.getElementById("result").innerText = t(key);
+}
+
+/* fill account selects (accounts: { id: {ja,en} }) */
 export function fillAccountSelect(accounts) {
     const debit = document.getElementById("debit");
     const credit = document.getElementById("credit");
+    debit.innerHTML = ""; credit.innerHTML = "";
 
-    debit.innerHTML = "";
-    credit.innerHTML = "";
-
-    Object.keys(accounts).forEach(key => {
+    Object.keys(accounts).forEach(id => {
+        const label = accounts[id][currentLang] ?? accounts[id].en ?? id;
         const opt = document.createElement("option");
-        opt.value = key;
-        opt.textContent = accounts[key][currentLang];
-
+        opt.value = id;
+        opt.textContent = label;
         debit.appendChild(opt.cloneNode(true));
         credit.appendChild(opt.cloneNode(true));
     });
 }
 
-/* T字勘定のテンプレート描画 */
-export function renderLedger(accounts) {
+/* render ledgers area */
+export function renderLedgers(accounts) {
     const area = document.getElementById("ledger-area");
     area.innerHTML = "";
 
-    Object.keys(accounts).forEach(key => {
-        const row = document.createElement("div");
-        row.className = "account-row";
-
-        row.innerHTML = `
-            <div class="account-title">${accounts[key][currentLang]}</div>
-            <div class="account-label">Debit</div>
-            <div class="account-label">Credit</div>
-        `;
-
-        area.appendChild(row);
+    Object.keys(accounts).forEach(id => {
+        const box = document.createElement("div");
+        box.className = "ledger-box";
+        box.innerHTML = `<h3>${accounts[id][currentLang] ?? accounts[id].en ?? id}</h3>
+      <div class="ledger">
+        <div class="col"><h4>${t("debit")}</h4><ul id="${id}-debit-list"></ul></div>
+        <div class="col"><h4>${t("credit")}</h4><ul id="${id}-credit-list"></ul></div>
+      </div>`;
+        area.appendChild(box);
     });
 }
 
-/* 言語切替 */
-export function toggleLang() {
-    currentLang = currentLang === "ja" ? "en" : "ja";
+/* add one ledger entry (account id, side: 'debit'|'credit', desc, amount) */
+export function addLedgerEntry(accountId, side, description, amount) {
+    const ul = document.getElementById(`${accountId}-${side}-list`);
+    if (!ul) return;
+    const li = document.createElement("li");
+    const descText = typeof description === "string" ? description : (description[currentLang] ?? description.en ?? "");
+    li.textContent = `${amount} (${descText})`;
+    ul.appendChild(li);
 }
 
-/* UI 全体更新 */
-export function updateUI(accounts) {
-    const t = LANG[currentLang];
-
-    document.getElementById("game-title").innerText = t.title;
-    document.getElementById("label-debit").innerText = t.debit;
-    document.getElementById("label-credit").innerText = t.credit;
-    document.getElementById("label-amount").innerText = t.amount;
-    document.getElementById("submit").innerText = t.submit;
-    document.getElementById("ledger-title").innerText = t.ledger;
-
+/* update textual UI */
+export function updateStaticUI(accounts) {
+    document.getElementById("game-title").innerText = t("trainingTitle");
+    document.getElementById("label-debit").firstChild.textContent = t("debit") + " ";
+    document.getElementById("label-credit").firstChild.textContent = t("credit") + " ";
+    document.getElementById("label-amount").firstChild.textContent = t("amount") + " ";
+    document.getElementById("submit").innerText = t("submit");
+    document.getElementById("lang-label").innerText = currentLang === "ja" ? "日本語" : "English";
+    // selectors and ledger titles must be refreshed too
     fillAccountSelect(accounts);
-    renderLedger(accounts);
+    renderLedgers(accounts);
 }

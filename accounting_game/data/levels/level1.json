@@ -1,0 +1,27 @@
+{
+    "level": 1,
+    "title": {
+        "ja": "Level1: チュートリアル",
+        "en": "Level 1: Tutorial"
+    },
+    "problems": [
+        {
+            "description": {
+                "ja": "商品を売って現金を受け取った",
+                "en": "Sold goods and received cash"
+            },
+            "debit": "Cash",
+            "credit": "Sales",
+            "amount": 100
+        },
+        {
+            "description": {
+                "ja": "家賃を現金で支払った",
+                "en": "Paid rent in cash"
+            },
+            "debit": "RentExpense",
+            "credit": "Cash",
+            "amount": 50
+        }
+    ]
+}

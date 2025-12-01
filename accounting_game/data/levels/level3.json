@@ -1,0 +1,36 @@
+{
+    "level": 3,
+    "title": {
+        "ja": "Level3: 掛取引・光熱費",
+        "en": "Level 3: Receivables & utilities"
+    },
+    "problems": [
+        {
+            "description": {
+                "ja": "掛けで売上が発生した（売掛）",
+                "en": "Made a sale on account"
+            },
+            "debit": "AccountsReceivable",
+            "credit": "Sales",
+            "amount": 1200
+        },
+        {
+            "description": {
+                "ja": "光熱費を支払った",
+                "en": "Paid utilities"
+            },
+            "debit": "UtilitiesExpense",
+            "credit": "Cash",
+            "amount": 200
+        },
+        {
+            "description": {
+                "ja": "買掛金を支払った（掛け清算）",
+                "en": "Paid accounts payable"
+            },
+            "debit": "AccountsPayable",
+            "credit": "Cash",
+            "amount": 800
+        }
+    ]
+}

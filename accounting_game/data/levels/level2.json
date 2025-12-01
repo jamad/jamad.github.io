@@ -1,0 +1,36 @@
+{
+    "level": 2,
+    "title": {
+        "ja": "Level2: 基本取引",
+        "en": "Level 2: Basic entries"
+    },
+    "problems": [
+        {
+            "description": {
+                "ja": "商品を売って現金を受け取った",
+                "en": "Sold goods and received cash"
+            },
+            "debit": "Cash",
+            "credit": "Sales",
+            "amount": 1000
+        },
+        {
+            "description": {
+                "ja": "家賃を支払った",
+                "en": "Paid rent"
+            },
+            "debit": "RentExpense",
+            "credit": "Cash",
+            "amount": 500
+        },
+        {
+            "description": {
+                "ja": "掛けで商品を仕入れた",
+                "en": "Purchased inventory on account"
+            },
+            "debit": "Inventory",
+            "credit": "AccountsPayable",
+            "amount": 800
+        }
+    ]
+}

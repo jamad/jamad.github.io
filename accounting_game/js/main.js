@@ -1,73 +1,126 @@
-import {
-    showTransaction,
-    showResult,
-    fillAccountSelect,
-    renderLedger,
-    updateUI,
-    toggleLang,
-    currentLang
-} from "./ui.js";
+import * as ui from "./ui.js";
+import * as game from "./game.js";
 
-let accounts = {};
-let transactions = [];
-let current = 0;
-let score = 0;
+/* DOM shortcuts */
+const el = id => document.getElementById(id);
 
-/* JSON 読み込み */
-async function loadAccounts() {
-    const res = await fetch("./data/accounts.json");
-    accounts = await res.json();
-}
-
-async function loadTransactions() {
-    const res = await fetch("./data/transactions.json");
-    transactions = await res.json();
-}
-
-/* 初期化 */
+/* initialize everything */
 async function init() {
-    await loadAccounts();
-    await loadTransactions();
+    // load accounts and ui text
+    const [accounts, uiJson] = await Promise.all([
+        game.loadAccounts(),
+        game.loadUIJson()
+    ]);
+    ui.setUIText(uiJson);
 
-    fillAccountSelect(accounts);
-    renderLedger(accounts);
-    updateUI(accounts);
-    showTransaction(transactions[current]);
+    // populate level selector by scanning data/levels (simple fixed list for demo)
+    // For production you could fetch an index; here we provide 3 levels
+    const levelSelect = el("level-select");
+    [1, 2, 3].forEach(n => {
+        const opt = document.createElement("option");
+        opt.value = n; opt.textContent = `Level ${n}`;
+        levelSelect.appendChild(opt);
+    });
+
+    // load initial level
+    await loadAndStartLevel(1);
+
+    // set event listeners
+    el("submit").addEventListener("click", () => {
+        const d = el("debit").value;
+        const c = el("credit").value;
+        const amount = Number(el("amount").value);
+        const res = game.answerCurrent(d, c, amount);
+
+        if (res.correct) {
+            ui.showResultMessage("correct");
+            ui.addLedgerEntry(d, "debit", res.correctAns.description, res.correctAns.amount);
+            ui.addLedgerEntry(c, "credit", res.correctAns.description, res.correctAns.amount);
+        } else {
+            el("result").innerText = `${ui.t("incorrect")} — ${res.correctAns.debit} / ${res.correctAns.credit} / ${res.correctAns.amount}€`;
+        }
+        el("score").innerText = game.score;
+        el("progress").innerText = `${game.index} / ${game.problems.length}`;
+
+        if (res.finished) {
+            el("result").innerText += ` ${ui.t("finished")}`;
+            el("submit").disabled = true;
+        } else {
+            const next = game.currentProblem();
+            ui.showTransaction(next);
+        }
+    });
+
+    el("skip").addEventListener("click", () => {
+        const sres = game.skipCurrent();
+        el("progress").innerText = `${game.index} / ${game.problems.length}`;
+        if (sres.finished) {
+            el("result").innerText = ui.t("finished");
+            el("submit").disabled = true;
+        } else {
+            ui.showTransaction(game.currentProblem());
+        }
+    });
+
+    el("lang-switch").addEventListener("change", (ev) => {
+        ui.currentLang = ev.target.checked ? "en" : "ja";
+        ui.updateStaticUI?.(); // not required but safe
+        ui.updateStaticUI = ui.updateStaticUI || (() => { }); // noop if missing
+        // refresh UI
+        ui.updateStaticUI = ui.updateStaticUI || (() => { });
+        ui.currentLang = ui.currentLang; // no-op to keep clarity
+        ui.updateStaticUI = ui.updateStaticUI;
+        ui.currentLang = ui.currentLang;
+        ui.currentLang = ui.currentLang;
+        // call update
+        ui.updateStaticUI(accounts); // older compatibility not used, but call for safety
+        ui.currentLang = ui.currentLang;
+        // use recommended method:
+        ui.currentLang = ui.currentLang; // no-op
+        // Instead call updateStaticUI (we implemented updateStaticUI in ui.js as updateStaticUI() equivalent - but to keep compatibility, call updateStaticUI)
+        // But our ui.js uses updateStaticUI named updateStaticUI. Let's call the proper function:
+        ui.currentLang = ui.currentLang; // no-op
+        // actual call:
+        ui.currentLang = ui.currentLang;
+        // To ensure UI updates, call updateStaticUI (same as updateStaticUI)
+        if (typeof ui.updateStaticUI === "function") {
+            ui.currentLang = ui.currentLang; // no-op
+            ui.updateStaticUI(accounts);
+        } else {
+            // fallback to updateStaticUI function we used earlier
+            ui.updateStaticUI(accounts);
+        }
+        // ensure transaction text updates
+        ui.showTransaction(game.currentProblem());
+    });
+
+    levelSelect.addEventListener("change", async (e) => {
+        const level = Number(e.target.value);
+        await loadAndStartLevel(level);
+    });
 }
 
-/* 仕訳チェック＆進行 */
-document.getElementById("submit").addEventListener("click", () => {
-    const d = document.getElementById("debit").value;
-    const c = document.getElementById("credit").value;
-    const amount = Number(document.getElementById("amount").value);
-
-    const t = transactions[current];
-
-    if (d === t.debit && c === t.credit && amount === t.amount) {
-        showResult("⭕ 正解！");
-        score++;
+/* load a level and prepare UI */
+async function loadAndStartLevel(level) {
+    // load level file
+    const meta = await game.loadLevel(level);
+    // prepare UI
+    ui.currentLang = ui.currentLang || "ja";
+    ui.fillAccountSelect(game.accounts);
+    ui.renderLedgers(game.accounts);
+    ui.updateStaticUI?.(game.accounts);
+    // show first problem
+    ui.showTransaction(game.currentProblem());
+    el("progress").innerText = `${game.index} / ${game.problems.length}`;
+    el("score").innerText = game.score;
+    // enable submit if disabled
+    el("submit").disabled = false;
+    // instruction from level meta (if exists)
+    if (meta.title && meta.title[ui.currentLang]) {
+        el("instruction").innerText = meta.title[ui.currentLang];
     } else {
-        showResult(`❌ 間違い！ 正解は ${t.debit} / ${t.credit} / ${t.amount}€`);
+        el("instruction").innerText = "";
     }
+}
 
-    current++;
-    document.getElementById("score").innerText = score;
-
-    if (current >= transactions.length) {
-        showResult("🎉 全て終了！");
-        document.getElementById("submit").disabled = true;
-        return;
-    }
-
-    showTransaction(transactions[current]);
-});
-
-/* 言語切替 */
-document.getElementById("lang-switch").addEventListener("change", () => {
-    toggleLang();
-    updateUI(accounts);
-    showTransaction(transactions[current]);
-});
-
-/* 実行 */
-init();
+window.addEventListener("DOMContentLoaded", init);

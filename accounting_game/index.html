@@ -2,78 +2,67 @@
 <html lang="ja">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Ledger Hero</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            margin: 20px;
-        }
-
-        .lang-toggle {
-            margin-bottom: 10px;
-        }
-
-        #ledger-area {
-            margin-top: 20px;
-            border-top: 2px solid #000;
-            padding-top: 10px;
-        }
-
-        .account-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            padding: 8px 0;
-            border-bottom: 1px solid #ccc;
-        }
-
-        .account-title {
-            font-weight: bold;
-        }
-
-        .account-label {
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+    <header class="topbar">
+        <h1 id="game-title">Ledger Hero</h1>
 
-    <h1 id="game-title">仕訳トレーニング（T字勘定）</h1>
+        <div class="controls">
+            <div class="lang-switch">
+                <label class="switch">
+                    <input type="checkbox" id="lang-switch" />
+                    <span class="slider"></span>
+                </label>
+                <span id="lang-label">日本語</span>
+            </div>
 
-    <!-- 言語スイッチ -->
-    <label class="lang-toggle">
-        <input type="checkbox" id="lang-switch">
-        <span>English</span>
-    </label>
+            <div class="level-select">
+                <label for="level-select">Level</label>
+                <select id="level-select"></select>
+            </div>
+        </div>
+    </header>
 
-    <div id="transaction"></div>
+    <main class="container">
+        <section class="card" id="play-area">
+            <p id="instruction" class="muted"></p>
+            <p id="transaction" class="transaction"></p>
 
-    <div>
-        <label id="label-debit">借方（Debit）</label>
-        <select id="debit"></select>
-    </div>
+            <div class="form-row">
+                <label id="label-debit">借方（Debit）<select id="debit"></select></label>
+                <label id="label-credit">貸方（Credit）<select id="credit"></select></label>
+                <label id="label-amount">金額（Amount）<input id="amount" type="number" /></label>
+            </div>
 
-    <div>
-        <label id="label-credit">貸方（Credit）</label>
-        <select id="credit"></select>
-    </div>
+            <div class="buttons">
+                <button id="submit" class="btn">送信</button>
+                <button id="skip" class="btn secondary">スキップ</button>
+            </div>
 
-    <div>
-        <label id="label-amount">金額（Amount）</label>
-        <input id="amount" type="number">
-    </div>
+            <p id="result" class="result"></p>
+        </section>
 
-    <button id="submit">送信</button>
+        <aside class="card" id="status">
+            <p><strong>Score</strong>: <span id="score">0</span></p>
+            <p><strong>Progress</strong>: <span id="progress">0 / 0</span></p>
+        </aside>
 
-    <p id="result"></p>
-    <p>Score: <span id="score">0</span></p>
+        <section class="card" id="ledger-card">
+            <h2 id="ledger-title">T字勘定</h2>
+            <div id="ledger-area" class="ledgers"></div>
+        </section>
+    </main>
 
-    <h2 id="ledger-title">T字勘定</h2>
-    <div id="ledger-area"></div>
+    <footer class="footer muted">
+        Ledger Hero — learning double-entry bookkeeping
+    </footer>
 
     <script type="module" src="js/main.js"></script>
-
 </body>
 
 </html>
