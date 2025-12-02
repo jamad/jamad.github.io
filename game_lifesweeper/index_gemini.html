@@ -3,235 +3,368 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>インタラクティブ・ライフゲーム</title>
+    <title>ライフゲーム・パズル：全滅させろ</title>
     <style>
         body {
-            font-family: sans-serif;
-            background-color: #222;
+            font-family: 'Courier New', sans-serif;
+            background-color: #111;
             color: #eee;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            height: 100vh;
             margin: 0;
-            padding: 20px;
+            overflow: hidden;
+            /* スクロール禁止 */
         }
 
         h1 {
-            margin-bottom: 10px;
-            font-size: 1.5rem;
-        }
-
-        .controls {
-            margin-bottom: 15px;
-            background: #333;
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        button {
-            padding: 8px 16px;
-            margin: 0 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            background-color: #444;
-            color: white;
-            border: 1px solid #666;
-            border-radius: 4px;
-        }
-
-        button:hover {
-            background-color: #555;
-        }
-
-        button.active {
-            background-color: #4CAF50;
-            border-color: #4CAF50;
-        }
-
-        button.danger {
-            background-color: #d9534f;
-            border-color: #d43f3a;
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            color: #888;
         }
 
         canvas {
             background-color: #000;
-            border: 1px solid #555;
-            cursor: crosshair;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid #444;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.1);
+            image-rendering: pixelated;
+            /* ドットをくっきり表示 */
         }
 
-        p.info {
+        .info {
+            margin-top: 10px;
+            text-align: center;
             font-size: 0.9rem;
             color: #aaa;
+        }
+
+        .key {
+            display: inline-block;
+            padding: 2px 6px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #222;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        #status {
+            font-weight: bold;
+            color: #ff4444;
+            height: 1.2em;
         }
     </style>
 </head>
 
 <body>
 
-    <h1>ライフゲーム：全滅実験場</h1>
-
-    <div class="controls">
-        <button id="btnStart">スタート / ストップ</button>
-        <button id="btnStep">1コマ進める</button>
-        <button id="btnRandom">ランダム配置</button>
-        <button id="btnClear" class="danger">全消去</button>
-        <button id="btnFill">全埋め（過密死実験）</button>
-    </div>
+    <h1>LIFE GAME PUZZLE</h1>
+    <div id="status">TARGET: ELIMINATE ALL LIFE</div>
 
     <canvas id="gameCanvas"></canvas>
-    <p class="info">マウスドラッグで点を描けます。クリックでON/OFF切り替え。</p>
+
+    <div class="info">
+        <span class="key">↑↓←→</span> Move &nbsp; <span class="key">SPACE</span> Place/Remove Dot &nbsp; <span
+            class="key">R</span> Retry
+    </div>
 
     <script>
+        /**
+         * 設定・定数
+         */
+        const CELL_SIZE = 16;    // セルサイズ拡大（視認性向上）
+        const COLS = 60;         // 横セル数
+        const ROWS = 40;         // 縦セル数
+        const SIMULATION_SPEED = 100; // ミリ秒（更新間隔）
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const statusEl = document.getElementById('status');
 
-        // 設定
-        const cellSize = 10; // セルの大きさ(px)
-        const cols = 80;     // 横のセルの数
-        const rows = 50;     // 縦のセルの数
+        canvas.width = COLS * CELL_SIZE;
+        canvas.height = ROWS * CELL_SIZE;
 
-        // キャンバスサイズ設定
-        canvas.width = cols * cellSize;
-        canvas.height = rows * cellSize;
+        /**
+         * ゲーム状態
+         */
+        let grid = [];
+        let player = { x: Math.floor(COLS / 2), y: Math.floor(ROWS / 2) };
+        let isGameClear = false;
+        let lastTime = 0;
+        let simulationTimer = 0;
 
-        let grid = createGrid(rows, cols);
-        let isRunning = false;
-        let animationId;
+        // キー入力状態管理
+        const keys = {};
 
-        // グリッド作成関数
-        function createGrid(rows, cols) {
-            return new Array(rows).fill(null)
-                .map(() => new Array(cols).fill(0));
+        /**
+         * 初期化処理
+         */
+        function init() {
+            isGameClear = false;
+            statusEl.innerText = "TARGET: ELIMINATE ALL LIFE";
+            statusEl.style.color = "#ff4444";
+
+            // グリッド作成 & ランダム配置
+            grid = new Array(ROWS).fill(null).map(() => new Array(COLS).fill(0));
+
+            // 中央付近にランダムな塊を作る（全滅させやすいよう、数は控えめに）
+            for (let r = 10; r < ROWS - 10; r++) {
+                for (let c = 15; c < COLS - 15; c++) {
+                    if (Math.random() > 0.85) grid[r][c] = 1;
+                }
+            }
+
+            player.x = Math.floor(COLS / 2);
+            player.y = Math.floor(ROWS / 2);
+
+            requestAnimationFrame(gameLoop);
         }
 
-        // 描画関数
-        function draw() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        /**
+         * ゲームループ
+         */
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
 
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    if (grid[r][c] === 1) {
-                        ctx.fillStyle = '#0f0'; // 生きている色は緑
-                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
-                    } else {
-                        // グリッド線（薄く）
-                        ctx.fillStyle = '#111';
-                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
-                    }
-                }
+            update(deltaTime);
+            draw();
+
+            if (!isGameClear) { // クリア後はループを止めるか、描画だけ続ける
+                requestAnimationFrame(gameLoop);
             }
         }
 
-        // 次の世代を計算
-        function computeNextGen() {
-            const nextGrid = createGrid(rows, cols);
+        /**
+         * 更新処理（ロジック）
+         */
+        function update(deltaTime) {
+            if (isGameClear) return;
 
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    const neighbors = countNeighbors(grid, r, c);
+            // 1. ライフゲームの進行（一定間隔）
+            simulationTimer += deltaTime;
+            if (simulationTimer >= SIMULATION_SPEED) {
+                simulationTimer = 0;
+                computeNextGen();
+                checkWinCondition();
+            }
+
+            // 2. プレイヤー移動（キー入力に対する反応）
+            // 単押し反応はkeydownイベントで処理するが、
+            // ここでは将来的な長押し移動などのために場所を確保
+        }
+
+        /**
+         * 描画処理
+         */
+        function draw() {
+            // 背景クリア
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 1. セルの描画
+            ctx.fillStyle = isGameClear ? '#4CAF50' : '#0f0'; // クリア時は色を変える演出
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (grid[r][c] === 1) {
+                        ctx.fillRect(c * CELL_SIZE + 1, r * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+                    }
+                }
+            }
+
+            // 2. グリッド線（薄く）
+            ctx.strokeStyle = '#111';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let r = 0; r <= ROWS; r++) {
+                ctx.moveTo(0, r * CELL_SIZE);
+                ctx.lineTo(canvas.width, r * CELL_SIZE);
+            }
+            for (let c = 0; c <= COLS; c++) {
+                ctx.moveTo(c * CELL_SIZE, 0);
+                ctx.lineTo(c * CELL_SIZE, canvas.height);
+            }
+            ctx.stroke();
+
+            // 3. プレイヤー（セレクター）の描画
+            if (!isGameClear) {
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(
+                    player.x * CELL_SIZE,
+                    player.y * CELL_SIZE,
+                    CELL_SIZE,
+                    CELL_SIZE
+                );
+
+                // 少し光らせる演出
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+                ctx.fillRect(
+                    player.x * CELL_SIZE,
+                    player.y * CELL_SIZE,
+                    CELL_SIZE,
+                    CELL_SIZE
+                );
+            }
+        }
+
+        /**
+         * ライフゲームの世代更新
+         */
+        function computeNextGen() {
+            const nextGrid = grid.map(arr => [...arr]);
+            let hasChange = false;
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const neighbors = countNeighbors(r, c);
                     const cell = grid[r][c];
 
                     if (cell === 1 && (neighbors < 2 || neighbors > 3)) {
-                        nextGrid[r][c] = 0; // 過疎または過密で死ぬ
+                        nextGrid[r][c] = 0;
                     } else if (cell === 0 && neighbors === 3) {
-                        nextGrid[r][c] = 1; // 誕生
-                    } else {
-                        nextGrid[r][c] = cell; // 現状維持
+                        nextGrid[r][c] = 1;
                     }
                 }
             }
             grid = nextGrid;
         }
 
-        // 隣人数え上げ（端っこは「壁」として扱い、ループしない有限盤面とする）
-        function countNeighbors(grid, r, c) {
+        function countNeighbors(r, c) {
             let sum = 0;
-            for (let i = -1; i < 2; i++) {
-                for (let j = -1; j < 2; j++) {
-                    if (i === 0 && j === 0) continue; // 自分自身は数えない
-
-                    const x = r + i;
-                    const y = c + j;
-
-                    if (x >= 0 && x < rows && y >= 0 && y < cols) {
-                        sum += grid[x][y];
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (i === 0 && j === 0) continue;
+                    const x = c + j;
+                    const y = r + i;
+                    if (x >= 0 && x < COLS && y >= 0 && y < ROWS) {
+                        sum += grid[y][x];
                     }
                 }
             }
             return sum;
         }
 
-        // アニメーションループ
-        function loop() {
-            if (isRunning) {
-                computeNextGen();
-                draw();
-                animationId = requestAnimationFrame(loop);
+        /**
+         * 勝利判定
+         */
+        function checkWinCondition() {
+            let population = 0;
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    population += grid[r][c];
+                }
+            }
+
+            if (population === 0) {
+                gameClear();
             }
         }
 
-        // 操作イベント：クリック＆ドラッグで描画
-        let isDrawing = false;
+        /**
+         * ゲームクリア処理
+         */
+        function gameClear() {
+            isGameClear = true;
+            statusEl.innerText = "MISSION ACCOMPLISHED";
+            statusEl.style.color = "#4CAF50";
 
-        function toggleCell(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            // 「GAME CLEAR」の文字をグリッド自体に書き込む
+            drawTextToGrid("GAME CLEAR");
 
-            const c = Math.floor(x / cellSize);
-            const r = Math.floor(y / cellSize);
+            // 最終状態を描画してループ停止（再描画だけ一回行う）
+            draw();
+        }
 
-            if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                // 左クリックなら生(1)、右クリック的な動作は今回はトグルで単純化
-                grid[r][c] = 1;
-                draw();
+        /**
+         * 文字列をグリッドのセルに変換する関数
+         * Canvasのテキスト描画機能を利用してピクセルデータを読み取り、グリッドに反映させる
+         */
+        function drawTextToGrid(text) {
+            // 一時的なCanvasを作成
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = COLS;
+            tempCanvas.height = ROWS;
+            const tCtx = tempCanvas.getContext('2d');
+
+            // 背景黒、文字白で描く
+            tCtx.fillStyle = '#000';
+            tCtx.fillRect(0, 0, COLS, ROWS);
+            tCtx.fillStyle = '#fff';
+            tCtx.font = 'bold 10px sans-serif'; // グリッドサイズに合わせたフォントサイズ
+            tCtx.textAlign = 'center';
+            tCtx.textBaseline = 'middle';
+
+            // 中央に描画
+            tCtx.fillText(text, COLS / 2, ROWS / 2);
+
+            // ピクセルデータを取得
+            const imageData = tCtx.getImageData(0, 0, COLS, ROWS);
+            const data = imageData.data;
+
+            // ピクセルが明るい場所をグリッドの「生」にする
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    // 1ピクセルはRGBAの4バイト。インデックス計算。
+                    const index = (r * COLS + c) * 4;
+                    // R成分(data[index])が明るければONとする
+                    if (data[index] > 100) {
+                        grid[r][c] = 1;
+                    } else {
+                        grid[r][c] = 0;
+                    }
+                }
             }
         }
 
-        canvas.addEventListener('mousedown', (e) => {
-            isDrawing = true;
-            toggleCell(e);
-        });
-        canvas.addEventListener('mousemove', (e) => {
-            if (isDrawing) toggleCell(e);
-        });
-        canvas.addEventListener('mouseup', () => isDrawing = false);
-        canvas.addEventListener('mouseleave', () => isDrawing = false);
+        /**
+         * 入力ハンドリング
+         */
+        window.addEventListener('keydown', (e) => {
+            // リセット機能はいつでも有効
+            if (e.code === 'KeyR') {
+                init();
+                return;
+            }
 
-        // ボタン操作
-        document.getElementById('btnStart').addEventListener('click', () => {
-            isRunning = !isRunning;
-            if (isRunning) loop();
-            else cancelAnimationFrame(animationId);
+            if (isGameClear) return;
+
+            let moved = false;
+
+            switch (e.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    if (player.y > 0) player.y--;
+                    moved = true;
+                    break;
+                case 'ArrowDown':
+                case 'KeyS':
+                    if (player.y < ROWS - 1) player.y++;
+                    moved = true;
+                    break;
+                case 'ArrowLeft':
+                case 'KeyA':
+                    if (player.x > 0) player.x--;
+                    moved = true;
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    if (player.x < COLS - 1) player.x++;
+                    moved = true;
+                    break;
+                case 'Space':
+                case 'Enter': // ゲームパッドのボタン対応用
+                    // 点を打つ（トグル）
+                    grid[player.y][player.x] = grid[player.y][player.x] ? 0 : 1;
+                    e.preventDefault(); // スクロール防止
+                    break;
+            }
         });
 
-        document.getElementById('btnStep').addEventListener('click', () => {
-            isRunning = false;
-            computeNextGen();
-            draw();
-        });
-
-        document.getElementById('btnRandom').addEventListener('click', () => {
-            grid = grid.map(row => row.map(() => Math.random() > 0.8 ? 1 : 0));
-            draw();
-        });
-
-        document.getElementById('btnClear').addEventListener('click', () => {
-            isRunning = false;
-            grid = createGrid(rows, cols);
-            draw();
-        });
-
-        // 「全埋め」ボタン：理論通り全滅するか試す用
-        document.getElementById('btnFill').addEventListener('click', () => {
-            grid = grid.map(row => row.map(() => 1));
-            draw();
-        });
-
-        // 初期描画
-        draw();
+        // ゲーム開始
+        init();
 
     </script>
 </body>
