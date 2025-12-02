@@ -1,3 +1,5 @@
+// refactor by gemini
+
 import * as ui from "./ui.js";
 import * as game from "./game.js";
 
