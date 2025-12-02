@@ -285,12 +285,15 @@
             isGameClear = true;
             statusEl.innerText = "MISSION ACCOMPLISHED";
             statusEl.style.color = "#4CAF50";
-            drawTextToGrid("CLEARED");
+
+            // 改行コード(\n)を入れて2行にする
+            drawTextToGrid("STAGE\nCLEAR");
+
             draw(); // 最終描画
         }
 
         /**
-         * テキストをドット化して配置（サイズに合わせてフォントサイズ自動調整）
+         * テキストをドット化して配置（複数行対応版）
          */
         function drawTextToGrid(text) {
             const tempCanvas = document.createElement('canvas');
@@ -298,24 +301,39 @@
             tempCanvas.height = ROWS;
             const tCtx = tempCanvas.getContext('2d');
 
+            // 背景リセット
             tCtx.fillStyle = '#000';
             tCtx.fillRect(0, 0, COLS, ROWS);
             tCtx.fillStyle = '#fff';
 
-            // グリッドサイズに応じてフォントサイズを調整
-            const fontSize = Math.floor(Math.min(COLS, ROWS) / 5);
-            tCtx.font = `bold ${fontSize}px sans-serif`;
+            // 行ごとに分割
+            const lines = text.split('\n');
 
+            // フォントサイズ調整
+            // 32x32の場合、横幅いっぱい使うために「横幅 ÷ 4」程度が丁度いいです
+            const fontSize = Math.floor(COLS / 4);
+            tCtx.font = `bold ${fontSize}px sans-serif`;
             tCtx.textAlign = 'center';
             tCtx.textBaseline = 'middle';
-            tCtx.fillText(text, COLS / 2, ROWS / 2);
 
+            // 複数行の全体の高さを計算して、画面中央に寄せる
+            const lineHeight = fontSize; // 行間はフォントサイズと同じくらい詰める
+            const totalHeight = lines.length * lineHeight;
+            const startY = (ROWS / 2) - (totalHeight / 2) + (lineHeight / 2);
+
+            // 1行ずつ描画
+            lines.forEach((line, i) => {
+                tCtx.fillText(line, COLS / 2, startY + (i * lineHeight));
+            });
+
+            // ピクセルデータを読み取ってグリッドに反映
             const imageData = tCtx.getImageData(0, 0, COLS, ROWS);
             const data = imageData.data;
 
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
                     const index = (r * COLS + c) * 4;
+                    // 明るい部分を「生」にする
                     if (data[index] > 100) {
                         grid[r][c] = 1;
                     } else {
