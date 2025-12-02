@@ -1,13 +1,11 @@
 <!-- https://lmarena.ai/c/019ae067-66d5-7420-87a8-beb7b796206e -->
 
-
-
 <!DOCTYPE html>
 <html lang="ja">
 
 <head>
     <meta charset="UTF-8">
-    <title>LIFE GAME PUZZLE: TORUS WORLD</title>
+    <title>LIFE GAME PUZZLE: TIME ATTACK</title>
     <style>
         body {
             font-family: 'Courier New', sans-serif;
@@ -22,65 +20,73 @@
             overflow: hidden;
         }
 
+        /* UIレイアウト */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            width: 640px;
+            /* canvas幅に合わせる */
+            margin-bottom: 5px;
+        }
+
         h1 {
-            margin: 0 0 5px 0;
-            font-size: 1rem;
-            color: #666;
+            margin: 0;
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        #score-board {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
         }
 
         canvas {
             background-color: #000;
-            border: 1px solid #333;
-            /* 画面に収まらない場合は縮小表示するレスポンシブ対応 */
-            max-width: 95vw;
-            max-height: 85vh;
-            box-shadow: 0 0 20px rgba(0, 100, 0, 0.2);
+            border: 2px solid #333;
+            box-shadow: 0 0 30px rgba(0, 100, 0, 0.1);
             image-rendering: pixelated;
         }
 
-        .info {
+        #status {
             margin-top: 10px;
+            font-weight: bold;
+            color: #ff4444;
+            height: 1.2em;
+            font-size: 1.1rem;
+        }
+
+        .info {
+            margin-top: 5px;
             text-align: center;
             font-size: 0.8rem;
-            color: #888;
+            color: #666;
         }
 
         .key {
             display: inline-block;
-            padding: 1px 5px;
+            padding: 1px 6px;
             border: 1px solid #444;
             border-radius: 3px;
             background: #222;
             color: #ddd;
-        }
-
-        #status {
-            font-weight: bold;
-            color: #ff4444;
-            height: 1.2em;
-            margin-bottom: 5px;
-        }
-
-        #level-info {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 0.8rem;
-            color: #444;
         }
     </style>
 </head>
 
 <body>
 
-    <div id="level-info">Level 1: 128x128 (Wrapping)</div>
-    <h1>LIFE GAME PUZZLE</h1>
-    <div id="status">TARGET: ELIMINATE ALL LIFE</div>
+    <div class="header">
+        <h1>LIFE GAME PUZZLE</h1>
+        <div id="score-board">GEN: 0</div>
+    </div>
 
     <canvas id="gameCanvas"></canvas>
 
+    <div id="status">WAITING FOR INPUT...</div>
+
     <div class="info">
-        <span class="key">ARROWS</span> Move &nbsp; <span class="key">SPACE</span> Place/Remove Dot &nbsp; <span
+        <span class="key">ARROWS</span> Move &nbsp; <span class="key">SPACE</span> Place Dot & Start &nbsp; <span
             class="key">R</span> Retry
     </div>
 
@@ -88,69 +94,64 @@
         /**
          * 設定・定数
          */
-        const CELL_SIZE = 20;    // 32x32なら、20くらいが大きく見やすいです
+        const CELL_SIZE = 20;    // 32x32用に見やすく大きく
         const SIMULATION_SPEED = 80;
 
-        // レベル設定（拡張性確保）
         const LEVELS = [
-            { w: 32, h: 32 },   // ← ここを 32, 32 に変更
-            { w: 64, h: 64 },   // 次のレベル用に残しておく
+            { w: 32, h: 32 },
+            { w: 64, h: 64 },
             { w: 128, h: 128 }
         ];
-        let currentLevelIndex = 0; // 現在のレベル（0番目を使用）
+        let currentLevelIndex = 0;
 
         // グローバル変数
         let COLS, ROWS;
         let grid = [];
         let player = { x: 0, y: 0 };
+
+        // ゲーム進行フラグ
+        let isGameStarted = false; // 最初の入力があるまでfalse
         let isGameClear = false;
+        let generationCount = 0;   // スコア（経過世代数）
+
         let lastTime = 0;
         let simulationTimer = 0;
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const statusEl = document.getElementById('status');
-        const levelInfoEl = document.getElementById('level-info');
+        const scoreEl = document.getElementById('score-board');
 
         /**
          * 初期化処理
-         * @param {number} levelIdx - LEVELS配列のインデックス
          */
         function initGame(levelIdx) {
             const lvl = LEVELS[levelIdx];
             COLS = lvl.w;
             ROWS = lvl.h;
 
-            // キャンバスサイズ設定
             canvas.width = COLS * CELL_SIZE;
             canvas.height = ROWS * CELL_SIZE;
 
-            levelInfoEl.innerText = `Level ${levelIdx + 1}: ${COLS}x${ROWS} (Wrapping)`;
-
+            // 変数リセット
             isGameClear = false;
-            statusEl.innerText = "TARGET: ELIMINATE ALL LIFE";
-            statusEl.style.color = "#ff4444";
+            isGameStarted = false;
+            generationCount = 0;
+            scoreEl.innerText = "GEN: 0";
 
-            // グリッド作成 & 初期配置
+            statusEl.innerText = "PRESS SPACE TO START";
+            statusEl.style.color = "#ffff00"; // 黄色で注意喚起
+
+            // グリッド初期化
             grid = new Array(ROWS).fill(null).map(() => new Array(COLS).fill(0));
 
-            // ランダム配置（中央に寄せる）
-            // 全画面埋めると128x128は手動で消すのが大変すぎるため、
-            // 中央 50% 程度の領域にランダム生成します。
-            const marginX = Math.floor(COLS * 0.25);
-            const marginY = Math.floor(ROWS * 0.25);
+            // ★初期パターンをテキストで生成
+            drawTextToGrid("STAGE\n1");
 
-            for (let r = marginY; r < ROWS - marginY; r++) {
-                for (let c = marginX; c < COLS - marginX; c++) {
-                    if (Math.random() > 0.80) grid[r][c] = 1;
-                }
-            }
+            // プレイヤー初期位置（邪魔にならないよう左上に）
+            player.x = 2;
+            player.y = 2;
 
-            // プレイヤー初期位置（中央）
-            player.x = Math.floor(COLS / 2);
-            player.y = Math.floor(ROWS / 2);
-
-            // ループ開始（初回のみ）
             if (lastTime === 0) requestAnimationFrame(gameLoop);
         }
 
@@ -173,12 +174,20 @@
         function update(deltaTime) {
             if (isGameClear) return;
 
-            // ライフゲーム進行
-            simulationTimer += deltaTime;
-            if (simulationTimer >= SIMULATION_SPEED) {
-                simulationTimer = 0;
-                computeNextGen();
-                checkWinCondition();
+            // ★ゲーム開始（最初の入力）済みの場合のみ時間を進める
+            if (isGameStarted) {
+                simulationTimer += deltaTime;
+
+                if (simulationTimer >= SIMULATION_SPEED) {
+                    simulationTimer = 0;
+                    computeNextGen();
+
+                    // 世代カウントアップ（スコア）
+                    generationCount++;
+                    scoreEl.innerText = "GEN: " + generationCount;
+
+                    checkWinCondition();
+                }
             }
         }
 
@@ -186,78 +195,64 @@
          * 描画処理
          */
         function draw() {
-            // 背景
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // セル描画
-            // 生存セルのみ描画（高速化のため）
             ctx.fillStyle = isGameClear ? '#4CAF50' : '#0f0';
 
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
                     if (grid[r][c] === 1) {
-                        // グリッド線なしでシンプルに塗りつぶし
                         ctx.fillRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
                     }
                 }
             }
 
-            // プレイヤーカーソル描画（ラッピング対応不要、表示位置はそのまま）
+            // プレイヤー描画
             if (!isGameClear) {
                 const px = player.x * CELL_SIZE;
                 const py = player.y * CELL_SIZE;
 
-                ctx.strokeStyle = '#ff0000';
+                // 待機中は白っぽく、開始したら赤くする演出
+                ctx.strokeStyle = isGameStarted ? '#ff0000' : '#fff';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(px - 1, py - 1, CELL_SIZE + 1, CELL_SIZE + 1); // 少し外側に枠
+                ctx.strokeRect(px - 1, py - 1, CELL_SIZE + 1, CELL_SIZE + 1);
 
-                // 視認性向上のための半透明塗り
-                ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                ctx.fillStyle = isGameStarted ? 'rgba(255, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)';
                 ctx.fillRect(px, py, CELL_SIZE, CELL_SIZE);
             }
         }
 
         /**
-         * ライフゲーム世代更新（Wrapping対応）
+         * ライフゲーム世代更新（Wrappingあり）
          */
         function computeNextGen() {
-            const nextGrid = new Array(ROWS); // 最適化のため都度行のみ作成
-            let hasLiveCell = false;
-
+            const nextGrid = new Array(ROWS);
             for (let r = 0; r < ROWS; r++) {
                 nextGrid[r] = new Array(COLS);
                 for (let c = 0; c < COLS; c++) {
                     const neighbors = countNeighborsWrapped(r, c);
                     const cell = grid[r][c];
-                    let nextState = 0;
 
+                    // シンプル化されたロジック
                     if (cell === 1) {
-                        if (neighbors === 2 || neighbors === 3) nextState = 1;
+                        nextGrid[r][c] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
                     } else {
-                        if (neighbors === 3) nextState = 1;
+                        nextGrid[r][c] = (neighbors === 3) ? 1 : 0;
                     }
-
-                    nextGrid[r][c] = nextState;
                 }
             }
             grid = nextGrid;
         }
 
-        /**
-         * 隣人数え上げ（トーラス型：端がつながる）
-         */
         function countNeighborsWrapped(r, c) {
             let sum = 0;
             for (let i = -1; i <= 1; i++) {
                 for (let j = -1; j <= 1; j++) {
                     if (i === 0 && j === 0) continue;
-
-                    // モジュロ演算で座標をラップさせる
-                    // (c + j + COLS) % COLS は、-1になっても COLS-1 になる計算式
                     const y = (r + i + ROWS) % ROWS;
                     const x = (c + j + COLS) % COLS;
-
                     sum += grid[y][x];
                 }
             }
@@ -268,7 +263,6 @@
          * 勝利判定
          */
         function checkWinCondition() {
-            // フラットにして合計を計算（高速化の余地ありだが現状維持）
             let population = 0;
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
@@ -283,17 +277,17 @@
 
         function gameClear() {
             isGameClear = true;
-            statusEl.innerText = "MISSION ACCOMPLISHED";
+
+            // 最終スコア表示
+            statusEl.innerText = "CLEAR! SCORE: " + generationCount;
             statusEl.style.color = "#4CAF50";
 
-            // 改行コード(\n)を入れて2行にする
             drawTextToGrid("STAGE\nCLEAR");
-
-            draw(); // 最終描画
+            draw();
         }
 
         /**
-         * テキストをドット化して配置（複数行対応版）
+         * テキストをグリッドに書き込む関数（初期配置・クリア画面兼用）
          */
         function drawTextToGrid(text) {
             const tempCanvas = document.createElement('canvas');
@@ -301,50 +295,42 @@
             tempCanvas.height = ROWS;
             const tCtx = tempCanvas.getContext('2d');
 
-            // 背景リセット
             tCtx.fillStyle = '#000';
             tCtx.fillRect(0, 0, COLS, ROWS);
             tCtx.fillStyle = '#fff';
 
-            // 行ごとに分割
             const lines = text.split('\n');
-
-            // フォントサイズ調整
-            // 32x32の場合、横幅いっぱい使うために「横幅 ÷ 4」程度が丁度いいです
+            // フォントサイズ：32px幅なら8px程度
             const fontSize = Math.floor(COLS / 4);
             tCtx.font = `bold ${fontSize}px sans-serif`;
             tCtx.textAlign = 'center';
             tCtx.textBaseline = 'middle';
 
-            // 複数行の全体の高さを計算して、画面中央に寄せる
-            const lineHeight = fontSize; // 行間はフォントサイズと同じくらい詰める
+            const lineHeight = fontSize;
             const totalHeight = lines.length * lineHeight;
             const startY = (ROWS / 2) - (totalHeight / 2) + (lineHeight / 2);
 
-            // 1行ずつ描画
             lines.forEach((line, i) => {
                 tCtx.fillText(line, COLS / 2, startY + (i * lineHeight));
             });
 
-            // ピクセルデータを読み取ってグリッドに反映
             const imageData = tCtx.getImageData(0, 0, COLS, ROWS);
             const data = imageData.data;
 
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
                     const index = (r * COLS + c) * 4;
-                    // 明るい部分を「生」にする
                     if (data[index] > 100) {
                         grid[r][c] = 1;
                     } else {
-                        grid[r][c] = 0;
+                        grid[r][c] = 0; // テキストを描くときは既存セルを上書き
                     }
                 }
             }
         }
 
         /**
-         * キー入力（プレイヤー移動もWrappingさせる）
+         * 入力ハンドリング
          */
         window.addEventListener('keydown', (e) => {
             if (e.code === 'KeyR') {
@@ -352,7 +338,7 @@
                 return;
             }
 
-            // レベル切り替えデバッグ用（Lキー）
+            // レベル変更隠しコマンド (L)
             if (e.code === 'KeyL') {
                 currentLevelIndex = (currentLevelIndex + 1) % LEVELS.length;
                 initGame(currentLevelIndex);
@@ -366,37 +352,41 @@
             switch (e.code) {
                 case 'ArrowUp':
                 case 'KeyW':
-                    // 上端を超えたら下端へ
                     player.y = (player.y - 1 + ROWS) % ROWS;
                     moved = true;
                     break;
                 case 'ArrowDown':
                 case 'KeyS':
-                    // 下端を超えたら上端へ
                     player.y = (player.y + 1) % ROWS;
                     moved = true;
                     break;
                 case 'ArrowLeft':
                 case 'KeyA':
-                    // 左端を超えたら右端へ
                     player.x = (player.x - 1 + COLS) % COLS;
                     moved = true;
                     break;
                 case 'ArrowRight':
                 case 'KeyD':
-                    // 右端を超えたら左端へ
                     player.x = (player.x + 1) % COLS;
                     moved = true;
                     break;
                 case 'Space':
                 case 'Enter':
+                    // ★最初の入力ならゲーム開始
+                    if (!isGameStarted) {
+                        isGameStarted = true;
+                        statusEl.innerText = "ELIMINATE ALL!";
+                        statusEl.style.color = "#ff4444";
+                    }
+
+                    // 点を打つ
                     grid[player.y][player.x] = grid[player.y][player.x] ? 0 : 1;
                     e.preventDefault();
                     break;
             }
         });
 
-        // ゲーム開始
+        // 開始
         initGame(currentLevelIndex);
 
     </script>

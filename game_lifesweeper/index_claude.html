@@ -69,6 +69,10 @@
             line-height: 1.6;
         }
 
+            font-size: 16px;
+            font-weight: bold;
+        }
+
         #canvas-container {
             border: 2px solid #4a4a6a;
             border-radius: 5px;
@@ -83,6 +87,12 @@
             color: #aaa;
             margin-top: 15px;
             font-size: 14px;
+        }
+
+        .score {
+            color: #00b894;
+            font-size: 18px;
+            font-weight: bold;
         }
 
         .level-info {
@@ -110,14 +120,12 @@
     <h1>ライフゲーム - 消滅チャレンジ</h1>
 
     <div class="controls">
-        <button id="startStop">▶ 開始</button>
-        <button id="step">1ステップ</button>
         <button id="restart">リスタート</button>
     </div>
 
     <div class="info">
-        すべてのライフを消滅させよう！<br>
-        空いているセルに点を打って連鎖を起こせ
+        <span id="phase-info" class="phase-info">スペースキーで点を打って開始！</span><br>
+        すべてのライフを消滅させよう！
     </div>
 
     <div id="canvas-container">
@@ -129,9 +137,13 @@
         生存セル: <span id="population">0</span>
     </div>
 
+    <div class="stats">
+        スコア（世代数）: <span id="score" class="score">-</span>
+    </div>
+
     <div class="level-info">
         レベル: <span id="level">1</span> |
-        エリア: <span id="area-size">128x128</span>
+        エリア: <span id="area-size">32x32</span>
     </div>
 
     <div class="key-hint">
@@ -145,11 +157,11 @@
 
         // レベル設定
         const levelConfigs = [
-            { cols: 32, rows: 32, density: 0.20 },    // レベル1 ← ここを変更
-            { cols: 64, rows: 64, density: 0.22 },    // レベル2
-            { cols: 128, rows: 128, density: 0.25 },  // レベル3
-            { cols: 256, rows: 128, density: 0.28 },  // レベル4
-            { cols: 256, rows: 256, density: 0.30 },  // レベル5
+            { cols: 32, rows: 32, density: 0.20 },
+            { cols: 64, rows: 64, density: 0.22 },
+            { cols: 128, rows: 128, density: 0.25 },
+            { cols: 256, rows: 128, density: 0.28 },
+            { cols: 256, rows: 256, density: 0.30 },
         ];
 
         // 現在のレベル（0始まり）
@@ -158,12 +170,16 @@
         // 動的に変わるグリッドサイズ
         let cols, rows, cellSize;
 
+        // ゲームフェーズ
+        const PHASE_WAITING = 'waiting';  // 初手待ち
+        const PHASE_RUNNING = 'running';  // 世代交代中
+        const PHASE_CLEARED = 'cleared';  // クリア
+
         // 状態
         let grid = null;
-        let running = false;
+        let phase = PHASE_WAITING;
         let generation = 0;
         let intervalId = null;
-        let gameCleared = false;
 
         // プレイヤーカーソル
         let cursorX, cursorY;
@@ -173,6 +189,20 @@
         let prevGamepadButtons = {};
         let gamepadMoveTimer = 0;
 
+        // 初期パターン（STAGE CLEAR風）
+        const initialPattern = [
+            " ####  #####  ##    ###  ###### ",
+            "#        #   #  #  #     #      ",
+            " ###     #   ####  #  ## ##### ",
+            "    #    #   #  #  #   # #      ",
+            "####     #   #  #   ###  ###### ",
+            "",
+            " ####  #      #####  ##   ##### ",
+            "#      #      #     #  #  #    #",
+            "#      #      ####  ####  ##### ",
+            "#      #      #     #  #  #   # ",
+            " ####  ###### ##### #  #  #    #"
+        ];
 
         // GameClearメッセージのドットパターン
         const clearMessage = [
@@ -218,35 +248,18 @@
             return Array(rows).fill(null).map(() => Array(cols).fill(false));
         }
 
-        // ランダム初期化
-        function initRandom() {
-            const density = initLevel(currentLevel);
+        // パターンをグリッドに配置
+        function placePattern(pattern) {
             grid = createGrid();
 
-            for (let y = 0; y < rows; y++) {
-                for (let x = 0; x < cols; x++) {
-                    grid[y][x] = Math.random() < density;
-                }
-            }
-
-            generation = 0;
-            gameCleared = false;
-            cursorX = Math.floor(cols / 2);
-            cursorY = Math.floor(rows / 2);
-        }
-
-        // GameClearメッセージを表示
-        function showGameClear() {
-            grid = createGrid();
-
-            const msgWidth = clearMessage[0].length;
-            const msgHeight = clearMessage.length;
+            const msgWidth = pattern[0].length;
+            const msgHeight = pattern.length;
             const startX = Math.floor((cols - msgWidth) / 2);
             const startY = Math.floor((rows - msgHeight) / 2);
 
             for (let y = 0; y < msgHeight; y++) {
-                for (let x = 0; x < msgWidth; x++) {
-                    if (clearMessage[y][x] === '#') {
+                for (let x = 0; x < pattern[y].length; x++) {
+                    if (pattern[y][x] === '#') {
                         const gx = startX + x;
                         const gy = startY + y;
                         if (gx >= 0 && gx < cols && gy >= 0 && gy < rows) {
@@ -255,6 +268,47 @@
                     }
                 }
             }
+        }
+
+        // 初期化
+        function initGame() {
+            initLevel(currentLevel);
+            placePattern(initialPattern);
+
+            generation = 0;
+            phase = PHASE_WAITING;
+            cursorX = Math.floor(cols / 2);
+            cursorY = Math.floor(rows / 2);
+
+            clearInterval(intervalId);
+
+            updatePhaseInfo();
+            document.getElementById('score').textContent = '-';
+        }
+
+        // フェーズ情報を更新
+        function updatePhaseInfo() {
+            const phaseInfo = document.getElementById('phase-info');
+            switch (phase) {
+                case PHASE_WAITING:
+                    phaseInfo.textContent = 'スペースキーで点を打って開始！';
+                    phaseInfo.style.color = '#ffcc00';
+                    break;
+                case PHASE_RUNNING:
+                    phaseInfo.textContent = '世代交代中...';
+                    phaseInfo.style.color = '#00b894';
+                    break;
+                case PHASE_CLEARED:
+                    phaseInfo.textContent = 'クリア！';
+                    phaseInfo.style.color = '#ff6b6b';
+                    break;
+            }
+        }
+
+        // GameClearメッセージを表示
+        function showGameClear() {
+            placePattern(clearMessage);
+            document.getElementById('score').textContent = generation;
         }
 
         // 描画
@@ -297,7 +351,7 @@
             }
 
             // プレイヤーカーソル（赤い枠）
-            if (!gameCleared) {
+            if (phase !== PHASE_CLEARED) {
                 ctx.strokeStyle = '#ff6b6b';
                 ctx.lineWidth = Math.max(1, cellSize >= 4 ? 2 : 1);
                 ctx.strokeRect(
@@ -344,7 +398,7 @@
 
         // 次の世代
         function nextGeneration() {
-            if (gameCleared) return;
+            if (phase !== PHASE_RUNNING) return;
 
             const newGrid = createGrid();
 
@@ -366,11 +420,9 @@
 
             // ゲームクリア判定
             if (countLiveCells() === 0) {
-                gameCleared = true;
-                running = false;
+                phase = PHASE_CLEARED;
                 clearInterval(intervalId);
-                document.getElementById('startStop').textContent = '▶ 開始';
-                document.getElementById('startStop').classList.remove('active');
+                updatePhaseInfo();
                 showGameClear();
             }
 
@@ -379,7 +431,7 @@
 
         // カーソル移動（トーラス型ラッピング）
         function moveCursor(dx, dy) {
-            if (gameCleared) return;
+            if (phase === PHASE_CLEARED) return;
             cursorX = (cursorX + dx + cols) % cols;
             cursorY = (cursorY + dy + rows) % rows;
             draw();
@@ -387,16 +439,24 @@
 
         // 点を打つ
         function placeCell() {
-            if (gameCleared) return;
+            if (phase === PHASE_CLEARED) return;
             if (!grid[cursorY][cursorX]) {
                 grid[cursorY][cursorX] = true;
+
+                // 初手で世代交代開始
+                if (phase === PHASE_WAITING) {
+                    phase = PHASE_RUNNING;
+                    updatePhaseInfo();
+                    intervalId = setInterval(nextGeneration, 100);
+                }
+
                 draw();
             }
         }
 
         // キーボード操作
         document.addEventListener('keydown', (e) => {
-            if (gameCleared) return;
+            if (phase === PHASE_CLEARED) return;
 
             switch (e.code) {
                 case 'ArrowUp':
@@ -440,7 +500,7 @@
 
         // ゲームパッド入力処理
         function handleGamepad() {
-            if (gamepadIndex === null || gameCleared) return;
+            if (gamepadIndex === null || phase === PHASE_CLEARED) return;
 
             const gamepad = navigator.getGamepads()[gamepadIndex];
             if (!gamepad) return;
@@ -494,35 +554,13 @@
         }
 
         // ボタン
-        document.getElementById('startStop').addEventListener('click', function () {
-            if (gameCleared) return;
-
-            running = !running;
-            this.textContent = running ? '⏸ 停止' : '▶ 開始';
-            this.classList.toggle('active', running);
-
-            if (running) {
-                intervalId = setInterval(nextGeneration, 100);
-            } else {
-                clearInterval(intervalId);
-            }
-        });
-
-        document.getElementById('step').addEventListener('click', () => {
-            if (!running && !gameCleared) nextGeneration();
-        });
-
         document.getElementById('restart').addEventListener('click', () => {
-            running = false;
-            clearInterval(intervalId);
-            document.getElementById('startStop').textContent = '▶ 開始';
-            document.getElementById('startStop').classList.remove('active');
-            initRandom();
+            initGame();
             draw();
         });
 
         // 初期化
-        initRandom();
+        initGame();
         draw();
         gameLoop();
     </script>
