@@ -1,3 +1,8 @@
+<!-- https://lmarena.ai/c/019ae067-66d5-7420-87a8-beb7b796206e -->
+
+
+
+
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -80,6 +85,12 @@
             font-size: 14px;
         }
 
+        .level-info {
+            color: #ffcc00;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
         .key-hint {
             color: #888;
             font-size: 12px;
@@ -118,6 +129,11 @@
         生存セル: <span id="population">0</span>
     </div>
 
+    <div class="level-info">
+        レベル: <span id="level">1</span> |
+        エリア: <span id="area-size">128x128</span>
+    </div>
+
     <div class="key-hint">
         <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> 移動 |
         <kbd>Space</kbd> 点を打つ
@@ -127,29 +143,34 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
-        // 設定
-        const cellSize = 8;
-        const cols = 120;
-        const rows = 80;
+        // レベル設定
+        const levelConfigs = [
+            { cols: 128, rows: 128, density: 0.20 },  // レベル1
+            { cols: 256, rows: 128, density: 0.22 },  // レベル2
+            { cols: 256, rows: 256, density: 0.25 },  // レベル3
+            { cols: 512, rows: 256, density: 0.28 },  // レベル4
+            { cols: 512, rows: 512, density: 0.30 },  // レベル5
+        ];
 
-        canvas.width = cols * cellSize;
-        canvas.height = rows * cellSize;
+        // 現在のレベル（0始まり）
+        let currentLevel = 0;
+
+        // 動的に変わるグリッドサイズ
+        let cols, rows, cellSize;
 
         // 状態
-        let grid = createGrid();
+        let grid = null;
         let running = false;
         let generation = 0;
         let intervalId = null;
         let gameCleared = false;
 
         // プレイヤーカーソル
-        let cursorX = Math.floor(cols / 2);
-        let cursorY = Math.floor(rows / 2);
+        let cursorX, cursorY;
 
         // ゲームパッド
         let gamepadIndex = null;
         let prevGamepadButtons = {};
-        let prevGamepadAxes = { x: 0, y: 0 };
         let gamepadMoveTimer = 0;
 
         // GameClearメッセージのドットパターン
@@ -163,6 +184,30 @@
             "  ####  #    # #    # ######        ####  ###### ######  #    # #    #"
         ];
 
+        // レベルを初期化
+        function initLevel(level) {
+            const config = levelConfigs[Math.min(level, levelConfigs.length - 1)];
+            cols = config.cols;
+            rows = config.rows;
+
+            // セルサイズを計算（画面に収まるように）
+            const maxWidth = Math.min(window.innerWidth - 60, 1024);
+            const maxHeight = Math.min(window.innerHeight - 300, 768);
+            cellSize = Math.max(2, Math.min(
+                Math.floor(maxWidth / cols),
+                Math.floor(maxHeight / rows)
+            ));
+
+            canvas.width = cols * cellSize;
+            canvas.height = rows * cellSize;
+
+            // UI更新
+            document.getElementById('level').textContent = level + 1;
+            document.getElementById('area-size').textContent = `${cols}x${rows}`;
+
+            return config.density;
+        }
+
         // グリッド作成
         function createGrid() {
             return Array(rows).fill(null).map(() => Array(cols).fill(false));
@@ -170,12 +215,15 @@
 
         // ランダム初期化
         function initRandom() {
+            const density = initLevel(currentLevel);
             grid = createGrid();
+
             for (let y = 0; y < rows; y++) {
                 for (let x = 0; x < cols; x++) {
-                    grid[y][x] = Math.random() < 0.25;
+                    grid[y][x] = Math.random() < density;
                 }
             }
+
             generation = 0;
             gameCleared = false;
             cursorX = Math.floor(cols / 2);
@@ -209,32 +257,35 @@
             ctx.fillStyle = '#1a1a2e';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // グリッド線
-            ctx.strokeStyle = '#2a2a4e';
-            ctx.lineWidth = 0.5;
-            for (let x = 0; x <= cols; x++) {
-                ctx.beginPath();
-                ctx.moveTo(x * cellSize, 0);
-                ctx.lineTo(x * cellSize, canvas.height);
-                ctx.stroke();
-            }
-            for (let y = 0; y <= rows; y++) {
-                ctx.beginPath();
-                ctx.moveTo(0, y * cellSize);
-                ctx.lineTo(canvas.width, y * cellSize);
-                ctx.stroke();
+            // グリッド線（セルサイズが小さい場合は省略）
+            if (cellSize >= 4) {
+                ctx.strokeStyle = '#2a2a4e';
+                ctx.lineWidth = 0.5;
+                for (let x = 0; x <= cols; x++) {
+                    ctx.beginPath();
+                    ctx.moveTo(x * cellSize, 0);
+                    ctx.lineTo(x * cellSize, canvas.height);
+                    ctx.stroke();
+                }
+                for (let y = 0; y <= rows; y++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y * cellSize);
+                    ctx.lineTo(canvas.width, y * cellSize);
+                    ctx.stroke();
+                }
             }
 
             // セル
             ctx.fillStyle = '#00b894';
+            const padding = cellSize >= 4 ? 1 : 0;
             for (let y = 0; y < rows; y++) {
                 for (let x = 0; x < cols; x++) {
                     if (grid[y][x]) {
                         ctx.fillRect(
-                            x * cellSize + 1,
-                            y * cellSize + 1,
-                            cellSize - 2,
-                            cellSize - 2
+                            x * cellSize + padding,
+                            y * cellSize + padding,
+                            cellSize - padding * 2,
+                            cellSize - padding * 2
                         );
                     }
                 }
@@ -243,7 +294,7 @@
             // プレイヤーカーソル（赤い枠）
             if (!gameCleared) {
                 ctx.strokeStyle = '#ff6b6b';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = Math.max(1, cellSize >= 4 ? 2 : 1);
                 ctx.strokeRect(
                     cursorX * cellSize,
                     cursorY * cellSize,
@@ -258,13 +309,7 @@
         // 統計更新
         function updateStats() {
             document.getElementById('generation').textContent = generation;
-            let count = 0;
-            for (let y = 0; y < rows; y++) {
-                for (let x = 0; x < cols; x++) {
-                    if (grid[y][x]) count++;
-                }
-            }
-            document.getElementById('population').textContent = count;
+            document.getElementById('population').textContent = countLiveCells();
         }
 
         // 生存セル数をカウント
@@ -278,7 +323,7 @@
             return count;
         }
 
-        // 隣接セルをカウント
+        // 隣接セルをカウント（トーラス型ラッピング）
         function countNeighbors(y, x) {
             let count = 0;
             for (let dy = -1; dy <= 1; dy++) {
@@ -327,7 +372,7 @@
             draw();
         }
 
-        // カーソル移動
+        // カーソル移動（トーラス型ラッピング）
         function moveCursor(dx, dy) {
             if (gameCleared) return;
             cursorX = (cursorX + dx + cols) % cols;
@@ -346,7 +391,7 @@
 
         // キーボード操作
         document.addEventListener('keydown', (e) => {
-            if (gameCleared && e.code !== 'KeyR') return;
+            if (gameCleared) return;
 
             switch (e.code) {
                 case 'ArrowUp':
