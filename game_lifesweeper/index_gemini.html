@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>インタラクティブ・ライフゲーム</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #222;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .controls {
+            margin-bottom: 15px;
+            background: #333;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            background-color: #444;
+            color: white;
+            border: 1px solid #666;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        button.active {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        button.danger {
+            background-color: #d9534f;
+            border-color: #d43f3a;
+        }
+
+        canvas {
+            background-color: #000;
+            border: 1px solid #555;
+            cursor: crosshair;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        p.info {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>ライフゲーム：全滅実験場</h1>
+
+    <div class="controls">
+        <button id="btnStart">スタート / ストップ</button>
+        <button id="btnStep">1コマ進める</button>
+        <button id="btnRandom">ランダム配置</button>
+        <button id="btnClear" class="danger">全消去</button>
+        <button id="btnFill">全埋め（過密死実験）</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <p class="info">マウスドラッグで点を描けます。クリックでON/OFF切り替え。</p>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 設定
+        const cellSize = 10; // セルの大きさ(px)
+        const cols = 80;     // 横のセルの数
+        const rows = 50;     // 縦のセルの数
+
+        // キャンバスサイズ設定
+        canvas.width = cols * cellSize;
+        canvas.height = rows * cellSize;
+
+        let grid = createGrid(rows, cols);
+        let isRunning = false;
+        let animationId;
+
+        // グリッド作成関数
+        function createGrid(rows, cols) {
+            return new Array(rows).fill(null)
+                .map(() => new Array(cols).fill(0));
+        }
+
+        // 描画関数
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (grid[r][c] === 1) {
+                        ctx.fillStyle = '#0f0'; // 生きている色は緑
+                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
+                    } else {
+                        // グリッド線（薄く）
+                        ctx.fillStyle = '#111';
+                        ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
+                    }
+                }
+            }
+        }
+
+        // 次の世代を計算
+        function computeNextGen() {
+            const nextGrid = createGrid(rows, cols);
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const neighbors = countNeighbors(grid, r, c);
+                    const cell = grid[r][c];
+
+                    if (cell === 1 && (neighbors < 2 || neighbors > 3)) {
+                        nextGrid[r][c] = 0; // 過疎または過密で死ぬ
+                    } else if (cell === 0 && neighbors === 3) {
+                        nextGrid[r][c] = 1; // 誕生
+                    } else {
+                        nextGrid[r][c] = cell; // 現状維持
+                    }
+                }
+            }
+            grid = nextGrid;
+        }
+
+        // 隣人数え上げ（端っこは「壁」として扱い、ループしない有限盤面とする）
+        function countNeighbors(grid, r, c) {
+            let sum = 0;
+            for (let i = -1; i < 2; i++) {
+                for (let j = -1; j < 2; j++) {
+                    if (i === 0 && j === 0) continue; // 自分自身は数えない
+
+                    const x = r + i;
+                    const y = c + j;
+
+                    if (x >= 0 && x < rows && y >= 0 && y < cols) {
+                        sum += grid[x][y];
+                    }
+                }
+            }
+            return sum;
+        }
+
+        // アニメーションループ
+        function loop() {
+            if (isRunning) {
+                computeNextGen();
+                draw();
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+
+        // 操作イベント：クリック＆ドラッグで描画
+        let isDrawing = false;
+
+        function toggleCell(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const c = Math.floor(x / cellSize);
+            const r = Math.floor(y / cellSize);
+
+            if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                // 左クリックなら生(1)、右クリック的な動作は今回はトグルで単純化
+                grid[r][c] = 1;
+                draw();
+            }
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            toggleCell(e);
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing) toggleCell(e);
+        });
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mouseleave', () => isDrawing = false);
+
+        // ボタン操作
+        document.getElementById('btnStart').addEventListener('click', () => {
+            isRunning = !isRunning;
+            if (isRunning) loop();
+            else cancelAnimationFrame(animationId);
+        });
+
+        document.getElementById('btnStep').addEventListener('click', () => {
+            isRunning = false;
+            computeNextGen();
+            draw();
+        });
+
+        document.getElementById('btnRandom').addEventListener('click', () => {
+            grid = grid.map(row => row.map(() => Math.random() > 0.8 ? 1 : 0));
+            draw();
+        });
+
+        document.getElementById('btnClear').addEventListener('click', () => {
+            isRunning = false;
+            grid = createGrid(rows, cols);
+            draw();
+        });
+
+        // 「全埋め」ボタン：理論通り全滅するか試す用
+        document.getElementById('btnFill').addEventListener('click', () => {
+            grid = grid.map(row => row.map(() => 1));
+            draw();
+        });
+
+        // 初期描画
+        draw();
+
+    </script>
+</body>
+
+</html>
