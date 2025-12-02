@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ライフゲーム</title>
+    <title>ライフゲーム - 消滅チャレンジ</title>
     <style>
         * {
             margin: 0;
@@ -60,6 +60,8 @@
             color: #aaa;
             margin-bottom: 15px;
             font-size: 14px;
+            text-align: center;
+            line-height: 1.6;
         }
 
         #canvas-container {
@@ -70,7 +72,6 @@
 
         canvas {
             display: block;
-            cursor: crosshair;
         }
 
         .stats {
@@ -78,22 +79,35 @@
             margin-top: 15px;
             font-size: 14px;
         }
+
+        .key-hint {
+            color: #888;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .key-hint kbd {
+            background: #4a4a6a;
+            padding: 2px 8px;
+            border-radius: 3px;
+            margin: 0 3px;
+        }
     </style>
 </head>
 
 <body>
-    <h1>ライフゲーム</h1>
+    <h1>ライフゲーム - 消滅チャレンジ</h1>
 
     <div class="controls">
         <button id="startStop">▶ 開始</button>
         <button id="step">1ステップ</button>
-        <button id="clear">クリア</button>
-        <button id="random">ランダム</button>
-        <button id="glider">グライダー追加</button>
-        <button id="block">ブロック追加</button>
+        <button id="restart">リスタート</button>
     </div>
 
-    <div class="info">クリック/ドラッグでセルを配置・削除</div>
+    <div class="info">
+        すべてのライフを消滅させよう！<br>
+        空いているセルに点を打って連鎖を起こせ
+    </div>
 
     <div id="canvas-container">
         <canvas id="canvas"></canvas>
@@ -102,6 +116,11 @@
     <div class="stats">
         世代: <span id="generation">0</span> |
         生存セル: <span id="population">0</span>
+    </div>
+
+    <div class="key-hint">
+        <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> 移動 |
+        <kbd>Space</kbd> 点を打つ
     </div>
 
     <script>
@@ -121,12 +140,68 @@
         let running = false;
         let generation = 0;
         let intervalId = null;
-        let isMouseDown = false;
-        let paintMode = null; // true: 生成, false: 削除
+        let gameCleared = false;
+
+        // プレイヤーカーソル
+        let cursorX = Math.floor(cols / 2);
+        let cursorY = Math.floor(rows / 2);
+
+        // ゲームパッド
+        let gamepadIndex = null;
+        let prevGamepadButtons = {};
+        let prevGamepadAxes = { x: 0, y: 0 };
+        let gamepadMoveTimer = 0;
+
+        // GameClearメッセージのドットパターン
+        const clearMessage = [
+            "  ####    ##   #    # ######        ####  #      ######   ##   ##### ",
+            " #       #  #  ##  ## #            #    # #      #       #  #  #    #",
+            "#       #    # # ## # #           #      #      #       #    # #    #",
+            "#  ###  ###### #    # #####       #      #      #####   ###### ##### ",
+            "#    #  #    # #    # #           #      #      #       #    # #   # ",
+            " #   #  #    # #    # #            #    # #      #       #    # #    #",
+            "  ####  #    # #    # ######        ####  ###### ######  #    # #    #"
+        ];
 
         // グリッド作成
         function createGrid() {
             return Array(rows).fill(null).map(() => Array(cols).fill(false));
+        }
+
+        // ランダム初期化
+        function initRandom() {
+            grid = createGrid();
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    grid[y][x] = Math.random() < 0.25;
+                }
+            }
+            generation = 0;
+            gameCleared = false;
+            cursorX = Math.floor(cols / 2);
+            cursorY = Math.floor(rows / 2);
+        }
+
+        // GameClearメッセージを表示
+        function showGameClear() {
+            grid = createGrid();
+
+            const msgWidth = clearMessage[0].length;
+            const msgHeight = clearMessage.length;
+            const startX = Math.floor((cols - msgWidth) / 2);
+            const startY = Math.floor((rows - msgHeight) / 2);
+
+            for (let y = 0; y < msgHeight; y++) {
+                for (let x = 0; x < msgWidth; x++) {
+                    if (clearMessage[y][x] === '#') {
+                        const gx = startX + x;
+                        const gy = startY + y;
+                        if (gx >= 0 && gx < cols && gy >= 0 && gy < rows) {
+                            grid[gy][gx] = true;
+                        }
+                    }
+                }
+            }
         }
 
         // 描画
@@ -165,6 +240,18 @@
                 }
             }
 
+            // プレイヤーカーソル（赤い枠）
+            if (!gameCleared) {
+                ctx.strokeStyle = '#ff6b6b';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(
+                    cursorX * cellSize,
+                    cursorY * cellSize,
+                    cellSize,
+                    cellSize
+                );
+            }
+
             updateStats();
         }
 
@@ -178,6 +265,17 @@
                 }
             }
             document.getElementById('population').textContent = count;
+        }
+
+        // 生存セル数をカウント
+        function countLiveCells() {
+            let count = 0;
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    if (grid[y][x]) count++;
+                }
+            }
+            return count;
         }
 
         // 隣接セルをカウント
@@ -196,6 +294,8 @@
 
         // 次の世代
         function nextGeneration() {
+            if (gameCleared) return;
+
             const newGrid = createGrid();
 
             for (let y = 0; y < rows; y++) {
@@ -213,42 +313,140 @@
 
             grid = newGrid;
             generation++;
+
+            // ゲームクリア判定
+            if (countLiveCells() === 0) {
+                gameCleared = true;
+                running = false;
+                clearInterval(intervalId);
+                document.getElementById('startStop').textContent = '▶ 開始';
+                document.getElementById('startStop').classList.remove('active');
+                showGameClear();
+            }
+
             draw();
         }
 
-        // マウス操作
-        function getCellFromEvent(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = Math.floor((e.clientX - rect.left) / cellSize);
-            const y = Math.floor((e.clientY - rect.top) / cellSize);
-            return { x: Math.max(0, Math.min(cols - 1, x)), y: Math.max(0, Math.min(rows - 1, y)) };
+        // カーソル移動
+        function moveCursor(dx, dy) {
+            if (gameCleared) return;
+            cursorX = (cursorX + dx + cols) % cols;
+            cursorY = (cursorY + dy + rows) % rows;
+            draw();
         }
 
-        canvas.addEventListener('mousedown', (e) => {
-            isMouseDown = true;
-            const { x, y } = getCellFromEvent(e);
-            paintMode = !grid[y][x];
-            grid[y][x] = paintMode;
-            draw();
+        // 点を打つ
+        function placeCell() {
+            if (gameCleared) return;
+            if (!grid[cursorY][cursorX]) {
+                grid[cursorY][cursorX] = true;
+                draw();
+            }
+        }
+
+        // キーボード操作
+        document.addEventListener('keydown', (e) => {
+            if (gameCleared && e.code !== 'KeyR') return;
+
+            switch (e.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    e.preventDefault();
+                    moveCursor(0, -1);
+                    break;
+                case 'ArrowDown':
+                case 'KeyS':
+                    e.preventDefault();
+                    moveCursor(0, 1);
+                    break;
+                case 'ArrowLeft':
+                case 'KeyA':
+                    e.preventDefault();
+                    moveCursor(-1, 0);
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    e.preventDefault();
+                    moveCursor(1, 0);
+                    break;
+                case 'Space':
+                    e.preventDefault();
+                    placeCell();
+                    break;
+            }
         });
 
-        canvas.addEventListener('mousemove', (e) => {
-            if (!isMouseDown) return;
-            const { x, y } = getCellFromEvent(e);
-            grid[y][x] = paintMode;
-            draw();
+        // ゲームパッド接続
+        window.addEventListener('gamepadconnected', (e) => {
+            gamepadIndex = e.gamepad.index;
+            console.log('ゲームパッド接続:', e.gamepad.id);
         });
 
-        canvas.addEventListener('mouseup', () => {
-            isMouseDown = false;
+        window.addEventListener('gamepaddisconnected', (e) => {
+            if (gamepadIndex === e.gamepad.index) {
+                gamepadIndex = null;
+            }
         });
 
-        canvas.addEventListener('mouseleave', () => {
-            isMouseDown = false;
-        });
+        // ゲームパッド入力処理
+        function handleGamepad() {
+            if (gamepadIndex === null || gameCleared) return;
+
+            const gamepad = navigator.getGamepads()[gamepadIndex];
+            if (!gamepad) return;
+
+            // ボタン（Aボタン = 0番で点を打つ）
+            if (gamepad.buttons[0] && gamepad.buttons[0].pressed && !prevGamepadButtons[0]) {
+                placeCell();
+            }
+            prevGamepadButtons[0] = gamepad.buttons[0] && gamepad.buttons[0].pressed;
+
+            // 十字キーまたはスティック
+            const threshold = 0.5;
+            const axes = {
+                x: gamepad.axes[0] || 0,
+                y: gamepad.axes[1] || 0
+            };
+
+            // 十字キー（ボタン12-15）
+            if (gamepad.buttons[12] && gamepad.buttons[12].pressed) axes.y = -1;
+            if (gamepad.buttons[13] && gamepad.buttons[13].pressed) axes.y = 1;
+            if (gamepad.buttons[14] && gamepad.buttons[14].pressed) axes.x = -1;
+            if (gamepad.buttons[15] && gamepad.buttons[15].pressed) axes.x = 1;
+
+            gamepadMoveTimer++;
+            if (gamepadMoveTimer >= 8) {
+                if (axes.x < -threshold) {
+                    moveCursor(-1, 0);
+                    gamepadMoveTimer = 0;
+                } else if (axes.x > threshold) {
+                    moveCursor(1, 0);
+                    gamepadMoveTimer = 0;
+                }
+                if (axes.y < -threshold) {
+                    moveCursor(0, -1);
+                    gamepadMoveTimer = 0;
+                } else if (axes.y > threshold) {
+                    moveCursor(0, 1);
+                    gamepadMoveTimer = 0;
+                }
+            }
+
+            if (Math.abs(axes.x) < threshold && Math.abs(axes.y) < threshold) {
+                gamepadMoveTimer = 8;
+            }
+        }
+
+        // メインループ
+        function gameLoop() {
+            handleGamepad();
+            requestAnimationFrame(gameLoop);
+        }
 
         // ボタン
         document.getElementById('startStop').addEventListener('click', function () {
+            if (gameCleared) return;
+
             running = !running;
             this.textContent = running ? '⏸ 停止' : '▶ 開始';
             this.classList.toggle('active', running);
@@ -261,53 +459,22 @@
         });
 
         document.getElementById('step').addEventListener('click', () => {
-            if (!running) nextGeneration();
+            if (!running && !gameCleared) nextGeneration();
         });
 
-        document.getElementById('clear').addEventListener('click', () => {
-            grid = createGrid();
-            generation = 0;
+        document.getElementById('restart').addEventListener('click', () => {
+            running = false;
+            clearInterval(intervalId);
+            document.getElementById('startStop').textContent = '▶ 開始';
+            document.getElementById('startStop').classList.remove('active');
+            initRandom();
             draw();
         });
 
-        document.getElementById('random').addEventListener('click', () => {
-            for (let y = 0; y < rows; y++) {
-                for (let x = 0; x < cols; x++) {
-                    grid[y][x] = Math.random() < 0.3;
-                }
-            }
-            generation = 0;
-            draw();
-        });
-
-        document.getElementById('glider').addEventListener('click', () => {
-            const ox = Math.floor(Math.random() * (cols - 5)) + 2;
-            const oy = Math.floor(Math.random() * (rows - 5)) + 2;
-            const pattern = [
-                [0, 1, 0],
-                [0, 0, 1],
-                [1, 1, 1]
-            ];
-            for (let y = 0; y < 3; y++) {
-                for (let x = 0; x < 3; x++) {
-                    grid[oy + y][ox + x] = pattern[y][x] === 1;
-                }
-            }
-            draw();
-        });
-
-        document.getElementById('block').addEventListener('click', () => {
-            const ox = Math.floor(Math.random() * (cols - 4)) + 2;
-            const oy = Math.floor(Math.random() * (rows - 4)) + 2;
-            grid[oy][ox] = true;
-            grid[oy][ox + 1] = true;
-            grid[oy + 1][ox] = true;
-            grid[oy + 1][ox + 1] = true;
-            draw();
-        });
-
-        // 初期描画
+        // 初期化
+        initRandom();
         draw();
+        gameLoop();
     </script>
 </body>
 
