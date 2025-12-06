@@ -449,7 +449,7 @@
                 if (phase === PHASE_WAITING) {
                     phase = PHASE_RUNNING;
                     updatePhaseInfo();
-                    intervalId = setInterval(nextGeneration, 100);
+                    intervalId = setInterval(nextGeneration, 20);
                 }
 
                 draw();
