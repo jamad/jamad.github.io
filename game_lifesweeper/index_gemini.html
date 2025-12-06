@@ -379,8 +379,11 @@
                         statusEl.style.color = "#ff4444";
                     }
 
-                    // 点を打つ
-                    grid[player.y][player.x] = grid[player.y][player.x] ? 0 : 1;
+                    // ★変更点：空白(0)の場合のみ点を打つ。既に(1)なら何もしない。
+                    if (grid[player.y][player.x] === 0) {
+                        grid[player.y][player.x] = 1;
+                    }
+
                     e.preventDefault();
                     break;
             }
