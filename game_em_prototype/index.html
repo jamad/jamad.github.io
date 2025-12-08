@@ -25,6 +25,34 @@
         const canvas = document.getElementById("cv");
         const ctx = canvas.getContext("2d");
 
+        // ドラッグ用の変数
+        let draggingCharge = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+
+        // マウス座標を取得する関数
+        function getMousePos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: evt.clientX - rect.left,
+                y: evt.clientY - rect.top
+            };
+        }
+
+        // 電荷をクリックしたか調べる関数
+        function pickCharge(mx, my) {
+            for (let c of charges) {
+                const dx = mx - c.x;
+                const dy = my - c.y;
+                if (Math.sqrt(dx * dx + dy * dy) < 12) { // 半径12px
+                    return c;
+                }
+            }
+            return null;
+        }
+
+
+
         const charges = [
             { x: 300, y: 300, q: +100 },   // 赤 = 正電荷
             { x: 500, y: 300, q: -100 },   // 青 = 負電荷
@@ -77,6 +105,34 @@
                     drawVector(x, y, nx, ny, 15);
                 }
             }
+
+            //マウスイベントの追加
+            canvas.addEventListener("mousedown", (e) => {
+                const pos = getMousePos(canvas, e);
+                const c = pickCharge(pos.x, pos.y);
+                if (c) {
+                    draggingCharge = c;
+                    dragOffsetX = pos.x - c.x;
+                    dragOffsetY = pos.y - c.y;
+                }
+            });
+
+            canvas.addEventListener("mousemove", (e) => {
+                if (draggingCharge) {
+                    const pos = getMousePos(canvas, e);
+                    draggingCharge.x = pos.x - dragOffsetX;
+                    draggingCharge.y = pos.y - dragOffsetY;
+                }
+            });
+
+            canvas.addEventListener("mouseup", () => {
+                draggingCharge = null;
+            });
+
+            canvas.addEventListener("mouseleave", () => {
+                draggingCharge = null;
+            });
+
 
             // 電荷を描画
             charges.forEach(c => {
