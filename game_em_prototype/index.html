@@ -53,7 +53,7 @@
         //=============================================
 
         // ★ 4, 8, 16 に自由に変更可能  
-        const GROUP_COUNT = 32;
+        const GROUP_COUNT = 16;
 
         // 粒子の寿命（各グループの周期と同じ）
         const PARTICLE_LIFETIME = 2000;
@@ -72,12 +72,12 @@
 
         const FIELD_W = canvas.width;
         const FIELD_H = canvas.height;
-        const GRID_STEP = 40;
+        const GRID_STEP = 16;
 
         function spawnParticles(list) {
             list.length = 0;
-            for (let x = 0; x < FIELD_W; x += GRID_STEP) {
-                for (let y = 0; y < FIELD_H; y += GRID_STEP) {
+            for (let x = 0; x < FIELD_W + GRID_STEP * 2; x += GRID_STEP) {
+                for (let y = 0; y < FIELD_H + GRID_STEP * 2; y += GRID_STEP) {
                     list.push({ x, y, life: PARTICLE_LIFETIME });
                 }
             }
