@@ -3,11 +3,12 @@
 
 <head>
     <meta charset="utf-8">
-    <title>2D Electric Field Prototype</title>
+    <title>Electric Field Stream Particles - Multi Group</title>
     <style>
         body {
             margin: 0;
             background: #000;
+            overflow: hidden;
         }
 
         canvas {
@@ -25,82 +26,112 @@
         const canvas = document.getElementById("cv");
         const ctx = canvas.getContext("2d");
 
-        // ---- charges ----
+        //=============================================
+        // Charges
+        //=============================================
         const charges = [
-            { x: 300, y: 300, q: +100 },
-            { x: 500, y: 300, q: -100 }
+            { x: 300, y: 300, q: +200 },
+            { x: 500, y: 300, q: -200 },
         ];
 
-        // ---- drag control ----
-        let dragging = null;
-        let offX = 0, offY = 0;
-
-        function mousePos(e) {
-            const r = canvas.getBoundingClientRect();
-            return { x: e.clientX - r.left, y: e.clientY - r.top };
-        }
-
-        function pick(x, y) {
-            return charges.find(c => Math.hypot(x - c.x, y - c.y) < 15);
-        }
-
-        // event listeners (set only once)
-        canvas.addEventListener("mousedown", e => {
-            const p = mousePos(e);
-            const c = pick(p.x, p.y);
-            if (c) {
-                dragging = c;
-                offX = p.x - c.x;
-                offY = p.y - c.y;
-            }
-        });
-
-        canvas.addEventListener("mousemove", e => {
-            if (dragging) {
-                const p = mousePos(e);
-                dragging.x = p.x - offX;
-                dragging.y = p.y - offY;
-            }
-        });
-
-        canvas.addEventListener("mouseup", () => dragging = null);
-        canvas.addEventListener("mouseleave", () => dragging = null);
-
-        // ---- electric field ----
-        function field(px, py) {
+        function electricFieldAt(px, py) {
             let ex = 0, ey = 0;
-            for (const c of charges) {
-                const dx = px - c.x, dy = py - c.y;
-                const r2 = dx * dx + dy * dy + 0.001;
-                const invR = 1 / Math.sqrt(r2);
+            for (let c of charges) {
+                const dx = px - c.x;
+                const dy = py - c.y;
+                const r2 = dx * dx + dy * dy + 0.01;
+                const r = Math.sqrt(r2);
                 const k = c.q / r2;
-                ex += k * dx * invR;
-                ey += k * dy * invR;
+                ex += k * dx / r;
+                ey += k * dy / r;
             }
             return { ex, ey };
         }
 
-        // ---- draw ----
+        //=============================================
+        // GROUP SETTINGS (←ここを変えるだけでOK)
+        //=============================================
+
+        // ★ 4, 8, 16 に自由に変更可能  
+        const GROUP_COUNT = 32;
+
+        // 粒子の寿命（各グループの周期と同じ）
+        const PARTICLE_LIFETIME = 2000;
+
+        //=============================================
+        // Particle Groups
+        //=============================================
+        const groups = [];
+        for (let i = 0; i < GROUP_COUNT; i++) {
+            groups.push({
+                particles: [],
+                lastSpawn: performance.now() + (i * (PARTICLE_LIFETIME / GROUP_COUNT)),
+                color: `hsl(${(i * 360 / GROUP_COUNT)}, 100%, 60%)` // グループごとに色分け
+            });
+        }
+
+        const FIELD_W = canvas.width;
+        const FIELD_H = canvas.height;
+        const GRID_STEP = 40;
+
+        function spawnParticles(list) {
+            list.length = 0;
+            for (let x = 0; x < FIELD_W; x += GRID_STEP) {
+                for (let y = 0; y < FIELD_H; y += GRID_STEP) {
+                    list.push({ x, y, life: PARTICLE_LIFETIME });
+                }
+            }
+        }
+
+        function updateParticles(list, dt) {
+            for (let p of list) {
+                if (p.life <= 0) continue;
+
+                const f = electricFieldAt(p.x, p.y);
+                const mag = Math.sqrt(f.ex * f.ex + f.ey * f.ey) + 0.001;
+
+                p.x += (f.ex / mag) * dt * 0.02;
+                p.y += (f.ey / mag) * dt * 0.02;
+
+                p.life -= dt;
+            }
+        }
+
+        function drawParticles(list, color) {
+            ctx.fillStyle = color;
+            for (let p of list) {
+                if (p.life > 0) {
+                    ctx.fillRect(p.x, p.y, 2, 2);
+                }
+            }
+        }
+
+        //=============================================
+        // Render Loop
+        //=============================================
+        let prevTime = performance.now();
+
         function render() {
+            const now = performance.now();
+            const dt = now - prevTime;
+            prevTime = now;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // field vectors
-            for (let x = 0; x < canvas.width; x += 40) {
-                for (let y = 0; y < canvas.height; y += 40) {
-                    const f = field(x, y);
-                    const m = Math.hypot(f.ex, f.ey) + 0.0001;
-                    const nx = f.ex / m, ny = f.ey / m;
+            for (let g of groups) {
 
-                    ctx.beginPath();
-                    ctx.moveTo(x, y);
-                    ctx.lineTo(x + nx * 15, y + ny * 15);
-                    ctx.strokeStyle = "#0f8";
-                    ctx.stroke();
+                // 各グループは等間隔でリセットされる
+                if (now - g.lastSpawn >= PARTICLE_LIFETIME) {
+                    spawnParticles(g.particles);
+                    g.lastSpawn = now;
                 }
+
+                updateParticles(g.particles, dt);
+                drawParticles(g.particles, g.color);
             }
 
             // charges
-            for (const c of charges) {
+            for (let c of charges) {
                 ctx.beginPath();
                 ctx.arc(c.x, c.y, 15, 0, Math.PI * 2);
                 ctx.fillStyle = c.q > 0 ? "#f44" : "#44f";
