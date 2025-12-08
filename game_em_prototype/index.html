@@ -25,122 +25,87 @@
         const canvas = document.getElementById("cv");
         const ctx = canvas.getContext("2d");
 
-        // ドラッグ用の変数
-        let draggingCharge = null;
-        let dragOffsetX = 0;
-        let dragOffsetY = 0;
-
-        // マウス座標を取得する関数
-        function getMousePos(canvas, evt) {
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: evt.clientX - rect.left,
-                y: evt.clientY - rect.top
-            };
-        }
-
-        // 電荷をクリックしたか調べる関数
-        function pickCharge(mx, my) {
-            for (let c of charges) {
-                const dx = mx - c.x;
-                const dy = my - c.y;
-                if (Math.sqrt(dx * dx + dy * dy) < 12) { // 半径12px
-                    return c;
-                }
-            }
-            return null;
-        }
-
-
-
+        // ---- charges ----
         const charges = [
-            { x: 300, y: 300, q: +100 },   // 赤 = 正電荷
-            { x: 500, y: 300, q: -100 },   // 青 = 負電荷
+            { x: 300, y: 300, q: +100 },
+            { x: 500, y: 300, q: -100 }
         ];
 
-        // 電場計算
-        function electricFieldAt(px, py) {
+        // ---- drag control ----
+        let dragging = null;
+        let offX = 0, offY = 0;
+
+        function mousePos(e) {
+            const r = canvas.getBoundingClientRect();
+            return { x: e.clientX - r.left, y: e.clientY - r.top };
+        }
+
+        function pick(x, y) {
+            return charges.find(c => Math.hypot(x - c.x, y - c.y) < 15);
+        }
+
+        // event listeners (set only once)
+        canvas.addEventListener("mousedown", e => {
+            const p = mousePos(e);
+            const c = pick(p.x, p.y);
+            if (c) {
+                dragging = c;
+                offX = p.x - c.x;
+                offY = p.y - c.y;
+            }
+        });
+
+        canvas.addEventListener("mousemove", e => {
+            if (dragging) {
+                const p = mousePos(e);
+                dragging.x = p.x - offX;
+                dragging.y = p.y - offY;
+            }
+        });
+
+        canvas.addEventListener("mouseup", () => dragging = null);
+        canvas.addEventListener("mouseleave", () => dragging = null);
+
+        // ---- electric field ----
+        function field(px, py) {
             let ex = 0, ey = 0;
-            charges.forEach(c => {
-                const dx = px - c.x;
-                const dy = py - c.y;
+            for (const c of charges) {
+                const dx = px - c.x, dy = py - c.y;
                 const r2 = dx * dx + dy * dy + 0.001;
-                const r = Math.sqrt(r2);
-                const k = c.q / r2;        // 簡易クーロン
-                ex += k * dx / r;
-                ey += k * dy / r;
-            });
+                const invR = 1 / Math.sqrt(r2);
+                const k = c.q / r2;
+                ex += k * dx * invR;
+                ey += k * dy * invR;
+            }
             return { ex, ey };
         }
 
-        // 矢印描画
-        function drawVector(x, y, vx, vy, scale = 50) {
-            const px = x;
-            const py = y;
-            const ex = vx * scale;
-            const ey = vy * scale;
-
-            ctx.beginPath();
-            ctx.moveTo(px, py);
-            ctx.lineTo(px + ex, py + ey);
-            ctx.strokeStyle = "#0f8";
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
-
+        // ---- draw ----
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 電場ベクトルを描画（格子状）
-            const step = 40;
-            for (let x = 0; x < canvas.width; x += step) {
-                for (let y = 0; y < canvas.height; y += step) {
-                    const f = electricFieldAt(x, y);
+            // field vectors
+            for (let x = 0; x < canvas.width; x += 40) {
+                for (let y = 0; y < canvas.height; y += 40) {
+                    const f = field(x, y);
+                    const m = Math.hypot(f.ex, f.ey) + 0.0001;
+                    const nx = f.ex / m, ny = f.ey / m;
 
-                    // 正規化
-                    const mag = Math.sqrt(f.ex * f.ex + f.ey * f.ey) + 0.0001;
-                    const nx = f.ex / mag;
-                    const ny = f.ey / mag;
-
-                    drawVector(x, y, nx, ny, 15);
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + nx * 15, y + ny * 15);
+                    ctx.strokeStyle = "#0f8";
+                    ctx.stroke();
                 }
             }
 
-            //マウスイベントの追加
-            canvas.addEventListener("mousedown", (e) => {
-                const pos = getMousePos(canvas, e);
-                const c = pickCharge(pos.x, pos.y);
-                if (c) {
-                    draggingCharge = c;
-                    dragOffsetX = pos.x - c.x;
-                    dragOffsetY = pos.y - c.y;
-                }
-            });
-
-            canvas.addEventListener("mousemove", (e) => {
-                if (draggingCharge) {
-                    const pos = getMousePos(canvas, e);
-                    draggingCharge.x = pos.x - dragOffsetX;
-                    draggingCharge.y = pos.y - dragOffsetY;
-                }
-            });
-
-            canvas.addEventListener("mouseup", () => {
-                draggingCharge = null;
-            });
-
-            canvas.addEventListener("mouseleave", () => {
-                draggingCharge = null;
-            });
-
-
-            // 電荷を描画
-            charges.forEach(c => {
+            // charges
+            for (const c of charges) {
                 ctx.beginPath();
                 ctx.arc(c.x, c.y, 15, 0, Math.PI * 2);
                 ctx.fillStyle = c.q > 0 ? "#f44" : "#44f";
                 ctx.fill();
-            });
+            }
 
             requestAnimationFrame(render);
         }
