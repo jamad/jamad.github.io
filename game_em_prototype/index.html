@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Electric Field Stream Particles - Multi Group</title>
+    <title>Electric Field Stream Particles - Direction Color</title>
     <style>
         body {
             margin: 0;
@@ -49,13 +49,9 @@
         }
 
         //=============================================
-        // GROUP SETTINGS (←ここを変えるだけでOK)
+        // GROUP SETTINGS
         //=============================================
-
-        // ★ 4, 8, 16 に自由に変更可能  
-        const GROUP_COUNT = 16;
-
-        // 粒子の寿命（各グループの周期と同じ）
+        const GROUP_COUNT = 32;
         const PARTICLE_LIFETIME = 2000;
 
         //=============================================
@@ -66,7 +62,6 @@
             groups.push({
                 particles: [],
                 lastSpawn: performance.now() + (i * (PARTICLE_LIFETIME / GROUP_COUNT)),
-                color: `hsl(${(i * 360 / GROUP_COUNT)}, 100%, 60%)` // グループごとに色分け
             });
         }
 
@@ -76,9 +71,15 @@
 
         function spawnParticles(list) {
             list.length = 0;
-            for (let x = 0; x < FIELD_W + GRID_STEP * 2; x += GRID_STEP) {
-                for (let y = 0; y < FIELD_H + GRID_STEP * 2; y += GRID_STEP) {
-                    list.push({ x, y, life: PARTICLE_LIFETIME });
+            for (let x = 0; x < FIELD_W + GRID_STEP * 8; x += GRID_STEP) {
+                for (let y = 0; y < FIELD_H + GRID_STEP * 8; y += GRID_STEP) {
+                    list.push({
+                        x,
+                        y,
+                        life: PARTICLE_LIFETIME,
+                        vx: 0,
+                        vy: 0
+                    });
                 }
             }
         }
@@ -90,19 +91,30 @@
                 const f = electricFieldAt(p.x, p.y);
                 const mag = Math.sqrt(f.ex * f.ex + f.ey * f.ey) + 0.001;
 
-                p.x += (f.ex / mag) * dt * 0.02;
-                p.y += (f.ey / mag) * dt * 0.02;
+                // 前フレームの速度 → 色判定に使用
+                p.vx = (f.ex / mag);
+                p.vy = (f.ey / mag);
+
+                p.x += p.vx * dt * 0.02;
+                p.y += p.vy * dt * 0.02;
 
                 p.life -= dt;
             }
         }
 
-        function drawParticles(list, color) {
-            ctx.fillStyle = color;
+        //=============================================
+        // Direction → Color
+        //=============================================
+        function drawParticles(list) {
             for (let p of list) {
-                if (p.life > 0) {
-                    ctx.fillRect(p.x, p.y, 2, 2);
-                }
+                if (p.life <= 0) continue;
+
+                // --- 速度方向ベースの色 ---
+                const angle = Math.atan2(p.vy, p.vx);                 // -PI〜PI
+                const hue = (angle * 180 / Math.PI + 360) % 360;      // 0〜360
+
+                ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                ctx.fillRect(p.x, p.y, 2, 2);
             }
         }
 
@@ -120,14 +132,14 @@
 
             for (let g of groups) {
 
-                // 各グループは等間隔でリセットされる
+                // グループを一定間隔でリセット
                 if (now - g.lastSpawn >= PARTICLE_LIFETIME) {
                     spawnParticles(g.particles);
                     g.lastSpawn = now;
                 }
 
                 updateParticles(g.particles, dt);
-                drawParticles(g.particles, g.color);
+                drawParticles(g.particles);
             }
 
             // charges
