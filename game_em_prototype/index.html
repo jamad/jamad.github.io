@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Electric Field Stream Particles - Direction Color</title>
+    <title>Electric Field Stream Particles - Improved</title>
     <style>
         body {
             margin: 0;
@@ -27,93 +27,137 @@
         const ctx = canvas.getContext("2d");
 
         //=============================================
-        // Charges
+        // Charges + Drag
         //=============================================
         const charges = [
             { x: 300, y: 300, q: +200 },
             { x: 500, y: 300, q: -200 },
         ];
 
+        let draggingCharge = null;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        function getMousePos(e) {
+            const r = canvas.getBoundingClientRect();
+            return { x: e.clientX - r.left, y: e.clientY - r.top };
+        }
+
+        canvas.addEventListener("mousedown", (e) => {
+            const pos = getMousePos(e);
+
+            // 既存 charge を掴む
+            for (let c of charges) {
+                const dx = pos.x - c.x;
+                const dy = pos.y - c.y;
+                if (dx * dx + dy * dy < 20 * 20) {
+                    draggingCharge = c;
+                    offsetX = pos.x - c.x;
+                    offsetY = pos.y - c.y;
+                    return;
+                }
+            }
+
+            // 掴んでなければ、クリック位置に新しい電荷を追加
+            const sign = e.shiftKey ? -200 : +200; // SHIFT で負電荷
+            charges.push({ x: pos.x, y: pos.y, q: sign });
+        });
+
+        canvas.addEventListener("mousemove", (e) => {
+            if (draggingCharge) {
+                const pos = getMousePos(e);
+                draggingCharge.x = pos.x - offsetX;
+                draggingCharge.y = pos.y - offsetY;
+            }
+        });
+
+        canvas.addEventListener("mouseup", () => draggingCharge = null);
+        canvas.addEventListener("mouseleave", () => draggingCharge = null);
+
+        //=============================================
+        // Electric Field (lightweight)
+        //=============================================
         function electricFieldAt(px, py) {
             let ex = 0, ey = 0;
             for (let c of charges) {
                 const dx = px - c.x;
                 const dy = py - c.y;
-                const r2 = dx * dx + dy * dy + 0.01;
-                const r = Math.sqrt(r2);
-                const k = c.q / r2;
-                ex += k * dx / r;
-                ey += k * dy / r;
+                const r2 = dx * dx + dy * dy + 4;  // 小さいと重いので緩和
+                const invR = 1 / Math.sqrt(r2);
+                const invR3 = invR * invR * invR; // r^-3（高速化版）
+                const k = c.q * invR3;
+
+                ex += k * dx;
+                ey += k * dy;
             }
             return { ex, ey };
         }
 
         //=============================================
-        // GROUP SETTINGS
+        // Particle Groups
         //=============================================
         const GROUP_COUNT = 32;
         const PARTICLE_LIFETIME = 2000;
-
-        //=============================================
-        // Particle Groups
-        //=============================================
         const groups = [];
-        for (let i = 0; i < GROUP_COUNT; i++) {
-            groups.push({
-                particles: [],
-                lastSpawn: performance.now() + (i * (PARTICLE_LIFETIME / GROUP_COUNT)),
-            });
-        }
 
         const FIELD_W = canvas.width;
         const FIELD_H = canvas.height;
         const GRID_STEP = 16;
+
+        for (let i = 0; i < GROUP_COUNT; i++) {
+            groups.push({
+                particles: [],
+                lastSpawn: performance.now() + (i * PARTICLE_LIFETIME / GROUP_COUNT)
+            });
+        }
 
         function spawnParticles(list) {
             list.length = 0;
             for (let x = 0; x < FIELD_W + GRID_STEP * 8; x += GRID_STEP) {
                 for (let y = 0; y < FIELD_H + GRID_STEP * 8; y += GRID_STEP) {
                     list.push({
-                        x,
-                        y,
-                        life: PARTICLE_LIFETIME,
-                        vx: 0,
-                        vy: 0
+                        x, y,
+                        vx: 0, vy: 0,
+                        life: PARTICLE_LIFETIME
                     });
                 }
             }
         }
 
         function updateParticles(list, dt) {
+            const speedScale = dt * 0.02;
+
             for (let p of list) {
                 if (p.life <= 0) continue;
 
                 const f = electricFieldAt(p.x, p.y);
                 const mag = Math.sqrt(f.ex * f.ex + f.ey * f.ey) + 0.001;
 
-                // 前フレームの速度 → 色判定に使用
-                p.vx = (f.ex / mag);
-                p.vy = (f.ey / mag);
+                p.vx = f.ex / mag;
+                p.vy = f.ey / mag;
 
-                p.x += p.vx * dt * 0.02;
-                p.y += p.vy * dt * 0.02;
+                p.x += p.vx * speedScale;
+                p.y += p.vy * speedScale;
 
                 p.life -= dt;
             }
         }
 
-        //=============================================
-        // Direction → Color
-        //=============================================
+        //---------------------------------------------
+        // Direction + Speed-based Color
+        //---------------------------------------------
         function drawParticles(list) {
             for (let p of list) {
                 if (p.life <= 0) continue;
 
-                // --- 速度方向ベースの色 ---
-                const angle = Math.atan2(p.vy, p.vx);                 // -PI〜PI
-                const hue = (angle * 180 / Math.PI + 360) % 360;      // 0〜360
+                const angle = Math.atan2(p.vy, p.vx);
+                const hue = (angle * 180 / Math.PI + 360) % 360;
 
-                ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                // speed = 明るさに反映
+                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                const light = 30 + Math.min(speed * 80, 40); // 30〜70%
+
+                ctx.fillStyle = `hsl(${hue}, 100%, ${light}%)`;
                 ctx.fillRect(p.x, p.y, 2, 2);
             }
         }
@@ -121,28 +165,25 @@
         //=============================================
         // Render Loop
         //=============================================
-        let prevTime = performance.now();
+        let prev = performance.now();
 
         function render() {
             const now = performance.now();
-            const dt = now - prevTime;
-            prevTime = now;
+            const dt = now - prev;
+            prev = now;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             for (let g of groups) {
-
-                // グループを一定間隔でリセット
                 if (now - g.lastSpawn >= PARTICLE_LIFETIME) {
                     spawnParticles(g.particles);
                     g.lastSpawn = now;
                 }
-
                 updateParticles(g.particles, dt);
                 drawParticles(g.particles);
             }
 
-            // charges
+            // draw charges
             for (let c of charges) {
                 ctx.beginPath();
                 ctx.arc(c.x, c.y, 15, 0, Math.PI * 2);
