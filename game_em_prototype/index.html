@@ -97,7 +97,7 @@
         // Particle Groups
         //=============================================
         const GROUP_COUNT = 16;
-        const PARTICLE_LIFETIME = 4000;
+        const PARTICLE_LIFETIME = 8000;
         const groups = [];
 
         const FIELD_W = canvas.width;
@@ -186,7 +186,7 @@
             // draw charges
             for (let c of charges) {
                 ctx.beginPath();
-                ctx.arc(c.x, c.y, 15, 0, Math.PI * 2);
+                ctx.arc(c.x, c.y, 8, 0, Math.PI * 2); // charge radius
                 ctx.fillStyle = c.q > 0 ? "#f44" : "#44f";
                 ctx.fill();
             }
