@@ -96,8 +96,8 @@
         //=============================================
         // Particle Groups
         //=============================================
-        const GROUP_COUNT = 32;
-        const PARTICLE_LIFETIME = 2000;
+        const GROUP_COUNT = 16;
+        const PARTICLE_LIFETIME = 4000;
         const groups = [];
 
         const FIELD_W = canvas.width;
@@ -158,7 +158,7 @@
                 const light = 30 + Math.min(speed * 80, 40); // 30〜70%
 
                 ctx.fillStyle = `hsl(${hue}, 100%, ${light}%)`;
-                ctx.fillRect(p.x, p.y, 2, 2);
+                ctx.fillRect(p.x, p.y, 1, 1); // 1 pixel
             }
         }
 
