@@ -1,0 +1,4466 @@
+{
+  "6aaef8c3-4bc6-4bac-ab65-e8e3202d8f26": {
+    "id": "6aaef8c3-4bc6-4bac-ab65-e8e3202d8f26",
+    "lemma": "huomenta",
+    "pos": "interjection",
+    "count": 1,
+    "en": "Good morning",
+    "ja": "おはようございます (Ohayou gozaimasu)",
+    "forms": [
+      "huomenta"
+    ],
+    "validated": true,
+    "visual_keyword": "sunrise",
+    "image_status": "pending"
+  },
+  "09f2bd8b-c1f5-418d-9c9a-14fbbb22caa8": {
+    "id": "09f2bd8b-c1f5-418d-9c9a-14fbbb22caa8",
+    "lemma": "kirja",
+    "pos": "noun",
+    "count": 3,
+    "en": "book",
+    "ja": "本 (hon)",
+    "forms": [
+      "kirjan",
+      "kirja"
+    ],
+    "validated": true,
+    "visual_keyword": "open_book",
+    "image_status": "pending"
+  },
+  "db9e7f8d-3437-4a93-873e-1763d3796660": {
+    "id": "db9e7f8d-3437-4a93-873e-1763d3796660",
+    "lemma": "henkilö",
+    "pos": "noun",
+    "count": 1,
+    "en": "person",
+    "ja": "人",
+    "forms": [
+      "henkilöt"
+    ],
+    "validated": true,
+    "visual_keyword": "avatar",
+    "image_status": "pending"
+  },
+  "af0913d2-89a2-44d0-ad6c-3eecd003a4fa": {
+    "id": "af0913d2-89a2-44d0-ad6c-3eecd003a4fa",
+    "lemma": "pedro",
+    "pos": "proper noun",
+    "count": 1,
+    "en": "Pedro",
+    "ja": "ペドロ",
+    "forms": [
+      "pedro"
+    ],
+    "validated": true,
+    "visual_keyword": "man_boy",
+    "image_status": "pending"
+  },
+  "38b5f589-36cc-4408-aa74-b0f933bb6591": {
+    "id": "38b5f589-36cc-4408-aa74-b0f933bb6591",
+    "lemma": "olla",
+    "pos": "noun",
+    "count": 6,
+    "en": "existence",
+    "ja": "存在",
+    "forms": [
+      "olla",
+      "on",
+      "eivät",
+      "oli",
+      "ovat",
+      "olet",
+      "ei"
+    ],
+    "validated": true,
+    "visual_keyword": "being",
+    "image_status": "pending"
+  },
+  "81fed2b3-0c70-411e-ba8d-870ad7524fd6": {
+    "id": "81fed2b3-0c70-411e-ba8d-870ad7524fd6",
+    "lemma": "brasilialainen",
+    "pos": "adjective",
+    "count": 1,
+    "en": "Brazilian",
+    "ja": "ブラジル人",
+    "forms": [
+      "brasilialainen"
+    ],
+    "validated": true,
+    "visual_keyword": "brazilian-flag",
+    "image_status": "pending"
+  },
+  "24627944-be45-48eb-9e91-8c9875af3f06": {
+    "id": "24627944-be45-48eb-9e91-8c9875af3f06",
+    "lemma": "opiskelija",
+    "pos": "noun",
+    "count": 1,
+    "en": "student",
+    "ja": "学生 (gakusei)",
+    "forms": [
+      "opiskelija"
+    ],
+    "validated": true,
+    "visual_keyword": "graduation-cap",
+    "image_status": "pending"
+  },
+  "3762d7be-b05b-4c56-b6a9-05f86feed2eb": {
+    "id": "3762d7be-b05b-4c56-b6a9-05f86feed2eb",
+    "lemma": "hän",
+    "pos": "pronoun",
+    "count": 0,
+    "en": "he/she/it",
+    "ja": "彼/彼女/それ",
+    "forms": [
+      "hänellä",
+      "hän"
+    ],
+    "validated": true,
+    "visual_keyword": "person",
+    "image_status": "pending"
+  },
+  "7feeb416-8deb-4fd8-a9f9-ef9e5470cdc3": {
+    "id": "7feeb416-8deb-4fd8-a9f9-ef9e5470cdc3",
+    "lemma": "asuminen",
+    "pos": "noun",
+    "count": 0,
+    "en": "residence",
+    "ja": "居住地",
+    "forms": [
+      "asuu",
+      "asua"
+    ],
+    "validated": true,
+    "visual_keyword": "house",
+    "image_status": "pending"
+  },
+  "01be8058-9b6f-419c-a4b9-50669fcc10da": {
+    "id": "01be8058-9b6f-419c-a4b9-50669fcc10da",
+    "lemma": "nyt",
+    "pos": "adverb",
+    "count": 0,
+    "en": "now",
+    "ja": "今 (ima)",
+    "forms": [
+      "nyt"
+    ],
+    "validated": true,
+    "visual_keyword": "clock",
+    "image_status": "pending"
+  },
+  "75c19b40-7f00-43dd-bd9a-e028dbeb8f9d": {
+    "id": "75c19b40-7f00-43dd-bd9a-e028dbeb8f9d",
+    "lemma": "suomi",
+    "pos": "noun",
+    "count": 0,
+    "en": "Finland",
+    "ja": "フィンランド",
+    "forms": [
+      "suomessa",
+      "suomen"
+    ],
+    "validated": true,
+    "visual_keyword": "flag",
+    "image_status": "pending"
+  },
+  "3161d9fe-8957-4aba-9709-107b4365511d": {
+    "id": "3161d9fe-8957-4aba-9709-107b4365511d",
+    "lemma": "koska",
+    "pos": "conjunction",
+    "count": 1,
+    "en": "because",
+    "ja": "なぜ (naze)",
+    "forms": [
+      "koska"
+    ],
+    "validated": true,
+    "visual_keyword": "reasoning",
+    "image_status": "pending"
+  },
+  "0a8774a1-18c7-4603-a752-9fbdef4f257a": {
+    "id": "0a8774a1-18c7-4603-a752-9fbdef4f257a",
+    "lemma": "suomalainen",
+    "pos": "adjective",
+    "count": 1,
+    "en": "Finnish",
+    "ja": "フィンランド人",
+    "forms": [
+      "suomalainen"
+    ],
+    "validated": true,
+    "visual_keyword": "finland-flag",
+    "image_status": "pending"
+  },
+  "43d92199-77df-4acf-8126-e98cd748b1c3": {
+    "id": "43d92199-77df-4acf-8126-e98cd748b1c3",
+    "lemma": "tyttöystävä",
+    "pos": "noun",
+    "count": 1,
+    "en": "girlfriend",
+    "ja": "彼女 (kanojo)",
+    "forms": [
+      "tyttöystävä"
+    ],
+    "validated": true,
+    "visual_keyword": "couple-hearts",
+    "image_status": "pending"
+  },
+  "4462b52a-e96c-48f0-bc3c-10c600b1f2ff": {
+    "id": "4462b52a-e96c-48f0-bc3c-10c600b1f2ff",
+    "lemma": "hanna",
+    "pos": "proper noun",
+    "count": 0,
+    "en": "Hanna",
+    "ja": "ハンナ",
+    "forms": [
+      "hanna"
+    ],
+    "validated": true,
+    "visual_keyword": "woman_profile",
+    "image_status": "pending"
+  },
+  "d05b46e9-1607-4e17-8535-1533a1f10486": {
+    "id": "d05b46e9-1607-4e17-8535-1533a1f10486",
+    "lemma": "kurssi",
+    "pos": "noun",
+    "count": 1,
+    "en": "course",
+    "ja": "コース",
+    "forms": [
+      "kurssilla"
+    ],
+    "validated": true,
+    "visual_keyword": "graduation-cap",
+    "image_status": "pending"
+  },
+  "b1c19d2d-f612-477b-859f-df66e279af5a": {
+    "id": "b1c19d2d-f612-477b-859f-df66e279af5a",
+    "lemma": "sama",
+    "pos": "adverb",
+    "count": 1,
+    "en": "same",
+    "ja": "同じ (onaji)",
+    "forms": [
+      "samalla"
+    ],
+    "validated": true,
+    "visual_keyword": "duplicate",
+    "image_status": "pending"
+  },
+  "74297db4-54ec-4aa2-8201-100db12c15d9": {
+    "id": "74297db4-54ec-4aa2-8201-100db12c15d9",
+    "lemma": "myös",
+    "pos": "adverb",
+    "count": 1,
+    "en": "also",
+    "ja": "また",
+    "forms": [
+      "myös"
+    ],
+    "validated": true,
+    "visual_keyword": "plus-sign",
+    "image_status": "pending"
+  },
+  "6e042011-8825-4d2b-ac18-0e1e32a7a602": {
+    "id": "6e042011-8825-4d2b-ac18-0e1e32a7a602",
+    "lemma": "olga",
+    "pos": "proper noun",
+    "count": 1,
+    "en": "Olga",
+    "ja": "オルガ",
+    "forms": [
+      "olga"
+    ],
+    "validated": true,
+    "visual_keyword": "woman_profile",
+    "image_status": "pending"
+  },
+  "5118003e-9596-4575-b64f-74e85583885b": {
+    "id": "5118003e-9596-4575-b64f-74e85583885b",
+    "lemma": "ja",
+    "pos": "conjunction",
+    "count": 5,
+    "en": "and",
+    "ja": "そして",
+    "forms": [
+      "ja"
+    ],
+    "validated": true,
+    "visual_keyword": "two_circles_connected",
+    "image_status": "pending"
+  },
+  "795d3c5c-5b2e-434e-b61c-07acdc90dd56": {
+    "id": "795d3c5c-5b2e-434e-b61c-07acdc90dd56",
+    "lemma": "alex",
+    "pos": "proper noun",
+    "count": 1,
+    "en": "Alex",
+    "ja": "アレックス",
+    "forms": [
+      "alex"
+    ],
+    "validated": true,
+    "visual_keyword": "male_name",
+    "image_status": "pending"
+  },
+  "fab2b4f6-2e7b-4269-9e97-633d7a67f776": {
+    "id": "fab2b4f6-2e7b-4269-9e97-633d7a67f776",
+    "lemma": "sijoittaja",
+    "pos": "noun",
+    "count": 1,
+    "en": "investor",
+    "ja": "投資家",
+    "forms": [
+      "investor"
+    ],
+    "validated": true,
+    "visual_keyword": "moneybag",
+    "image_status": "pending"
+  },
+  "f8784d88-80db-4ca8-aa9f-293caae4dd0b": {
+    "id": "f8784d88-80db-4ca8-aa9f-293caae4dd0b",
+    "lemma": "eläköityä",
+    "pos": "verb",
+    "count": 1,
+    "en": "retire",
+    "ja": "退職する",
+    "forms": [
+      "eläköityy"
+    ],
+    "validated": true,
+    "visual_keyword": "retirement-icon",
+    "image_status": "pending"
+  },
+  "23953789-c772-49e5-adfc-d87f01175543": {
+    "id": "23953789-c772-49e5-adfc-d87f01175543",
+    "lemma": "joulukuu",
+    "pos": "noun",
+    "count": 1,
+    "en": "December",
+    "ja": "12月 (じゅうにげつ)",
+    "forms": [
+      "joulukuun",
+      "12"
+    ],
+    "validated": true,
+    "visual_keyword": "christmas-tree",
+    "image_status": "pending"
+  },
+  "73ce4cb4-1131-472a-a011-a5e89c3be7ac": {
+    "id": "73ce4cb4-1131-472a-a011-a5e89c3be7ac",
+    "lemma": "jatkaa",
+    "pos": "verb",
+    "count": 2,
+    "en": "continue",
+    "ja": "続ける",
+    "forms": [
+      "jatka",
+      "jatkossa"
+    ],
+    "validated": true,
+    "visual_keyword": "play-circle",
+    "image_status": "pending"
+  },
+  "4311323c-56ab-40c7-a465-d6bf5b22a099": {
+    "id": "4311323c-56ab-40c7-a465-d6bf5b22a099",
+    "lemma": "sijoittaa",
+    "pos": "verb",
+    "count": 1,
+    "en": "invest",
+    "ja": "投資する (tōshi suru)",
+    "forms": [
+      "sijoittamista"
+    ],
+    "validated": true,
+    "visual_keyword": "chart-line",
+    "image_status": "pending"
+  },
+  "59f68752-2cb6-4041-bd28-13ae951b8a1a": {
+    "id": "59f68752-2cb6-4041-bd28-13ae951b8a1a",
+    "lemma": "mobiili",
+    "pos": "adjective",
+    "count": 1,
+    "en": "mobile",
+    "ja": "モバイル",
+    "forms": [
+      "mobiili"
+    ],
+    "validated": true,
+    "visual_keyword": "smartphone",
+    "image_status": "pending"
+  },
+  "22a57919-0f8a-4561-98cc-1c646fbd8812": {
+    "id": "22a57919-0f8a-4561-98cc-1c646fbd8812",
+    "lemma": "verkkopankki",
+    "pos": "noun",
+    "count": 1,
+    "en": "online banking",
+    "ja": "オンラインバンキング",
+    "forms": [
+      "verkkopankissa"
+    ],
+    "validated": true,
+    "visual_keyword": "bank-icon-network",
+    "image_status": "pending"
+  },
+  "a54021bf-5637-48f6-8542-efe5a3d7078f": {
+    "id": "a54021bf-5637-48f6-8542-efe5a3d7078f",
+    "lemma": "huomioida",
+    "pos": "verb",
+    "count": 0,
+    "en": "notice",
+    "ja": "気づき",
+    "forms": [
+      "huom",
+      "huomio"
+    ],
+    "validated": true,
+    "visual_keyword": "eye",
+    "image_status": "pending"
+  },
+  "5e833cc0-ec8f-47d3-b2e2-14bf05696479": {
+    "id": "5e833cc0-ec8f-47d3-b2e2-14bf05696479",
+    "lemma": "sijoitus",
+    "pos": "noun",
+    "count": 1,
+    "en": "investment",
+    "ja": "投資 (tōzī)",
+    "forms": [
+      "sijoituksiin"
+    ],
+    "validated": true,
+    "visual_keyword": "chart-line",
+    "image_status": "pending"
+  },
+  "a57a56a5-0f97-4ebc-8061-83f5397f2c2a": {
+    "id": "a57a56a5-0f97-4ebc-8061-83f5397f2c2a",
+    "lemma": "liittyä",
+    "pos": "verb",
+    "count": 1,
+    "en": "relate",
+    "ja": "関連する",
+    "forms": [
+      "liittyvät"
+    ],
+    "validated": true,
+    "visual_keyword": "link",
+    "image_status": "pending"
+  },
+  "2a9d09bb-aa5a-447e-afc8-534032ecaffd": {
+    "id": "2a9d09bb-aa5a-447e-afc8-534032ecaffd",
+    "lemma": "hälytys",
+    "pos": "noun",
+    "count": 3,
+    "en": "alert",
+    "ja": "警告",
+    "forms": [
+      "hälytyksesi",
+      "hälytyksiäsi",
+      "hälytykset"
+    ],
+    "validated": true,
+    "visual_keyword": "warning-sign",
+    "image_status": "pending"
+  },
+  "e28299b3-9fc8-4ce3-afdc-4d922cc8f07f": {
+    "id": "e28299b3-9fc8-4ce3-afdc-4d922cc8f07f",
+    "lemma": "siirtyä",
+    "pos": "verb",
+    "count": 2,
+    "en": "to transfer",
+    "ja": "移行する",
+    "forms": [
+      "siirtyvät",
+      "siirry"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow-right",
+    "image_status": "pending"
+  },
+  "eeed5af4-9370-4fea-879a-b8c9ccdce554": {
+    "id": "eeed5af4-9370-4fea-879a-b8c9ccdce554",
+    "lemma": "investor",
+    "pos": "noun",
+    "count": 0,
+    "en": "Investor",
+    "ja": "投資家",
+    "forms": [
+      "investorista"
+    ],
+    "validated": true,
+    "visual_keyword": "chart-line",
+    "image_status": "pending"
+  },
+  "44795c32-32dc-4271-9c45-25960db79b61": {
+    "id": "44795c32-32dc-4271-9c45-25960db79b61",
+    "lemma": "automaattisesti",
+    "pos": "adverb",
+    "count": 1,
+    "en": "automatically",
+    "ja": "自動的に (jidō-teki ni)",
+    "forms": [
+      "automaattisesti"
+    ],
+    "validated": true,
+    "visual_keyword": "gear_shift",
+    "image_status": "pending"
+  },
+  "137bbfda-4880-4917-b85b-c0f2f23b7b3c": {
+    "id": "137bbfda-4880-4917-b85b-c0f2f23b7b3c",
+    "lemma": "mutta",
+    "pos": "conjunction",
+    "count": 1,
+    "en": "but",
+    "ja": "しかし",
+    "forms": [
+      "mutta"
+    ],
+    "validated": true,
+    "visual_keyword": "contrast",
+    "image_status": "pending"
+  },
+  "d9277572-3133-4be0-af23-e22a7ed8139f": {
+    "id": "d9277572-3133-4be0-af23-e22a7ed8139f",
+    "lemma": "siirtää",
+    "pos": "verb",
+    "count": 2,
+    "en": "transfer",
+    "ja": "移動",
+    "forms": [
+      "siirron",
+      "siirto"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow-right",
+    "image_status": "pending"
+  },
+  "317a1d4f-d640-4c01-8154-881ddd83a86d": {
+    "id": "317a1d4f-d640-4c01-8154-881ddd83a86d",
+    "lemma": "jälkeen",
+    "pos": "adverb",
+    "count": 1,
+    "en": "after",
+    "ja": "その後",
+    "forms": [
+      "jälkeen"
+    ],
+    "validated": true,
+    "visual_keyword": "clock-arrow-right",
+    "image_status": "pending"
+  },
+  "67d08cc1-ef10-4dc5-bb33-d7318b58f055": {
+    "id": "67d08cc1-ef10-4dc5-bb33-d7318b58f055",
+    "lemma": "niin",
+    "pos": "pronoun",
+    "count": 1,
+    "en": "them",
+    "ja": "それら",
+    "forms": [
+      "niitä"
+    ],
+    "validated": true,
+    "visual_keyword": "multiple-objects",
+    "image_status": "pending"
+  },
+  "73a17bf2-ceac-43b2-bcc1-c3ccd7c9b898": {
+    "id": "73a17bf2-ceac-43b2-bcc1-c3ccd7c9b898",
+    "lemma": "ei",
+    "pos": "adverb",
+    "count": 1,
+    "en": "no",
+    "ja": "いいえ",
+    "forms": [
+      "ei"
+    ],
+    "validated": true,
+    "visual_keyword": "cross",
+    "image_status": "pending"
+  },
+  "65bc5e21-c405-4074-81e1-806f65a5b7f6": {
+    "id": "65bc5e21-c405-4074-81e1-806f65a5b7f6",
+    "lemma": "voida",
+    "pos": "verb",
+    "count": 0,
+    "en": "can",
+    "ja": "できる",
+    "forms": [
+      "voida",
+      "voi"
+    ],
+    "validated": true,
+    "visual_keyword": "lock",
+    "image_status": "pending"
+  },
+  "f9ea49d7-25ca-431b-9670-14de41d3628b": {
+    "id": "f9ea49d7-25ca-431b-9670-14de41d3628b",
+    "lemma": "muokata",
+    "pos": "verb",
+    "count": 1,
+    "en": "modify",
+    "ja": "変更する (henkō suru)",
+    "forms": [
+      "muokata"
+    ],
+    "validated": true,
+    "visual_keyword": "edit",
+    "image_status": "pending"
+  },
+  "d4c8d7d9-908c-42e7-816a-edde86dee545": {
+    "id": "d4c8d7d9-908c-42e7-816a-edde86dee545",
+    "lemma": "jos",
+    "pos": "conjunction",
+    "count": 1,
+    "en": "if",
+    "ja": "もし",
+    "forms": [
+      "jos"
+    ],
+    "validated": true,
+    "visual_keyword": "questionmark",
+    "image_status": "pending"
+  },
+  "816d919d-5de7-4344-8a57-0417094ce2c9": {
+    "id": "816d919d-5de7-4344-8a57-0417094ce2c9",
+    "lemma": "haluta",
+    "pos": "verb",
+    "count": 1,
+    "en": "want",
+    "ja": "ほしい (hoshii)",
+    "forms": [
+      "haluat"
+    ],
+    "validated": true,
+    "visual_keyword": "desire",
+    "image_status": "pending"
+  },
+  "c7372db6-863b-44e6-935c-c45384dbfc14": {
+    "id": "c7372db6-863b-44e6-935c-c45384dbfc14",
+    "lemma": "jatkossa",
+    "pos": "adverb",
+    "count": 0,
+    "en": "further",
+    "ja": "さらに",
+    "forms": [
+      "jatko",
+      "jatkossa"
+    ],
+    "validated": true,
+    "visual_keyword": "clock-forward",
+    "image_status": "pending"
+  },
+  "3bde7862-16ed-40df-ba13-afc31a19c700": {
+    "id": "3bde7862-16ed-40df-ba13-afc31a19c700",
+    "lemma": "ne",
+    "pos": "pronoun",
+    "count": 0,
+    "en": "they",
+    "ja": "彼ら",
+    "forms": [
+      "ne"
+    ],
+    "validated": true,
+    "visual_keyword": "group_of_people",
+    "image_status": "pending"
+  },
+  "c23824ca-aa41-4f85-9e04-b4184c82f234": {
+    "id": "c23824ca-aa41-4f85-9e04-b4184c82f234",
+    "lemma": "kannattaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "it is advisable",
+    "ja": "お勧めです",
+    "forms": [
+      "kannattaa"
+    ],
+    "validated": true,
+    "visual_keyword": "advice",
+    "image_status": "pending"
+  },
+  "fa43060b-4062-4f3b-911f-0cdb7fdef707": {
+    "id": "fa43060b-4062-4f3b-911f-0cdb7fdef707",
+    "lemma": "luoda",
+    "pos": "verb",
+    "count": 1,
+    "en": "to create",
+    "ja": "作成する (saseru)",
+    "forms": [
+      "luoda"
+    ],
+    "validated": true,
+    "visual_keyword": "create",
+    "image_status": "pending"
+  },
+  "295fb119-89e5-422d-8a6f-fea6812061fa": {
+    "id": "295fb119-89e5-422d-8a6f-fea6812061fa",
+    "lemma": "alusta",
+    "pos": "noun",
+    "count": 0,
+    "en": "platform",
+    "ja": "プラットフォーム",
+    "forms": [
+      "alusta",
+      "alustaa"
+    ],
+    "validated": true,
+    "visual_keyword": "restart",
+    "image_status": "pending"
+  },
+  "3ac5a48e-8b96-428f-980b-89e58b01e7fb": {
+    "id": "3ac5a48e-8b96-428f-980b-89e58b01e7fb",
+    "lemma": "alustaa",
+    "pos": "verb",
+    "count": 2,
+    "en": "start",
+    "ja": "開始",
+    "forms": [
+      "asti",
+      "alusta"
+    ],
+    "validated": true,
+    "visual_keyword": "restart",
+    "image_status": "pending"
+  },
+  "99c4bad1-182f-40f6-a057-a1b11048a438": {
+    "id": "99c4bad1-182f-40f6-a057-a1b11048a438",
+    "lemma": "uudelleen",
+    "pos": "adverb",
+    "count": 1,
+    "en": "again",
+    "ja": "再び (futatabi)",
+    "forms": [
+      "uudelleen"
+    ],
+    "validated": true,
+    "visual_keyword": "refresh",
+    "image_status": "pending"
+  },
+  "6faa0d41-ade4-408b-8d39-6f82db433a77": {
+    "id": "6faa0d41-ade4-408b-8d39-6f82db433a77",
+    "lemma": "saa",
+    "pos": "verb",
+    "count": 2,
+    "en": "receive",
+    "ja": "受信する (jūshin suru)",
+    "forms": [
+      "saa",
+      "saat"
+    ],
+    "validated": true,
+    "visual_keyword": "inbox",
+    "image_status": "pending"
+  },
+  "26132dbb-56ef-4364-854a-7cb68263a503": {
+    "id": "26132dbb-56ef-4364-854a-7cb68263a503",
+    "lemma": "push",
+    "pos": "verb",
+    "count": 0,
+    "en": "to push",
+    "ja": "押す (osu)",
+    "forms": [
+      "push"
+    ],
+    "validated": true,
+    "visual_keyword": "notification",
+    "image_status": "pending"
+  },
+  "ced5d2b8-a57a-4c3f-ba3e-ddd752645cb3": {
+    "id": "ced5d2b8-a57a-4c3f-ba3e-ddd752645cb3",
+    "lemma": "viesti",
+    "pos": "noun",
+    "count": 2,
+    "en": "message",
+    "ja": "メッセージ",
+    "forms": [
+      "viestinä",
+      "viesti"
+    ],
+    "validated": true,
+    "visual_keyword": "speech-bubble",
+    "image_status": "pending"
+  },
+  "84ae1d8e-8597-4571-9d9f-d8b36c360d58": {
+    "id": "84ae1d8e-8597-4571-9d9f-d8b36c360d58",
+    "lemma": "mobiililaite",
+    "pos": "noun",
+    "count": 1,
+    "en": "mobile device",
+    "ja": "モバイルデバイス",
+    "forms": [
+      "mobiililaitteeseesi"
+    ],
+    "validated": true,
+    "visual_keyword": "smartphone",
+    "image_status": "pending"
+  },
+  "9d4d35ec-8b56-4c41-a9f0-928c57f05d90": {
+    "id": "9d4d35ec-8b56-4c41-a9f0-928c57f05d90",
+    "lemma": "henkilökohtainen",
+    "pos": "adjective",
+    "count": 2,
+    "en": "personal",
+    "ja": "個人的な",
+    "forms": [
+      "henkilökohtaiset",
+      "henkilökohtainen"
+    ],
+    "validated": true,
+    "visual_keyword": "user-profile",
+    "image_status": "pending"
+  },
+  "35462a15-95ff-4b73-b3e3-c46155719e29": {
+    "id": "35462a15-95ff-4b73-b3e3-c46155719e29",
+    "lemma": "muistiinpano",
+    "pos": "noun",
+    "count": 1,
+    "en": "notes",
+    "ja": "メモ",
+    "forms": [
+      "muistiinpanosi"
+    ],
+    "validated": true,
+    "visual_keyword": "notebook",
+    "image_status": "pending"
+  },
+  "afcf11c8-6865-4bd6-87e1-05c745074814": {
+    "id": "afcf11c8-6865-4bd6-87e1-05c745074814",
+    "lemma": "joten",
+    "pos": "conjunction",
+    "count": 0,
+    "en": "therefore",
+    "ja": "したがって",
+    "forms": [
+      "joten"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow_right",
+    "image_status": "pending"
+  },
+  "db60bb62-4144-4bfd-9854-dcbc035d9282": {
+    "id": "db60bb62-4144-4bfd-9854-dcbc035d9282",
+    "lemma": "säilyttää",
+    "pos": "verb",
+    "count": 1,
+    "en": "preserve",
+    "ja": "保存する (hozon suru)",
+    "forms": [
+      "säilyttää"
+    ],
+    "validated": true,
+    "visual_keyword": "archive",
+    "image_status": "pending"
+  },
+  "b60dc105-4bb2-40f2-9df6-bd28869012dc": {
+    "id": "b60dc105-4bb2-40f2-9df6-bd28869012dc",
+    "lemma": "lataa",
+    "pos": "verb",
+    "count": 1,
+    "en": "download",
+    "ja": "ダウンロード",
+    "forms": [
+      "lataathan"
+    ],
+    "validated": true,
+    "visual_keyword": "download_arrow",
+    "image_status": "pending"
+  },
+  "5c2787b6-da3e-4d72-9eea-0877023bb22e": {
+    "id": "5c2787b6-da3e-4d72-9eea-0877023bb22e",
+    "lemma": "oma",
+    "pos": "adjective",
+    "count": 2,
+    "en": "own",
+    "ja": "自分の",
+    "forms": [
+      "omalle",
+      "omat"
+    ],
+    "validated": true,
+    "visual_keyword": "laptop",
+    "image_status": "pending"
+  },
+  "ae18f90c-f914-44fe-a936-367ab5340773": {
+    "id": "ae18f90c-f914-44fe-a936-367ab5340773",
+    "lemma": "kone",
+    "pos": "noun",
+    "count": 1,
+    "en": "computer",
+    "ja": "コンピューター",
+    "forms": [
+      "koneellesi"
+    ],
+    "validated": true,
+    "visual_keyword": "laptop",
+    "image_status": "pending"
+  },
+  "d707ed6e-6e70-4f75-b8f7-fad8350eb674": {
+    "id": "d707ed6e-6e70-4f75-b8f7-fad8350eb674",
+    "lemma": "ennen",
+    "pos": "adverb",
+    "count": 1,
+    "en": "before",
+    "ja": "前に",
+    "forms": [
+      "ennen"
+    ],
+    "validated": true,
+    "visual_keyword": "clock_hourglass",
+    "image_status": "pending"
+  },
+  "4efe904a-8d11-4369-a057-9d1bccc7f34f": {
+    "id": "4efe904a-8d11-4369-a057-9d1bccc7f34f",
+    "lemma": "kaksi",
+    "pos": "number",
+    "count": 1,
+    "en": "twelve",
+    "ja": "12",
+    "forms": [
+      "12"
+    ],
+    "validated": true,
+    "visual_keyword": "clock_numbers",
+    "image_status": "pending"
+  },
+  "da7dab00-07b4-47ac-93c3-8727e3db2d14": {
+    "id": "da7dab00-07b4-47ac-93c3-8727e3db2d14",
+    "lemma": "katsoa",
+    "pos": "verb",
+    "count": 2,
+    "en": "to look",
+    "ja": "見る (miru)",
+    "forms": [
+      "katso"
+    ],
+    "validated": true,
+    "visual_keyword": "eye",
+    "image_status": "pending"
+  },
+  "c44b9c3a-4067-4f1e-8fcc-e24b245316a9": {
+    "id": "c44b9c3a-4067-4f1e-8fcc-e24b245316a9",
+    "lemma": "etusi",
+    "pos": "noun",
+    "count": 1,
+    "en": "your front",
+    "ja": "あなたの正面",
+    "forms": [
+      "etusi"
+    ],
+    "validated": true,
+    "visual_keyword": "front_view",
+    "image_status": "pending"
+  },
+  "c1b73a45-fe1c-4a24-85f2-1ecd5b83f6d6": {
+    "id": "c1b73a45-fe1c-4a24-85f2-1ecd5b83f6d6",
+    "lemma": "voi",
+    "pos": "noun",
+    "count": 2,
+    "en": "butter",
+    "ja": "バター",
+    "forms": [
+      "voi",
+      "voita",
+      "voitatko"
+    ],
+    "validated": true,
+    "visual_keyword": "butter_block",
+    "image_status": "pending"
+  },
+  "1cc0d2d2-a25a-4748-b0df-7d502d1f2d9b": {
+    "id": "1cc0d2d2-a25a-4748-b0df-7d502d1f2d9b",
+    "lemma": "juosta",
+    "pos": "verb",
+    "count": 1,
+    "en": "to run",
+    "ja": "走る (hashiru)",
+    "forms": [
+      "juosta"
+    ],
+    "validated": true,
+    "visual_keyword": "runner",
+    "image_status": "pending"
+  },
+  "0b5c3231-dd2b-4664-a03d-f5cfa68f3dae": {
+    "id": "0b5c3231-dd2b-4664-a03d-f5cfa68f3dae",
+    "lemma": "kolme",
+    "pos": "numeral",
+    "count": 1,
+    "en": "three",
+    "ja": "三",
+    "forms": [
+      "kolme"
+    ],
+    "validated": true,
+    "visual_keyword": "three_circles",
+    "image_status": "pending"
+  },
+  "d65df393-bdb0-461e-a41b-55c040ee8220": {
+    "id": "d65df393-bdb0-461e-a41b-55c040ee8220",
+    "lemma": "kissa",
+    "pos": "noun",
+    "count": 1,
+    "en": "cat",
+    "ja": "猫 (neko)",
+    "forms": [
+      "kissa"
+    ],
+    "validated": true,
+    "visual_keyword": "cat",
+    "image_status": "pending"
+  },
+  "bf15e494-809b-4899-895c-0ca6e9e450e6": {
+    "id": "bf15e494-809b-4899-895c-0ca6e9e450e6",
+    "lemma": "voida",
+    "pos": "modal verb",
+    "count": 1,
+    "en": "can",
+    "ja": "できる (dekiru)",
+    "forms": [
+      "voi"
+    ],
+    "validated": true,
+    "visual_keyword": "lock",
+    "image_status": "pending"
+  },
+  "4cbdfc1e-0fd2-4b72-a923-1427c4094986": {
+    "id": "4cbdfc1e-0fd2-4b72-a923-1427c4094986",
+    "lemma": "alusta",
+    "pos": "verb",
+    "count": 1,
+    "en": "start",
+    "ja": "始める",
+    "forms": [
+      "alusta"
+    ],
+    "validated": true,
+    "visual_keyword": "restart",
+    "image_status": "pending"
+  },
+  "9f5a91c2-3c02-4a22-a4d7-3b963f3ee779": {
+    "id": "9f5a91c2-3c02-4a22-a4d7-3b963f3ee779",
+    "lemma": "asti",
+    "pos": "adverb",
+    "count": 1,
+    "en": "from scratch",
+    "ja": "ゼロから",
+    "forms": [
+      "asti"
+    ],
+    "validated": true,
+    "visual_keyword": "restart",
+    "image_status": "pending"
+  },
+  "473e0980-c9e2-4c57-aa87-9600799842cd": {
+    "id": "473e0980-c9e2-4c57-aa87-9600799842cd",
+    "lemma": "saada",
+    "pos": "verb",
+    "count": 1,
+    "en": "to get",
+    "ja": "もらう (morau)",
+    "forms": [
+      "saat"
+    ],
+    "validated": true,
+    "visual_keyword": "receive",
+    "image_status": "pending"
+  },
+  "6ef41c95-e098-4929-a538-2a8e9f338efb": {
+    "id": "6ef41c95-e098-4929-a538-2a8e9f338efb",
+    "lemma": "tämä",
+    "pos": "verb",
+    "count": 1,
+    "en": "to shove",
+    "ja": "突き飛ばす (tsukitobasu)",
+    "forms": [
+      "push"
+    ],
+    "validated": true,
+    "visual_keyword": "notification-bell",
+    "image_status": "pending"
+  },
+  "a9cc8769-9b5d-4ef9-95e7-71b9e97244a8": {
+    "id": "a9cc8769-9b5d-4ef9-95e7-71b9e97244a8",
+    "lemma": "laite",
+    "pos": "noun",
+    "count": 1,
+    "en": "device",
+    "ja": "機器 (kīqì)",
+    "forms": [
+      "mobiililaitteeseesi"
+    ],
+    "validated": true,
+    "visual_keyword": "smartphone",
+    "image_status": "pending"
+  },
+  "cda40243-abb3-4fbe-8c55-0795548117c6": {
+    "id": "cda40243-abb3-4fbe-8c55-0795548117c6",
+    "lemma": "viisi",
+    "pos": "numeral",
+    "count": 1,
+    "en": "five",
+    "ja": "五",
+    "forms": [
+      "viisi"
+    ],
+    "validated": true,
+    "visual_keyword": "fingers",
+    "image_status": "pending"
+  },
+  "a4374a4e-e562-42f4-82fd-9061164773c0": {
+    "id": "a4374a4e-e562-42f4-82fd-9061164773c0",
+    "lemma": "kuusi",
+    "pos": "noun",
+    "count": 1,
+    "en": "fir tree",
+    "ja": "モミの木",
+    "forms": [
+      "kuusi"
+    ],
+    "validated": true,
+    "visual_keyword": "pine_tree",
+    "image_status": "pending"
+  },
+  "f8224752-5e7b-4be7-a7f8-d22cac89f91b": {
+    "id": "f8224752-5e7b-4be7-a7f8-d22cac89f91b",
+    "lemma": "viesti",
+    "pos": "noun",
+    "count": 0,
+    "en": "news",
+    "ja": "ニュース",
+    "forms": [
+      "viesti"
+    ],
+    "validated": true,
+    "visual_keyword": "📰",
+    "image_status": "pending"
+  },
+  "5a609489-e70e-47aa-87e8-f54a48c6284a": {
+    "id": "5a609489-e70e-47aa-87e8-f54a48c6284a",
+    "lemma": "mutta",
+    "pos": "conjunction",
+    "count": 0,
+    "en": "however",
+    "ja": "とはいえ",
+    "forms": [
+      "mutta"
+    ],
+    "validated": true,
+    "visual_keyword": "↔️",
+    "image_status": "pending"
+  },
+  "6d6fc7b8-bf37-43f0-9c1c-1ddf2472cca1": {
+    "id": "6d6fc7b8-bf37-43f0-9c1c-1ddf2472cca1",
+    "lemma": "mutta",
+    "pos": "conjunction",
+    "count": 0,
+    "en": "nevertheless",
+    "ja": "それでも",
+    "forms": [
+      "mutta"
+    ],
+    "validated": true,
+    "visual_keyword": "➕",
+    "image_status": "pending"
+  },
+  "b0ea93de-83f8-43ef-a223-1f56e1a4d613": {
+    "id": "b0ea93de-83f8-43ef-a223-1f56e1a4d613",
+    "lemma": "jatkaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "go on",
+    "ja": "進む",
+    "forms": [
+      "jatkaa"
+    ],
+    "validated": true,
+    "visual_keyword": "➡️",
+    "image_status": "pending"
+  },
+  "4a61ed33-f654-4b34-9b37-cf37e0452b60": {
+    "id": "4a61ed33-f654-4b34-9b37-cf37e0452b60",
+    "lemma": "säilyttää",
+    "pos": "verb",
+    "count": 0,
+    "en": "to keep safe",
+    "ja": "安全に保管する",
+    "forms": [
+      "säilyttää"
+    ],
+    "validated": true,
+    "visual_keyword": "lock",
+    "image_status": "pending"
+  },
+  "11bb9711-0874-4a93-bcac-685b5743f27b": {
+    "id": "11bb9711-0874-4a93-bcac-685b5743f27b",
+    "lemma": "säilyttää",
+    "pos": "verb",
+    "count": 0,
+    "en": "to store",
+    "ja": "保管する",
+    "forms": [
+      "säilyttää"
+    ],
+    "validated": true,
+    "visual_keyword": "box",
+    "image_status": "pending"
+  },
+  "26d17d31-9004-40e2-bc59-c5ff53015d85": {
+    "id": "26d17d31-9004-40e2-bc59-c5ff53015d85",
+    "lemma": "suomi",
+    "pos": "noun",
+    "count": 0,
+    "en": "Finnish language",
+    "ja": "フィンランド語",
+    "forms": [
+      "suomi"
+    ],
+    "validated": true,
+    "visual_keyword": "🇫🇮",
+    "image_status": "pending"
+  },
+  "ce71a1cf-81e9-4746-892f-eadc42ec3140": {
+    "id": "ce71a1cf-81e9-4746-892f-eadc42ec3140",
+    "lemma": "sijoitus",
+    "pos": "noun",
+    "count": 0,
+    "en": "placement",
+    "ja": "配置",
+    "forms": [
+      "sijoitus"
+    ],
+    "validated": true,
+    "visual_keyword": "📍",
+    "image_status": "pending"
+  },
+  "66a03185-f8ef-4873-a6c7-6bc12726c5d1": {
+    "id": "66a03185-f8ef-4873-a6c7-6bc12726c5d1",
+    "lemma": "liittyä",
+    "pos": "verb",
+    "count": 0,
+    "en": "to connect",
+    "ja": "接続する",
+    "forms": [
+      "liittyä"
+    ],
+    "validated": true,
+    "visual_keyword": "🔗",
+    "image_status": "pending"
+  },
+  "5b7dd848-f5a1-4676-8125-df50d165fb78": {
+    "id": "5b7dd848-f5a1-4676-8125-df50d165fb78",
+    "lemma": "liittyä",
+    "pos": "verb",
+    "count": 0,
+    "en": "to join",
+    "ja": "参加する",
+    "forms": [
+      "liittyä"
+    ],
+    "validated": true,
+    "visual_keyword": "➕",
+    "image_status": "pending"
+  },
+  "8c862aad-3478-4cc1-adf4-7413255fe83d": {
+    "id": "8c862aad-3478-4cc1-adf4-7413255fe83d",
+    "lemma": "hälytys",
+    "pos": "noun",
+    "count": 0,
+    "en": "alarm",
+    "ja": "警報 (keihou)",
+    "forms": [
+      "hälytys"
+    ],
+    "validated": true,
+    "visual_keyword": "🚨",
+    "image_status": "pending"
+  },
+  "dfed4415-3150-414e-82a2-ba17b8296df4": {
+    "id": "dfed4415-3150-414e-82a2-ba17b8296df4",
+    "lemma": "hälytys",
+    "pos": "noun",
+    "count": 0,
+    "en": "warning",
+    "ja": "警告 (keikoku)",
+    "forms": [
+      "hälytys"
+    ],
+    "validated": true,
+    "visual_keyword": "⚠️",
+    "image_status": "pending"
+  },
+  "7d1a93b0-e7ed-4ea6-93ca-00030ce517b8": {
+    "id": "7d1a93b0-e7ed-4ea6-93ca-00030ce517b8",
+    "lemma": "kannattaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to be worthwhile",
+    "ja": "価値がある",
+    "forms": [
+      "kannattaa"
+    ],
+    "validated": true,
+    "visual_keyword": "✅",
+    "image_status": "pending"
+  },
+  "2a869411-375b-4d3c-8a56-73783d3b8b3f": {
+    "id": "2a869411-375b-4d3c-8a56-73783d3b8b3f",
+    "lemma": "kannattaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to pay off",
+    "ja": "利益をもたらす",
+    "forms": [
+      "kannattaa"
+    ],
+    "validated": true,
+    "visual_keyword": "💰",
+    "image_status": "pending"
+  },
+  "ac22461f-e7d9-43a6-8036-11162d2ecd95": {
+    "id": "ac22461f-e7d9-43a6-8036-11162d2ecd95",
+    "lemma": "kuusi",
+    "pos": "number",
+    "count": 0,
+    "en": "six",
+    "ja": "六",
+    "forms": [
+      "kuusi"
+    ],
+    "validated": true,
+    "visual_keyword": "6️⃣",
+    "image_status": "pending"
+  },
+  "59211521-e77a-4b16-a2d3-b6361fe39408": {
+    "id": "59211521-e77a-4b16-a2d3-b6361fe39408",
+    "lemma": "siirto",
+    "pos": "noun",
+    "count": 0,
+    "en": "migration",
+    "ja": "移住",
+    "forms": [
+      "siirto"
+    ],
+    "validated": true,
+    "visual_keyword": "🚶‍♀️🌍",
+    "image_status": "pending"
+  },
+  "32b8ade8-f9d7-44cc-9d17-a350813e39bd": {
+    "id": "32b8ade8-f9d7-44cc-9d17-a350813e39bd",
+    "lemma": "siirto",
+    "pos": "verb",
+    "count": 0,
+    "en": "transfer",
+    "ja": "移動",
+    "forms": [
+      "siirto"
+    ],
+    "validated": true,
+    "visual_keyword": "🔄📦",
+    "image_status": "pending"
+  },
+  "405f16a3-6a51-403a-be45-3506fc203c1f": {
+    "id": "405f16a3-6a51-403a-be45-3506fc203c1f",
+    "lemma": "siirto",
+    "pos": "noun",
+    "count": 0,
+    "en": "displacement",
+    "ja": "変位",
+    "forms": [
+      "siirto"
+    ],
+    "validated": true,
+    "visual_keyword": "↔️📍",
+    "image_status": "pending"
+  },
+  "55ec6efc-b163-41f6-b5e6-ce7d8e70c3b4": {
+    "id": "55ec6efc-b163-41f6-b5e6-ce7d8e70c3b4",
+    "lemma": "oma",
+    "pos": "determiner",
+    "count": 0,
+    "en": "one's own",
+    "ja": "自分自身の",
+    "forms": [
+      "oma"
+    ],
+    "validated": true,
+    "visual_keyword": "👤",
+    "image_status": "pending"
+  },
+  "cfb6196e-cc46-4d0d-9802-db6591373958": {
+    "id": "cfb6196e-cc46-4d0d-9802-db6591373958",
+    "lemma": "viisi",
+    "pos": "num",
+    "count": 0,
+    "en": "five",
+    "ja": "五",
+    "forms": [
+      "viisi"
+    ],
+    "validated": true,
+    "visual_keyword": "🖐️",
+    "image_status": "pending"
+  },
+  "8ebf8d7c-c72e-46e0-91ca-b18b080b8309": {
+    "id": "8ebf8d7c-c72e-46e0-91ca-b18b080b8309",
+    "lemma": "luoda",
+    "pos": "verb",
+    "count": 0,
+    "en": "to make",
+    "ja": "作る",
+    "forms": [
+      "luoda"
+    ],
+    "validated": true,
+    "visual_keyword": "🔨",
+    "image_status": "pending"
+  },
+  "2b97fc20-efb0-4864-82d6-5dfa2da76da0": {
+    "id": "2b97fc20-efb0-4864-82d6-5dfa2da76da0",
+    "lemma": "luoda",
+    "pos": "verb",
+    "count": 0,
+    "en": "to invent",
+    "ja": "発明する",
+    "forms": [
+      "luoda"
+    ],
+    "validated": true,
+    "visual_keyword": "💡",
+    "image_status": "pending"
+  },
+  "1d1a9b5a-490a-40a3-b976-0cca2bc71e79": {
+    "id": "1d1a9b5a-490a-40a3-b976-0cca2bc71e79",
+    "lemma": "sijoittaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to place (something)",
+    "ja": "置く",
+    "forms": [
+      "sijoittaa"
+    ],
+    "validated": true,
+    "visual_keyword": "📍",
+    "image_status": "pending"
+  },
+  "3355f4c0-767a-4b3d-b4d4-56c60b537827": {
+    "id": "3355f4c0-767a-4b3d-b4d4-56c60b537827",
+    "lemma": "saa",
+    "pos": "verb",
+    "count": 0,
+    "en": "gets",
+    "ja": "手に入れる",
+    "forms": [
+      "saa"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow-right",
+    "image_status": "pending"
+  },
+  "fbd37f35-f5b6-4c2d-b8e6-5777e83e813a": {
+    "id": "fbd37f35-f5b6-4c2d-b8e6-5777e83e813a",
+    "lemma": "saa",
+    "pos": "verb",
+    "count": 0,
+    "en": "is allowed to",
+    "ja": "許可される",
+    "forms": [
+      "saa"
+    ],
+    "validated": true,
+    "visual_keyword": "check-mark",
+    "image_status": "pending"
+  },
+  "baa35b52-487a-4f50-8743-2597dd5b8693": {
+    "id": "baa35b52-487a-4f50-8743-2597dd5b8693",
+    "lemma": "myös",
+    "pos": "adverb",
+    "count": 0,
+    "en": "too",
+    "ja": "あまりにも",
+    "forms": [
+      "myös"
+    ],
+    "validated": true,
+    "visual_keyword": "➕",
+    "image_status": "pending"
+  },
+  "49043ae2-297d-4778-8279-be13b5b149cc": {
+    "id": "49043ae2-297d-4778-8279-be13b5b149cc",
+    "lemma": "joten",
+    "pos": "adverb",
+    "count": 0,
+    "en": "so",
+    "ja": "なので",
+    "forms": [
+      "joten"
+    ],
+    "validated": true,
+    "visual_keyword": "🤔",
+    "image_status": "pending"
+  },
+  "bfe3cfc9-5d7a-4bc8-9b8d-cea617e4e195": {
+    "id": "bfe3cfc9-5d7a-4bc8-9b8d-cea617e4e195",
+    "lemma": "niin",
+    "pos": "adverb",
+    "count": 0,
+    "en": "so",
+    "ja": "このように",
+    "forms": [
+      "niin"
+    ],
+    "validated": true,
+    "visual_keyword": "➡️",
+    "image_status": "pending"
+  },
+  "12d72bba-35d2-411d-85a4-cea506ab2436": {
+    "id": "12d72bba-35d2-411d-85a4-cea506ab2436",
+    "lemma": "niin",
+    "pos": "conjunction",
+    "count": 0,
+    "en": "thus",
+    "ja": "したがって",
+    "forms": [
+      "niin"
+    ],
+    "validated": true,
+    "visual_keyword": "🔗",
+    "image_status": "pending"
+  },
+  "2cb47d31-10d8-40a3-a9e4-7bfa0cf029f7": {
+    "id": "2cb47d31-10d8-40a3-a9e4-7bfa0cf029f7",
+    "lemma": "niin",
+    "pos": "adverbial phrase",
+    "count": 0,
+    "en": "like this",
+    "ja": "このようにして",
+    "forms": [
+      "niin"
+    ],
+    "validated": true,
+    "visual_keyword": "👉",
+    "image_status": "pending"
+  },
+  "a3c71b01-5544-4610-8429-0a3e680da062": {
+    "id": "a3c71b01-5544-4610-8429-0a3e680da062",
+    "lemma": "mobiili",
+    "pos": "noun",
+    "count": 0,
+    "en": "mobile phone",
+    "ja": "携帯電話 (keitai denwa)",
+    "forms": [
+      "mobiili"
+    ],
+    "validated": true,
+    "visual_keyword": "📱",
+    "image_status": "pending"
+  },
+  "f2b76829-4a71-4594-9b2d-2dca4704760e": {
+    "id": "f2b76829-4a71-4594-9b2d-2dca4704760e",
+    "lemma": "saada",
+    "pos": "verb",
+    "count": 0,
+    "en": "to receive",
+    "ja": "受ける",
+    "forms": [
+      "saada"
+    ],
+    "validated": true,
+    "visual_keyword": "✉️",
+    "image_status": "pending"
+  },
+  "2a0042a4-548d-46cd-9b14-9a18c75cdb08": {
+    "id": "2a0042a4-548d-46cd-9b14-9a18c75cdb08",
+    "lemma": "pedro",
+    "pos": "noun",
+    "count": 0,
+    "en": "Peter",
+    "ja": "ピーター",
+    "forms": [
+      "pedro"
+    ],
+    "validated": true,
+    "visual_keyword": "👨‍🦰",
+    "image_status": "pending"
+  },
+  "57d0eec2-edcb-4792-8568-aa0e4efecec9": {
+    "id": "57d0eec2-edcb-4792-8568-aa0e4efecec9",
+    "lemma": "investor",
+    "pos": "noun",
+    "count": 0,
+    "en": "Person who invests money in a business or venture",
+    "ja": "投資を行う人",
+    "forms": [
+      "investor"
+    ],
+    "validated": true,
+    "visual_keyword": "📈",
+    "image_status": "pending"
+  },
+  "aaf34753-5e67-4f6e-8998-1456953a7d70": {
+    "id": "aaf34753-5e67-4f6e-8998-1456953a7d70",
+    "lemma": "henkilökohtainen",
+    "pos": "adjective",
+    "count": 0,
+    "en": "individual",
+    "ja": "個別の",
+    "forms": [
+      "henkilökohtainen"
+    ],
+    "validated": true,
+    "visual_keyword": "👥",
+    "image_status": "pending"
+  },
+  "f377922b-910b-459f-9e18-2cfc3bbf7494": {
+    "id": "f377922b-910b-459f-9e18-2cfc3bbf7494",
+    "lemma": "alex",
+    "pos": "noun",
+    "count": 0,
+    "en": "male given name",
+    "ja": "男性の名前",
+    "forms": [
+      "alex"
+    ],
+    "validated": true,
+    "visual_keyword": "👨",
+    "image_status": "pending"
+  },
+  "289ca479-7c9e-4dcd-8d05-0418cc610065": {
+    "id": "289ca479-7c9e-4dcd-8d05-0418cc610065",
+    "lemma": "kurssi",
+    "pos": "noun",
+    "count": 0,
+    "en": "session (e.g., of a meeting)",
+    "ja": "セッション（会議など）",
+    "forms": [
+      "kurssi"
+    ],
+    "validated": true,
+    "visual_keyword": "📅",
+    "image_status": "pending"
+  },
+  "15e2aef8-b9af-4858-b0b3-588acfbdcf5b": {
+    "id": "15e2aef8-b9af-4858-b0b3-588acfbdcf5b",
+    "lemma": "haluta",
+    "pos": "verb",
+    "count": 0,
+    "en": "to desire",
+    "ja": "欲しがる (yoshisugaru)",
+    "forms": [
+      "haluta"
+    ],
+    "validated": true,
+    "visual_keyword": "wish",
+    "image_status": "pending"
+  },
+  "9d97b15b-d961-44ab-a622-047c5a4b79d6": {
+    "id": "9d97b15b-d961-44ab-a622-047c5a4b79d6",
+    "lemma": "haluta",
+    "pos": "verb",
+    "count": 0,
+    "en": "to long for",
+    "ja": "渇望する (katabōsu)",
+    "forms": [
+      "haluta"
+    ],
+    "validated": true,
+    "visual_keyword": "yearn",
+    "image_status": "pending"
+  },
+  "94bed0f5-c9da-44f5-92d1-b177b1a148cb": {
+    "id": "94bed0f5-c9da-44f5-92d1-b177b1a148cb",
+    "lemma": "alusta",
+    "pos": "noun",
+    "count": 0,
+    "en": "foundation",
+    "ja": "基礎",
+    "forms": [
+      "alusta"
+    ],
+    "validated": true,
+    "visual_keyword": "🧱",
+    "image_status": "pending"
+  },
+  "78617fd9-355f-475e-9dd9-42d498b7b057": {
+    "id": "78617fd9-355f-475e-9dd9-42d498b7b057",
+    "lemma": "katsoa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to watch",
+    "ja": "観る (kuru)",
+    "forms": [
+      "katsoa"
+    ],
+    "validated": true,
+    "visual_keyword": "📺",
+    "image_status": "pending"
+  },
+  "21beef2d-3ac2-47d3-ade7-c9e1cdffa5df": {
+    "id": "21beef2d-3ac2-47d3-ade7-c9e1cdffa5df",
+    "lemma": "katsoa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to gaze",
+    "ja": "見つめる (mitsume ru)",
+    "forms": [
+      "katsoa"
+    ],
+    "validated": true,
+    "visual_keyword": "👁️‍🗨️",
+    "image_status": "pending"
+  },
+  "5ecba74a-6e35-427f-8581-e85aa00f129b": {
+    "id": "5ecba74a-6e35-427f-8581-e85aa00f129b",
+    "lemma": "kolme",
+    "pos": "num",
+    "count": 0,
+    "en": "three",
+    "ja": "三",
+    "forms": [
+      "kolme"
+    ],
+    "validated": true,
+    "visual_keyword": "🔢",
+    "image_status": "pending"
+  },
+  "65662098-ee40-46ed-83a4-2134ac3ad548": {
+    "id": "65662098-ee40-46ed-83a4-2134ac3ad548",
+    "lemma": "uudelleen",
+    "pos": "prefix",
+    "count": 0,
+    "en": "re-",
+    "ja": "再- (sai-)",
+    "forms": [
+      "uudelleen"
+    ],
+    "validated": true,
+    "visual_keyword": "➕",
+    "image_status": "pending"
+  },
+  "05f0cfa5-926a-493d-84ae-a21bb2c32dab": {
+    "id": "05f0cfa5-926a-493d-84ae-a21bb2c32dab",
+    "lemma": "voi",
+    "pos": "auxiliary verb",
+    "count": 0,
+    "en": "can",
+    "ja": "できる",
+    "forms": [
+      "voi"
+    ],
+    "validated": true,
+    "visual_keyword": "💪",
+    "image_status": "pending"
+  },
+  "76b4fc71-77f5-4543-81da-cd04dba67e40": {
+    "id": "76b4fc71-77f5-4543-81da-cd04dba67e40",
+    "lemma": "ne",
+    "pos": "demonstrative pronoun",
+    "count": 0,
+    "en": "those",
+    "ja": "それら",
+    "forms": [
+      "ne"
+    ],
+    "validated": true,
+    "visual_keyword": "👉",
+    "image_status": "pending"
+  },
+  "89abb0d9-f381-439c-95a9-87cad5871c84": {
+    "id": "89abb0d9-f381-439c-95a9-87cad5871c84",
+    "lemma": "sama",
+    "pos": "adjective, adverb",
+    "count": 0,
+    "en": "same",
+    "ja": "同じ (onaji)",
+    "forms": [
+      "sama"
+    ],
+    "validated": true,
+    "visual_keyword": "🔄",
+    "image_status": "pending"
+  },
+  "4564e921-c9f5-4b0b-933b-7deb13ec12ab": {
+    "id": "4564e921-c9f5-4b0b-933b-7deb13ec12ab",
+    "lemma": "sama",
+    "pos": "adjective",
+    "count": 0,
+    "en": "equal",
+    "ja": "平等 (byōdō)",
+    "forms": [
+      "sama"
+    ],
+    "validated": true,
+    "visual_keyword": "⚖️",
+    "image_status": "pending"
+  },
+  "14fdaa0e-6523-4739-aa5e-94c5b3b584f8": {
+    "id": "14fdaa0e-6523-4739-aa5e-94c5b3b584f8",
+    "lemma": "muokata",
+    "pos": "verb",
+    "count": 0,
+    "en": "to edit",
+    "ja": "編集する",
+    "forms": [
+      "muokata"
+    ],
+    "validated": true,
+    "visual_keyword": "📝",
+    "image_status": "pending"
+  },
+  "a0e73f4d-190e-4e60-80c3-e2027bc6cbd5": {
+    "id": "a0e73f4d-190e-4e60-80c3-e2027bc6cbd5",
+    "lemma": "muokata",
+    "pos": "verb",
+    "count": 0,
+    "en": "to process",
+    "ja": "処理する",
+    "forms": [
+      "muokata"
+    ],
+    "validated": true,
+    "visual_keyword": "⚙️",
+    "image_status": "pending"
+  },
+  "e5556944-f660-4508-be92-14571dc7f1ae": {
+    "id": "e5556944-f660-4508-be92-14571dc7f1ae",
+    "lemma": "asti",
+    "pos": "noun",
+    "count": 0,
+    "en": "dish",
+    "ja": "皿",
+    "forms": [
+      "asti"
+    ],
+    "validated": true,
+    "visual_keyword": "🍽️",
+    "image_status": "pending"
+  },
+  "d3a467f5-2323-48c9-8ec8-5290618ddc84": {
+    "id": "d3a467f5-2323-48c9-8ec8-5290618ddc84",
+    "lemma": "asti",
+    "pos": "noun",
+    "count": 0,
+    "en": "vessel",
+    "ja": "容器",
+    "forms": [
+      "asti"
+    ],
+    "validated": true,
+    "visual_keyword": "💧",
+    "image_status": "pending"
+  },
+  "159e8165-c89c-4c1e-bbef-2d0ad2317247": {
+    "id": "159e8165-c89c-4c1e-bbef-2d0ad2317247",
+    "lemma": "voida",
+    "pos": "verb",
+    "count": 0,
+    "en": "be able to",
+    "ja": "～することができる",
+    "forms": [
+      "voida"
+    ],
+    "validated": true,
+    "visual_keyword": "🧠",
+    "image_status": "pending"
+  },
+  "c00cb6f8-a37e-40ee-b9cc-42ed86b9ba36": {
+    "id": "c00cb6f8-a37e-40ee-b9cc-42ed86b9ba36",
+    "lemma": "laite",
+    "pos": "noun",
+    "count": 0,
+    "en": "appliance",
+    "ja": "電化製品",
+    "forms": [
+      "laite"
+    ],
+    "validated": true,
+    "visual_keyword": "🔌",
+    "image_status": "pending"
+  },
+  "0b30959e-ed62-4557-a1f3-148fcf491be5": {
+    "id": "0b30959e-ed62-4557-a1f3-148fcf491be5",
+    "lemma": "laite",
+    "pos": "noun",
+    "count": 0,
+    "en": "instrument",
+    "ja": "楽器",
+    "forms": [
+      "laite"
+    ],
+    "validated": true,
+    "visual_keyword": "🎼",
+    "image_status": "pending"
+  },
+  "e2afa96d-3fd5-4116-b6fa-982203f89d2d": {
+    "id": "e2afa96d-3fd5-4116-b6fa-982203f89d2d",
+    "lemma": "kone",
+    "pos": "noun",
+    "count": 0,
+    "en": "machine",
+    "ja": "機械",
+    "forms": [
+      "kone"
+    ],
+    "validated": true,
+    "visual_keyword": "⚙️",
+    "image_status": "pending"
+  },
+  "1c6a70b8-5652-4485-8301-9bafb79001d5": {
+    "id": "1c6a70b8-5652-4485-8301-9bafb79001d5",
+    "lemma": "kone",
+    "pos": "noun",
+    "count": 0,
+    "en": "tool",
+    "ja": "道具",
+    "forms": [
+      "kone"
+    ],
+    "validated": true,
+    "visual_keyword": "🛠️",
+    "image_status": "pending"
+  },
+  "8169bbae-1424-408f-9746-cefec7224fbb": {
+    "id": "8169bbae-1424-408f-9746-cefec7224fbb",
+    "lemma": "kone",
+    "pos": "noun",
+    "count": 0,
+    "en": "vehicle",
+    "ja": "乗り物",
+    "forms": [
+      "kone"
+    ],
+    "validated": true,
+    "visual_keyword": "🚗",
+    "image_status": "pending"
+  },
+  "cde1289c-a57f-4f73-8d3f-130d1abd296c": {
+    "id": "cde1289c-a57f-4f73-8d3f-130d1abd296c",
+    "lemma": "suomalainen",
+    "pos": "adj",
+    "count": 0,
+    "en": "Finnish (adjective)",
+    "ja": "フィンランド人（形容詞）",
+    "forms": [
+      "suomalainen"
+    ],
+    "validated": true,
+    "visual_keyword": "🇫🇮",
+    "image_status": "pending"
+  },
+  "bc3905eb-b2d3-47ff-9d01-efc929717958": {
+    "id": "bc3905eb-b2d3-47ff-9d01-efc929717958",
+    "lemma": "suomalainen",
+    "pos": "noun",
+    "count": 0,
+    "en": "Finnish (noun)",
+    "ja": "フィンランド人（名詞）",
+    "forms": [
+      "suomalainen"
+    ],
+    "validated": true,
+    "visual_keyword": "👨‍🇫🇮👩‍🇫🇮",
+    "image_status": "pending"
+  },
+  "fd696ffb-7fd2-463c-b0e5-cee4ac6f28b9": {
+    "id": "fd696ffb-7fd2-463c-b0e5-cee4ac6f28b9",
+    "lemma": "hanna",
+    "pos": "propn",
+    "count": 0,
+    "en": "Hannah",
+    "ja": "ハンナ",
+    "forms": [
+      "hanna"
+    ],
+    "validated": true,
+    "visual_keyword": "👩‍🦰",
+    "image_status": "pending"
+  },
+  "31bf6875-504b-4308-bb00-be2b1b1df10a": {
+    "id": "31bf6875-504b-4308-bb00-be2b1b1df10a",
+    "lemma": "kaksi",
+    "pos": "num",
+    "count": 0,
+    "en": "two",
+    "ja": "二",
+    "forms": [
+      "kaksi"
+    ],
+    "validated": true,
+    "visual_keyword": "🔢",
+    "image_status": "pending"
+  },
+  "c83b9142-d77a-43fc-81b7-4a165441bf79": {
+    "id": "c83b9142-d77a-43fc-81b7-4a165441bf79",
+    "lemma": "lataa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to upload",
+    "ja": "アップロードする",
+    "forms": [
+      "lataa"
+    ],
+    "validated": true,
+    "visual_keyword": "upload-icon",
+    "image_status": "pending"
+  },
+  "e731c0a1-a809-416a-a09f-499a50cdffd2": {
+    "id": "e731c0a1-a809-416a-a09f-499a50cdffd2",
+    "lemma": "lataa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to charge (battery)",
+    "ja": "充電する",
+    "forms": [
+      "lataa"
+    ],
+    "validated": true,
+    "visual_keyword": "charge-icon",
+    "image_status": "pending"
+  },
+  "ada9a261-956f-43bd-b5bd-eac4096434a8": {
+    "id": "ada9a261-956f-43bd-b5bd-eac4096434a8",
+    "lemma": "lataa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to load (e.g., data)",
+    "ja": "読み込む",
+    "forms": [
+      "lataa"
+    ],
+    "validated": true,
+    "visual_keyword": "load-icon",
+    "image_status": "pending"
+  },
+  "83e9afef-5938-4969-8846-613d05997439": {
+    "id": "83e9afef-5938-4969-8846-613d05997439",
+    "lemma": "ei",
+    "pos": "negation particle",
+    "count": 0,
+    "en": "not",
+    "ja": "～ない",
+    "forms": [
+      "ei"
+    ],
+    "validated": true,
+    "visual_keyword": "🚫",
+    "image_status": "pending"
+  },
+  "0a5f1cca-5b90-4ed3-a969-b59105a36ce9": {
+    "id": "0a5f1cca-5b90-4ed3-a969-b59105a36ce9",
+    "lemma": "muistiinpano",
+    "pos": "noun",
+    "count": 0,
+    "en": "record",
+    "ja": "記録",
+    "forms": [
+      "muistiinpano"
+    ],
+    "validated": true,
+    "visual_keyword": "💾",
+    "image_status": "pending"
+  },
+  "9a8cbec0-3d10-416b-8d10-a2a65258825c": {
+    "id": "9a8cbec0-3d10-416b-8d10-a2a65258825c",
+    "lemma": "muistiinpano",
+    "pos": "noun",
+    "count": 0,
+    "en": "entry",
+    "ja": "項目",
+    "forms": [
+      "muistiinpano"
+    ],
+    "validated": true,
+    "visual_keyword": "📑",
+    "image_status": "pending"
+  },
+  "e1c5f904-dc77-4f5e-b4e1-af7e230fd170": {
+    "id": "e1c5f904-dc77-4f5e-b4e1-af7e230fd170",
+    "lemma": "siirtyä",
+    "pos": "verb",
+    "count": 0,
+    "en": "to move",
+    "ja": "移動する",
+    "forms": [
+      "siirtyä"
+    ],
+    "validated": true,
+    "visual_keyword": "🏃‍♀️",
+    "image_status": "pending"
+  },
+  "3ca20c8d-0eb2-4b1c-a736-303da463726e": {
+    "id": "3ca20c8d-0eb2-4b1c-a736-303da463726e",
+    "lemma": "siirtyä",
+    "pos": "verb",
+    "count": 0,
+    "en": "to switch",
+    "ja": "切り替える",
+    "forms": [
+      "siirtyä"
+    ],
+    "validated": true,
+    "visual_keyword": "↔️",
+    "image_status": "pending"
+  },
+  "f157e01d-e6fa-45ba-8812-8382d2903d7a": {
+    "id": "f157e01d-e6fa-45ba-8812-8382d2903d7a",
+    "lemma": "jos",
+    "pos": "conjunction",
+    "count": 0,
+    "en": "when",
+    "ja": "〜のとき",
+    "forms": [
+      "jos"
+    ],
+    "validated": true,
+    "visual_keyword": "⏰",
+    "image_status": "pending"
+  },
+  "3b88da8c-3b4e-4776-be66-f1cd27d9df0c": {
+    "id": "3b88da8c-3b4e-4776-be66-f1cd27d9df0c",
+    "lemma": "painua",
+    "pos": "verb",
+    "count": 0,
+    "en": "to press",
+    "ja": "押す (osu)",
+    "forms": [
+      "push"
+    ],
+    "validated": true,
+    "visual_keyword": "➡️",
+    "image_status": "pending"
+  },
+  "a6f3ab38-a6eb-48ed-ad05-c1bfc8aae761": {
+    "id": "a6f3ab38-a6eb-48ed-ad05-c1bfc8aae761",
+    "lemma": "jälkeen",
+    "pos": "preposition",
+    "count": 0,
+    "en": "after",
+    "ja": "その後",
+    "forms": [
+      "jälkeen"
+    ],
+    "validated": true,
+    "visual_keyword": "clock-arrow-right",
+    "image_status": "pending"
+  },
+  "61c2e9e8-5da0-463e-aef5-fbb42afefb6c": {
+    "id": "61c2e9e8-5da0-463e-aef5-fbb42afefb6c",
+    "lemma": "jälkeen",
+    "pos": "preposition",
+    "count": 0,
+    "en": "behind",
+    "ja": "後ろに",
+    "forms": [
+      "jälkeen"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow-down-left",
+    "image_status": "pending"
+  },
+  "ac7734f0-d750-4d6f-b00a-c56852963cfc": {
+    "id": "ac7734f0-d750-4d6f-b00a-c56852963cfc",
+    "lemma": "etusi",
+    "pos": "adjective",
+    "count": 0,
+    "en": "front",
+    "ja": "前面",
+    "forms": [
+      "etusi"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow-forward",
+    "image_status": "pending"
+  },
+  "c530fbf8-9333-4c39-ac52-88f658e33923": {
+    "id": "c530fbf8-9333-4c39-ac52-88f658e33923",
+    "lemma": "katsoa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to peek",
+    "ja": "覗く (no zu ku)",
+    "forms": [
+      "katsoa"
+    ],
+    "validated": true,
+    "visual_keyword": "👁️‍🗨️🤏",
+    "image_status": "pending"
+  },
+  "1662312b-4d93-4dce-a472-80f36e22f642": {
+    "id": "1662312b-4d93-4dce-a472-80f36e22f642",
+    "lemma": "alustaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to outline",
+    "ja": "概説する",
+    "forms": [
+      "alustaa"
+    ],
+    "validated": true,
+    "visual_keyword": "text_format",
+    "image_status": "pending"
+  },
+  "88c07b6f-f86b-4659-8c69-538e0cc4151b": {
+    "id": "88c07b6f-f86b-4659-8c69-538e0cc4151b",
+    "lemma": "asuapaikka",
+    "pos": "noun",
+    "count": 0,
+    "en": "residence",
+    "ja": "居住地 (jūkyōchi)",
+    "forms": [
+      "asua"
+    ],
+    "validated": true,
+    "visual_keyword": "🏠",
+    "image_status": "pending"
+  },
+  "0ddf79bb-4d37-4099-a972-3e6713e645b6": {
+    "id": "0ddf79bb-4d37-4099-a972-3e6713e645b6",
+    "lemma": "asuminen",
+    "pos": "noun",
+    "count": 0,
+    "en": "living",
+    "ja": "居住",
+    "forms": [
+      "asuminen"
+    ],
+    "validated": true,
+    "visual_keyword": "🏠",
+    "image_status": "pending"
+  },
+  "50ed6904-4a80-4fa2-8e1a-0b55f8af8fdf": {
+    "id": "50ed6904-4a80-4fa2-8e1a-0b55f8af8fdf",
+    "lemma": "asuminen",
+    "pos": "noun",
+    "count": 0,
+    "en": "housing",
+    "ja": "住宅",
+    "forms": [
+      "asuminen"
+    ],
+    "validated": true,
+    "visual_keyword": "🏢",
+    "image_status": "pending"
+  },
+  "448abe5d-f0ab-42c8-a09e-494dc2e76900": {
+    "id": "448abe5d-f0ab-42c8-a09e-494dc2e76900",
+    "lemma": "asuminen",
+    "pos": "noun",
+    "count": 0,
+    "en": "dwelling",
+    "ja": "居住地",
+    "forms": [
+      "asuminen"
+    ],
+    "validated": true,
+    "visual_keyword": "🏘️",
+    "image_status": "pending"
+  },
+  "c1839607-0216-4a67-8776-36e1af11019f": {
+    "id": "c1839607-0216-4a67-8776-36e1af11019f",
+    "lemma": "huomioida",
+    "pos": "verb",
+    "count": 0,
+    "en": "to pay attention to",
+    "ja": "注意を払う",
+    "forms": [
+      "huomioida"
+    ],
+    "validated": true,
+    "visual_keyword": "eye",
+    "image_status": "pending"
+  },
+  "cd6219f4-1f98-4008-9eb2-7d9e73fdf8f2": {
+    "id": "cd6219f4-1f98-4008-9eb2-7d9e73fdf8f2",
+    "lemma": "huomioida",
+    "pos": "verb",
+    "count": 0,
+    "en": "to take into consideration",
+    "ja": "考慮に入れる",
+    "forms": [
+      "huomioida"
+    ],
+    "validated": true,
+    "visual_keyword": "brain",
+    "image_status": "pending"
+  },
+  "60a840fe-7cce-4318-85fb-4c9ef0abec87": {
+    "id": "60a840fe-7cce-4318-85fb-4c9ef0abec87",
+    "lemma": "jatkossa",
+    "pos": "adverb",
+    "count": 0,
+    "en": "in the future",
+    "ja": "将来 (shōrai)",
+    "forms": [
+      "jatkossa"
+    ],
+    "validated": true,
+    "visual_keyword": "⏳",
+    "image_status": "pending"
+  },
+  "9eb586e4-558e-45db-ac6a-074a4330d7ea": {
+    "id": "9eb586e4-558e-45db-ac6a-074a4330d7ea",
+    "lemma": "olla",
+    "pos": "noun",
+    "count": 0,
+    "en": "being",
+    "ja": "存在すること",
+    "forms": [
+      "oleminen"
+    ],
+    "validated": true,
+    "visual_keyword": "🧘‍♀️",
+    "image_status": "pending"
+  },
+  "7c650b88-37c2-4d42-9d77-83924e426eb4": {
+    "id": "7c650b88-37c2-4d42-9d77-83924e426eb4",
+    "lemma": "sata",
+    "pos": "noun",
+    "count": 1,
+    "en": "hundred",
+    "ja": "百",
+    "forms": [
+      "sata"
+    ],
+    "validated": true,
+    "visual_keyword": "number100",
+    "image_status": "pending"
+  },
+  "c0468ce8-49ec-4a30-b4a0-db3d7f090a68": {
+    "id": "c0468ce8-49ec-4a30-b4a0-db3d7f090a68",
+    "lemma": "osallistua",
+    "pos": "verb",
+    "count": 1,
+    "en": "participate",
+    "ja": "参加する (sanjō suru)",
+    "forms": [
+      "osallistua",
+      "osallistu"
+    ],
+    "validated": true,
+    "visual_keyword": "people-group",
+    "image_status": "pending"
+  },
+  "a8a7047b-cc21-415c-bf73-a5cf1b95054e": {
+    "id": "a8a7047b-cc21-415c-bf73-a5cf1b95054e",
+    "lemma": "arvonta",
+    "pos": "noun",
+    "count": 2,
+    "en": "drawing, raffle",
+    "ja": "抽選",
+    "forms": [
+      "arvontoihin"
+    ],
+    "validated": true,
+    "visual_keyword": "lottery_ticket",
+    "image_status": "pending"
+  },
+  "c0998465-c841-4920-931e-57e9fb14227b": {
+    "id": "c0998465-c841-4920-931e-57e9fb14227b",
+    "lemma": "tutustua",
+    "pos": "verb",
+    "count": 1,
+    "en": "to get acquainted with, to familiarize oneself with",
+    "ja": "〜に親しむ (〜 ni oyasumu)",
+    "forms": [
+      "tutustu",
+      "tutustua"
+    ],
+    "validated": true,
+    "visual_keyword": "handshake",
+    "image_status": "pending"
+  },
+  "a667ac56-efe6-4066-943c-6c0cc55715dc": {
+    "id": "a667ac56-efe6-4066-943c-6c0cc55715dc",
+    "lemma": "ruoka",
+    "pos": "noun",
+    "count": 1,
+    "en": "food",
+    "ja": "食べ物 (tabemono)",
+    "forms": [
+      "ruoka"
+    ],
+    "validated": true,
+    "visual_keyword": "plate_of_food",
+    "image_status": "pending"
+  },
+  "845636ae-88dd-4266-a75d-b1ce43ef623d": {
+    "id": "845636ae-88dd-4266-a75d-b1ce43ef623d",
+    "lemma": "fi",
+    "pos": "suffix",
+    "count": 1,
+    "en": "Finland, Finnish",
+    "ja": "フィンランド、フィンランド語",
+    "forms": [
+      "fin"
+    ],
+    "validated": true,
+    "visual_keyword": "flag",
+    "image_status": "pending"
+  },
+  "f573c4a4-45ec-4908-9cfd-88279e4fa44a": {
+    "id": "f573c4a4-45ec-4908-9cfd-88279e4fa44a",
+    "lemma": "mahtava",
+    "pos": "adjective",
+    "count": 1,
+    "en": "awesome, great, fantastic",
+    "ja": "素晴らしい (subarashii)",
+    "forms": [
+      "mahtavia"
+    ],
+    "validated": true,
+    "visual_keyword": "sparkles",
+    "image_status": "pending"
+  },
+  "88d84ff4-7be1-42bf-a8bc-56e4057bea50": {
+    "id": "88d84ff4-7be1-42bf-a8bc-56e4057bea50",
+    "lemma": "palkinto",
+    "pos": "noun",
+    "count": 1,
+    "en": "prize, award",
+    "ja": "賞品 (shōhin)",
+    "forms": [
+      "palkintoja",
+      "palkinto"
+    ],
+    "validated": true,
+    "visual_keyword": "trophy",
+    "image_status": "pending"
+  },
+  "f517d483-03e6-49c0-af5a-4c7ff3f0416c": {
+    "id": "f517d483-03e6-49c0-af5a-4c7ff3f0416c",
+    "lemma": "suosikit",
+    "pos": "noun",
+    "count": 1,
+    "en": "favorites, preferences",
+    "ja": "お気に入り、好み",
+    "forms": [
+      "suosiiko",
+      "suosia"
+    ],
+    "validated": true,
+    "visual_keyword": "heart",
+    "image_status": "pending"
+  },
+  "c9bbfa0b-52a3-47e6-8780-1be90f3a47ae": {
+    "id": "c9bbfa0b-52a3-47e6-8780-1be90f3a47ae",
+    "lemma": "onnettomuus",
+    "pos": "noun",
+    "count": 1,
+    "en": "misfortune",
+    "ja": "災難 (sailan)",
+    "forms": [
+      "onnetar"
+    ],
+    "validated": true,
+    "visual_keyword": "ticket",
+    "image_status": "pending"
+  },
+  "76aaff1e-2642-4430-b8a5-e274aaabd1f6": {
+    "id": "76aaff1e-2642-4430-b8a5-e274aaabd1f6",
+    "lemma": "huippukoki",
+    "pos": "noun",
+    "count": 1,
+    "en": "top chef",
+    "ja": "トップシェフ",
+    "forms": [
+      "huippukokin"
+    ],
+    "validated": true,
+    "visual_keyword": "chefhat",
+    "image_status": "pending"
+  },
+  "f9ff1e43-2edd-4ba7-958a-65b45ebc3493": {
+    "id": "f9ff1e43-2edd-4ba7-958a-65b45ebc3493",
+    "lemma": "keittiö",
+    "pos": "noun",
+    "count": 1,
+    "en": "kitchen",
+    "ja": "キッチン",
+    "forms": [
+      "kokkaamaan",
+      "kokka"
+    ],
+    "validated": true,
+    "visual_keyword": "frying pan",
+    "image_status": "pending"
+  },
+  "6099287e-4bb9-41c3-a838-bbfe7dc0c27c": {
+    "id": "6099287e-4bb9-41c3-a838-bbfe7dc0c27c",
+    "lemma": "unelma",
+    "pos": "noun",
+    "count": 1,
+    "en": "dream",
+    "ja": "夢 (yume)",
+    "forms": [
+      "unelmiesi"
+    ],
+    "validated": true,
+    "visual_keyword": "starry-night",
+    "image_status": "pending"
+  },
+  "ee4a32d5-505d-4bff-b0b0-609677579250": {
+    "id": "ee4a32d5-505d-4bff-b0b0-609677579250",
+    "lemma": "illallinen",
+    "pos": "noun",
+    "count": 1,
+    "en": "dinner",
+    "ja": "夕食 (yuushoku)",
+    "forms": [
+      "illallisen"
+    ],
+    "validated": true,
+    "visual_keyword": "plate_of_food",
+    "image_status": "pending"
+  },
+  "c9a8ba15-ec7b-49b5-8120-4b0dc229fd99": {
+    "id": "c9a8ba15-ec7b-49b5-8120-4b0dc229fd99",
+    "lemma": "kahvi",
+    "pos": "noun",
+    "count": 1,
+    "en": "coffee",
+    "ja": "コーヒー",
+    "forms": [
+      "kahvit"
+    ],
+    "validated": true,
+    "visual_keyword": "coffee_cup",
+    "image_status": "pending"
+  },
+  "a4941433-73c1-4262-953e-686ed90a0012": {
+    "id": "a4941433-73c1-4262-953e-686ed90a0012",
+    "lemma": "vuosi",
+    "pos": "noun",
+    "count": 1,
+    "en": "year",
+    "ja": "年 (nen)",
+    "forms": [
+      "vuodelle"
+    ],
+    "validated": true,
+    "visual_keyword": "calendar",
+    "image_status": "pending"
+  },
+  "d5b1b1ac-96fe-4665-bb6b-017f7a537df8": {
+    "id": "d5b1b1ac-96fe-4665-bb6b-017f7a537df8",
+    "lemma": "2026",
+    "pos": "number",
+    "count": 1,
+    "en": "2026",
+    "ja": "2026年",
+    "forms": [
+      "2026"
+    ],
+    "validated": true,
+    "visual_keyword": "calendar",
+    "image_status": "pending"
+  },
+  "f893c93f-a933-4e6f-8c80-21f5ee5f30e0": {
+    "id": "f893c93f-a933-4e6f-8c80-21f5ee5f30e0",
+    "lemma": "tai",
+    "pos": "conjunction",
+    "count": 1,
+    "en": "or",
+    "ja": "または",
+    "forms": [
+      "tai"
+    ],
+    "validated": true,
+    "visual_keyword": "fork",
+    "image_status": "pending"
+  },
+  "c04a7ce0-2f4b-4eef-8d61-8ddbb814c10e": {
+    "id": "c04a7ce0-2f4b-4eef-8d61-8ddbb814c10e",
+    "lemma": "ehkä",
+    "pos": "adverb",
+    "count": 1,
+    "en": "perhaps",
+    "ja": "おそらく",
+    "forms": [
+      "ehkäpä"
+    ],
+    "validated": true,
+    "visual_keyword": "question_mark",
+    "image_status": "pending"
+  },
+  "154bc3ef-fd8a-4b0e-a69d-b78a7b30c2bf": {
+    "id": "154bc3ef-fd8a-4b0e-a69d-b78a7b30c2bf",
+    "lemma": "herkullinen",
+    "pos": "adjective",
+    "count": 1,
+    "en": "delicious",
+    "ja": "美味しい (oishii)",
+    "forms": [
+      "herkullisia"
+    ],
+    "validated": true,
+    "visual_keyword": "food_plate",
+    "image_status": "pending"
+  },
+  "0358279f-91d3-483b-8261-5d372bd303bb": {
+    "id": "0358279f-91d3-483b-8261-5d372bd303bb",
+    "lemma": "tuotepaketti",
+    "pos": "noun",
+    "count": 1,
+    "en": "product package",
+    "ja": "製品パッケージ",
+    "forms": [
+      "tuotepaketteja"
+    ],
+    "validated": true,
+    "visual_keyword": "giftbox",
+    "image_status": "pending"
+  },
+  "cc1df780-317f-48d5-941c-05837c898659": {
+    "id": "cc1df780-317f-48d5-941c-05837c898659",
+    "lemma": "arvonta",
+    "pos": "noun",
+    "count": 0,
+    "en": "drawing (of a conclusion)",
+    "ja": "推論",
+    "forms": [
+      "arvonta"
+    ],
+    "validated": true,
+    "visual_keyword": "conclusion",
+    "image_status": "pending"
+  },
+  "04f62af1-a498-4d47-9852-492fb9a4a8df": {
+    "id": "04f62af1-a498-4d47-9852-492fb9a4a8df",
+    "lemma": "ehkä",
+    "pos": "adverb",
+    "count": 0,
+    "en": "maybe",
+    "ja": "もしかしたら",
+    "forms": [
+      "ehkä"
+    ],
+    "validated": true,
+    "visual_keyword": "🤔",
+    "image_status": "pending"
+  },
+  "597f70c0-5b53-40e2-9e89-a96ab2e8b121": {
+    "id": "597f70c0-5b53-40e2-9e89-a96ab2e8b121",
+    "lemma": "fi",
+    "pos": "noun",
+    "count": 0,
+    "en": "Finnish language",
+    "ja": "フィンランド語",
+    "forms": [
+      "fi"
+    ],
+    "validated": true,
+    "visual_keyword": "🇫🇮",
+    "image_status": "pending"
+  },
+  "94b2277b-327e-4839-b8cd-2d48e5ecf66a": {
+    "id": "94b2277b-327e-4839-b8cd-2d48e5ecf66a",
+    "lemma": "jatkaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "carry on",
+    "ja": "継続する",
+    "forms": [
+      "jatkaa"
+    ],
+    "validated": true,
+    "visual_keyword": "➡️",
+    "image_status": "pending"
+  },
+  "61c585dc-8e13-4539-be89-6e1510cb146d": {
+    "id": "61c585dc-8e13-4539-be89-6e1510cb146d",
+    "lemma": "jatko",
+    "pos": "noun",
+    "count": 0,
+    "en": "continuation",
+    "ja": "継続",
+    "forms": [
+      "jatko"
+    ],
+    "validated": true,
+    "visual_keyword": "▶️",
+    "image_status": "pending"
+  },
+  "9b5667b4-9dbb-4644-bd17-a3e0fa60b8a9": {
+    "id": "9b5667b4-9dbb-4644-bd17-a3e0fa60b8a9",
+    "lemma": "kannattaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to be reasonable",
+    "ja": "理にかなっている",
+    "forms": [
+      "kannattaa"
+    ],
+    "validated": true,
+    "visual_keyword": "⚖️",
+    "image_status": "pending"
+  },
+  "0573f744-b7c7-468d-80c2-2a3b646320e4": {
+    "id": "0573f744-b7c7-468d-80c2-2a3b646320e4",
+    "lemma": "kannattaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to make sense",
+    "ja": "筋道が通る",
+    "forms": [
+      "kannattaa"
+    ],
+    "validated": true,
+    "visual_keyword": "💡",
+    "image_status": "pending"
+  },
+  "85dc524e-d6cc-4356-a6fb-3db9d7070dd8": {
+    "id": "85dc524e-d6cc-4356-a6fb-3db9d7070dd8",
+    "lemma": "luoda",
+    "pos": "verb",
+    "count": 0,
+    "en": "to produce",
+    "ja": "生産する",
+    "forms": [
+      "luoda"
+    ],
+    "validated": true,
+    "visual_keyword": "🏭",
+    "image_status": "pending"
+  },
+  "6ed5d4ad-03dd-4c6e-b8d0-ab03798e66e2": {
+    "id": "6ed5d4ad-03dd-4c6e-b8d0-ab03798e66e2",
+    "lemma": "mahtava",
+    "pos": "adjective",
+    "count": 0,
+    "en": "mighty",
+    "ja": "強力な",
+    "forms": [
+      "mahtava"
+    ],
+    "validated": true,
+    "visual_keyword": "💪",
+    "image_status": "pending"
+  },
+  "65810b55-1e66-4739-933f-948713578fcb": {
+    "id": "65810b55-1e66-4739-933f-948713578fcb",
+    "lemma": "oma",
+    "pos": "pronoun",
+    "count": 0,
+    "en": "one's own",
+    "ja": "自分自身の",
+    "forms": [
+      "oma"
+    ],
+    "validated": true,
+    "visual_keyword": "👤",
+    "image_status": "pending"
+  },
+  "f527e319-9d34-47a8-950e-1a6266140fbe": {
+    "id": "f527e319-9d34-47a8-950e-1a6266140fbe",
+    "lemma": "osallistua",
+    "pos": "verb",
+    "count": 0,
+    "en": "take part",
+    "ja": "参加する (sanjō suru)",
+    "forms": [
+      "osallistua"
+    ],
+    "validated": true,
+    "visual_keyword": "👥",
+    "image_status": "pending"
+  },
+  "eee08b81-bb21-4bbb-b203-495e24d388ce": {
+    "id": "eee08b81-bb21-4bbb-b203-495e24d388ce",
+    "lemma": "osallistua",
+    "pos": "verb",
+    "count": 0,
+    "en": "join",
+    "ja": "参加する (sanjō suru)",
+    "forms": [
+      "osallistua"
+    ],
+    "validated": true,
+    "visual_keyword": "👥",
+    "image_status": "pending"
+  },
+  "f2f562cb-b61b-4f30-8cf6-5fec704d71e4": {
+    "id": "f2f562cb-b61b-4f30-8cf6-5fec704d71e4",
+    "lemma": "push",
+    "pos": "verb",
+    "count": 0,
+    "en": "to promote",
+    "ja": "促進する (soshinsuru)",
+    "forms": [
+      "push"
+    ],
+    "validated": true,
+    "visual_keyword": "📈",
+    "image_status": "pending"
+  },
+  "28b145cb-e4bc-4ec5-9229-6e3e926c681b": {
+    "id": "28b145cb-e4bc-4ec5-9229-6e3e926c681b",
+    "lemma": "push",
+    "pos": "verb",
+    "count": 0,
+    "en": "to send out",
+    "ja": "送信する (sōmin suru)",
+    "forms": [
+      "push"
+    ],
+    "validated": true,
+    "visual_keyword": "📤",
+    "image_status": "pending"
+  },
+  "e0213f33-58c2-44f1-aa29-24331dd00472": {
+    "id": "e0213f33-58c2-44f1-aa29-24331dd00472",
+    "lemma": "sata",
+    "pos": "num",
+    "count": 0,
+    "en": "hundred",
+    "ja": "百",
+    "forms": [
+      "sata"
+    ],
+    "validated": true,
+    "visual_keyword": "💯",
+    "image_status": "pending"
+  },
+  "b5bbfe7d-736d-4a3e-a464-66c3d44010ba": {
+    "id": "b5bbfe7d-736d-4a3e-a464-66c3d44010ba",
+    "lemma": "suosikki",
+    "pos": "noun",
+    "count": 1,
+    "en": "favorites, preferences",
+    "ja": "お気に入り、好み",
+    "forms": [
+      "suosia",
+      "suosikit"
+    ],
+    "validated": true,
+    "visual_keyword": "❤️",
+    "image_status": "pending"
+  },
+  "19dfbd81-2c7c-4b13-8019-159348b604b0": {
+    "id": "19dfbd81-2c7c-4b13-8019-159348b604b0",
+    "lemma": "tai",
+    "pos": "conjunction",
+    "count": 0,
+    "en": "either",
+    "ja": "どちらか一方",
+    "forms": [
+      "tai"
+    ],
+    "validated": true,
+    "visual_keyword": "👈👉",
+    "image_status": "pending"
+  },
+  "6550f3f0-9b1e-4fc0-a91b-3660caa36d7d": {
+    "id": "6550f3f0-9b1e-4fc0-a91b-3660caa36d7d",
+    "lemma": "tutustua",
+    "pos": "verb",
+    "count": 0,
+    "en": "to introduce oneself to",
+    "ja": "〜を紹介する",
+    "forms": [
+      "tutustua"
+    ],
+    "validated": true,
+    "visual_keyword": "person-greeting",
+    "image_status": "pending"
+  },
+  "c911a4c3-fcff-4bd8-89a1-5816bb5ddc87": {
+    "id": "c911a4c3-fcff-4bd8-89a1-5816bb5ddc87",
+    "lemma": "unelma",
+    "pos": "noun",
+    "count": 0,
+    "en": "vision",
+    "ja": "ビジョン (bijon)",
+    "forms": [
+      "unelma"
+    ],
+    "validated": true,
+    "visual_keyword": "👁️‍🗨️",
+    "image_status": "pending"
+  },
+  "1df97049-601d-4d4e-902a-f96cd5212eb0": {
+    "id": "1df97049-601d-4d4e-902a-f96cd5212eb0",
+    "lemma": "unelma",
+    "pos": "noun",
+    "count": 0,
+    "en": "aspiration",
+    "ja": "野望 (yabo)",
+    "forms": [
+      "unelma"
+    ],
+    "validated": true,
+    "visual_keyword": "🚀",
+    "image_status": "pending"
+  },
+  "5eb190d9-55fd-4baf-a539-e1d6dbb9423f": {
+    "id": "5eb190d9-55fd-4baf-a539-e1d6dbb9423f",
+    "lemma": "luottaa",
+    "pos": "adjective",
+    "count": 1,
+    "en": "confidential",
+    "ja": "機密の",
+    "forms": [
+      "luottamuksellinen"
+    ],
+    "validated": true,
+    "visual_keyword": "lock",
+    "image_status": "pending"
+  },
+  "9413a5d6-ea11-4504-852d-1e58ac5662e7": {
+    "id": "9413a5d6-ea11-4504-852d-1e58ac5662e7",
+    "lemma": "aihe",
+    "pos": "noun",
+    "count": 1,
+    "en": "topic, subject, theme",
+    "ja": "テーマ、話題",
+    "forms": [
+      "aihe"
+    ],
+    "validated": true,
+    "visual_keyword": "book",
+    "image_status": "pending"
+  },
+  "ae2457d8-8207-4d00-85fd-229f13ff5181": {
+    "id": "ae2457d8-8207-4d00-85fd-229f13ff5181",
+    "lemma": "avaa",
+    "pos": "verb",
+    "count": 1,
+    "en": "open",
+    "ja": "開く (hito)",
+    "forms": [
+      "avaa"
+    ],
+    "validated": true,
+    "visual_keyword": "unlocked_lock",
+    "image_status": "pending"
+  },
+  "5435798a-a220-4f43-9ea7-2b57eeedd8cb": {
+    "id": "5435798a-a220-4f43-9ea7-2b57eeedd8cb",
+    "lemma": "kiitos",
+    "pos": "noun",
+    "count": 1,
+    "en": "Thank you",
+    "ja": "ありがとう (Arigatou)",
+    "forms": [
+      "kiitos"
+    ],
+    "validated": true,
+    "visual_keyword": "handshake",
+    "image_status": "pending"
+  },
+  "9d2e46c8-b5d2-42c5-9eec-ac4fcbce1c95": {
+    "id": "9d2e46c8-b5d2-42c5-9eec-ac4fcbce1c95",
+    "lemma": "paljon",
+    "pos": "adverb",
+    "count": 1,
+    "en": "a lot, much",
+    "ja": "たくさん (takusan)",
+    "forms": [
+      "paljon"
+    ],
+    "validated": true,
+    "visual_keyword": "many-objects",
+    "image_status": "pending"
+  },
+  "387831c2-ce42-4ba5-ad89-12932af28479": {
+    "id": "387831c2-ce42-4ba5-ad89-12932af28479",
+    "lemma": "suklaa",
+    "pos": "noun",
+    "count": 1,
+    "en": "chocolate",
+    "ja": "チョコレート",
+    "forms": [
+      "suklaasta"
+    ],
+    "validated": true,
+    "visual_keyword": "chocolate_bar",
+    "image_status": "pending"
+  },
+  "920fb23e-a70d-4dbc-9d56-7d5fcd545c22": {
+    "id": "920fb23e-a70d-4dbc-9d56-7d5fcd545c22",
+    "lemma": "joulukortti",
+    "pos": "noun",
+    "count": 1,
+    "en": "Christmas card",
+    "ja": "クリスマスカード",
+    "forms": [
+      "joulukortista"
+    ],
+    "validated": true,
+    "visual_keyword": "christmas_card",
+    "image_status": "pending"
+  },
+  "e6a7e54c-0e4d-4f89-b334-d71d74b494c3": {
+    "id": "e6a7e54c-0e4d-4f89-b334-d71d74b494c3",
+    "lemma": "se",
+    "pos": "pronoun",
+    "count": 2,
+    "en": "it, that, this",
+    "ja": "それ (sore)",
+    "forms": [
+      "sen",
+      "se"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow",
+    "image_status": "pending"
+  },
+  "6a8ccd37-75e4-49e7-a4ed-e42ff2029a09": {
+    "id": "6a8ccd37-75e4-49e7-a4ed-e42ff2029a09",
+    "lemma": "todella",
+    "pos": "adverb",
+    "count": 1,
+    "en": "really, truly",
+    "ja": "本当に (hontō ni)",
+    "forms": [
+      "todella"
+    ],
+    "validated": true,
+    "visual_keyword": "magnifying_glass",
+    "image_status": "pending"
+  },
+  "f5f103ea-24f2-4ba2-90ce-89e0947a1902": {
+    "id": "f5f103ea-24f2-4ba2-90ce-89e0947a1902",
+    "lemma": "ystävällinen",
+    "pos": "adjective",
+    "count": 1,
+    "en": "friendly, kind",
+    "ja": "親切な (shinsetsuna)",
+    "forms": [
+      "ystävällistä"
+    ],
+    "validated": true,
+    "visual_keyword": "handshake",
+    "image_status": "pending"
+  },
+  "08ad6635-2b68-44a3-9a81-82763d73a918": {
+    "id": "08ad6635-2b68-44a3-9a81-82763d73a918",
+    "lemma": "osa",
+    "pos": "noun",
+    "count": 1,
+    "en": "part",
+    "ja": "部分",
+    "forms": [
+      "teiltä",
+      "teile"
+    ],
+    "validated": true,
+    "visual_keyword": "handshake",
+    "image_status": "pending"
+  },
+  "e602afd0-a385-4f9d-abe6-1baeb486c61d": {
+    "id": "e602afd0-a385-4f9d-abe6-1baeb486c61d",
+    "lemma": "toivota",
+    "pos": "verb",
+    "count": 1,
+    "en": "I wish",
+    "ja": "私は願っています",
+    "forms": [
+      "toivota",
+      "toivotan"
+    ],
+    "validated": true,
+    "visual_keyword": "gift-box",
+    "image_status": "pending"
+  },
+  "6a021832-e37e-4b54-af69-2d6bd1a472b2": {
+    "id": "6a021832-e37e-4b54-af69-2d6bd1a472b2",
+    "lemma": "teille",
+    "pos": "personal pronoun",
+    "count": 1,
+    "en": "to you (plural, formal)",
+    "ja": "あなた方へ (anata-kata e)",
+    "forms": [
+      "teille"
+    ],
+    "validated": true,
+    "visual_keyword": "gift_box",
+    "image_status": "pending"
+  },
+  "12e8ff70-a023-452b-84b7-ff76090cd174": {
+    "id": "12e8ff70-a023-452b-84b7-ff76090cd174",
+    "lemma": "rauhalla",
+    "pos": "adjective",
+    "count": 1,
+    "en": "peaceful, calm",
+    "ja": "静かな",
+    "forms": [
+      "rauhallista"
+    ],
+    "validated": true,
+    "visual_keyword": "dove",
+    "image_status": "pending"
+  },
+  "19f8711a-cf60-4cc8-8280-17e05ab2ea15": {
+    "id": "19f8711a-cf60-4cc8-8280-17e05ab2ea15",
+    "lemma": "ilo",
+    "pos": "noun",
+    "count": 1,
+    "en": "joy, happiness",
+    "ja": "喜び (yorokobi)",
+    "forms": [
+      "iloista"
+    ],
+    "validated": true,
+    "visual_keyword": "smiling_face",
+    "image_status": "pending"
+  },
+  "527e02e6-9ece-497e-b2e6-01b866325e9d": {
+    "id": "527e02e6-9ece-497e-b2e6-01b866325e9d",
+    "lemma": "joulunaika",
+    "pos": "noun",
+    "count": 1,
+    "en": "Christmas time",
+    "ja": "クリスマス期間",
+    "forms": [
+      "joulunaika",
+      "joulunaikaa"
+    ],
+    "validated": true,
+    "visual_keyword": "christmas_tree",
+    "image_status": "pending"
+  },
+  "cbd7f010-2156-4a19-a293-81a2f88afc34": {
+    "id": "cbd7f010-2156-4a19-a293-81a2f88afc34",
+    "lemma": "avaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "begin",
+    "ja": "始める",
+    "forms": [
+      "avaa"
+    ],
+    "validated": true,
+    "visual_keyword": "▶️",
+    "image_status": "pending"
+  },
+  "f1c4164d-b906-42a5-97de-fde962be6c8b": {
+    "id": "f1c4164d-b906-42a5-97de-fde962be6c8b",
+    "lemma": "jatko",
+    "pos": "noun",
+    "count": 0,
+    "en": "sequel",
+    "ja": "続編",
+    "forms": [
+      "jatko"
+    ],
+    "validated": true,
+    "visual_keyword": "🎬",
+    "image_status": "pending"
+  },
+  "80c56a58-c992-412d-a7fd-cca29ac705c8": {
+    "id": "80c56a58-c992-412d-a7fd-cca29ac705c8",
+    "lemma": "kiitos",
+    "pos": "interjection",
+    "count": 0,
+    "en": "thanks",
+    "ja": "ありがとう (Arigatou)",
+    "forms": [
+      "kiitos"
+    ],
+    "validated": true,
+    "visual_keyword": "handshake",
+    "image_status": "pending"
+  },
+  "60f67b7a-d8b7-429d-ada3-9b1b5996f1f3": {
+    "id": "60f67b7a-d8b7-429d-ada3-9b1b5996f1f3",
+    "lemma": "laite",
+    "pos": "noun",
+    "count": 0,
+    "en": "equipment",
+    "ja": "装置",
+    "forms": [
+      "laite"
+    ],
+    "validated": true,
+    "visual_keyword": "🛠️",
+    "image_status": "pending"
+  },
+  "8b8bd635-be41-4442-8b2b-83e6c91514f9": {
+    "id": "8b8bd635-be41-4442-8b2b-83e6c91514f9",
+    "lemma": "luottaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to trust",
+    "ja": "信頼する",
+    "forms": [
+      "luottaa"
+    ],
+    "validated": true,
+    "visual_keyword": "🤝",
+    "image_status": "pending"
+  },
+  "2280a048-6808-432b-a198-1208abc3eaaa": {
+    "id": "2280a048-6808-432b-a198-1208abc3eaaa",
+    "lemma": "luottaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "to rely on",
+    "ja": "頼る",
+    "forms": [
+      "luottaa"
+    ],
+    "validated": true,
+    "visual_keyword": "倚",
+    "image_status": "pending"
+  },
+  "0e9cda75-1194-4fa1-a52d-07eecc389bfc": {
+    "id": "0e9cda75-1194-4fa1-a52d-07eecc389bfc",
+    "lemma": "onnettomuus",
+    "pos": "noun",
+    "count": 0,
+    "en": "accident",
+    "ja": "事故 (jiko)",
+    "forms": [
+      "onnettomuus"
+    ],
+    "validated": true,
+    "visual_keyword": "🚗💥",
+    "image_status": "pending"
+  },
+  "4c8ec0f0-32c6-458d-b774-0c7c8cde008d": {
+    "id": "4c8ec0f0-32c6-458d-b774-0c7c8cde008d",
+    "lemma": "onnettomuus",
+    "pos": "noun",
+    "count": 0,
+    "en": "disaster",
+    "ja": "災害 (saigai)",
+    "forms": [
+      "onnettomuus"
+    ],
+    "validated": true,
+    "visual_keyword": "🔥🌪️",
+    "image_status": "pending"
+  },
+  "59b7dda5-8c08-4815-8415-b3e3a2d02b41": {
+    "id": "59b7dda5-8c08-4815-8415-b3e3a2d02b41",
+    "lemma": "paljon",
+    "pos": "determiner",
+    "count": 0,
+    "en": "a lot",
+    "ja": "たくさん",
+    "forms": [
+      "paljon"
+    ],
+    "validated": true,
+    "visual_keyword": "📦",
+    "image_status": "pending"
+  },
+  "060677b4-b934-4f92-bb26-690e7fd4fb37": {
+    "id": "060677b4-b934-4f92-bb26-690e7fd4fb37",
+    "lemma": "rauhalla",
+    "pos": "noun",
+    "count": 0,
+    "en": "peace",
+    "ja": "平和 (heiwa)",
+    "forms": [
+      "rauhalla"
+    ],
+    "validated": true,
+    "visual_keyword": "🕊️",
+    "image_status": "pending"
+  },
+  "83fe58bd-d433-41ae-a57d-b8e83ace0476": {
+    "id": "83fe58bd-d433-41ae-a57d-b8e83ace0476",
+    "lemma": "rauhalla",
+    "pos": "adverb",
+    "count": 0,
+    "en": "quietly",
+    "ja": "静かに (shizuka ni)",
+    "forms": [
+      "rauhalla"
+    ],
+    "validated": true,
+    "visual_keyword": "🤫",
+    "image_status": "pending"
+  },
+  "cea67601-1da6-4c90-af60-9b72dfe90532": {
+    "id": "cea67601-1da6-4c90-af60-9b72dfe90532",
+    "lemma": "se",
+    "pos": "demonstrative pronoun",
+    "count": 0,
+    "en": "that",
+    "ja": "あの (ano)",
+    "forms": [
+      "se"
+    ],
+    "validated": true,
+    "visual_keyword": "👈",
+    "image_status": "pending"
+  },
+  "c0c32555-0203-486f-ae07-09c5f8d5064f": {
+    "id": "c0c32555-0203-486f-ae07-09c5f8d5064f",
+    "lemma": "teille",
+    "pos": "pronoun",
+    "count": 0,
+    "en": "to you (plural, formal)",
+    "ja": "あなた方へ（敬語）",
+    "forms": [
+      "teille"
+    ],
+    "validated": true,
+    "visual_keyword": "👥",
+    "image_status": "pending"
+  },
+  "6ba3e7f3-f41c-4669-8208-6bd32725cf61": {
+    "id": "6ba3e7f3-f41c-4669-8208-6bd32725cf61",
+    "lemma": "teilemä",
+    "pos": "noun",
+    "count": 0,
+    "en": "share",
+    "ja": "共有する",
+    "forms": [
+      "teiltä"
+    ],
+    "validated": true,
+    "visual_keyword": "✂️",
+    "image_status": "pending"
+  },
+  "ef5d15ef-715c-4186-a9fb-99488b502c2e": {
+    "id": "ef5d15ef-715c-4186-a9fb-99488b502c2e",
+    "lemma": "toivota",
+    "pos": "verb",
+    "count": 0,
+    "en": "to hope",
+    "ja": "望む (nozomu)",
+    "forms": [
+      "toivota"
+    ],
+    "validated": true,
+    "visual_keyword": "🤞",
+    "image_status": "pending"
+  },
+  "c8274689-7094-47fa-9bc4-c5b3f08e1fd4": {
+    "id": "c8274689-7094-47fa-9bc4-c5b3f08e1fd4",
+    "lemma": "toivota",
+    "pos": "verb",
+    "count": 0,
+    "en": "to desire",
+    "ja": "望む (nozomu)",
+    "forms": [
+      "toivota"
+    ],
+    "validated": true,
+    "visual_keyword": "❤️",
+    "image_status": "pending"
+  },
+  "6e8fccd2-deaf-4a7b-a3e5-b2d7b6738b55": {
+    "id": "6e8fccd2-deaf-4a7b-a3e5-b2d7b6738b55",
+    "lemma": "voi",
+    "pos": "verb",
+    "count": 0,
+    "en": "can",
+    "ja": "できる",
+    "forms": [
+      "voi"
+    ],
+    "validated": true,
+    "visual_keyword": "💪",
+    "image_status": "pending"
+  },
+  "7243aa00-38d6-4451-a06f-ef4eadf07e26": {
+    "id": "7243aa00-38d6-4451-a06f-ef4eadf07e26",
+    "lemma": "tilaus",
+    "pos": "noun",
+    "count": 1,
+    "en": "order",
+    "ja": "注文 (chūmon)",
+    "forms": [
+      "tilaukset"
+    ],
+    "validated": true,
+    "visual_keyword": "shopping-cart",
+    "image_status": "pending"
+  },
+  "a29283a9-12f0-43aa-81c4-8be9d4c66efb": {
+    "id": "a29283a9-12f0-43aa-81c4-8be9d4c66efb",
+    "lemma": "tieto",
+    "pos": "noun",
+    "count": 2,
+    "en": "information",
+    "ja": "情報 (jōhō)",
+    "forms": [
+      "tiedot"
+    ],
+    "validated": true,
+    "visual_keyword": "data_stream",
+    "image_status": "pending"
+  },
+  "0ce25d86-2e93-40ad-b044-9fbfe5ccd61b": {
+    "id": "0ce25d86-2e93-40ad-b044-9fbfe5ccd61b",
+    "lemma": "maksukortti",
+    "pos": "noun",
+    "count": 1,
+    "en": "payment card",
+    "ja": "支払いカード",
+    "forms": [
+      "maksukortit"
+    ],
+    "validated": true,
+    "visual_keyword": "creditcard",
+    "image_status": "pending"
+  },
+  "910358fe-fb12-4b3a-8715-2802cca77a50": {
+    "id": "910358fe-fb12-4b3a-8715-2802cca77a50",
+    "lemma": "ostoksi",
+    "pos": "noun",
+    "count": 1,
+    "en": "shopping list",
+    "ja": "買い物リスト",
+    "forms": [
+      "ostoslistat"
+    ],
+    "validated": true,
+    "visual_keyword": "list-check",
+    "image_status": "pending"
+  },
+  "22ae0452-d2c8-495d-99f7-8f214059eb35": {
+    "id": "22ae0452-d2c8-495d-99f7-8f214059eb35",
+    "lemma": "suosittaa",
+    "pos": "verb",
+    "count": 1,
+    "en": "recommend",
+    "ja": "おすすめする",
+    "forms": [
+      "suosittelemme"
+    ],
+    "validated": true,
+    "visual_keyword": "thumbs-up",
+    "image_status": "pending"
+  },
+  "1b9112ce-c9fd-41b4-83d1-df54a68d4baf": {
+    "id": "1b9112ce-c9fd-41b4-83d1-df54a68d4baf",
+    "lemma": "sinulle",
+    "pos": "personal pronoun (dative)",
+    "count": 1,
+    "en": "to you",
+    "ja": "あなたへ",
+    "forms": [
+      "sinulle"
+    ],
+    "validated": true,
+    "visual_keyword": "person_target",
+    "image_status": "pending"
+  },
+  "de47c467-8fd7-4138-ac02-f06ea9c38c66": {
+    "id": "de47c467-8fd7-4138-ac02-f06ea9c38c66",
+    "lemma": "kaikki",
+    "pos": "determiner",
+    "count": 2,
+    "en": "all, everything",
+    "ja": "すべて (subete)",
+    "forms": [
+      "kaikki"
+    ],
+    "validated": true,
+    "visual_keyword": "globe",
+    "image_status": "pending"
+  },
+  "d58c4545-bb58-4f2c-a1b7-0ac7ffddbc26": {
+    "id": "d58c4545-bb58-4f2c-a1b7-0ac7ffddbc26",
+    "lemma": "ohje",
+    "pos": "noun",
+    "count": 1,
+    "en": "instructions",
+    "ja": "指示 (shishi)",
+    "forms": [
+      "ohjeet"
+    ],
+    "validated": true,
+    "visual_keyword": "book-open",
+    "image_status": "pending"
+  },
+  "77c8b993-4d5e-4d2f-82c5-8efd9151507f": {
+    "id": "77c8b993-4d5e-4d2f-82c5-8efd9151507f",
+    "lemma": "ha",
+    "pos": "verb (auxiliary)",
+    "count": 1,
+    "en": "have, there are",
+    "ja": "持つ、ある",
+    "forms": [
+      "ha"
+    ],
+    "validated": true,
+    "visual_keyword": "possession",
+    "image_status": "pending"
+  },
+  "c4e5dd66-0cae-4641-9412-007882e8c2f1": {
+    "id": "c4e5dd66-0cae-4641-9412-007882e8c2f1",
+    "lemma": "vinkki",
+    "pos": "noun",
+    "count": 1,
+    "en": "tip, hint",
+    "ja": "ヒント",
+    "forms": [
+      "vinkit"
+    ],
+    "validated": true,
+    "visual_keyword": "lightbulb",
+    "image_status": "pending"
+  },
+  "22df6c7a-eab0-4ef1-b664-d5d9e5807d2c": {
+    "id": "22df6c7a-eab0-4ef1-b664-d5d9e5807d2c",
+    "lemma": "poika",
+    "pos": "noun",
+    "count": 1,
+    "en": "boy, son",
+    "ja": "男の子 (otoko no ko)",
+    "forms": [
+      "poika"
+    ],
+    "validated": true,
+    "visual_keyword": "child_boy",
+    "image_status": "pending"
+  },
+  "95a4feb4-23b5-4f8e-a0fa-d9117b515c10": {
+    "id": "95a4feb4-23b5-4f8e-a0fa-d9117b515c10",
+    "lemma": "yksityinen",
+    "pos": "adjective",
+    "count": 1,
+    "en": "private",
+    "ja": "プライベート",
+    "forms": [
+      "yksityinen"
+    ],
+    "validated": true,
+    "visual_keyword": "lock",
+    "image_status": "pending"
+  },
+  "c013b348-717c-4135-a7dd-8bb23b13fb49": {
+    "id": "c013b348-717c-4135-a7dd-8bb23b13fb49",
+    "lemma": "elinkeinonharjoittaja",
+    "pos": "noun",
+    "count": 1,
+    "en": "Self-employed person",
+    "ja": "個人事業主 (kojin jigyo-shu)",
+    "forms": [
+      "elinkeinonharjoittaja"
+    ],
+    "validated": true,
+    "visual_keyword": "entrepreneur",
+    "image_status": "pending"
+  },
+  "543485f9-a738-499c-90f3-bc2c17856967": {
+    "id": "543485f9-a738-499c-90f3-bc2c17856967",
+    "lemma": "toimiala",
+    "pos": "noun",
+    "count": 1,
+    "en": "field of activity, area of operation",
+    "ja": "活動分野 (katsudō bunya)",
+    "forms": [
+      "toimialana"
+    ],
+    "validated": true,
+    "visual_keyword": "paintbrush",
+    "image_status": "pending"
+  },
+  "fa16f9a9-f1d5-49ed-90ab-ef29cb167168": {
+    "id": "fa16f9a9-f1d5-49ed-90ab-ef29cb167168",
+    "lemma": "taiteellinen",
+    "pos": "adjective",
+    "count": 1,
+    "en": "artistic, creative",
+    "ja": "芸術的な",
+    "forms": [
+      "taiteellinen"
+    ],
+    "validated": true,
+    "visual_keyword": "paintbrush",
+    "image_status": "pending"
+  },
+  "25d1bc66-e3c8-418e-ae64-9c2c7074905b": {
+    "id": "25d1bc66-e3c8-418e-ae64-9c2c7074905b",
+    "lemma": "luoda",
+    "pos": "noun",
+    "count": 1,
+    "en": "creation, to create",
+    "ja": "創造、創る",
+    "forms": [
+      "luominen"
+    ],
+    "validated": true,
+    "visual_keyword": "paintbrush",
+    "image_status": "pending"
+  },
+  "fd7e593f-b9d0-4a2f-8f6e-45ee86c3d337": {
+    "id": "fd7e593f-b9d0-4a2f-8f6e-45ee86c3d337",
+    "lemma": "yritys",
+    "pos": "noun",
+    "count": 1,
+    "en": "company",
+    "ja": "会社 (kaisha)",
+    "forms": [
+      "yrityksen"
+    ],
+    "validated": true,
+    "visual_keyword": "business-building",
+    "image_status": "pending"
+  },
+  "983b6102-44af-433f-81be-610c72a4ea97": {
+    "id": "983b6102-44af-433f-81be-610c72a4ea97",
+    "lemma": "julkinen",
+    "pos": "adjective",
+    "count": 1,
+    "en": "public",
+    "ja": "公的",
+    "forms": [
+      "julkiset"
+    ],
+    "validated": true,
+    "visual_keyword": "megaphone",
+    "image_status": "pending"
+  },
+  "06ab771b-ab29-4e34-8b52-4915bb6544da": {
+    "id": "06ab771b-ab29-4e34-8b52-4915bb6544da",
+    "lemma": "alta",
+    "pos": "preposition",
+    "count": 1,
+    "en": "below, under",
+    "ja": "下",
+    "forms": [
+      "alta"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow_down",
+    "image_status": "pending"
+  },
+  "2f868f79-bff9-472b-8af0-823df34f6230": {
+    "id": "2f868f79-bff9-472b-8af0-823df34f6230",
+    "lemma": "alta",
+    "pos": "preposition",
+    "count": 0,
+    "en": "from",
+    "ja": "〜からの",
+    "forms": [
+      "alta"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow_downward",
+    "image_status": "pending"
+  },
+  "26f5a8e5-4958-4734-8c87-745d931b3945": {
+    "id": "26f5a8e5-4958-4734-8c87-745d931b3945",
+    "lemma": "alta",
+    "pos": "adverb",
+    "count": 0,
+    "en": "below",
+    "ja": "下に",
+    "forms": [
+      "alta"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow_downward",
+    "image_status": "pending"
+  },
+  "7d5b0369-1f3d-490b-a947-85c291106b17": {
+    "id": "7d5b0369-1f3d-490b-a947-85c291106b17",
+    "lemma": "ha",
+    "pos": "verb",
+    "count": 0,
+    "en": "have",
+    "ja": "持つ",
+    "forms": [
+      "ha"
+    ],
+    "validated": true,
+    "visual_keyword": "💪",
+    "image_status": "pending"
+  },
+  "4dfcd136-eaaf-4860-8a1f-e6bad3709ceb": {
+    "id": "4dfcd136-eaaf-4860-8a1f-e6bad3709ceb",
+    "lemma": "ha",
+    "pos": "verb",
+    "count": 0,
+    "en": "to take",
+    "ja": "取る",
+    "forms": [
+      "ha"
+    ],
+    "validated": true,
+    "visual_keyword": "👉",
+    "image_status": "pending"
+  },
+  "e10fd613-0523-4b98-a3d4-9bc4470f161b": {
+    "id": "e10fd613-0523-4b98-a3d4-9bc4470f161b",
+    "lemma": "ha",
+    "pos": "verb",
+    "count": 0,
+    "en": "to find",
+    "ja": "見つける",
+    "forms": [
+      "ha"
+    ],
+    "validated": true,
+    "visual_keyword": "🔎",
+    "image_status": "pending"
+  },
+  "9fd1f3d7-5d18-43be-9451-83daae17686f": {
+    "id": "9fd1f3d7-5d18-43be-9451-83daae17686f",
+    "lemma": "huomio",
+    "pos": "noun",
+    "count": 0,
+    "en": "attention",
+    "ja": "注意",
+    "forms": [
+      "huomio"
+    ],
+    "validated": true,
+    "visual_keyword": "eye",
+    "image_status": "pending"
+  },
+  "cb74bc8f-7852-45f7-bf80-37bf60dc6ba5": {
+    "id": "cb74bc8f-7852-45f7-bf80-37bf60dc6ba5",
+    "lemma": "kaikki",
+    "pos": "noun",
+    "count": 0,
+    "en": "everything",
+    "ja": "全てのもの",
+    "forms": [
+      "kaikki"
+    ],
+    "validated": true,
+    "visual_keyword": "box",
+    "image_status": "pending"
+  },
+  "3758b22d-73f1-4155-8a9d-f4f100b3233c": {
+    "id": "3758b22d-73f1-4155-8a9d-f4f100b3233c",
+    "lemma": "ohje",
+    "pos": "noun",
+    "count": 0,
+    "en": "guide",
+    "ja": "ガイド",
+    "forms": [
+      "ohje"
+    ],
+    "validated": true,
+    "visual_keyword": "compass",
+    "image_status": "pending"
+  },
+  "41aabb2a-21cf-4288-97f3-2c1f8e4cce9e": {
+    "id": "41aabb2a-21cf-4288-97f3-2c1f8e4cce9e",
+    "lemma": "ohje",
+    "pos": "noun",
+    "count": 0,
+    "en": "advice",
+    "ja": "アドバイス",
+    "forms": [
+      "ohje"
+    ],
+    "validated": true,
+    "visual_keyword": "speech_bubble",
+    "image_status": "pending"
+  },
+  "2bf73bc1-9822-47d7-ab80-fe45ccf9a76b": {
+    "id": "2bf73bc1-9822-47d7-ab80-fe45ccf9a76b",
+    "lemma": "painua",
+    "pos": "verb",
+    "count": 0,
+    "en": "to sink",
+    "ja": "沈む",
+    "forms": [
+      "painua"
+    ],
+    "validated": true,
+    "visual_keyword": "⬇️",
+    "image_status": "pending"
+  },
+  "51c67ea6-57f6-4bb6-aa89-38087838e319": {
+    "id": "51c67ea6-57f6-4bb6-aa89-38087838e319",
+    "lemma": "painua",
+    "pos": "verb",
+    "count": 0,
+    "en": "to descend",
+    "ja": "下降する",
+    "forms": [
+      "painua"
+    ],
+    "validated": true,
+    "visual_keyword": "🔽",
+    "image_status": "pending"
+  },
+  "4e239bab-09cb-451a-8dc4-504b00a6dee3": {
+    "id": "4e239bab-09cb-451a-8dc4-504b00a6dee3",
+    "lemma": "painua",
+    "pos": "verb",
+    "count": 0,
+    "en": "to fall",
+    "ja": "落ちる",
+    "forms": [
+      "painua"
+    ],
+    "validated": true,
+    "visual_keyword": "FALL",
+    "image_status": "pending"
+  },
+  "c994f1c7-24ab-4286-be47-79876c808e73": {
+    "id": "c994f1c7-24ab-4286-be47-79876c808e73",
+    "lemma": "push",
+    "pos": "verb",
+    "count": 0,
+    "en": "squeeze",
+    "ja": "絞る (shiboru)",
+    "forms": [
+      "puristaa"
+    ],
+    "validated": true,
+    "visual_keyword": "💧",
+    "image_status": "pending"
+  },
+  "1ac26ebd-c493-4e6d-9249-fb856ed86d16": {
+    "id": "1ac26ebd-c493-4e6d-9249-fb856ed86d16",
+    "lemma": "push",
+    "pos": "verb",
+    "count": 0,
+    "en": "press",
+    "ja": "押す (osu)",
+    "forms": [
+      "puristaa"
+    ],
+    "validated": true,
+    "visual_keyword": "💪",
+    "image_status": "pending"
+  },
+  "e67bd90c-0e01-4f96-9c79-cfb03988300f": {
+    "id": "e67bd90c-0e01-4f96-9c79-cfb03988300f",
+    "lemma": "push",
+    "pos": "verb",
+    "count": 0,
+    "en": "extract juice",
+    "ja": "果汁を絞る (kōtsu o shiboru)",
+    "forms": [
+      "puristaa"
+    ],
+    "validated": true,
+    "visual_keyword": "🍊🍋",
+    "image_status": "pending"
+  },
+  "e731f691-5761-439e-8fde-a01245354350": {
+    "id": "e731f691-5761-439e-8fde-a01245354350",
+    "lemma": "push",
+    "pos": "verb",
+    "count": 0,
+    "en": "tighten",
+    "ja": "締め付ける (shimete tsukeru)",
+    "forms": [
+      "puristaa"
+    ],
+    "validated": true,
+    "visual_keyword": "🔒",
+    "image_status": "pending"
+  },
+  "8be1ab04-6ef2-4ca3-a53e-4970c592380f": {
+    "id": "8be1ab04-6ef2-4ca3-a53e-4970c592380f",
+    "lemma": "siirtää",
+    "pos": "verb",
+    "count": 0,
+    "en": "to move",
+    "ja": "移動する",
+    "forms": [
+      "siirtää"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow",
+    "image_status": "pending"
+  },
+  "20b7cbce-aeba-48f6-91da-03805cf89ba6": {
+    "id": "20b7cbce-aeba-48f6-91da-03805cf89ba6",
+    "lemma": "siirtää",
+    "pos": "verb",
+    "count": 0,
+    "en": "to shift",
+    "ja": "移動させる",
+    "forms": [
+      "siirtää"
+    ],
+    "validated": true,
+    "visual_keyword": "slider",
+    "image_status": "pending"
+  },
+  "17f8fae5-49fe-44bd-bb84-21e7e2b7d86e": {
+    "id": "17f8fae5-49fe-44bd-bb84-21e7e2b7d86e",
+    "lemma": "sinulle",
+    "pos": "pronoun",
+    "count": 0,
+    "en": "to you",
+    "ja": "あなたへ",
+    "forms": [
+      "sinulle"
+    ],
+    "validated": true,
+    "visual_keyword": "➡️",
+    "image_status": "pending"
+  },
+  "27bbd7c0-5ce9-42a8-bbe0-d36644b4bdec": {
+    "id": "27bbd7c0-5ce9-42a8-bbe0-d36644b4bdec",
+    "lemma": "suosittaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "suggest",
+    "ja": "提案する",
+    "forms": [
+      "suosittaa"
+    ],
+    "validated": true,
+    "visual_keyword": "lightbulb",
+    "image_status": "pending"
+  },
+  "23464cd4-3939-473f-bfe8-f319de6bc2e9": {
+    "id": "23464cd4-3939-473f-bfe8-f319de6bc2e9",
+    "lemma": "suosittaa",
+    "pos": "verb",
+    "count": 0,
+    "en": "promote",
+    "ja": "促進する",
+    "forms": [
+      "suosittaa"
+    ],
+    "validated": true,
+    "visual_keyword": "up-arrow",
+    "image_status": "pending"
+  },
+  "3c0ab351-dfb6-4261-a921-a0372f2be595": {
+    "id": "3c0ab351-dfb6-4261-a921-a0372f2be595",
+    "lemma": "teile",
+    "pos": "verb",
+    "count": 0,
+    "en": "share",
+    "ja": "共有する",
+    "forms": [
+      "teile"
+    ],
+    "validated": true,
+    "visual_keyword": "🤝",
+    "image_status": "pending"
+  },
+  "e32709bd-6304-4558-a6ef-75ea18595eef": {
+    "id": "e32709bd-6304-4558-a6ef-75ea18595eef",
+    "lemma": "tieto",
+    "pos": "noun",
+    "count": 0,
+    "en": "knowledge",
+    "ja": "知識 (chishiki)",
+    "forms": [
+      "tieto"
+    ],
+    "validated": true,
+    "visual_keyword": "🧠",
+    "image_status": "pending"
+  },
+  "827d9f60-6358-4ede-8ae5-c98377d95b91": {
+    "id": "827d9f60-6358-4ede-8ae5-c98377d95b91",
+    "lemma": "tilaus",
+    "pos": "noun",
+    "count": 0,
+    "en": "subscription",
+    "ja": "購読契約 (kōdoku keiyaku)",
+    "forms": [
+      "tilaus"
+    ],
+    "validated": true,
+    "visual_keyword": "📰",
+    "image_status": "pending"
+  },
+  "c704e502-0125-4b6e-8781-10940652869c": {
+    "id": "c704e502-0125-4b6e-8781-10940652869c",
+    "lemma": "tilaus",
+    "pos": "noun",
+    "count": 0,
+    "en": "commission",
+    "ja": "委託 (itaku)",
+    "forms": [
+      "tilaus"
+    ],
+    "validated": true,
+    "visual_keyword": "💼",
+    "image_status": "pending"
+  },
+  "c2ac8fd4-230b-4605-afbf-7747aedd433f": {
+    "id": "c2ac8fd4-230b-4605-afbf-7747aedd433f",
+    "lemma": "toimiala",
+    "pos": "noun",
+    "count": 0,
+    "en": "industry",
+    "ja": "産業",
+    "forms": [
+      "toimiala"
+    ],
+    "validated": true,
+    "visual_keyword": "🏭",
+    "image_status": "pending"
+  },
+  "7d7a1583-24f9-406e-beba-d7858f8cf978": {
+    "id": "7d7a1583-24f9-406e-beba-d7858f8cf978",
+    "lemma": "toivota",
+    "pos": "verb",
+    "count": 0,
+    "en": "to congratulate",
+    "ja": "祝福する",
+    "forms": [
+      "toivota"
+    ],
+    "validated": true,
+    "visual_keyword": "🎉",
+    "image_status": "pending"
+  },
+  "1961c0a0-f5c3-41c2-ae32-950d7c04541d": {
+    "id": "1961c0a0-f5c3-41c2-ae32-950d7c04541d",
+    "lemma": "tämä",
+    "pos": "determiner",
+    "count": 0,
+    "en": "this",
+    "ja": "これ",
+    "forms": [
+      "tämä"
+    ],
+    "validated": true,
+    "visual_keyword": "👉",
+    "image_status": "pending"
+  },
+  "8188dd81-9c01-4255-aa1a-5e87e48a6db0": {
+    "id": "8188dd81-9c01-4255-aa1a-5e87e48a6db0",
+    "lemma": "tämä",
+    "pos": "pronoun",
+    "count": 0,
+    "en": "it",
+    "ja": "それ",
+    "forms": [
+      "tämä"
+    ],
+    "validated": true,
+    "visual_keyword": "👈",
+    "image_status": "pending"
+  },
+  "30a69266-577d-4f30-8548-a94615f0bb06": {
+    "id": "30a69266-577d-4f30-8548-a94615f0bb06",
+    "lemma": "yksityinen",
+    "pos": "adjective",
+    "count": 0,
+    "en": "personal",
+    "ja": "個人的な",
+    "forms": [
+      "yksityinen"
+    ],
+    "validated": true,
+    "visual_keyword": "👤",
+    "image_status": "pending"
+  },
+  "19541798-5a1e-4079-9ddd-6d44578488b9": {
+    "id": "19541798-5a1e-4079-9ddd-6d44578488b9",
+    "lemma": "yksityinen",
+    "pos": "adjective",
+    "count": 0,
+    "en": "individual",
+    "ja": "個人の",
+    "forms": [
+      "yksityinen"
+    ],
+    "validated": true,
+    "visual_keyword": "👥",
+    "image_status": "pending"
+  },
+  "7f2c7434-3c18-4665-8fdd-b5b35a3882e9": {
+    "id": "7f2c7434-3c18-4665-8fdd-b5b35a3882e9",
+    "lemma": "yritys",
+    "pos": "noun",
+    "count": 0,
+    "en": "attempt",
+    "ja": "試み",
+    "forms": [
+      "yritys"
+    ],
+    "validated": true,
+    "visual_keyword": "💪",
+    "image_status": "pending"
+  },
+  "273ba1dc-73f8-46f1-b2d1-50dfbc4a0355": {
+    "id": "273ba1dc-73f8-46f1-b2d1-50dfbc4a0355",
+    "lemma": "työnhaku",
+    "pos": "noun",
+    "count": 6,
+    "en": "job search",
+    "ja": "求職活動 (kyūshoku katsudō)",
+    "forms": [
+      "työnhaku",
+      "työnhakusi"
+    ],
+    "validated": true,
+    "visual_keyword": "magnifying_glass",
+    "image_status": "pending"
+  },
+  "efbb3cf6-2f15-4438-86d0-5945f2ca43bb": {
+    "id": "efbb3cf6-2f15-4438-86d0-5945f2ca43bb",
+    "lemma": "voimassa",
+    "pos": "adjective",
+    "count": 2,
+    "en": "in force, valid",
+    "ja": "有効な",
+    "forms": [
+      "voimassa"
+    ],
+    "validated": true,
+    "visual_keyword": "check-mark",
+    "image_status": "pending"
+  },
+  "8e03dfc2-051d-4b9c-b7eb-ec7d7324f968": {
+    "id": "8e03dfc2-051d-4b9c-b7eb-ec7d7324f968",
+    "lemma": "toistaiseksi",
+    "pos": "adverb",
+    "count": 2,
+    "en": "for now",
+    "ja": "今のところ",
+    "forms": [
+      "toistaiseksi"
+    ],
+    "validated": true,
+    "visual_keyword": "clock",
+    "image_status": "pending"
+  },
+  "db094d47-3850-4963-93df-f27247795a6e": {
+    "id": "db094d47-3850-4963-93df-f27247795a6e",
+    "lemma": "tilanne",
+    "pos": "noun",
+    "count": 2,
+    "en": "situation",
+    "ja": "状況 (jōkyō)",
+    "forms": [
+      "tilanne"
+    ],
+    "validated": true,
+    "visual_keyword": "chart-pie",
+    "image_status": "pending"
+  },
+  "b6ea2992-c739-40c2-a36e-a6da4abcb829": {
+    "id": "b6ea2992-c739-40c2-a36e-a6da4abcb829",
+    "lemma": "alku",
+    "pos": "noun",
+    "count": 2,
+    "en": "origin",
+    "ja": "起源",
+    "forms": [
+      "alkanut",
+      "alkua"
+    ],
+    "validated": true,
+    "visual_keyword": "play_arrow",
+    "image_status": "pending"
+  },
+  "dbbb87ba-e543-43cd-930c-a8154158e35f": {
+    "id": "dbbb87ba-e543-43cd-930c-a8154158e35f",
+    "lemma": "kaksi",
+    "pos": "determiner",
+    "count": 4,
+    "en": "two",
+    "ja": "二",
+    "forms": [
+      "12"
+    ],
+    "validated": true,
+    "visual_keyword": "twonumbers",
+    "image_status": "pending"
+  },
+  "bcd74de3-b486-486c-a2b7-b8c59a6818cf": {
+    "id": "bcd74de3-b486-486c-a2b7-b8c59a6818cf",
+    "lemma": "2025",
+    "pos": "number",
+    "count": 4,
+    "en": "2025",
+    "ja": "2025年",
+    "forms": [
+      "2025"
+    ],
+    "validated": true,
+    "visual_keyword": "calendar",
+    "image_status": "pending"
+  },
+  "975ff41c-c5d8-40b8-90f8-514eec4a6d83": {
+    "id": "975ff41c-c5d8-40b8-90f8-514eec4a6d83",
+    "lemma": "työtön",
+    "pos": "adjective",
+    "count": 2,
+    "en": "unemployed",
+    "ja": "失業している",
+    "forms": [
+      "työtön"
+    ],
+    "validated": true,
+    "visual_keyword": "megaphone",
+    "image_status": "pending"
+  },
+  "4f6d7072-006a-41ca-a2a4-2987ffeb95fe": {
+    "id": "4f6d7072-006a-41ca-a2a4-2987ffeb95fe",
+    "lemma": "alkaen",
+    "pos": "preposition",
+    "count": 2,
+    "en": "starting from, beginning with",
+    "ja": "～から、～を始める",
+    "forms": [
+      "alkaen"
+    ],
+    "validated": true,
+    "visual_keyword": "calendar",
+    "image_status": "pending"
+  },
+  "557f6712-f764-4eec-ab90-c493662bad8c": {
+    "id": "557f6712-f764-4eec-ab90-c493662bad8c",
+    "lemma": "asiakkuus",
+    "pos": "noun",
+    "count": 2,
+    "en": "customer relationship",
+    "ja": "顧客関係",
+    "forms": [
+      "asiakkuudestasi"
+    ],
+    "validated": true,
+    "visual_keyword": "handshake",
+    "image_status": "pending"
+  },
+  "f039ca6a-bc4f-4199-8107-29ee6d68777d": {
+    "id": "f039ca6a-bc4f-4199-8107-29ee6d68777d",
+    "lemma": "vastata",
+    "pos": "verb",
+    "count": 2,
+    "en": "to answer, to be responsible for",
+    "ja": "答える、責任を持つ",
+    "forms": [
+      "vastaa"
+    ],
+    "validated": true,
+    "visual_keyword": "shield",
+    "image_status": "pending"
+  },
+  "13ad6bb1-be7a-4d42-b2d8-49b8813ec48f": {
+    "id": "13ad6bb1-be7a-4d42-b2d8-49b8813ec48f",
+    "lemma": "espoo",
+    "pos": "proper noun",
+    "count": 2,
+    "en": "Espoo",
+    "ja": "エスプー",
+    "forms": [
+      "espoon"
+    ],
+    "validated": true,
+    "visual_keyword": "cityscape",
+    "image_status": "pending"
+  },
+  "11b65420-17f5-40eb-a4ce-a4b7695d224e": {
+    "id": "11b65420-17f5-40eb-a4ce-a4b7695d224e",
+    "lemma": "kaupunki",
+    "pos": "noun",
+    "count": 2,
+    "en": "city, municipality",
+    "ja": "都市",
+    "forms": [
+      "kaupunki"
+    ],
+    "validated": true,
+    "visual_keyword": "cityscape",
+    "image_status": "pending"
+  },
+  "498ac2cf-980f-47f1-8121-cfe6449a5d1a": {
+    "id": "498ac2cf-980f-47f1-8121-cfe6449a5d1a",
+    "lemma": "2025",
+    "pos": "num",
+    "count": 0,
+    "en": "2025",
+    "ja": "2025年",
+    "forms": [
+      "2025"
+    ],
+    "validated": true,
+    "visual_keyword": "calendar",
+    "image_status": "pending"
+  },
+  "21dacf6b-97c2-4e09-b397-1e6cb78b4a78": {
+    "id": "21dacf6b-97c2-4e09-b397-1e6cb78b4a78",
+    "lemma": "alkaen",
+    "pos": "conjunction",
+    "count": 0,
+    "en": "from, since",
+    "ja": "～から",
+    "forms": [
+      "alkaen"
+    ],
+    "validated": true,
+    "visual_keyword": "⏳",
+    "image_status": "pending"
+  },
+  "364edc81-705d-4a7f-bd6f-2c5799417608": {
+    "id": "364edc81-705d-4a7f-bd6f-2c5799417608",
+    "lemma": "espoo",
+    "pos": "noun",
+    "count": 0,
+    "en": "Espoo",
+    "ja": "エスプール",
+    "forms": [
+      "espoo"
+    ],
+    "validated": true,
+    "visual_keyword": "cityscape",
+    "image_status": "pending"
+  },
+  "9cd7ec5e-c499-444e-8a6e-05c5aad404b7": {
+    "id": "9cd7ec5e-c499-444e-8a6e-05c5aad404b7",
+    "lemma": "tilanne",
+    "pos": "noun",
+    "count": 0,
+    "en": "state",
+    "ja": "状態",
+    "forms": [
+      "tilanne"
+    ],
+    "validated": true,
+    "visual_keyword": "⚙️",
+    "image_status": "pending"
+  },
+  "abaca223-c2e2-47bc-b6d7-e1b3818e3f80": {
+    "id": "abaca223-c2e2-47bc-b6d7-e1b3818e3f80",
+    "lemma": "tilanne",
+    "pos": "noun",
+    "count": 0,
+    "en": "case",
+    "ja": "ケース",
+    "forms": [
+      "tilanne"
+    ],
+    "validated": true,
+    "visual_keyword": "🗃️",
+    "image_status": "pending"
+  },
+  "62a1a4fc-9e21-4f7a-af42-a3d90f5028c4": {
+    "id": "62a1a4fc-9e21-4f7a-af42-a3d90f5028c4",
+    "lemma": "toistaiseksi",
+    "pos": "adverb",
+    "count": 0,
+    "en": "so far",
+    "ja": "これまで",
+    "forms": [
+      "toistaiseksi"
+    ],
+    "validated": true,
+    "visual_keyword": "⏳",
+    "image_status": "pending"
+  },
+  "52ac5fe6-72a0-4de9-bd0b-73247d58ec31": {
+    "id": "52ac5fe6-72a0-4de9-bd0b-73247d58ec31",
+    "lemma": "toistaiseksi",
+    "pos": "adverb",
+    "count": 0,
+    "en": "until now",
+    "ja": "今までの間",
+    "forms": [
+      "toistaiseksi"
+    ],
+    "validated": true,
+    "visual_keyword": "🕰️",
+    "image_status": "pending"
+  },
+  "c736c19a-1540-4e14-a6b6-bb7c07f1c424": {
+    "id": "c736c19a-1540-4e14-a6b6-bb7c07f1c424",
+    "lemma": "vastata",
+    "pos": "verb",
+    "count": 0,
+    "en": "to respond",
+    "ja": "反応する",
+    "forms": [
+      "vastata"
+    ],
+    "validated": true,
+    "visual_keyword": "↩️",
+    "image_status": "pending"
+  },
+  "367e3980-2a57-4412-8d25-028c02964348": {
+    "id": "367e3980-2a57-4412-8d25-028c02964348",
+    "lemma": "olla",
+    "pos": "verb",
+    "count": 0,
+    "en": "to be",
+    "ja": "ある",
+    "forms": [
+      "olla"
+    ],
+    "validated": true,
+    "visual_keyword": "👤",
+    "image_status": "pending"
+  },
+  "47093b23-95c2-4b76-bb79-e58bdce218ba": {
+    "id": "47093b23-95c2-4b76-bb79-e58bdce218ba",
+    "lemma": "pala",
+    "pos": "noun",
+    "count": 1,
+    "en": "piece, part",
+    "ja": "部分",
+    "forms": [
+      "palaan",
+      "palaa"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow-right",
+    "image_status": "pending"
+  },
+  "dafc338a-e679-47d7-bcd0-58ad1d9d1d85": {
+    "id": "dafc338a-e679-47d7-bcd0-58ad1d9d1d85",
+    "lemma": "asia",
+    "pos": "noun",
+    "count": 2,
+    "en": "thing, matter, subject",
+    "ja": "こと、問題、話題",
+    "forms": [
+      "asiaan"
+    ],
+    "validated": true,
+    "visual_keyword": "briefcase",
+    "image_status": "pending"
+  },
+  "fee35150-7339-45b0-90b5-59ffddea5b6f": {
+    "id": "fee35150-7339-45b0-90b5-59ffddea5b6f",
+    "lemma": "huomenna",
+    "pos": "adverb",
+    "count": 1,
+    "en": "tomorrow",
+    "ja": "明日 (ashita)",
+    "forms": [
+      "huomenna"
+    ],
+    "validated": true,
+    "visual_keyword": "calendar",
+    "image_status": "pending"
+  },
+  "d8f76210-8d57-4f26-9b1d-706660960bc3": {
+    "id": "d8f76210-8d57-4f26-9b1d-706660960bc3",
+    "lemma": "asia",
+    "pos": "noun",
+    "count": 0,
+    "en": "affair",
+    "ja": "事件 (jiken)",
+    "forms": [
+      "asia"
+    ],
+    "validated": true,
+    "visual_keyword": "📰",
+    "image_status": "pending"
+  },
+  "769e0a5c-668a-474e-9520-322627097999": {
+    "id": "769e0a5c-668a-474e-9520-322627097999",
+    "lemma": "asia",
+    "pos": "noun",
+    "count": 0,
+    "en": "business",
+    "ja": "事業 (jigyo)",
+    "forms": [
+      "asia"
+    ],
+    "validated": true,
+    "visual_keyword": "💼",
+    "image_status": "pending"
+  },
+  "b9370559-3682-4694-97a2-456a6dba1b2a": {
+    "id": "b9370559-3682-4694-97a2-456a6dba1b2a",
+    "lemma": "palaa",
+    "pos": "verb",
+    "count": 1,
+    "en": "return, come back",
+    "ja": "戻る (modoru)",
+    "forms": [
+      "palaan"
+    ],
+    "validated": true,
+    "visual_keyword": "arrow-right",
+    "image_status": "pending"
+  }
+}

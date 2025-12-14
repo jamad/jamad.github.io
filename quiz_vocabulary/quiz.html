@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vocabulary Quiz</title>
+
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #121212;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #ffffff;
+        }
+
+        #question {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px 16px;
+            margin: 6px 4px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #2a2a2a;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .correct {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .wrong {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+    <h2>フィンランド語クイズ</h2>
+
+    <div id="question">読み込み中...</div>
+    <div id="choices"></div>
+    <p id="result"></p>
+    <button onclick="nextQuestion()">次の問題</button>
+
+    <script>
+        let entries = [];
+        let currentAnswer = "";
+
+        fetch("concepts.json")
+            .then(res => res.json())
+            .then(data => {
+                // Object → Array に変換
+                entries = Object.values(data);
+
+                // validated がある場合はフィルタ
+                entries = entries.filter(e => e.validated !== false);
+
+                nextQuestion();
+            })
+            .catch(err => {
+                document.getElementById("question").textContent =
+                    "concepts.json の読み込みに失敗しました";
+                console.error(err);
+            });
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function nextQuestion() {
+            if (entries.length === 0) return;
+
+            document.getElementById("result").textContent = "";
+
+            const q = entries[Math.floor(Math.random() * entries.length)];
+            currentAnswer = q.lemma;
+
+            document.getElementById("question").textContent =
+                `「${q.ja}」はどれ？`;
+
+            const choices = shuffle(
+                entries.map(e => e.lemma)
+            ).slice(0, 4);
+
+            if (!choices.includes(currentAnswer)) {
+                choices[0] = currentAnswer;
+                shuffle(choices);
+            }
+
+            const choicesDiv = document.getElementById("choices");
+            choicesDiv.innerHTML = "";
+
+            choices.forEach(choice => {
+                const btn = document.createElement("button");
+                btn.textContent = choice;
+                btn.onclick = () => checkAnswer(choice);
+                choicesDiv.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(choice) {
+            const result = document.getElementById("result");
+            if (choice === currentAnswer) {
+                result.textContent = "正解！";
+                result.className = "correct";
+            } else {
+                result.textContent = `不正解… 正解は「${currentAnswer}」`;
+                result.className = "wrong";
+            }
+        }
+    </script>
+
+</body>
+
+</html>
