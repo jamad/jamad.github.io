@@ -54,6 +54,16 @@
         .result-list {
             margin-top: 15px;
         }
+
+        .word-chip {
+            display: inline-block;
+            background: #1f1f1f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 6px 10px;
+            margin: 4px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 
@@ -70,12 +80,10 @@
     <button id="issueBtn" onclick="markIssue()">⚠ 問題あり</button>
 
     <script>
-        /* ===== 設定 ===== */
         const TOTAL_QUESTIONS = 10;
         const STATS_KEY = "quizStats_en";
         const ISSUE_KEY = "quizIssues";
 
-        /* ===== 状態 ===== */
         let entries = [];
         let current = null;
         let questionCount = 0;
@@ -84,7 +92,6 @@
         let sessionCorrect = [];
         let sessionWrong = [];
 
-        /* ===== 起動 ===== */
         fetch("concepts.json")
             .then(r => r.json())
             .then(data => {
@@ -92,7 +99,6 @@
                 nextQuestion();
             });
 
-        /* ===== クイズ ===== */
         function shuffle(a) {
             return a.sort(() => Math.random() - 0.5);
         }
@@ -138,7 +144,6 @@
         function checkAnswer(answer) {
             const r = document.getElementById("result");
             const stats = loadStats();
-
             stats[current.id] ??= { correct: 0, wrong: 0 };
 
             if (answer === current.en) {
@@ -146,46 +151,43 @@
                 r.className = "correct";
                 stats[current.id].correct++;
                 sessionCorrect.push(current);
+                saveStats(stats);
+
+                // ★ 正解は1秒後に自動遷移
+                setTimeout(nextQuestion, 1000);
             } else {
                 r.textContent = `不正解… 正解は「${current.en}」`;
                 r.className = "wrong";
                 stats[current.id].wrong++;
                 sessionWrong.push(current);
+                saveStats(stats);
             }
-
-            saveStats(stats);
         }
 
-        /* ===== 問題あり ===== */
         function markIssue() {
             skippedIds.add(current.id);
-
             const issues = JSON.parse(localStorage.getItem(ISSUE_KEY) || "{}");
             issues[current.id] ??= { count: 0 };
             issues[current.id].count++;
-
             localStorage.setItem(ISSUE_KEY, JSON.stringify(issues));
-
             nextQuestion();
         }
 
-        /* ===== 終了画面 ===== */
         function showEndScreen() {
             document.getElementById("progress").textContent = "";
             document.getElementById("choices").innerHTML = "";
             document.getElementById("result").textContent = "";
-
             document.getElementById("nextBtn").style.display = "none";
             document.getElementById("issueBtn").style.display = "none";
 
             let html = `<h3>🎉 セッション終了</h3>`;
             html += `<p>正解 ${sessionCorrect.length} / ${TOTAL_QUESTIONS}</p>`;
 
-            html += `<div class="result-list"><strong>✔ 正解した単語</strong><ul>`;
+            html += `<div class="result-list"><strong>✔ 正解した単語</strong><div>`;
             sessionCorrect.forEach(e => {
-                html += `<li>${e.ja} → ${e.en}</li>`;
+                html += `<span class="word-chip">${e.ja} → ${e.en}</span>`;
             });
-            html += `</ul></div>`;
+            html += `</div></div>`;
 
             html += `<div class="result-list"><strong>❌ 間違えた単語</strong><ul>`;
             sessionWrong.forEach(e => {
@@ -196,7 +198,6 @@
             document.getElementById("question").innerHTML = html;
         }
 
-        /* ===== localStorage ===== */
         function loadStats() {
             return JSON.parse(localStorage.getItem(STATS_KEY) || "{}");
         }
