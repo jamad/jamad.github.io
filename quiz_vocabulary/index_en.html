@@ -76,7 +76,6 @@
     <div id="choices"></div>
     <p id="result"></p>
 
-    <button id="nextBtn" onclick="nextQuestion()">次の問題</button>
     <button id="issueBtn" onclick="markIssue()">⚠ 問題あり</button>
 
     <script>
@@ -161,6 +160,9 @@
                 stats[current.id].wrong++;
                 sessionWrong.push(current);
                 saveStats(stats);
+
+                // ★ 不正解は2秒後に進む
+                setTimeout(nextQuestion, 2000);
             }
         }
 
@@ -177,7 +179,6 @@
             document.getElementById("progress").textContent = "";
             document.getElementById("choices").innerHTML = "";
             document.getElementById("result").textContent = "";
-            document.getElementById("nextBtn").style.display = "none";
             document.getElementById("issueBtn").style.display = "none";
 
             let html = `<h3>🎉 セッション終了</h3>`;
