@@ -14,7 +14,12 @@
         }
 
         h2 {
-            color: #ffffff;
+            color: #fff;
+        }
+
+        #progress {
+            margin-bottom: 10px;
+            color: #aaa;
         }
 
         #question {
@@ -52,6 +57,7 @@
 
     <h2>英語クイズ</h2>
 
+    <div id="progress"></div>
     <div id="question">Loading...</div>
     <div id="choices"></div>
     <p id="result"></p>
@@ -60,32 +66,56 @@
     <button onclick="markIssue()">⚠ 問題あり</button>
 
     <script>
+        /* ===== 設定 ===== */
+        const TOTAL_QUESTIONS = 10;
+        const STATS_KEY = "quizStats_en";
+        const ISSUE_KEY = "quizIssues";
+
+        /* ===== 状態 ===== */
         let entries = [];
         let current = null;
+        let questionCount = 0;
+        let skippedIds = new Set();
 
+        /* ===== 起動 ===== */
         fetch("concepts.json")
             .then(r => r.json())
             .then(data => {
                 entries = Object.values(data).filter(e => e.en && e.ja);
                 nextQuestion();
+            })
+            .catch(() => {
+                document.getElementById("question").textContent =
+                    "concepts.json を読み込めませんでした";
             });
 
+        /* ===== クイズ処理 ===== */
         function shuffle(a) {
             return a.sort(() => Math.random() - 0.5);
         }
 
         function nextQuestion() {
+            if (questionCount >= TOTAL_QUESTIONS) {
+                showEndScreen();
+                return;
+            }
+
+            let candidate;
+            do {
+                candidate = entries[Math.floor(Math.random() * entries.length)];
+            } while (skippedIds.has(candidate.id));
+
+            current = candidate;
+            questionCount++;
+
+            document.getElementById("progress").textContent =
+                `問題 ${questionCount} / ${TOTAL_QUESTIONS}`;
+
             document.getElementById("result").textContent = "";
-
-            current = entries[Math.floor(Math.random() * entries.length)];
-
             document.getElementById("question").textContent =
                 `「${current.ja}」の英語はどれ？`;
 
-            let choices = shuffle(
-                entries.map(e => e.en)
-            ).slice(0, 4);
-
+            let choices = shuffle(entries.map(e => e.en)).slice(0, 4);
             if (!choices.includes(current.en)) {
                 choices[0] = current.en;
                 shuffle(choices);
@@ -97,48 +127,58 @@
             choices.forEach(word => {
                 const b = document.createElement("button");
                 b.textContent = word;
-                b.onclick = () => check(word);
+                b.onclick = () => checkAnswer(word);
                 c.appendChild(b);
             });
         }
 
-        function check(answer) {
+        function checkAnswer(answer) {
             const r = document.getElementById("result");
+            const stats = loadStats();
+
+            stats[current.id] ??= { correct: 0, wrong: 0 };
+
             if (answer === current.en) {
                 r.textContent = "正解！";
                 r.className = "correct";
-                recordResult(true);
+                stats[current.id].correct++;
             } else {
                 r.textContent = `不正解… 正解は「${current.en}」`;
                 r.className = "wrong";
-                recordResult(false);
+                stats[current.id].wrong++;
             }
+
+            saveStats(stats);
         }
 
-        const statsKey = "quizStats_en";
-
-        function recordResult(correct) {
-            const stats = JSON.parse(localStorage.getItem(statsKey) || "{}");
-            const id = current.id;
-
-            stats[id] ??= { correct: 0, wrong: 0 };
-            correct ? stats[id].correct++ : stats[id].wrong++;
-
-            localStorage.setItem(statsKey, JSON.stringify(stats));
-        }
-
-        /* 問題マーキング */
-        const issueKey = "quizIssues";
-
+        /* ===== 問題あり ===== */
         function markIssue() {
-            const issues = JSON.parse(localStorage.getItem(issueKey) || "{}");
-            const id = current.id;
+            skippedIds.add(current.id);
 
-            issues[id] ??= { count: 0 };
-            issues[id].count++;
+            const issues = JSON.parse(localStorage.getItem(ISSUE_KEY) || "{}");
+            issues[current.id] ??= { count: 0 };
+            issues[current.id].count++;
 
-            localStorage.setItem(issueKey, JSON.stringify(issues));
-            alert("マーキングしました");
+            localStorage.setItem(ISSUE_KEY, JSON.stringify(issues));
+
+            alert("この単語は今回のセッションから除外します");
+            nextQuestion();
+        }
+
+        /* ===== 終了画面 ===== */
+        function showEndScreen() {
+            document.getElementById("progress").textContent = "";
+            document.getElementById("choices").innerHTML = "";
+            document.getElementById("question").textContent =
+                "🎉 セッション終了！お疲れさまでした";
+        }
+
+        /* ===== localStorage ===== */
+        function loadStats() {
+            return JSON.parse(localStorage.getItem(STATS_KEY) || "{}");
+        }
+        function saveStats(data) {
+            localStorage.setItem(STATS_KEY, JSON.stringify(data));
         }
     </script>
 
