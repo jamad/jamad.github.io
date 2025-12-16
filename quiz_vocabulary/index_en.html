@@ -50,6 +50,10 @@
             color: #ff6b6b;
             font-weight: bold;
         }
+
+        .result-list {
+            margin-top: 15px;
+        }
     </style>
 </head>
 
@@ -62,8 +66,8 @@
     <div id="choices"></div>
     <p id="result"></p>
 
-    <button onclick="nextQuestion()">次の問題</button>
-    <button onclick="markIssue()">⚠ 問題あり</button>
+    <button id="nextBtn" onclick="nextQuestion()">次の問題</button>
+    <button id="issueBtn" onclick="markIssue()">⚠ 問題あり</button>
 
     <script>
         /* ===== 設定 ===== */
@@ -77,19 +81,18 @@
         let questionCount = 0;
         let skippedIds = new Set();
 
+        let sessionCorrect = [];
+        let sessionWrong = [];
+
         /* ===== 起動 ===== */
         fetch("concepts.json")
             .then(r => r.json())
             .then(data => {
                 entries = Object.values(data).filter(e => e.en && e.ja);
                 nextQuestion();
-            })
-            .catch(() => {
-                document.getElementById("question").textContent =
-                    "concepts.json を読み込めませんでした";
             });
 
-        /* ===== クイズ処理 ===== */
+        /* ===== クイズ ===== */
         function shuffle(a) {
             return a.sort(() => Math.random() - 0.5);
         }
@@ -142,10 +145,12 @@
                 r.textContent = "正解！";
                 r.className = "correct";
                 stats[current.id].correct++;
+                sessionCorrect.push(current);
             } else {
                 r.textContent = `不正解… 正解は「${current.en}」`;
                 r.className = "wrong";
                 stats[current.id].wrong++;
+                sessionWrong.push(current);
             }
 
             saveStats(stats);
@@ -161,7 +166,6 @@
 
             localStorage.setItem(ISSUE_KEY, JSON.stringify(issues));
 
-            alert("この単語は今回のセッションから除外します");
             nextQuestion();
         }
 
@@ -169,8 +173,27 @@
         function showEndScreen() {
             document.getElementById("progress").textContent = "";
             document.getElementById("choices").innerHTML = "";
-            document.getElementById("question").textContent =
-                "🎉 セッション終了！お疲れさまでした";
+            document.getElementById("result").textContent = "";
+
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("issueBtn").style.display = "none";
+
+            let html = `<h3>🎉 セッション終了</h3>`;
+            html += `<p>正解 ${sessionCorrect.length} / ${TOTAL_QUESTIONS}</p>`;
+
+            html += `<div class="result-list"><strong>✔ 正解した単語</strong><ul>`;
+            sessionCorrect.forEach(e => {
+                html += `<li>${e.ja} → ${e.en}</li>`;
+            });
+            html += `</ul></div>`;
+
+            html += `<div class="result-list"><strong>❌ 間違えた単語</strong><ul>`;
+            sessionWrong.forEach(e => {
+                html += `<li>${e.ja} → ${e.en}</li>`;
+            });
+            html += `</ul></div>`;
+
+            document.getElementById("question").innerHTML = html;
         }
 
         /* ===== localStorage ===== */
