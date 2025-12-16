@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>English Vocabulary Quiz</title>
+
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #121212;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #ffffff;
+        }
+
+        #question {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px 16px;
+            margin: 6px 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2a2a2a;
+        }
+
+        .correct {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .wrong {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>英語クイズ</h2>
+
+    <div id="question">Loading...</div>
+    <div id="choices"></div>
+    <p id="result"></p>
+
+    <button onclick="nextQuestion()">次の問題</button>
+    <button onclick="markIssue()">⚠ 問題あり</button>
+
+    <script>
+        let entries = [];
+        let current = null;
+
+        fetch("concepts.json")
+            .then(r => r.json())
+            .then(data => {
+                entries = Object.values(data).filter(e => e.en && e.ja);
+                nextQuestion();
+            });
+
+        function shuffle(a) {
+            return a.sort(() => Math.random() - 0.5);
+        }
+
+        function nextQuestion() {
+            document.getElementById("result").textContent = "";
+
+            current = entries[Math.floor(Math.random() * entries.length)];
+
+            document.getElementById("question").textContent =
+                `「${current.ja}」の英語はどれ？`;
+
+            let choices = shuffle(
+                entries.map(e => e.en)
+            ).slice(0, 4);
+
+            if (!choices.includes(current.en)) {
+                choices[0] = current.en;
+                shuffle(choices);
+            }
+
+            const c = document.getElementById("choices");
+            c.innerHTML = "";
+
+            choices.forEach(word => {
+                const b = document.createElement("button");
+                b.textContent = word;
+                b.onclick = () => check(word);
+                c.appendChild(b);
+            });
+        }
+
+        function check(answer) {
+            const r = document.getElementById("result");
+            if (answer === current.en) {
+                r.textContent = "正解！";
+                r.className = "correct";
+                recordResult(true);
+            } else {
+                r.textContent = `不正解… 正解は「${current.en}」`;
+                r.className = "wrong";
+                recordResult(false);
+            }
+        }
+
+        const statsKey = "quizStats_en";
+
+        function recordResult(correct) {
+            const stats = JSON.parse(localStorage.getItem(statsKey) || "{}");
+            const id = current.id;
+
+            stats[id] ??= { correct: 0, wrong: 0 };
+            correct ? stats[id].correct++ : stats[id].wrong++;
+
+            localStorage.setItem(statsKey, JSON.stringify(stats));
+        }
+
+        /* 問題マーキング */
+        const issueKey = "quizIssues";
+
+        function markIssue() {
+            const issues = JSON.parse(localStorage.getItem(issueKey) || "{}");
+            const id = current.id;
+
+            issues[id] ??= { count: 0 };
+            issues[id].count++;
+
+            localStorage.setItem(issueKey, JSON.stringify(issues));
+            alert("マーキングしました");
+        }
+    </script>
+
+</body>
+
+</html>
