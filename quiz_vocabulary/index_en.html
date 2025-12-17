@@ -2,7 +2,7 @@
 <html lang="ja">
 
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <title>English Vocabulary Quiz</title>
 
     <style>
@@ -14,14 +14,20 @@
         }
 
         h2 {
+            margin-bottom: 6px;
             color: #fff;
         }
 
-        #progress {
-            margin-bottom: 12px;
-            font-family: monospace;
-            letter-spacing: 2px;
+        #progress-text {
             color: #aaa;
+            margin-bottom: 4px;
+        }
+
+        #progress-track {
+            font-family: monospace;
+            font-size: 1.2em;
+            letter-spacing: 4px;
+            margin-bottom: 16px;
         }
 
         #question {
@@ -85,201 +91,191 @@
 <body>
 
     <h2>英語クイズ</h2>
+    <div id="progress-text"></div>
+    <div id="progress-track"></div>
 
-    <div id="progress"></div>
     <div id="question">Loading...</div>
     <div id="choices"></div>
     <div id="result"></div>
 
-    <button onclick="markIssue()">⚠ 問題あり</button>
+    <button id="issue-btn" onclick="markIssue()">⚠ 問題あり</button>
 
     <script>
-        /* =========================
+        /* =====================
            設定
-        ========================= */
-        const TOTAL_QUESTIONS = 10;
+        ===================== */
+        const TOTAL = 10;
         const STATS_KEY = "quizStats_en";
         const ISSUE_KEY = "quizIssues";
 
-        /* =========================
+        /* =====================
            状態
-        ========================= */
+        ===================== */
         let entries = [];
         let current = null;
-        let questionIndex = 0;
+        let index = 0;
 
-        let answerTrack = Array(TOTAL_QUESTIONS).fill("*");
-        let sessionCorrect = [];
-        let sessionWrong = [];
-        let sessionIssues = [];
-        let skippedIds = new Set();
+        const track = Array(TOTAL).fill("*");
+        const correctList = [];
+        const wrongList = [];
+        const issueList = [];
+        const skipped = new Set();
 
-        /* =========================
+        /* =====================
            初期化
-        ========================= */
+        ===================== */
         fetch("concepts.json")
             .then(r => r.json())
             .then(data => {
                 entries = Object.values(data).filter(e => e.en && e.ja);
-                nextQuestion();
+                next();
             });
 
-        /* =========================
-           ユーティリティ
-        ========================= */
-        const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+        /* =====================
+           共通処理
+        ===================== */
+        const $ = id => document.getElementById(id);
+        const shuffle = a => a.sort(() => Math.random() - 0.5);
 
-        const loadJSON = key =>
-            JSON.parse(localStorage.getItem(key) || "{}");
+        const load = k => JSON.parse(localStorage.getItem(k) || "{}");
+        const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-        const saveJSON = (key, value) =>
-            localStorage.setItem(key, JSON.stringify(value));
-
-        /* =========================
-           UI更新
-        ========================= */
         function updateProgress() {
-            const track = answerTrack.join("");
-            document.getElementById("progress").textContent =
-                `問題 ${questionIndex + 1} / ${TOTAL_QUESTIONS}  ${track}`;
+            $("progress-text").textContent =
+                `問題 ${index + 1} / ${TOTAL}`;
+            $("progress-track").textContent = track.join("");
         }
 
         function clearResult() {
-            const r = document.getElementById("result");
-            r.textContent = "";
-            r.className = "";
+            $("result").textContent = "";
+            $("result").className = "";
         }
 
-        /* =========================
+        /* =====================
            出題
-        ========================= */
-        function nextQuestion() {
-            if (questionIndex >= TOTAL_QUESTIONS) {
-                showEndScreen();
+        ===================== */
+        function next() {
+            if (index >= TOTAL) {
+                finish();
                 return;
             }
 
             do {
                 current = entries[Math.floor(Math.random() * entries.length)];
-            } while (skippedIds.has(current.id));
+            } while (skipped.has(current.id));
 
             updateProgress();
             clearResult();
 
-            document.getElementById("question").textContent =
+            $("question").textContent =
                 `「${current.ja}」の英語はどれ？`;
 
-            const choices = shuffle(
+            const options = shuffle(
                 entries.map(e => e.en)
             ).slice(0, 4);
 
-            if (!choices.includes(current.en)) {
-                choices[0] = current.en;
-                shuffle(choices);
+            if (!options.includes(current.en)) {
+                options[0] = current.en;
+                shuffle(options);
             }
 
-            const c = document.getElementById("choices");
+            const c = $("choices");
             c.innerHTML = "";
 
-            choices.forEach(word => {
-                const btn = document.createElement("button");
-                btn.textContent = word;
-                btn.onclick = () => checkAnswer(word);
-                c.appendChild(btn);
+            options.forEach(word => {
+                const b = document.createElement("button");
+                b.textContent = word;
+                b.onclick = () => answer(word);
+                c.appendChild(b);
             });
         }
 
-        /* =========================
-           回答処理
-        ========================= */
-        function checkAnswer(answer) {
-            const r = document.getElementById("result");
-            const stats = loadJSON(STATS_KEY);
-            const idx = questionIndex;
-
+        /* =====================
+           回答
+        ===================== */
+        function answer(word) {
+            const stats = load(STATS_KEY);
             stats[current.id] ??= { correct: 0, wrong: 0 };
 
-            if (answer === current.en) {
-                answerTrack[idx] = "O";
+            if (word === current.en) {
+                track[index] = "O";
                 stats[current.id].correct++;
-                sessionCorrect.push(current);
+                correctList.push(current);
 
-                r.textContent = "正解！";
-                r.className = "correct";
+                $("result").textContent = "正解！";
+                $("result").className = "correct";
 
-                saveJSON(STATS_KEY, stats);
-
-                questionIndex++;
-                setTimeout(nextQuestion, 1000);
+                save(STATS_KEY, stats);
+                index++;
+                setTimeout(next, 1000);
 
             } else {
-                answerTrack[idx] = "X";
+                track[index] = "X";
                 stats[current.id].wrong++;
-                sessionWrong.push(current);
+                wrongList.push(current);
 
-                r.textContent = `不正解… 正解は「${current.en}」`;
-                r.className = "wrong";
+                $("result").textContent = `不正解… 正解は「${current.en}」`;
+                $("result").className = "wrong";
 
-                saveJSON(STATS_KEY, stats);
-
-                questionIndex++;
-                setTimeout(nextQuestion, 2000);
+                save(STATS_KEY, stats);
+                index++;
+                setTimeout(next, 2000);
             }
         }
 
-        /* =========================
+        /* =====================
            問題あり
-        ========================= */
+        ===================== */
         function markIssue() {
-            skippedIds.add(current.id);
-            sessionIssues.push(current);
+            skipped.add(current.id);
+            issueList.push(current);
 
-            const issues = loadJSON(ISSUE_KEY);
+            const issues = load(ISSUE_KEY);
             issues[current.id] ??= { count: 0 };
             issues[current.id].count++;
 
-            saveJSON(ISSUE_KEY, issues);
-
-            questionIndex++;
-            nextQuestion();
+            save(ISSUE_KEY, issues);
+            index++;
+            next();
         }
 
-        /* =========================
-           終了画面
-        ========================= */
-        function showEndScreen() {
-            document.getElementById("progress").textContent = "";
-            document.getElementById("choices").innerHTML = "";
-            document.getElementById("result").textContent = "";
+        /* =====================
+           終了
+        ===================== */
+        function finish() {
+            $("progress-text").textContent = "";
+            $("question").innerHTML = "<h3>🎉 セッション終了</h3>";
+            $("choices").innerHTML = "";
+            $("result").textContent = "";
+            $("issue-btn").style.display = "none";
 
-            let html = `<h3>🎉 セッション終了</h3>`;
-            html += `<p style="font-size:1.2em; letter-spacing:2px;">
-            ${answerTrack.join("")}
-           </p>`;
+            $("progress-track").textContent = track.join("");
+
+            let html = "";
 
             html += `<div class="result-list"><strong>✔ 正解した単語</strong><div>`;
-            sessionCorrect.forEach(e => {
+            correctList.forEach(e => {
                 html += `<span class="word-chip">${e.en}</span>`;
             });
             html += `</div></div>`;
 
-            if (sessionWrong.length) {
+            if (wrongList.length) {
                 html += `<div class="result-list"><strong>❌ 間違えた単語</strong><ul>`;
-                sessionWrong.forEach(e => {
+                wrongList.forEach(e => {
                     html += `<li>${e.en}</li>`;
                 });
                 html += `</ul></div>`;
             }
 
-            if (sessionIssues.length) {
+            if (issueList.length) {
                 html += `<div class="result-list"><strong>⚠ 問題あり</strong><div>`;
-                sessionIssues.forEach(e => {
+                issueList.forEach(e => {
                     html += `<span class="word-chip">${e.en}</span>`;
                 });
                 html += `</div></div>`;
             }
 
-            document.getElementById("question").innerHTML = html;
+            $("question").insertAdjacentHTML("beforeend", html);
         }
     </script>
 
