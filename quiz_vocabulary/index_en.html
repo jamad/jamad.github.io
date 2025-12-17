@@ -2,7 +2,7 @@
 <html lang="ja">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>English Vocabulary Quiz</title>
 
     <style>
@@ -18,13 +18,26 @@
         }
 
         #progress {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-family: monospace;
+            letter-spacing: 2px;
             color: #aaa;
         }
 
         #question {
             font-size: 1.2em;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
+        }
+
+        #choices {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        #choices button {
+            text-align: left;
+            margin: 6px 0;
         }
 
         button {
@@ -32,8 +45,7 @@
             color: #e0e0e0;
             border: 1px solid #333;
             border-radius: 6px;
-            padding: 10px 16px;
-            margin: 6px 4px;
+            padding: 10px 14px;
             cursor: pointer;
         }
 
@@ -41,18 +53,21 @@
             background: #2a2a2a;
         }
 
+        #result {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
         .correct {
             color: #4caf50;
-            font-weight: bold;
         }
 
         .wrong {
             color: #ff6b6b;
-            font-weight: bold;
         }
 
         .result-list {
-            margin-top: 15px;
+            margin-top: 16px;
         }
 
         .word-chip {
@@ -74,23 +89,34 @@
     <div id="progress"></div>
     <div id="question">Loading...</div>
     <div id="choices"></div>
-    <p id="result"></p>
+    <div id="result"></div>
 
-    <button id="issueBtn" onclick="markIssue()">⚠ 問題あり</button>
+    <button onclick="markIssue()">⚠ 問題あり</button>
 
     <script>
+        /* =========================
+           設定
+        ========================= */
         const TOTAL_QUESTIONS = 10;
         const STATS_KEY = "quizStats_en";
         const ISSUE_KEY = "quizIssues";
 
+        /* =========================
+           状態
+        ========================= */
         let entries = [];
         let current = null;
-        let questionCount = 0;
-        let skippedIds = new Set();
+        let questionIndex = 0;
 
+        let answerTrack = Array(TOTAL_QUESTIONS).fill("*");
         let sessionCorrect = [];
         let sessionWrong = [];
+        let sessionIssues = [];
+        let skippedIds = new Set();
 
+        /* =========================
+           初期化
+        ========================= */
         fetch("concepts.json")
             .then(r => r.json())
             .then(data => {
@@ -98,32 +124,55 @@
                 nextQuestion();
             });
 
-        function shuffle(a) {
-            return a.sort(() => Math.random() - 0.5);
+        /* =========================
+           ユーティリティ
+        ========================= */
+        const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+
+        const loadJSON = key =>
+            JSON.parse(localStorage.getItem(key) || "{}");
+
+        const saveJSON = (key, value) =>
+            localStorage.setItem(key, JSON.stringify(value));
+
+        /* =========================
+           UI更新
+        ========================= */
+        function updateProgress() {
+            const track = answerTrack.join("");
+            document.getElementById("progress").textContent =
+                `問題 ${questionIndex + 1} / ${TOTAL_QUESTIONS}  ${track}`;
         }
 
+        function clearResult() {
+            const r = document.getElementById("result");
+            r.textContent = "";
+            r.className = "";
+        }
+
+        /* =========================
+           出題
+        ========================= */
         function nextQuestion() {
-            if (questionCount >= TOTAL_QUESTIONS) {
+            if (questionIndex >= TOTAL_QUESTIONS) {
                 showEndScreen();
                 return;
             }
 
-            let candidate;
             do {
-                candidate = entries[Math.floor(Math.random() * entries.length)];
-            } while (skippedIds.has(candidate.id));
+                current = entries[Math.floor(Math.random() * entries.length)];
+            } while (skippedIds.has(current.id));
 
-            current = candidate;
-            questionCount++;
+            updateProgress();
+            clearResult();
 
-            document.getElementById("progress").textContent =
-                `問題 ${questionCount} / ${TOTAL_QUESTIONS}`;
-
-            document.getElementById("result").textContent = "";
             document.getElementById("question").textContent =
                 `「${current.ja}」の英語はどれ？`;
 
-            let choices = shuffle(entries.map(e => e.en)).slice(0, 4);
+            const choices = shuffle(
+                entries.map(e => e.en)
+            ).slice(0, 4);
+
             if (!choices.includes(current.en)) {
                 choices[0] = current.en;
                 shuffle(choices);
@@ -133,56 +182,80 @@
             c.innerHTML = "";
 
             choices.forEach(word => {
-                const b = document.createElement("button");
-                b.textContent = word;
-                b.onclick = () => checkAnswer(word);
-                c.appendChild(b);
+                const btn = document.createElement("button");
+                btn.textContent = word;
+                btn.onclick = () => checkAnswer(word);
+                c.appendChild(btn);
             });
         }
 
+        /* =========================
+           回答処理
+        ========================= */
         function checkAnswer(answer) {
             const r = document.getElementById("result");
-            const stats = loadStats();
+            const stats = loadJSON(STATS_KEY);
+            const idx = questionIndex;
+
             stats[current.id] ??= { correct: 0, wrong: 0 };
 
             if (answer === current.en) {
-                r.textContent = "正解！";
-                r.className = "correct";
+                answerTrack[idx] = "O";
                 stats[current.id].correct++;
                 sessionCorrect.push(current);
-                saveStats(stats);
 
-                // ★ 正解は1秒後に自動遷移
+                r.textContent = "正解！";
+                r.className = "correct";
+
+                saveJSON(STATS_KEY, stats);
+
+                questionIndex++;
                 setTimeout(nextQuestion, 1000);
+
             } else {
-                r.textContent = `不正解… 正解は「${current.en}」`;
-                r.className = "wrong";
+                answerTrack[idx] = "X";
                 stats[current.id].wrong++;
                 sessionWrong.push(current);
-                saveStats(stats);
 
-                // ★ 不正解は2秒後に進む
+                r.textContent = `不正解… 正解は「${current.en}」`;
+                r.className = "wrong";
+
+                saveJSON(STATS_KEY, stats);
+
+                questionIndex++;
                 setTimeout(nextQuestion, 2000);
             }
         }
 
+        /* =========================
+           問題あり
+        ========================= */
         function markIssue() {
             skippedIds.add(current.id);
-            const issues = JSON.parse(localStorage.getItem(ISSUE_KEY) || "{}");
+            sessionIssues.push(current);
+
+            const issues = loadJSON(ISSUE_KEY);
             issues[current.id] ??= { count: 0 };
             issues[current.id].count++;
-            localStorage.setItem(ISSUE_KEY, JSON.stringify(issues));
+
+            saveJSON(ISSUE_KEY, issues);
+
+            questionIndex++;
             nextQuestion();
         }
 
+        /* =========================
+           終了画面
+        ========================= */
         function showEndScreen() {
             document.getElementById("progress").textContent = "";
             document.getElementById("choices").innerHTML = "";
             document.getElementById("result").textContent = "";
-            document.getElementById("issueBtn").style.display = "none";
 
             let html = `<h3>🎉 セッション終了</h3>`;
-            html += `<p>正解 ${sessionCorrect.length} / ${TOTAL_QUESTIONS}</p>`;
+            html += `<p style="font-size:1.2em; letter-spacing:2px;">
+            ${answerTrack.join("")}
+           </p>`;
 
             html += `<div class="result-list"><strong>✔ 正解した単語</strong><div>`;
             sessionCorrect.forEach(e => {
@@ -190,20 +263,23 @@
             });
             html += `</div></div>`;
 
-            html += `<div class="result-list"><strong>❌ 間違えた単語</strong><ul>`;
-            sessionWrong.forEach(e => {
-                html += `<li>${e.ja} → ${e.en}</li>`;
-            });
-            html += `</ul></div>`;
+            if (sessionWrong.length) {
+                html += `<div class="result-list"><strong>❌ 間違えた単語</strong><ul>`;
+                sessionWrong.forEach(e => {
+                    html += `<li>${e.en}</li>`;
+                });
+                html += `</ul></div>`;
+            }
+
+            if (sessionIssues.length) {
+                html += `<div class="result-list"><strong>⚠ 問題あり</strong><div>`;
+                sessionIssues.forEach(e => {
+                    html += `<span class="word-chip">${e.en}</span>`;
+                });
+                html += `</div></div>`;
+            }
 
             document.getElementById("question").innerHTML = html;
-        }
-
-        function loadStats() {
-            return JSON.parse(localStorage.getItem(STATS_KEY) || "{}");
-        }
-        function saveStats(data) {
-            localStorage.setItem(STATS_KEY, JSON.stringify(data));
         }
     </script>
 
