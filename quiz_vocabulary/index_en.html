@@ -148,14 +148,14 @@
             ]);
 
             document.getElementById("main").innerHTML = `
-    <div id="question">${w.ja}</div>
-    <div id="choices">
-      ${choices.map(c =>
+                <div id="question">${w.ja}</div>
+                <div id="choices">
+                ${choices.map(c =>
                 `<button onclick="answer('${c}')">${c}</button>`
             ).join("")}
-    </div>
-    <button class="secondary" onclick="markIssue()">⚠ Problem</button>
-  `;
+                </div>
+                <button class="secondary" onclick="markIssue()">⚠ Problem</button>
+            `;
         }
 
         function answer(choice) {
