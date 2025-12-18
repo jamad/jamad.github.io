@@ -120,7 +120,7 @@
 <body>
     <div id="app">
         <h1>English Quiz</h1>
-        <h3>ver20251218_1028</h3>
+        <h3>ver20251218_1034</h3>
         <div id="progress-text"></div>
         <div id="progress-track"></div>
         <div id="main"></div>
@@ -184,16 +184,22 @@
 
         function answer(btn, choice) {
             const w = words[index];
+            const isCorrect = (choice === w.en);
+
             const buttons =
                 [...document.querySelectorAll(".answer")];
 
             buttons.forEach(b => {
-                if (b.textContent === w.en) b.classList.add("correct");
-                else if (b.textContent === choice) b.classList.add("wrong");
                 b.disabled = true;
+
+                if (b.textContent === w.en) {
+                    b.classList.add("correct");   // 正解は必ず緑
+                } else if (b.textContent === choice) {
+                    b.classList.add("wrong");     // 選んだ誤答だけ赤
+                }
             });
 
-            if (choice === w.en) {
+            if (isCorrect) {
                 track[index] = "O";
                 correct.push(w);
             } else {
@@ -204,6 +210,7 @@
             updateProgress();
             setTimeout(next, 1000);
         }
+
 
         function markIssue(issueBtn, choice) {
             const row = issueBtn.closest(".choice-row");
