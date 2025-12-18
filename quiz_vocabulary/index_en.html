@@ -140,15 +140,15 @@
                 `Question ${index + 1} / ${TOTAL}`;
 
             const choices = shuffle([
-                w.ja,
+                w.en,
                 ...shuffle(words)
                     .filter(x => x.id !== w.id)
                     .slice(0, 3)
-                    .map(x => x.ja)
+                    .map(x => x.en)
             ]);
 
             document.getElementById("main").innerHTML = `
-    <div id="question">${w.en}</div>
+    <div id="question">${w.ja}</div>
     <div id="choices">
       ${choices.map(c =>
                 `<button onclick="answer('${c}')">${c}</button>`
@@ -168,7 +168,7 @@
                 b.disabled = true;
             });
 
-            if (choice === w.ja) {
+            if (choice === w.en) {
                 track[index] = "O";
                 correct.push(w);
             } else {
