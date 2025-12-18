@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>English Quiz</title>
+    <title>English Quiz 20251218_1018</title>
 
     <style>
         :root {
@@ -37,7 +37,7 @@
         #progress-track {
             font-family: monospace;
             letter-spacing: 4px;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         #question {
@@ -55,7 +55,14 @@
             gap: 10px;
         }
 
-        button {
+        .choice-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .choice-row button.answer {
+            flex: 1;
             padding: 12px;
             font-size: 1em;
             border-radius: 6px;
@@ -65,22 +72,28 @@
             cursor: pointer;
         }
 
-        button:hover {
+        .choice-row button.answer:hover {
             background: #444;
         }
 
-        button.correct {
+        .choice-row button.correct {
             background: var(--accent);
         }
 
-        button.wrong {
+        .choice-row button.wrong {
             background: var(--wrong);
         }
 
-        .secondary {
-            margin-top: 12px;
+        .issue-btn {
             background: transparent;
-            border: 1px solid #555;
+            border: 1px solid #666;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .issue-btn:hover {
+            background: #333;
         }
 
         .word-list {
@@ -113,6 +126,7 @@
 
     <script>
         const TOTAL = 10;
+
         let words = [];
         let index = 0;
 
@@ -148,22 +162,31 @@
             ]);
 
             document.getElementById("main").innerHTML = `
-                <div id="question">${w.ja}</div>
-                <div id="choices">
-                ${choices.map(c =>
-                `<button onclick="answer('${c}')">${c}</button>`
-            ).join("")}
-                </div>
-                <button class="secondary" onclick="markIssue()">⚠ Problem</button>
-            `;
+    <div id="question">${w.ja}</div>
+    <div id="choices">
+      ${choices.map(c => `
+        <div class="choice-row">
+          <button class="answer"
+            onclick="answer('${c}')">
+            ${c}
+          </button>
+          <button class="issue-btn"
+            onclick="markIssue('${c}')">
+            ⚠
+          </button>
+        </div>
+      `).join("")}
+    </div>
+  `;
         }
 
         function answer(choice) {
             const w = words[index];
-            const buttons = [...document.querySelectorAll("#choices button")];
+            const buttons =
+                [...document.querySelectorAll(".answer")];
 
             buttons.forEach(b => {
-                if (b.textContent === w.ja) b.classList.add("correct");
+                if (b.textContent === w.en) b.classList.add("correct");
                 else if (b.textContent === choice) b.classList.add("wrong");
                 b.disabled = true;
             });
@@ -180,11 +203,11 @@
             setTimeout(next, 1000);
         }
 
-        function markIssue() {
-            issues.push(words[index]);
-            track[index] = "X";
-            updateProgress();
-            next();
+        function markIssue(choice) {
+            issues.push({
+                question: words[index],
+                choice
+            });
         }
 
         function next() {
@@ -200,20 +223,27 @@
             document.getElementById("main").innerHTML = `
     <h3>Correct</h3>
     <div class="word-list">
-      ${correct.map(w => `<span class="word-chip">${w.en}</span>`).join("")}
+      ${correct.map(w =>
+                `<span class="word-chip">${w.en}</span>`
+            ).join("")}
     </div>
 
     <h3>Wrong</h3>
     <div class="word-list">
-      ${wrong.map(w => `<span class="word-chip">${w.en}</span>`).join("")}
+      ${wrong.map(w =>
+                `<span class="word-chip">${w.en}</span>`
+            ).join("")}
     </div>
 
     <h3>⚠ Problems</h3>
     <div class="word-list">
-      ${issues.map(w =>
+      ${issues.map(i =>
                 `<span class="word-chip issue"
-          onclick="reportIssue('${w.en}','${w.ja}')">
-          ${w.en}
+          onclick="reportIssue(
+            '${i.choice}',
+            '${i.question.ja}'
+          )">
+          ${i.choice}
         </span>`
             ).join("")}
     </div>
@@ -228,14 +258,18 @@
                 "https://github.com/jamad/jamad.github.io/issues/new" +
                 "?title=" + encodeURIComponent(`[quiz_vocabulary] ${en}`) +
                 "&body=" + encodeURIComponent(
-                    `Page: ${page}\nWord: ${en}\nMeaning: ${ja}\n\nProblem:`
+                    `Page: ${page}\n` +
+                    `Question (JA): ${ja}\n` +
+                    `Choice: ${en}\n\n` +
+                    "Problem:"
                 );
 
             window.open(url, "_blank");
         }
 
         function updateProgress() {
-            document.getElementById("progress-track").textContent = track.join("");
+            document.getElementById("progress-track").textContent =
+                track.join("");
         }
 
         function shuffle(arr) {
