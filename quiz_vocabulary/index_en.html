@@ -30,10 +30,6 @@
             padding: 20px;
         }
 
-        h1 {
-            margin-top: 0;
-        }
-
         #progress-track {
             font-family: monospace;
             letter-spacing: 4px;
@@ -61,7 +57,7 @@
             gap: 12px;
         }
 
-        .choice-row button.answer {
+        button.answer {
             flex: 1;
             padding: 12px;
             font-size: 1em;
@@ -72,16 +68,21 @@
             cursor: pointer;
         }
 
-        .choice-row button.answer:hover {
+        button.answer:hover {
             background: #444;
         }
 
-        .choice-row button.correct {
+        button.correct {
             background: var(--accent);
         }
 
-        .choice-row button.wrong {
+        button.wrong {
             background: var(--wrong);
+        }
+
+        button.issue {
+            background: var(--warn);
+            color: #000;
         }
 
         .issue-btn {
@@ -118,7 +119,7 @@
 
 <body>
     <div id="app">
-        <h1>English Quiz --- ver20251218_1018</h1>
+        <h1>English Quiz --- ver20251218_1026</h1>
         <div id="progress-text"></div>
         <div id="progress-track"></div>
         <div id="main"></div>
@@ -167,11 +168,11 @@
       ${choices.map(c => `
         <div class="choice-row">
           <button class="answer"
-            onclick="answer('${c}')">
+            onclick="answer(this, '${c}')">
             ${c}
           </button>
           <button class="issue-btn"
-            onclick="markIssue('${c}')">
+            onclick="markIssue(this, '${c}')">
             ⚠
           </button>
         </div>
@@ -180,7 +181,7 @@
   `;
         }
 
-        function answer(choice) {
+        function answer(btn, choice) {
             const w = words[index];
             const buttons =
                 [...document.querySelectorAll(".answer")];
@@ -203,11 +204,25 @@
             setTimeout(next, 1000);
         }
 
-        function markIssue(choice) {
-            issues.push({
-                question: words[index],
-                choice
-            });
+        function markIssue(issueBtn, choice) {
+            const row = issueBtn.closest(".choice-row");
+            const answerBtn = row.querySelector(".answer");
+
+            // 見た目を黄色に
+            answerBtn.classList.add("issue");
+
+            // 重複防止
+            const exists = issues.some(i =>
+                i.question.id === words[index].id &&
+                i.choice === choice
+            );
+
+            if (!exists) {
+                issues.push({
+                    question: words[index],
+                    choice
+                });
+            }
         }
 
         function next() {
