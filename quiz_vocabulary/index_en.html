@@ -36,11 +36,18 @@
             margin-bottom: 12px;
         }
 
+        .question-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
         #question {
+            flex: 1;
             background: var(--card);
             padding: 24px;
             border-radius: 8px;
-            margin-bottom: 16px;
             font-size: 1.6em;
             text-align: center;
         }
@@ -120,7 +127,7 @@
 <body>
     <div id="app">
         <h1>English Quiz</h1>
-        <h3>ver20251218_1132 </h3>
+        <h3>ver20251218_1132</h3>
         <div id="progress-text"></div>
         <div id="progress-track"></div>
         <div id="main"></div>
@@ -128,6 +135,10 @@
 
     <script>
         const TOTAL = 10;
+
+        const mainEl = document.getElementById("main");
+        const progressTextEl = document.getElementById("progress-text");
+        const progressTrackEl = document.getElementById("progress-track");
 
         let words = [];
         let index = 0;
@@ -145,14 +156,13 @@
                 showQuestion();
             })
             .catch(() => {
-                document.getElementById("main").textContent =
-                    "Failed to load concepts.json";
+                mainEl.textContent = "Failed to load concepts.json";
             });
 
         function showQuestion() {
             const w = words[index];
 
-            document.getElementById("progress-text").textContent =
+            progressTextEl.textContent =
                 `Question ${index + 1} / ${TOTAL}`;
 
             const choices = shuffle([
@@ -163,25 +173,28 @@
                     .map(x => x.en)
             ]);
 
-            document.getElementById("main").innerHTML = `
-    <div id="question">${w.ja}</div>
-    <div id="choices">
-      ${choices.map(c => `
-        <div class="choice-row">
-          <button class="answer"
-            data-value="${c}"
-            onclick="answer(this)">
-            ${c}
-            </button>
-
-          <button class="issue-btn"
-            onclick="markIssue(this, '${c}')">
-            ⚠
-          </button>
+            mainEl.innerHTML = `
+        <div class="question-row">
+          <div id="question">${w.ja}</div>
+          <button class="issue-btn" onclick="markQuestionIssue()">⚠</button>
         </div>
-      `).join("")}
-    </div>
-  `;
+
+        <div id="choices">
+          ${choices.map(c => `
+            <div class="choice-row">
+              <button class="answer"
+                data-value="${c}"
+                onclick="answer(this)">
+                ${c}
+              </button>
+              <button class="issue-btn"
+                onclick="markChoiceIssue(this, '${c}')">
+                ⚠
+              </button>
+            </div>
+          `).join("")}
+        </div>
+      `;
         }
 
         function answer(btn) {
@@ -189,17 +202,14 @@
             const choice = btn.dataset.value;
             const isCorrect = choice === w.en;
 
-            document
-                .querySelectorAll(".answer")
-                .forEach(b => {
-                    b.disabled = true;
-
-                    if (b.dataset.value === w.en) {
-                        b.classList.add("correct");
-                    } else if (!isCorrect && b === btn) {
-                        b.classList.add("wrong");
-                    }
-                });
+            document.querySelectorAll(".answer").forEach(b => {
+                b.disabled = true;
+                if (b.dataset.value === w.en) {
+                    b.classList.add("correct");
+                } else if (!isCorrect && b === btn) {
+                    b.classList.add("wrong");
+                }
+            });
 
             if (isCorrect) {
                 track[index] = "O";
@@ -213,22 +223,35 @@
             setTimeout(next, 1000);
         }
 
-        function markIssue(issueBtn, choice) {
-            const row = issueBtn.closest(".choice-row");
-            const answerBtn = row.querySelector(".answer");
+        function markQuestionIssue() {
+            const w = words[index];
 
-            // 見た目を黄色に
-            answerBtn.classList.add("issue");
-
-            // 重複防止
-            const exists = issues.some(i =>
-                i.question.id === words[index].id &&
-                i.choice === choice
-            );
-
-            if (!exists) {
+            if (!issues.some(i =>
+                i.type === "question" && i.question.id === w.id
+            )) {
                 issues.push({
-                    question: words[index],
+                    type: "question",
+                    question: w
+                });
+            }
+
+            notify("問題文を問題ありとして記録しました");
+        }
+
+        function markChoiceIssue(issueBtn, choice) {
+            const row = issueBtn.closest(".choice-row");
+            row.querySelector(".answer").classList.add("issue");
+
+            const w = words[index];
+
+            if (!issues.some(i =>
+                i.type === "choice" &&
+                i.question.id === w.id &&
+                i.choice === choice
+            )) {
+                issues.push({
+                    type: "choice",
+                    question: w,
                     choice
                 });
             }
@@ -236,42 +259,42 @@
 
         function next() {
             index++;
-            if (index >= TOTAL) showResult();
-            else showQuestion();
+            index >= TOTAL ? showResult() : showQuestion();
         }
 
         function showResult() {
-            document.getElementById("progress-text").textContent =
-                "🎉 Session Finished";
+            progressTextEl.textContent = "🎉 Session Finished";
 
-            document.getElementById("main").innerHTML = `
-    <h3>Correct</h3>
-    <div class="word-list">
-      ${correct.map(w =>
+            mainEl.innerHTML = `
+        <h3>Correct</h3>
+        <div class="word-list">
+          ${correct.map(w =>
                 `<span class="word-chip">${w.en}</span>`
             ).join("")}
-    </div>
+        </div>
 
-    <h3>Wrong</h3>
-    <div class="word-list">
-      ${wrong.map(w =>
+        <h3>Wrong</h3>
+        <div class="word-list">
+          ${wrong.map(w =>
                 `<span class="word-chip">${w.en}</span>`
             ).join("")}
-    </div>
+        </div>
 
-    <h3>⚠ Problems</h3>
-    <div class="word-list">
-      ${issues.map(i =>
-                `<span class="word-chip issue"
-          onclick="reportIssue(
-            '${i.choice}',
-            '${i.question.ja}'
-          )">
-          ${i.choice}
-        </span>`
-            ).join("")}
-    </div>
-  `;
+        <h3>⚠ Problems</h3>
+        <div class="word-list">
+          ${issues.map(i => `
+            <span class="word-chip issue"
+              onclick="reportIssue(
+                '${i.type === "question" ? i.question.en : i.choice}',
+                '${i.question.ja}'
+              )">
+              ${i.type === "question"
+                    ? `問題文: ${i.question.en}`
+                    : `選択肢: ${i.choice}`}
+            </span>
+          `).join("")}
+        </div>
+      `;
         }
 
         function reportIssue(en, ja) {
@@ -284,20 +307,27 @@
                 "&body=" + encodeURIComponent(
                     `Page: ${page}\n` +
                     `Question (JA): ${ja}\n` +
-                    `Choice: ${en}\n\n` +
-                    "Problem:"
+                    `Choice: ${en}\n\nProblem:`
                 );
 
             window.open(url, "_blank");
         }
 
         function updateProgress() {
-            document.getElementById("progress-track").textContent =
-                track.join("");
+            progressTrackEl.textContent = track.join("");
+        }
+
+        function notify(msg) {
+            alert(msg);
         }
 
         function shuffle(arr) {
-            return [...arr].sort(() => Math.random() - 0.5);
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
         }
     </script>
 </body>
