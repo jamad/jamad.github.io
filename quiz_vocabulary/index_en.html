@@ -79,12 +79,19 @@
             background: #444;
         }
 
-        button.correct {
-            background: var(--accent);
+        /* 優先度を上げる */
+        button.answer.correct,
+        button.answer.correct:hover {
+            background-color: var(--accent);
+            /* 緑 */
+            color: var(--fg);
         }
 
-        button.wrong {
-            background: var(--wrong);
+        button.answer.wrong,
+        button.answer.wrong:hover {
+            background-color: var(--wrong);
+            /* 赤 */
+            color: var(--fg);
         }
 
         button.issue {
@@ -127,7 +134,7 @@
 <body>
     <div id="app">
         <h1>English Quiz</h1>
-        <h3>ver20251218_1139</h3>
+        <h3>ver20251218_1156</h3>
         <div id="progress-text"></div>
         <div id="progress-track"></div>
         <div id="main"></div>
