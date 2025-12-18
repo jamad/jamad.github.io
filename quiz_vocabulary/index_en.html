@@ -120,7 +120,7 @@
 <body>
     <div id="app">
         <h1>English Quiz</h1>
-        <h3>ver20251218_1034 </h3>
+        <h3>ver20251218_1132 </h3>
         <div id="progress-text"></div>
         <div id="progress-track"></div>
         <div id="main"></div>
@@ -169,9 +169,11 @@
       ${choices.map(c => `
         <div class="choice-row">
           <button class="answer"
-            onclick="answer(this, '${c}')">
+            data-value="${c}"
+            onclick="answer(this)">
             ${c}
-          </button>
+            </button>
+
           <button class="issue-btn"
             onclick="markIssue(this, '${c}')">
             ⚠
@@ -182,22 +184,22 @@
   `;
         }
 
-        function answer(btn, choice) {
+        function answer(btn) {
             const w = words[index];
-            const isCorrect = (choice === w.en);
+            const choice = btn.dataset.value;
+            const isCorrect = choice === w.en;
 
-            const buttons =
-                [...document.querySelectorAll(".answer")];
+            document
+                .querySelectorAll(".answer")
+                .forEach(b => {
+                    b.disabled = true;
 
-            buttons.forEach(b => {
-                b.disabled = true;
-
-                if (b.textContent === w.en) {
-                    b.classList.add("correct");   // 正解は必ず緑
-                } else if (b.textContent === choice) {
-                    b.classList.add("wrong");     // 選んだ誤答だけ赤
-                }
-            });
+                    if (b.dataset.value === w.en) {
+                        b.classList.add("correct");
+                    } else if (!isCorrect && b === btn) {
+                        b.classList.add("wrong");
+                    }
+                });
 
             if (isCorrect) {
                 track[index] = "O";
@@ -210,7 +212,6 @@
             updateProgress();
             setTimeout(next, 1000);
         }
-
 
         function markIssue(issueBtn, choice) {
             const row = issueBtn.closest(".choice-row");
