@@ -1,284 +1,247 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>English Vocabulary Quiz</title>
+    <meta charset="UTF-8" />
+    <title>English Quiz</title>
 
     <style>
+        :root {
+            --bg: #121212;
+            --fg: #e0e0e0;
+            --card: #1e1e1e;
+            --accent: #4caf50;
+            --wrong: #f44336;
+            --warn: #ff9800;
+        }
+
         body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--fg);
             font-family: system-ui, sans-serif;
-            background: #121212;
-            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+        }
+
+        #app {
+            max-width: 520px;
+            width: 100%;
             padding: 20px;
         }
 
-        h2 {
-            margin-bottom: 6px;
-            color: #fff;
-        }
-
-        #progress-text {
-            color: #aaa;
-            margin-bottom: 4px;
+        h1 {
+            margin-top: 0;
         }
 
         #progress-track {
             font-family: monospace;
-            font-size: 1.2em;
             letter-spacing: 4px;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
         }
 
         #question {
-            font-size: 1.2em;
+            background: var(--card);
+            padding: 24px;
+            border-radius: 8px;
             margin-bottom: 16px;
+            font-size: 1.6em;
+            text-align: center;
         }
 
         #choices {
             display: flex;
             flex-direction: column;
-            align-items: stretch;
-        }
-
-        #choices button {
-            text-align: left;
-            margin: 6px 0;
+            gap: 10px;
         }
 
         button {
-            background: #1f1f1f;
-            color: #e0e0e0;
-            border: 1px solid #333;
+            padding: 12px;
+            font-size: 1em;
             border-radius: 6px;
-            padding: 10px 14px;
+            border: none;
+            background: #333;
+            color: var(--fg);
             cursor: pointer;
         }
 
         button:hover {
-            background: #2a2a2a;
+            background: #444;
         }
 
-        #result {
-            margin-top: 10px;
-            font-weight: bold;
+        button.correct {
+            background: var(--accent);
         }
 
-        .correct {
-            color: #4caf50;
+        button.wrong {
+            background: var(--wrong);
         }
 
-        .wrong {
-            color: #ff6b6b;
+        .secondary {
+            margin-top: 12px;
+            background: transparent;
+            border: 1px solid #555;
         }
 
-        .result-list {
-            margin-top: 16px;
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .word-chip {
-            display: inline-block;
-            background: #1f1f1f;
-            border: 1px solid #333;
-            border-radius: 6px;
             padding: 6px 10px;
-            margin: 4px;
-            font-size: 0.9em;
+            border-radius: 6px;
+            background: #333;
+        }
+
+        .word-chip.issue {
+            background: var(--warn);
+            color: #000;
+            cursor: pointer;
         }
     </style>
 </head>
 
 <body>
-
-    <h2>英語クイズ</h2>
-    <div id="progress-text"></div>
-    <div id="progress-track"></div>
-
-    <div id="question">Loading...</div>
-    <div id="choices"></div>
-    <div id="result"></div>
-
-    <button id="issue-btn" onclick="markIssue()">⚠ 問題あり</button>
+    <div id="app">
+        <h1>English Quiz</h1>
+        <div id="progress-text"></div>
+        <div id="progress-track"></div>
+        <div id="main"></div>
+    </div>
 
     <script>
-        /* =====================
-           設定
-        ===================== */
         const TOTAL = 10;
-        const STATS_KEY = "quizStats_en";
-        const ISSUE_KEY = "quizIssues";
-
-        /* =====================
-           状態
-        ===================== */
-        let entries = [];
-        let current = null;
+        let words = [];
         let index = 0;
 
         const track = Array(TOTAL).fill("*");
-        const correctList = [];
-        const wrongList = [];
-        const issueList = [];
-        const skipped = new Set();
+        const correct = [];
+        const wrong = [];
+        const issues = [];
 
-        /* =====================
-           初期化
-        ===================== */
         fetch("concepts.json")
             .then(r => r.json())
             .then(data => {
-                entries = Object.values(data).filter(e => e.en && e.ja);
-                next();
+                words = shuffle(Object.values(data)).slice(0, TOTAL);
+                updateProgress();
+                showQuestion();
+            })
+            .catch(() => {
+                document.getElementById("main").textContent =
+                    "Failed to load concepts.json";
             });
 
-        /* =====================
-           共通処理
-        ===================== */
-        const $ = id => document.getElementById(id);
-        const shuffle = a => a.sort(() => Math.random() - 0.5);
+        function showQuestion() {
+            const w = words[index];
 
-        const load = k => JSON.parse(localStorage.getItem(k) || "{}");
-        const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+            document.getElementById("progress-text").textContent =
+                `Question ${index + 1} / ${TOTAL}`;
 
-        function updateProgress() {
-            $("progress-text").textContent =
-                `問題 ${index + 1} / ${TOTAL}`;
-            $("progress-track").textContent = track.join("");
+            const choices = shuffle([
+                w.ja,
+                ...shuffle(words)
+                    .filter(x => x.id !== w.id)
+                    .slice(0, 3)
+                    .map(x => x.ja)
+            ]);
+
+            document.getElementById("main").innerHTML = `
+    <div id="question">${w.en}</div>
+    <div id="choices">
+      ${choices.map(c =>
+                `<button onclick="answer('${c}')">${c}</button>`
+            ).join("")}
+    </div>
+    <button class="secondary" onclick="markIssue()">⚠ Problem</button>
+  `;
         }
 
-        function clearResult() {
-            $("result").textContent = "";
-            $("result").className = "";
-        }
+        function answer(choice) {
+            const w = words[index];
+            const buttons = [...document.querySelectorAll("#choices button")];
 
-        /* =====================
-           出題
-        ===================== */
-        function next() {
-            if (index >= TOTAL) {
-                finish();
-                return;
-            }
-
-            do {
-                current = entries[Math.floor(Math.random() * entries.length)];
-            } while (skipped.has(current.id));
-
-            updateProgress();
-            clearResult();
-
-            $("question").textContent =
-                `「${current.ja}」の英語はどれ？`;
-
-            const options = shuffle(
-                entries.map(e => e.en)
-            ).slice(0, 4);
-
-            if (!options.includes(current.en)) {
-                options[0] = current.en;
-                shuffle(options);
-            }
-
-            const c = $("choices");
-            c.innerHTML = "";
-
-            options.forEach(word => {
-                const b = document.createElement("button");
-                b.textContent = word;
-                b.onclick = () => answer(word);
-                c.appendChild(b);
+            buttons.forEach(b => {
+                if (b.textContent === w.ja) b.classList.add("correct");
+                else if (b.textContent === choice) b.classList.add("wrong");
+                b.disabled = true;
             });
-        }
 
-        /* =====================
-           回答
-        ===================== */
-        function answer(word) {
-            const stats = load(STATS_KEY);
-            stats[current.id] ??= { correct: 0, wrong: 0 };
-
-            if (word === current.en) {
+            if (choice === w.ja) {
                 track[index] = "O";
-                stats[current.id].correct++;
-                correctList.push(current);
-
-                $("result").textContent = "正解！";
-                $("result").className = "correct";
-
-                save(STATS_KEY, stats);
-                index++;
-                setTimeout(next, 1000);
-
+                correct.push(w);
             } else {
                 track[index] = "X";
-                stats[current.id].wrong++;
-                wrongList.push(current);
-
-                $("result").textContent = `不正解… 正解は「${current.en}」`;
-                $("result").className = "wrong";
-
-                save(STATS_KEY, stats);
-                index++;
-                setTimeout(next, 2000);
+                wrong.push(w);
             }
+
+            updateProgress();
+            setTimeout(next, 1000);
         }
 
-        /* =====================
-           問題あり
-        ===================== */
         function markIssue() {
-            skipped.add(current.id);
-            issueList.push(current);
-
-            const issues = load(ISSUE_KEY);
-            issues[current.id] ??= { count: 0 };
-            issues[current.id].count++;
-
-            save(ISSUE_KEY, issues);
-            index++;
+            issues.push(words[index]);
+            track[index] = "X";
+            updateProgress();
             next();
         }
 
-        /* =====================
-           終了
-        ===================== */
-        function finish() {
-            $("progress-text").textContent = "";
-            $("question").innerHTML = "<h3>🎉 セッション終了</h3>";
-            $("choices").innerHTML = "";
-            $("result").textContent = "";
-            $("issue-btn").style.display = "none";
+        function next() {
+            index++;
+            if (index >= TOTAL) showResult();
+            else showQuestion();
+        }
 
-            $("progress-track").textContent = track.join("");
+        function showResult() {
+            document.getElementById("progress-text").textContent =
+                "🎉 Session Finished";
 
-            let html = "";
+            document.getElementById("main").innerHTML = `
+    <h3>Correct</h3>
+    <div class="word-list">
+      ${correct.map(w => `<span class="word-chip">${w.en}</span>`).join("")}
+    </div>
 
-            html += `<div class="result-list"><strong>✔ 正解した単語</strong><div>`;
-            correctList.forEach(e => {
-                html += `<span class="word-chip">${e.en}</span>`;
-            });
-            html += `</div></div>`;
+    <h3>Wrong</h3>
+    <div class="word-list">
+      ${wrong.map(w => `<span class="word-chip">${w.en}</span>`).join("")}
+    </div>
 
-            if (wrongList.length) {
-                html += `<div class="result-list"><strong>❌ 間違えた単語</strong><ul>`;
-                wrongList.forEach(e => {
-                    html += `<li>${e.en}</li>`;
-                });
-                html += `</ul></div>`;
-            }
+    <h3>⚠ Problems</h3>
+    <div class="word-list">
+      ${issues.map(w =>
+                `<span class="word-chip issue"
+          onclick="reportIssue('${w.en}','${w.ja}')">
+          ${w.en}
+        </span>`
+            ).join("")}
+    </div>
+  `;
+        }
 
-            if (issueList.length) {
-                html += `<div class="result-list"><strong>⚠ 問題あり</strong><div>`;
-                issueList.forEach(e => {
-                    html += `<span class="word-chip">${e.en}</span>`;
-                });
-                html += `</div></div>`;
-            }
+        function reportIssue(en, ja) {
+            const page =
+                "https://jamad.github.io/quiz_vocabulary/index_en.html";
 
-            $("question").insertAdjacentHTML("beforeend", html);
+            const url =
+                "https://github.com/jamad/jamad.github.io/issues/new" +
+                "?title=" + encodeURIComponent(`[quiz_vocabulary] ${en}`) +
+                "&body=" + encodeURIComponent(
+                    `Page: ${page}\nWord: ${en}\nMeaning: ${ja}\n\nProblem:`
+                );
+
+            window.open(url, "_blank");
+        }
+
+        function updateProgress() {
+            document.getElementById("progress-track").textContent = track.join("");
+        }
+
+        function shuffle(arr) {
+            return [...arr].sort(() => Math.random() - 0.5);
         }
     </script>
-
 </body>
 
 </html>
