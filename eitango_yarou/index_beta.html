@@ -2,12 +2,12 @@
 <html lang="ja">
 <!-- 
   Word Tower 100
-  Version: 1.4 (Graph on Tower + Smart Options)
+  Version: 1.5 (Layout Fix + More History + Audio Boost)
 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100 (Ver 1.4)</title>
+<title>Word Tower 100 (Ver 1.5)</title>
 <style>
     body {
         margin: 0;
@@ -35,7 +35,6 @@ let sourceData = [];
 if (typeof rawData !== 'undefined') {
     sourceData = rawData;
 } else {
-    alert("【エラー】words.js が見つかりません。");
     sourceData = [["Error","データなし",1]];
 }
 
@@ -50,12 +49,14 @@ const ctx = canvas.getContext('2d');
 const TOTAL_LEVELS = 100;
 const MAX_ENERGY = 100;
 
+// ★変更点：履歴の保存数を増加
+const MAX_HISTORY_COUNT = 20;
+
 const COLORS = {
     bg: '#2c3e50', text: '#ecf0f1', accent: '#f1c40f',
     correct: '#2ecc71', wrong: '#e74c3c', btnDefault: '#34495e',
-    // グラフの色を少し濃くして視認性アップ
-    graphLine: 'rgba(241, 196, 15, 0.8)', 
-    graphFill: 'rgba(241, 196, 15, 0.2)'
+    graphLine: 'rgba(241, 196, 15, 0.9)', 
+    graphFill: 'rgba(241, 196, 15, 0.3)'
 };
 
 const STATE = { TITLE: 0, PLAY: 1, RESULT: 2 };
@@ -85,35 +86,60 @@ function resize() {
 window.addEventListener('resize', resize);
 resize(); 
 
+// ==========================================
+//  サウンド管理（強化版）
+// ==========================================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function initAudio() {
+    // ユーザー操作時に必ず呼び出してAudioContextを起こす
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
 function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     
     const now = audioCtx.currentTime;
+    
     if (type === 'correct') {
+        // 正解音: 高めのピンポン
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+        osc.frequency.setValueAtTime(880, now); // A5
+        osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1); // A6
+        
         gain.gain.setValueAtTime(0.3, now);
-        gain.gain.linearRampToValueAtTime(0, now + 0.1);
-        osc.start(now); osc.stop(now + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        
+        osc.start(now);
+        osc.stop(now + 0.15);
+        
     } else if (type === 'wrong') {
+        // 不正解音: 低めのブブー
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(150, now);
-        osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+        
         gain.gain.setValueAtTime(0.3, now);
-        gain.gain.linearRampToValueAtTime(0, now + 0.2);
-        osc.start(now); osc.stop(now + 0.2);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+        
+        osc.start(now);
+        osc.stop(now + 0.3);
+        
     } else if (type === 'tap') {
+        // タップ音
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(400, now);
         gain.gain.setValueAtTime(0.1, now);
-        gain.gain.linearRampToValueAtTime(0, now + 0.05);
-        osc.start(now); osc.stop(now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
     }
 }
 
@@ -121,6 +147,9 @@ function playSound(type) {
 //  ゲームロジック
 // ==========================================
 function startGame() {
+    // ここでオーディオを有効化
+    initAudio();
+    
     level = 1;
     energy = MAX_ENERGY;
     usedWordEn = []; 
@@ -139,40 +168,23 @@ function getQuestionData(currentLv) {
     return wordData[Math.floor(Math.random() * wordData.length)];
 }
 
-// ★改良版: ダミー選択肢生成ロジック
 function createSmartOptions(correctWord) {
     let options = [correctWord.jp];
-    
-    // 1. 正解単語に近いレベルの単語をリストアップ (±10レベル)
-    //    もし候補が少なければ範囲を広げる
     let candidates = [];
     let range = 10;
-    
     while (candidates.length < 10 && range <= 50) {
-        candidates = wordData.filter(w => 
-            Math.abs(w.lv - correctWord.lv) <= range && 
-            w.jp !== correctWord.jp // 正解そのものは除外
-        );
+        candidates = wordData.filter(w => Math.abs(w.lv - correctWord.lv) <= range && w.jp !== correctWord.jp);
         range += 10;
     }
-
-    // 2. 候補からランダムに抽出して選択肢を埋める
     while (options.length < 5) {
         if (candidates.length > 0) {
             const idx = Math.floor(Math.random() * candidates.length);
-            const picked = candidates[idx];
-            if (!options.includes(picked.jp)) {
-                options.push(picked.jp);
-            }
-            // 一度使った候補は削除（重複防止）
+            options.push(candidates[idx].jp);
             candidates.splice(idx, 1);
         } else {
-            // 万が一候補切れなら、ダミーテキスト（緊急回避）
-            options.push("ErrorOption" + options.length);
+            options.push("Error" + options.length);
         }
     }
-
-    // シャッフル
     return options.sort(() => Math.random() - 0.5);
 }
 
@@ -182,17 +194,14 @@ function nextQuestion() {
         currentState = STATE.RESULT;
         return;
     }
-
     let q = getQuestionData(level);
     usedWordEn.push(q.en);
-
-    // ★ここで「賢い選択肢」を生成
     let options = createSmartOptions(q);
-
     currentQuestion = { word: q, options: options };
     layoutButtons();
 }
 
+// ★変更点：レイアウト計算の厳密化
 function layoutButtons() {
     if (!currentQuestion) return;
     buttons = [];
@@ -200,11 +209,14 @@ function layoutButtons() {
     const btnHeight = 55;
     const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 40; 
     
-    // タワー幅は画面の15%（スリムに戻す）
-    const towerWidth = canvas.width * 0.15;
+    // タワー幅は画面の12%（かなりスリムに）
+    const towerRatio = 0.12; 
+    const towerW = canvas.width * towerRatio;
     
+    // ボタンの右端は、タワー開始位置よりさらに20px左で止める
+    const safeZoneRight = canvas.width - towerW - 20; 
     const btnX = 20;
-    const btnW = canvas.width - towerWidth - 40; 
+    const btnW = safeZoneRight - btnX;
 
     currentQuestion.options.forEach((opt, i) => {
         buttons.push({
@@ -223,17 +235,12 @@ function handleAnswer(btn) {
 
     if (btn.isCorrect) {
         playSound('correct');
-        
-        // サインカーブ上昇ロジック
         const maxIncrement = 5;
         const radian = (level / 100) * (Math.PI / 2);
         let increment = Math.max(1, Math.round(maxIncrement * Math.cos(radian)));
-        
         level += increment;
-        
         feedbackColor = COLORS.correct;
         spawnParticles(canvas.width / 2, canvas.height / 2, COLORS.correct);
-        
         levelHistory.push(level);
 
         if (level > TOTAL_LEVELS) {
@@ -243,11 +250,12 @@ function handleAnswer(btn) {
     } else {
         playSound('wrong');
         wrongHistory.unshift({ en: currentQuestion.word.en, jp: currentQuestion.word.jp });
-        if (wrongHistory.length > 6) wrongHistory.pop();
+        
+        // ★変更点：履歴の上限を増加
+        if (wrongHistory.length > MAX_HISTORY_COUNT) wrongHistory.pop();
 
         if (level > 1) level--; 
         levelHistory.push(level);
-
         feedbackColor = COLORS.wrong;
         spawnParticles(canvas.width / 2, canvas.height / 2, COLORS.wrong);
     }
@@ -301,23 +309,20 @@ function draw() {
 }
 function loop() { update(); draw(); }
 
-// ★タワー＋グラフ統合描画
-// グラフを「タワーの上に」圧縮して描く
 function drawTowerWithGraph() {
-    const w = canvas.width * 0.15; // 画面幅の15%（以前のサイズへ戻す）
+    // タワー幅設定（12%）
+    const w = canvas.width * 0.12; 
     const h = canvas.height;
-    
-    // タワーの中心X座標（画面右端）
     const towerCenterX = canvas.width; 
     
     // タワー形状
     const bottomW = w * 1.5; 
-    const topW = w * 0.4;
+    const topW = w * 0.5;
     const startY = h - 50;
     const endY = 50;
     const heightRange = startY - endY;
 
-    // タワー本体
+    // 本体描画
     ctx.fillStyle = '#34495e';
     ctx.beginPath();
     ctx.moveTo(towerCenterX - bottomW, startY);
@@ -327,64 +332,39 @@ function drawTowerWithGraph() {
     ctx.closePath();
     ctx.fill();
 
-    // ------------------------------------------
-    // 折れ線グラフ（タワーの幅の中に描画）
-    // ------------------------------------------
+    // グラフ描画
     if (levelHistory.length >= 2) {
         ctx.strokeStyle = COLORS.graphLine;
         ctx.lineWidth = 2;
         ctx.beginPath();
 
-        // グラフのX軸範囲: タワーの左端 〜 タワーの右端(画面端)
-        // ※タワーは台形なので、Xの範囲は高さによって変わるが、
-        //   ここではシンプルに「底辺の幅」を基準にグラフを描く
-        //   （登山道のように見せるため）
-        
         const graphMinX = towerCenterX - bottomW;
         const graphMaxX = towerCenterX;
         const graphWidth = graphMaxX - graphMinX;
-
-        // 履歴のステップ数
         const totalSteps = Math.max(20, levelHistory.length);
         const stepX = graphWidth / totalSteps;
 
         levelHistory.forEach((lv, i) => {
-            // Y座標（高さ）
             const ratioY = Math.min(1.0, lv / TOTAL_LEVELS);
             const y = startY - (ratioY * heightRange);
-
-            // X座標（タワーの幅の中に圧縮）
-            // 時間経過(i)とともに右へ進む
-            // グラフは「タワーの左端」からスタートし、「画面右端」へ向かう
             const x = graphMinX + (i * stepX);
-
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
         ctx.stroke();
 
-        // 下を塗りつぶし
-        // 最後の点
         const lastX = graphMinX + ((levelHistory.length - 1) * stepX);
-        const lastLv = levelHistory[levelHistory.length - 1];
-        const lastRatioY = Math.min(1.0, lastLv / TOTAL_LEVELS);
-        const lastY = startY - (lastRatioY * heightRange);
-
-        ctx.lineTo(lastX, startY); // 真下へ
-        ctx.lineTo(graphMinX, startY); // スタート地点の真下へ
+        ctx.lineTo(lastX, startY);
+        ctx.lineTo(graphMinX, startY);
         ctx.fillStyle = COLORS.graphFill;
         ctx.fill();
     }
-    // ------------------------------------------
 
-    // 現在レベルの矢印とライン
+    // 現在地
     const progress = Math.min(1.0, (level - 1) / 99);
     const currentY = startY - (progress * heightRange);
-    
-    // 矢印の位置計算（タワーの左斜辺に沿う）
     const leftEdgeX = (towerCenterX - bottomW) + ((towerCenterX - topW) - (towerCenterX - bottomW)) * progress;
 
-    // 矢印
     ctx.fillStyle = '#f1c40f';
     ctx.beginPath();
     ctx.moveTo(leftEdgeX - 5, currentY);
@@ -392,14 +372,12 @@ function drawTowerWithGraph() {
     ctx.lineTo(leftEdgeX - 20, currentY + 10);
     ctx.fill();
 
-    // テキスト
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'right';
     ctx.font = '12px sans-serif';
     ctx.fillText('Lv.100', canvas.width - 5, endY - 10);
     ctx.fillText('Start', canvas.width - 5, startY + 20);
     
-    // 現在地ライン
     ctx.strokeStyle = '#f1c40f';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -410,17 +388,23 @@ function drawTowerWithGraph() {
 
 function drawWrongList() {
     if (wrongHistory.length === 0) return;
+    
+    // ★変更点：文字サイズを少し小さくして行間を詰める（20個入るように）
     const startX = 20;
     const startY = 60;
+    const lineHeight = 20; // 以前は25
+
     ctx.textAlign = 'left';
-    ctx.font = '14px sans-serif';
+    ctx.font = 'bold 14px sans-serif';
     ctx.fillStyle = '#e74c3c';
     ctx.fillText("--- MISSED ---", startX, startY);
 
+    ctx.font = '14px sans-serif';
     wrongHistory.forEach((item, i) => {
         ctx.fillStyle = '#ecf0f1';
-        ctx.font = '16px sans-serif';
-        const y = startY + 25 + (i * 25);
+        // 画面の高さを超えそうなら描画しない処理を入れても良いが、
+        // PCなら十分入るのでそのまま描画
+        const y = startY + 25 + (i * lineHeight);
         ctx.fillText(`${item.en} : ${item.jp}`, startX, y);
     });
 }
@@ -430,10 +414,9 @@ function drawTitle() {
     ctx.textAlign = 'center';
     ctx.font = 'bold 36px sans-serif';
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
-    
     ctx.font = '20px sans-serif';
     ctx.fillStyle = '#95a5a6';
-    ctx.fillText("Ver 1.4", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText("Ver 1.5", canvas.width / 2, canvas.height / 2 - 20);
     
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
@@ -442,9 +425,7 @@ function drawTitle() {
 }
 
 function drawGame() {
-    // 1. タワーとグラフを描画
     drawTowerWithGraph();
-    // 2. UIパーツ
     drawWrongList();
     
     ctx.fillStyle = COLORS.text;
@@ -454,6 +435,7 @@ function drawGame() {
     
     ctx.textAlign = 'right';
     ctx.font = '20px sans-serif';
+    // HP表示位置調整
     ctx.fillText(`HP ${energy}`, canvas.width - (canvas.width * 0.15) - 20, 40);
 
     const gameAreaW = canvas.width - (canvas.width * 0.15);
@@ -525,6 +507,7 @@ function drawButton(btn, color) {
 
 canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
+    initAudio(); // タップで音有効化
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
