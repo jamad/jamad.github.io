@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100</title>
+<title>Word Tower 100 DX</title>
 <style>
     body {
         margin: 0;
@@ -20,58 +20,146 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
-// --- 1. 拡張された単語データベース (Lv.1 - Lv.100) ---
-// 実際のアプリでは数千語必要ですが、今回は動作確認用に約100語をバランスよく配置しました。
-const wordData = [
-    // Lv 1-10 (中学初級)
-    {en:"cat",jp:"猫",lv:1}, {en:"red",jp:"赤",lv:1}, {en:"big",jp:"大きい",lv:2},
-    {en:"run",jp:"走る",lv:2}, {en:"eat",jp:"食べる",lv:3}, {en:"sky",jp:"空",lv:3},
-    {en:"bird",jp:"鳥",lv:4}, {en:"rain",jp:"雨",lv:5}, {en:"happy",jp:"幸せな",lv:6},
-    {en:"friend",jp:"友達",lv:7}, {en:"school",jp:"学校",lv:8}, {en:"time",jp:"時間",lv:9},
-    {en:"summer",jp:"夏",lv:10}, {en:"start",jp:"始める",lv:10},
+// ==========================================
+//  大規模単語データベース (Large Dataset)
+//  形式: [英語, 日本語, レベル]
+// ==========================================
+const rawData = [
+    // --- Lv.1-10 (中学1年生レベル・超基礎) ---
+    ["cat","猫",1], ["dog","犬",1], ["red","赤",1], ["blue","青",1], ["one","1つ",1],
+    ["run","走る",2], ["big","大きい",2], ["hot","暑い",2], ["see","見る",2], ["buy","買う",2],
+    ["eat","食べる",3], ["sky","空",3], ["new","新しい",3], ["old","古い",3], ["day","日",3],
+    ["bird","鳥",4], ["book","本",4], ["fish","魚",4], ["room","部屋",4], ["use","使う",4],
+    ["rain","雨",5], ["stop","止まる",5], ["walk","歩く",5], ["hand","手",5], ["know","知る",5],
+    ["happy","幸せな",6], ["sad","悲しい",6], ["fast","速い",6], ["long","長い",6], ["cold","寒い",6],
+    ["friend","友達",7], ["water","水",7], ["money","お金",7], ["right","右/正しい",7], ["live","住む",7],
+    ["school","学校",8], ["house","家",8], ["teach","教える",8], ["study","勉強する",8], ["music","音楽",8],
+    ["time","時間",9], ["year","年",9], ["word","単語",9], ["work","働く",9], ["need","必要とする",9],
+    ["summer","夏",10], ["winter","冬",10], ["start","始める",10], ["world","世界",10], ["people","人々",10],
 
-    // Lv 11-30 (中学卒業〜高校基礎)
-    {en:"travel",jp:"旅行する",lv:12}, {en:"culture",jp:"文化",lv:15}, {en:"decide",jp:"決める",lv:18},
-    {en:"future",jp:"未来",lv:20}, {en:"health",jp:"健康",lv:22}, {en:"create",jp:"創造する",lv:25},
-    {en:"simple",jp:"単純な",lv:26}, {en:"planet",jp:"惑星",lv:28}, {en:"forest",jp:"森",lv:29},
-    {en:"damage",jp:"損害",lv:30},
+    // --- Lv.11-20 (中学2〜3年生レベル) ---
+    ["enjoy","楽しむ",11], ["visit","訪問する",11], ["place","場所",11], ["thing","物",11],
+    ["travel","旅行する",12], ["family","家族",12], ["sport","スポーツ",12], ["learn","学ぶ",12],
+    ["change","変える",13], ["answer","答える",13], ["question","質問",13], ["before","以前に",13],
+    ["movie","映画",14], ["dinner","夕食",14], ["reason","理由",14], ["season","季節",14],
+    ["culture","文化",15], ["future","未来",15], ["nature","自然",15], ["picture","写真",15],
+    ["famous","有名な",16], ["exciting","わくわくする",16], ["dangerous","危険な",16], ["careful","注意深い",16],
+    ["decide","決める",17], ["invite","招待する",17], ["finish","終える",17], ["forget","忘れる",17],
+    ["agree","賛成する",18], ["happen","起こる",18], ["believe","信じる",18], ["receive","受け取る",18],
+    ["science","科学",19], ["history","歴史",19], ["language","言語",19], ["example","例",19],
+    ["health","健康",20], ["doctor","医者",20], ["medicine","薬",20], ["problem","問題",20],
 
-    // Lv 31-50 (高校中級・共通テスト)
-    {en:"ability",jp:"能力",lv:32}, {en:"benefit",jp:"利益",lv:35}, {en:"method",jp:"方法",lv:38},
-    {en:"advice",jp:"助言",lv:40}, {en:"manage",jp:"管理する",lv:42}, {en:"survey",jp:"調査",lv:45},
-    {en:"author",jp:"著者",lv:46}, {en:"theory",jp:"理論",lv:48}, {en:"region",jp:"地域",lv:50},
+    // --- Lv.21-30 (高校受験・高1レベル) ---
+    ["create","創造する",21], ["design","設計する",21], ["artist","芸術家",21], ["simple","単純な",21],
+    ["advice","助言",22], ["habit","習慣",22], ["skill","技術",22], ["space","宇宙/空間",22],
+    ["damage","損害",23], ["danger","危険",23], ["energy","エネルギー",23], ["flight","飛行",23],
+    ["memory","記憶",24], ["effort","努力",24], ["result","結果",24], ["chance","機会",24],
+    ["planet","惑星",25], ["global","地球規模の",25], ["system","体系",25], ["public","公の",25],
+    ["reduce","減らす",26], ["refuse","拒否する",26], ["remain","残る",26], ["remind","思い出させる",26],
+    ["accept","受け入れる",27], ["affect","影響する",27], ["appear","現れる",27], ["attend","出席する",27],
+    ["forest","森",28], ["island","島",28], ["ground","地面",28], ["ocean","大洋",28],
+    ["modern","現代の",29], ["recent","最近の",29], ["normal","普通の",29], ["common","共通の",29],
+    ["ability","能力",30], ["action","行動",30], ["amount","量",30], ["access","接近",30],
 
-    // Lv 51-70 (大学入試・中堅) -> ここが前回不足していたゾーン
-    {en:"enable",jp:"可能にする",lv:52}, {en:"reveal",jp:"明らかにする",lv:53},
-    {en:"mental",jp:"精神の",lv:54}, {en:"obtain",jp:"入手する",lv:55},
-    {en:"aware",jp:"気づいている",lv:56}, {en:"income",jp:"収入",lv:58},
-    {en:"labor",jp:"労働",lv:60}, {en:"desire",jp:"欲望",lv:62},
-    {en:"notion",jp:"概念",lv:64}, {en:"status",jp:"地位",lv:66},
-    {en:"ensure",jp:"確実にする",lv:68}, {en:"stable",jp:"安定した",lv:70},
+    // --- Lv.31-40 (共通テスト基礎レベル) ---
+    ["benefit","利益",31], ["profit","利益",31], ["career","経歴",31], ["degree","程度/学位",31],
+    ["demand","需要",32], ["supply","供給",32], ["desire","欲望",32], ["divide","分割する",32],
+    ["enable","可能にする",33], ["engage","従事する",33], ["ensure","確実にする",33], ["exceed","超える",33],
+    ["factor","要因",34], ["flavor","風味",34], ["method","方法",34], ["manner","行儀",34],
+    ["impact","衝撃",35], ["income","収入",35], ["injury","怪我",35], ["insect","昆虫",35],
+    ["manage","管理する",36], ["master","習得する",36], ["mental","精神の",36], ["muscle","筋肉",36],
+    ["native","出生地の",37], ["narrow","狭い",37], ["notion","概念",37], ["notice","通知",37],
+    ["object","物体",38], ["origin","起源",38], ["option","選択肢",38], ["obtain","入手する",38],
+    ["policy","政策",39], ["period","期間",39], ["phrase","言い回し",39], ["planet","惑星",39],
+    ["survey","調査",40], ["status","地位",40], ["stress","圧力",40], ["symbol","象徴",40],
 
-    // Lv 71-90 (難関大・TOEIC高得点)
-    {en:"crucial",jp:"重大な",lv:72}, {en:"precise",jp:"正確な",lv:74},
-    {en:"diverse",jp:"多様な",lv:76}, {en:"exhibit",jp:"展示する",lv:78},
-    {en:"pursue",jp:"追求する",lv:80}, {en:"submit",jp:"提出する",lv:82},
-    {en:"immune",jp:"免疫の",lv:84}, {en:"thrive",jp:"繁栄する",lv:86},
-    {en:"subtle",jp:"微妙な",lv:88}, {en:"legacy",jp:"遺産",lv:90},
+    // --- Lv.41-50 (中堅私大・共通テスト応用) ---
+    ["abroad","海外へ",41], ["actual","実際の",41], ["annual","毎年の",41], ["appeal","懇願する",41],
+    ["author","著者",42], ["aspect","側面",42], ["assume","仮定する",42], ["attach","取り付ける",42],
+    ["border","国境",43], ["budget","予算",43], ["burden","負担",43], ["branch","枝/支店",43],
+    ["client","依頼人",44], ["colony","植民地",44], ["crisis","危機",44], ["custom","慣習",44],
+    ["debate","討論",45], ["decade","10年間",45], ["defend","防御する",45], ["define","定義する",45],
+    ["detail","詳細",46], ["detect","探知する",46], ["device","装置",46], ["direct","直接の",46],
+    ["editor","編集者",47], ["effect","効果",47], ["entire","全体の",47], ["expand","拡大する",47],
+    ["theory","理論",48], ["threat","脅威",48], ["target","目標",48], ["tissue","組織",48],
+    ["wealth","富",49], ["weapon","武器",49], ["witness","目撃者",49], ["wisdom","知恵",49],
+    ["region","地域",50], ["regard","みなす",50], ["reject","拒絶する",50], ["relate","関連づける",50],
 
-    // Lv 91-100 (マニアック・超上級)
-    {en:"vague",jp:"漠然とした",lv:91}, {en:"acute",jp:"鋭い",lv:92},
-    {en:"candid",jp:"率直な",lv:93}, {en:"evoke",jp:"呼び起こす",lv:94},
-    {en:"feudal",jp:"封建的な",lv:95}, {en:"lethal",jp:"致死の",lv:96},
-    {en:"invoke",jp:"発動する",lv:97}, {en:"fickle",jp:"気まぐれな",lv:98},
-    {en:"zenith",jp:"頂点",lv:99}, {en:"void",jp:"虚空",lv:100}
+    // --- Lv.51-60 (MARCH・地方国公立レベル) ---
+    ["abandon","捨てる",51], ["abolish","廃止する",51], ["absorb","吸収する",51], ["abuse","乱用する",51],
+    ["barrier","障壁",52], ["belief","信念",52], ["behave","振る舞う",52], ["belong","所属する",52],
+    ["reveal","明らかにする",53], ["review","再検討する",53], ["remote","遠く離れた",53], ["remove","取り除く",53],
+    ["settle","解決する",54], ["severe","厳しい",54], ["shrink","縮む",54], ["source","源",54],
+    ["stable","安定した",55], ["steady","着実な",55], ["submit","提出する",55], ["supply","供給する",55],
+    ["aware","気づいている",56], ["alert","油断のない",56], ["alive","生きている",56], ["alike","似ている",56],
+    ["labor","労働",57], ["legal","合法の",57], ["local","地元の",57], ["logic","論理",57],
+    ["major","主要な",58], ["minor","少数の",58], ["moral","道徳的な",58], ["merit","長所",58],
+    ["nerve","神経",59], ["novel","小説/斬新な",59], ["noble","高貴な",59], ["nurse","看護師",59],
+    ["occur","起こる",60], ["offer","申し出る",60], ["order","注文/秩序",60], ["organ","臓器",60],
+
+    // --- Lv.61-70 (早慶・難関国公立レベル) ---
+    ["acquire","習得する",61], ["achieve","達成する",61], ["advance","前進する",61], ["attempt","試みる",61],
+    ["banish","追放する",62], ["betray","裏切る",62], ["beware","用心する",62], ["breeze","そよ風",62],
+    ["charge","請求する",63], ["commit","委託する",63], ["compel","強制する",63], ["convey","運ぶ",63],
+    ["deserve","値する",64], ["declare","宣言する",64], ["decline","断る/衰退",64], ["deprive","奪う",64],
+    ["emerge","現れる",65], ["employ","雇う",65], ["endure","耐える",65], ["evolve","進化する",65],
+    ["famine","飢饉",66], ["fatal","致命的な",66], ["fierce","激しい",66], ["flavor","風味",66],
+    ["gaze","じっと見る",67], ["glance","ちらっと見る",67], ["glare","にらみつける",67], ["grasp","把握する",67],
+    ["hostile","敵意のある",68], ["humble","謙虚な",68], ["hazard","危険",68], ["harbor","港",68],
+    ["ignore","無視する",69], ["impose","課す",69], ["inform","知らせる",69], ["invest","投資する",69],
+    ["legacy","遺産",70], ["lethal","致死の",70], ["liable","法的責任がある",70], ["likely","ありそうな",70],
+
+    // --- Lv.71-80 (TOEIC 800〜 英検準1級レベル) ---
+    ["modify","修正する",71], ["mutual","相互の",71], ["mature","成熟した",71], ["modest","控えめな",71],
+    ["crucial","極めて重大な",72], ["candid","率直な",72], ["costly","高価な",72], ["casual","偶然の",72],
+    ["obscure","不明瞭な",73], ["obvious","明白な",73], ["oppose","反対する",73], ["occupy","占める",73],
+    ["precise","正確な",74], ["passive","受動的な",74], ["partial","部分的な",74], ["primary","第一の",74],
+    ["qualify","資格を与える",75], ["quality","品質",75], ["quarter","4分の1",75], ["quote","引用する",75],
+    ["diverse","多様な",76], ["disturb","妨げる",76], ["dispute","論争",76], ["display","展示する",76],
+    ["radical","急進的な",77], ["rational","理性的な",77], ["random","無作為の",77], ["rapid","急速な",77],
+    ["exhibit","展示する",78], ["exhaust","疲れさせる",78], ["exclude","除外する",78], ["extract","抽出する",78],
+    ["sacred","神聖な",79], ["scarce","乏しい",79], ["seldom","めったに…ない",79], ["solemn","厳粛な",79],
+    ["pursue","追求する",80], ["persist","固執する",80], ["prevail","普及する",80], ["predict","予測する",80],
+
+    // --- Lv.81-90 (英検1級・超上級) ---
+    ["abolish","撤廃する",81], ["abrupt","突然の",81], ["absurd","不合理な",81], ["abundant","豊富な",81],
+    ["submit","服従する",82], ["subtle","微妙な",82], ["sublime","崇高な",82], ["subside","静まる",82],
+    ["thrive","繁栄する",83], ["torment","苦しめる",83], ["triumph","勝利",83], ["treason","反逆",83],
+    ["immune","免疫のある",84], ["impair","損なう",84], ["induce","誘発する",84], ["intact","無傷の",84],
+    ["ambiguous","曖昧な",85], ["anonymous","匿名の",85], ["apathy","無関心",85], ["asset","資産",85],
+    ["banish","追放する",86], ["barren","不毛の",86], ["benign","良性の",86], ["biased","偏った",86],
+    ["comply","従う",87], ["confer","協議する",87], ["concur","同意する",87], ["condemn","非難する",87],
+    ["defect","欠陥",88], ["depict","描く",88], ["derive","由来する",88], ["detain","引き留める",88],
+    ["eloquent","雄弁な",89], ["eminent","著名な",89], ["endow","授ける",89], ["entity","実体",89],
+    ["foster","育成する",90], ["fragile","壊れやすい",90], ["frenzy","熱狂",90], ["futile","無駄な",90],
+
+    // --- Lv.91-100 (マニア・ネイティブ語彙) ---
+    ["vague","漠然とした",91], ["vanity","虚栄心",91], ["verdict","評決",91], ["verify","検証する",91],
+    ["acute","鋭い",92], ["adhere","固執する",92], ["adorn","飾る",92], ["affirm","断言する",92],
+    ["bewilder","当惑させる",93], ["bleak","荒涼とした",93], ["brisk","活発な",93], ["brittle","もろい",93],
+    ["evoke","呼び起こす",94], ["erode","浸食する",94], ["exalt","高める",94], ["exceed","超える",94],
+    ["feudal","封建的な",95], ["filthy","不潔な",95], ["fiscal","財政の",95], ["flagrant","目に余る",95],
+    ["lethal","致死の",96], ["lavish","気前の良い",96], ["lucid","明快な",96], ["lure","誘惑する",96],
+    ["invoke","発動する",97], ["innate","生まれつきの",97], ["intake","摂取",97], ["invoke","祈願する",97],
+    ["fickle","気まぐれな",98], ["feeble","弱々しい",98], ["fertile","肥沃な",98], ["fervent","熱烈な",98],
+    ["zenith","頂点",99], ["zeal","熱意",99], ["yearn","切望する",99], ["yield","産出する",99],
+    ["void","虚空",100], ["vortex","渦",100], ["vow","誓う",100], ["vice","悪徳",100],
+    ["epitome","典型",100], ["panacea","万能薬",100], ["oblivion","忘却",100], ["infinity","無限",100]
 ];
 
+// データをオブジェクト形式に変換
+const wordData = rawData.map(d => ({ en: d[0], jp: d[1], lv: d[2] }));
+
+// ダミー選択肢（汎用的な単語リスト）
 const dummyWords = [
-    "巨大な", "早い", "冷たい", "美しい", "食べる", "眠る", "静かな", "熱い", 
-    "暗い", "重い", "賢い", "若い", "古い", "新しい", "狭い", "広い",
-    "歩く", "泳ぐ", "飛ぶ", "光る", "消える", "探す", "待つ", "歌う",
-    "リンゴ", "犬", "机", "海", "山", "川", "都市", "宇宙"
+    "美しい", "静かな", "巨大な", "小さな", "速い", "遅い", "賢い", "愚かな", "強い", "弱い",
+    "食べる", "眠る", "走る", "歩く", "考える", "知る", "作る", "壊す", "笑う", "泣く",
+    "犬", "猫", "鳥", "魚", "山", "川", "海", "空", "太陽", "月", "星",
+    "赤い", "青い", "白い", "黒い", "黄色い", "緑の", "明るい", "暗い", "重い", "軽い",
+    "愛", "平和", "戦争", "自由", "希望", "夢", "友達", "家族", "学校", "仕事"
 ];
 
-// --- 設定 & システム変数 ---
+// --- ゲームシステム ---
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -85,11 +173,9 @@ resize();
 const TOTAL_LEVELS = 100;
 const MAX_ENERGY = 100;
 
-// 色定義
 const COLORS = {
     bg: '#2c3e50', text: '#ecf0f1', accent: '#f1c40f',
-    correct: '#2ecc71', wrong: '#e74c3c',
-    btnDefault: '#34495e'
+    correct: '#2ecc71', wrong: '#e74c3c', btnDefault: '#34495e'
 };
 
 const STATE = { TITLE: 0, PLAY: 1, RESULT: 2 };
@@ -101,11 +187,9 @@ let buttons = [];
 let particles = [];
 let feedbackTimer = 0;
 let feedbackColor = null;
-
-// ★重複出題を防ぐための履歴
 let usedWordEn = []; 
 
-// 音（Web Audio API）
+// 音声システム
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -121,72 +205,46 @@ function playSound(type) {
         osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
         gain.gain.setValueAtTime(0.3, now);
         gain.gain.linearRampToValueAtTime(0, now + 0.1);
-        osc.start(now);
-        osc.stop(now + 0.1);
+        osc.start(now); osc.stop(now + 0.1);
     } else if (type === 'wrong') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(150, now);
         osc.frequency.linearRampToValueAtTime(100, now + 0.2);
         gain.gain.setValueAtTime(0.3, now);
         gain.gain.linearRampToValueAtTime(0, now + 0.2);
-        osc.start(now);
-        osc.stop(now + 0.2);
+        osc.start(now); osc.stop(now + 0.2);
     } else if (type === 'tap') {
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(400, now);
         gain.gain.setValueAtTime(0.1, now);
         gain.gain.linearRampToValueAtTime(0, now + 0.05);
-        osc.start(now);
-        osc.stop(now + 0.05);
+        osc.start(now); osc.stop(now + 0.05);
     }
 }
 
-// --- ロジック関数 ---
-
+// ゲームロジック
 function startGame() {
     level = 1;
     energy = MAX_ENERGY;
-    usedWordEn = []; // 履歴リセット
+    usedWordEn = []; 
     currentState = STATE.PLAY;
     nextQuestion();
 }
 
-// ★改良版：適切なレベルの問題を選ぶロジック
 function getQuestionData(currentLv) {
-    // 1. まず「現在のレベル ±5」の範囲で、まだ使っていない単語を探す
-    let candidates = wordData.filter(w => 
-        Math.abs(w.lv - currentLv) <= 5 && 
-        !usedWordEn.includes(w.en)
-    );
-
-    // 2. もし見つからなければ範囲を「±15」に広げる
-    if (candidates.length === 0) {
-        candidates = wordData.filter(w => 
-            Math.abs(w.lv - currentLv) <= 15 && 
+    // 範囲を段階的に広げて探す
+    let ranges = [5, 15, 30, 50];
+    for (let r of ranges) {
+        let candidates = wordData.filter(w => 
+            Math.abs(w.lv - currentLv) <= r && 
             !usedWordEn.includes(w.en)
         );
+        if (candidates.length > 0) {
+            return candidates[Math.floor(Math.random() * candidates.length)];
+        }
     }
-
-    // 3. それでもなければ「±30」
-    if (candidates.length === 0) {
-        candidates = wordData.filter(w => 
-            Math.abs(w.lv - currentLv) <= 30 && 
-            !usedWordEn.includes(w.en)
-        );
-    }
-
-    // 4. 万が一データ切れなら、履歴を無視して一番近いレベルを選ぶ
-    if (candidates.length === 0) {
-        candidates = wordData.filter(w => Math.abs(w.lv - currentLv) <= 20);
-    }
-
-    // 候補の中からランダムに1つ選ぶ
-    if (candidates.length > 0) {
-        return candidates[Math.floor(Math.random() * candidates.length)];
-    } else {
-        // 完全なフォールバック（ここに来ることはほぼないはず）
-        return wordData[Math.floor(Math.random() * wordData.length)];
-    }
+    // どうしても見つからない場合（全問正解後など）
+    return wordData[Math.floor(Math.random() * wordData.length)];
 }
 
 function nextQuestion() {
@@ -196,13 +254,9 @@ function nextQuestion() {
         return;
     }
 
-    // 問題選択実行
     let q = getQuestionData(level);
-    
-    // 出題済みリストに追加
     usedWordEn.push(q.en);
 
-    // 選択肢生成
     let options = [q.jp];
     while (options.length < 5) {
         let d = dummyWords[Math.floor(Math.random() * dummyWords.length)];
@@ -212,11 +266,9 @@ function nextQuestion() {
 
     currentQuestion = { word: q, options: options };
     
-    // ボタン配置
     buttons = [];
     const margin = 15;
     const btnHeight = 60;
-    // 画面下部に配置
     const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 60; 
 
     options.forEach((opt, i) => {
@@ -239,22 +291,17 @@ function handleAnswer(btn) {
         level++;
         feedbackColor = COLORS.correct;
         spawnParticles(canvas.width / 2, canvas.height / 3, COLORS.correct);
-        
         if (level > TOTAL_LEVELS) {
             currentState = STATE.RESULT;
             return;
         }
     } else {
         playSound('wrong');
-        // 間違えたらレベルを下げる（最低1）
         if (level > 1) level--; 
-        // 激ムズモードなら「-5」とかにしても面白い
-        
         feedbackColor = COLORS.wrong;
         spawnParticles(canvas.width / 2, canvas.height / 3, COLORS.wrong);
     }
-
-    feedbackTimer = 30; // 演出待ち時間
+    feedbackTimer = 30;
 }
 
 function spawnParticles(x, y, color) {
@@ -269,9 +316,7 @@ function spawnParticles(x, y, color) {
 }
 
 function update() {
-    particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy; p.life -= 0.05;
-    });
+    particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.05; });
     particles = particles.filter(p => p.life > 0);
 
     if (feedbackTimer > 0) {
@@ -291,7 +336,6 @@ function draw() {
     else if (currentState === STATE.PLAY) drawGame();
     else if (currentState === STATE.RESULT) drawResult();
 
-    // パーティクル
     particles.forEach(p => {
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
@@ -300,10 +344,8 @@ function draw() {
         ctx.fill();
         ctx.globalAlpha = 1.0;
     });
-
     requestAnimationFrame(loop);
 }
-
 function loop() { update(); draw(); }
 
 function drawTitle() {
@@ -311,10 +353,8 @@ function drawTitle() {
     ctx.textAlign = 'center';
     ctx.font = 'bold 40px sans-serif';
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
-    ctx.font = '20px sans-serif';
-    ctx.fillText('Target: Level 100', canvas.width / 2, canvas.height / 2 - 10);
+    ctx.fillText('100 DX', canvas.width / 2, canvas.height / 2 - 10);
     
-    // Start Button
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
         w: 200, h: 60, text: 'START'
@@ -322,36 +362,29 @@ function drawTitle() {
 }
 
 function drawGame() {
-    // Info
     ctx.fillStyle = COLORS.text;
     ctx.textAlign = 'left';
     ctx.font = '20px sans-serif';
     ctx.fillText(`Lv.${level}`, 20, 40);
-    
     ctx.textAlign = 'right';
     ctx.fillText(`HP ${energy}`, canvas.width - 20, 40);
     
-    // Energy Bar
     ctx.fillStyle = '#34495e';
     ctx.fillRect(20, 50, canvas.width - 40, 8);
     const energyRate = Math.max(0, energy / MAX_ENERGY);
     ctx.fillStyle = energy < 20 ? COLORS.wrong : (energy < 50 ? COLORS.accent : COLORS.correct);
     ctx.fillRect(20, 50, (canvas.width - 40) * energyRate, 8);
 
-    // Question
     ctx.textAlign = 'center';
     ctx.fillStyle = feedbackColor || COLORS.text;
     ctx.font = 'bold 42px sans-serif';
     if (currentQuestion) {
-        // 単語
         ctx.fillText(currentQuestion.word.en, canvas.width / 2, canvas.height / 3);
-        // 難易度デバッグ表示（遊びながら確認用）
         ctx.font = '14px sans-serif';
         ctx.fillStyle = '#7f8c8d';
-        ctx.fillText(`(Difficulty: Lv.${currentQuestion.word.lv})`, canvas.width / 2, canvas.height / 3 + 40);
+        ctx.fillText(`(Lv.${currentQuestion.word.lv})`, canvas.width / 2, canvas.height / 3 + 40);
     }
 
-    // Buttons
     buttons.forEach(btn => {
         let color = COLORS.btnDefault;
         if (feedbackColor && btn.isCorrect) color = COLORS.correct;
@@ -362,23 +395,21 @@ function drawGame() {
 function drawResult() {
     ctx.fillStyle = COLORS.text;
     ctx.textAlign = 'center';
-    
     if (level > TOTAL_LEVELS) {
         ctx.fillStyle = COLORS.correct;
         ctx.font = 'bold 40px sans-serif';
         ctx.fillText('CLEAR!!', canvas.width / 2, canvas.height / 2 - 50);
         ctx.fillStyle = COLORS.text;
         ctx.font = '20px sans-serif';
-        ctx.fillText(`Score: ${energy} pts`, canvas.width / 2, canvas.height / 2);
+        ctx.fillText(`Score: ${energy}`, canvas.width / 2, canvas.height / 2);
     } else {
         ctx.fillStyle = COLORS.wrong;
         ctx.font = 'bold 40px sans-serif';
         ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 50);
         ctx.fillStyle = COLORS.text;
         ctx.font = '20px sans-serif';
-        ctx.fillText(`Reached: Lv.${level}`, canvas.width / 2, canvas.height / 2);
+        ctx.fillText(`Lv.${level}`, canvas.width / 2, canvas.height / 2);
     }
-
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 80,
         w: 200, h: 60, text: 'RETRY'
@@ -390,7 +421,6 @@ function drawButton(btn, color) {
     ctx.beginPath();
     ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 12);
     ctx.fill();
-
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 18px sans-serif';
     ctx.textAlign = 'center';
@@ -399,7 +429,6 @@ function drawButton(btn, color) {
     ctx.textBaseline = 'alphabetic';
 }
 
-// Touch Event
 canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
@@ -422,7 +451,6 @@ canvas.addEventListener('pointerdown', (e) => {
         }
     }
 });
-
 requestAnimationFrame(loop);
 </script>
 </body>
