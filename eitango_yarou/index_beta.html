@@ -2,13 +2,12 @@
 <html lang="ja">
 <!-- 
   Word Tower 100
-  Version: 1.1 (PC Click Fix + External Data Support)
-  Date: 2024
+  Version: 1.2 (Display Fix)
 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100 (Ver 1.1)</title>
+<title>Word Tower 100</title>
 <style>
     body {
         margin: 0;
@@ -29,25 +28,19 @@
 
 <script>
 // ==========================================
-//  バージョン情報
-// ==========================================
-const APP_VERSION = "Ver 1.1";
-
-// ==========================================
-//  データ読み込み処理 (修正版)
+//  データ読み込み
 // ==========================================
 let sourceData = [];
 
-// rawData (words.js) が存在するかチェック
+// words.js が存在するかチェック
 if (typeof rawData !== 'undefined') {
     sourceData = rawData;
 } else {
-    // 読み込めなかった場合の緊急用データ (再宣言エラーを防ぐため別変数で処理)
-    alert("【エラー】words.js が見つかりません。index.htmlと同じ場所に置いてください。");
-    sourceData = [["Error","データなし",1], ["Check","words.js",1]];
+    // 読み込めなかった場合の緊急用データ
+    alert("【エラー】words.js が見つかりません。");
+    sourceData = [["Error","データなし",1]];
 }
 
-// データを使いやすい形に変換
 const wordData = sourceData.map(d => ({ en: d[0], jp: d[1], lv: d[2] }));
 
 const dummyWords = [
@@ -60,7 +53,7 @@ const dummyWords = [
 ];
 
 // ==========================================
-//  システム変数定義
+//  システム定義
 // ==========================================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -75,7 +68,6 @@ const COLORS = {
 
 const STATE = { TITLE: 0, PLAY: 1, RESULT: 2 };
 
-// 変数初期化
 let currentState = STATE.TITLE; 
 let level = 1;
 let energy = 100;
@@ -88,7 +80,7 @@ let usedWordEn = [];
 let wrongHistory = [];
 
 // ==========================================
-//  画面サイズ管理 & PCクリック補正
+//  画面サイズ & 入力管理
 // ==========================================
 function resize() {
     canvas.width = window.innerWidth;
@@ -101,9 +93,6 @@ function resize() {
 window.addEventListener('resize', resize);
 resize(); 
 
-// ==========================================
-//  サウンド
-// ==========================================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -139,7 +128,6 @@ function playSound(type) {
 // ==========================================
 //  ゲームロジック
 // ==========================================
-
 function startGame() {
     level = 1;
     energy = MAX_ENERGY;
@@ -206,6 +194,7 @@ function handleAnswer(btn) {
 
     if (btn.isCorrect) {
         playSound('correct');
+        // レベル上昇ロジック（加速あり）
         let increment = 1;
         if (level < 40) increment = 4;
         else if (level < 70) increment = 2;
@@ -258,7 +247,6 @@ function update() {
 // ==========================================
 //  描画関数
 // ==========================================
-
 function draw() {
     ctx.fillStyle = COLORS.bg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -345,12 +333,6 @@ function drawTitle() {
     ctx.textAlign = 'center';
     ctx.font = 'bold 36px sans-serif';
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
-    
-    // バージョン表示
-    ctx.font = '20px sans-serif';
-    ctx.fillStyle = '#95a5a6';
-    ctx.fillText(APP_VERSION, canvas.width / 2, canvas.height / 2 - 20);
-    
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
         w: 200, h: 60, text: 'START'
@@ -387,6 +369,7 @@ function drawGame() {
     });
 }
 
+// ★修正ポイント：クリア時はシンプルに「ALL CLEAR!!」と表示
 function drawResult() {
     drawTower();
     drawWrongList();
@@ -403,10 +386,11 @@ function drawResult() {
     if (level > TOTAL_LEVELS) {
         ctx.fillStyle = COLORS.correct;
         ctx.font = 'bold 40px sans-serif';
-        ctx.fillText('CLEAR!!', cx, canvas.height / 2 - 60);
+        ctx.fillText('ALL CLEAR!!', cx, canvas.height / 2 - 60);
+        
         ctx.fillStyle = COLORS.text;
-        ctx.font = '20px sans-serif';
-        ctx.fillText(`Score: ${energy}`, cx, canvas.height / 2 - 10);
+        ctx.font = '24px sans-serif';
+        ctx.fillText(`Tower Conquered!`, cx, canvas.height / 2 - 10);
     } else {
         ctx.fillStyle = COLORS.wrong;
         ctx.font = 'bold 40px sans-serif';
@@ -434,9 +418,7 @@ function drawButton(btn, color) {
     ctx.textBaseline = 'alphabetic';
 }
 
-// ==========================================
-//  入力処理 (PC対応)
-// ==========================================
+// 入力イベント（PC補正込み）
 canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
