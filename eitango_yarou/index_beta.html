@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100 PC-Fix</title>
+<title>Word Tower 100 External</title>
 <style>
     body {
         margin: 0;
@@ -19,130 +19,20 @@
 
 <canvas id="gameCanvas"></canvas>
 
+<!-- 外部ファイル読み込み -->
+<script src="words.js"></script>
+
 <script>
 // ==========================================
-//  単語データ (前回同様)
+//  データ読み込みチェック
 // ==========================================
-const rawData = [
-    // --- Lv.1-10 ---
-    ["cat","猫",1], ["dog","犬",1], ["run","走る",1], ["eat","食べる",2], ["big","大きい",2],
-    ["see","見る",2], ["buy","買う",2], ["red","赤",1], ["blue","青",1], ["sky","空",3],
-    ["sea","海",3], ["sun","太陽",3], ["cow","牛",3], ["pig","豚",3], ["hot","熱い",3],
-    ["cold","寒い",4], ["cool","涼しい",4], ["warm","暖かい",4], ["rain","雨",4], ["snow","雪",4],
-    ["book","本",4], ["pen","ペン",4], ["desk","机",4], ["bed","ベッド",5], ["room","部屋",5],
-    ["door","ドア",5], ["box","箱",5], ["car","車",5], ["bus","バス",5], ["bike","自転車",5],
-    ["hand","手",6], ["foot","足",6], ["head","頭",6], ["eye","目",6], ["ear","耳",6],
-    ["day","日",6], ["week","週",6], ["year","年",6], ["time","時間",7], ["hour","1時間",7],
-    ["play","遊ぶ",7], ["swim","泳ぐ",7], ["walk","歩く",7], ["stop","止まる",7], ["wait","待つ",7],
-    ["love","愛する",8], ["like","好む",8], ["hate","嫌う",8], ["know","知る",8], ["think","思う",8],
-    ["good","良い",9], ["bad","悪い",9], ["nice","素敵な",9], ["fast","速い",9], ["slow","遅い",9],
-    ["long","長い",9], ["short","短い",9], ["high","高い",9], ["low","低い",9], ["hard","硬い",9],
-    ["summer","夏",10], ["winter","冬",10], ["spring","春",10], ["autumn","秋",10], ["start","開始",10],
-    // --- Lv.11-20 ---
-    ["study","勉強する",11], ["teach","教える",11], ["learn","学ぶ",11], ["write","書く",11], ["read","読む",11],
-    ["speak","話す",12], ["listen","聞く",12], ["watch","見る",12], ["meet","会う",12], ["join","参加する",12],
-    ["friend","友達",13], ["family","家族",13], ["parent","親",13], ["child","子供",13], ["human","人間",13],
-    ["house","家",14], ["home","家庭",14], ["school","学校",14], ["shop","店",14], ["park","公園",14],
-    ["city","都市",14], ["town","町",14], ["road","道",14], ["street","通り",14], ["place","場所",14],
-    ["food","食べ物",15], ["fruit","果物",15], ["meat","肉",15], ["fish","魚",15], ["water","水",15],
-    ["milk","牛乳",15], ["tea","お茶",15], ["coffee","コーヒー",15], ["bread","パン",15], ["rice","米",15],
-    ["enjoy","楽しむ",16], ["visit","訪問する",16], ["travel","旅行する",16], ["stay","滞在する",16], ["move","動く",16],
-    ["change","変える",17], ["check","確認する",17], ["count","数える",17], ["close","閉じる",17], ["open","開ける",17],
-    ["happy","幸せな",18], ["sad","悲しい",18], ["angry","怒った",18], ["tired","疲れた",18], ["busy","忙しい",18],
-    ["easy","簡単な",19], ["rich","裕福な",19], ["poor","貧しい",19], ["young","若い",19], ["old","古い",19],
-    ["clean","清潔な",20], ["dirty","汚い",20], ["dark","暗い",20], ["bright","明るい",20], ["heavy","重い",20],
-    // --- Lv.21-30 ---
-    ["invite","招待する",21], ["decide","決める",21], ["agree","同意する",21], ["share","共有する",21], ["save","救う",21],
-    ["break","壊す",22], ["build","建てる",22], ["catch","捕まえる",22], ["throw","投げる",22], ["push","押す",22],
-    ["pull","引く",22], ["carry","運ぶ",22], ["bring","持ってくる",22], ["take","連れて行く",22], ["send","送る",22],
-    ["simple","単純な",23], ["single","独身の",23], ["double","2倍の",23], ["final","最後の",23], ["total","合計の",23],
-    ["public","公の",24], ["local","地元の",24], ["global","世界的な",24], ["social","社会の",24], ["human","人間の",24],
-    ["nature","自然",25], ["future","未来",25], ["culture","文化",25], ["picture","写真",25], ["figure","数字/姿",25],
-    ["damage","損害",26], ["energy","エネルギー",26], ["engine","エンジン",26], ["planet","惑星",26], ["earth","地球",26],
-    ["history","歴史",27], ["science","科学",27], ["lesson","授業",27], ["reason","理由",27], ["season","季節",27],
-    ["doctor","医者",28], ["nurse","看護師",28], ["police","警察",28], ["artist","芸術家",28], ["driver","運転手",28],
-    ["market","市場",29], ["office","事務所",29], ["temple","寺",29], ["shrine","神社",29], ["church","教会",29],
-    ["forest","森",30], ["island","島",30], ["river","川",30], ["lake","湖",30], ["beach","浜辺",30],
-    // --- Lv.31-40 ---
-    ["accept","受け入れる",31], ["refuse","断る",31], ["expect","期待する",31], ["imagine","想像する",31], ["realize","気づく",31],
-    ["notice","気づく",32], ["wonder","不思議に思う",32], ["guess","推測する",32], ["judge","判断する",32], ["solve","解決する",32],
-    ["create","創造する",33], ["design","設計する",33], ["invent","発明する",33], ["develop","開発する",33], ["produce","生産する",33],
-    ["manage","管理する",34], ["control","制御する",34], ["handle","扱う",34], ["direct","指示する",34], ["guide","案内する",34],
-    ["damage","損害を与える",35], ["destroy","破壊する",35], ["injure","傷つける",35], ["hurt","痛む",35], ["attack","攻撃する",35],
-    ["advice","助言",36], ["habit","習慣",36], ["custom","慣習",36], ["rule","規則",36], ["role","役割",36],
-    ["skill","技術",37], ["style","様式",37], ["shape","形",37], ["size","大きさ",37], ["space","空間",37],
-    ["price","価格",38], ["cost","費用",38], ["value","価値",38], ["cash","現金",38], ["bill","請求書",38],
-    ["event","出来事",39], ["fact","事実",39], ["truth","真実",39], ["view","眺め/見解",39], ["idea","考え",39],
-    ["health","健康",40], ["breath","呼吸",40], ["blood","血",40], ["heart","心臓",40], ["brain","脳",40],
-    // --- Lv.41-50 ---
-    ["active","活動的な",41], ["actual","実際の",41], ["annual","毎年の",41], ["normal","標準の",41], ["formal","正式な",41],
-    ["common","共通の",42], ["modern","現代の",42], ["recent","最近の",42], ["current","現在の",42], ["future","未来の",42],
-    ["major","主要な",43], ["minor","少数の",43], ["sharp","鋭い",43], ["rapid","急速な",43], ["calm","穏やかな",43],
-    ["equal","等しい",44], ["fair","公平な",44], ["dear","親愛なる",44], ["glad","嬉しい",44], ["sure","確信して",44],
-    ["abroad","海外へ",45], ["online","オンラインで",45], ["apart","離れて",45], ["alike","似て",45], ["ahead","前方に",45],
-    ["degree","程度/学位",46], ["grade","学年/等級",46], ["stage","段階/舞台",46], ["scene","場面",46], ["sight","光景",46],
-    ["effort","努力",47], ["result","結果",47], ["effect","効果",47], ["cause","原因",47], ["basis","基礎",47],
-    ["theory","理論",48], ["theme","主題",48], ["task","任務",48], ["goal","目標",48], ["aim","目的",48],
-    ["profit","利益",49], ["income","収入",49], ["salary","給料",49], ["wage","賃金",49], ["tax","税金",49],
-    ["labor","労働",50], ["trade","貿易",50], ["deal","取引",50], ["firm","会社/堅い",50], ["client","顧客",50],
-    // --- Lv.51-60 ---
-    ["achieve","達成する",51], ["advance","前進する",51], ["attempt","試みる",51], ["attend","出席する",51], ["approach","接近する",51],
-    ["belong","所属する",52], ["behave","振る舞う",52], ["become","〜になる",52], ["begin","始まる",52], ["bring","もたらす",52],
-    ["charge","請求する",53], ["change","変化",53], ["choice","選択",53], ["chance","機会",53], ["challenge","挑戦",53],
-    ["demand","需要",54], ["supply","供給",54], ["desire","願望",54], ["detail","詳細",54], ["device","装置",54],
-    ["enable","可能にする",55], ["engage","従事させる",55], ["ensure","確実にする",55], ["expand","拡大する",55], ["extend","延長する",55],
-    ["factor","要因",56], ["figure","数字/人物",56], ["flavor","風味",56], ["favor","好意",56], ["fiber","繊維",56],
-    ["gather","集める",57], ["grasp","把握する",57], ["greet","挨拶する",57], ["guard","守る",57], ["guide","導く",57],
-    ["impact","影響",58], ["injury","怪我",58], ["insect","昆虫",58], ["issue","問題",58], ["image","画像",58],
-    ["junior","年下の",59], ["senior","年上の",59], ["super","最高の",59], ["extra","余分の",59], ["ultra","超〜",59],
-    ["likely","ありそうな",60], ["lately","最近",60], ["mainly","主に",60], ["merely","単に",60], ["mostly","大部分は",60],
-    // --- Lv.61-70 ---
-    ["admire","賞賛する",61], ["adore","崇拝する",61], ["adopt","採用する",61], ["adapt","適応させる",61], ["adjust","調整する",61],
-    ["banish","追放する",62], ["betray","裏切る",62], ["blame","非難する",62], ["bless","祝福する",62], ["boast","自慢する",62],
-    ["commit","犯す/委ねる",63], ["convey","伝える",63], ["confer","授与する",63], ["compel","強制する",63], ["comply","従う",63],
-    ["debate","討論する",64], ["defend","守る",64], ["define","定義する",64], ["depend","依存する",64], ["depict","描く",64],
-    ["emerge","現れる",65], ["evolve","進化する",65], ["exceed","超える",65], ["export","輸出する",65], ["expose","さらす",65],
-    ["forbid","禁じる",66], ["forget","忘れる",66], ["forgive","許す",66], ["freeze","凍る",66], ["frighten","怖がらせる",66],
-    ["glance","ちらっと見る",67], ["glare","にらむ",67], ["gaze","凝視する",67], ["stare","じろじろ見る",67], ["watch","観察する",67],
-    ["humble","謙虚な",68], ["honest","正直な",68], ["hostile","敵意のある",68], ["humane","人道的な",68], ["horrid","恐ろしい",68],
-    ["ignore","無視する",69], ["impair","損なう",69], ["impose","課す",69], ["inform","知らせる",69], ["inject","注入する",69],
-    ["just","公正な",70], ["joint","共同の",70], ["jolly","陽気な",70], ["juicy","水気の多い",70], ["jumbo","巨大な",70],
-    // --- Lv.71-80 ---
-    ["liberty","自由",71], ["luxury","贅沢",71], ["legacy","遺産",71], ["legend","伝説",71], ["liable","法的責任がある",71],
-    ["modify","修正する",72], ["magnify","拡大する",72], ["mystify","惑わす",72], ["multiply","掛ける",72], ["mortify","屈辱を与える",72],
-    ["notion","概念",73], ["nation","国家",73], ["nature","性質",73], ["native","固有の",73], ["novice","初心者",73],
-    ["obtain","入手する",74], ["occupy","占める",74], ["oppose","反対する",74], ["offend","気分を害する",74], ["observe","観察する",74],
-    ["precise","正確な",75], ["passive","受動的な",75], ["partial","部分的な",75], ["patient","忍耐強い",75], ["private","私的な",75],
-    ["quote","引用する",76], ["quest","探求",76], ["queen","女王",76], ["queue","列",76], ["quota","割当",76],
-    ["reveal","明らかにする",77], ["review","復習する",77], ["revise","修正する",77], ["revive","生き返らせる",77], ["revolt","反乱を起こす",77],
-    ["sacred","神聖な",78], ["scarce","乏しい",78], ["secret","秘密の",78], ["severe","厳しい",78], ["solemn","厳粛な",78],
-    ["thrive","繁栄する",79], ["threat","脅威",79], ["thrust","押し付ける",79], ["thrill","ぞくぞくする",79], ["thread","糸",79],
-    ["unique","独特の",80], ["update","更新する",80], ["upset","動揺させる",80], ["urge","促す",80], ["usage","語法",80],
-    // --- Lv.81-90 ---
-    ["abdicate","退位する",81], ["aberrant","常軌を逸した",81], ["abeyance","停止",81], ["abridge","要約する",81], ["abscond","持ち逃げする",81],
-    ["bombastic","大げさな",82], ["buoyant","活気がある",82], ["burgeon","急成長する",82], ["buttress","支える",82], ["bizarre","奇妙な",82],
-    ["cacophony","不協和音",83], ["cajole","甘言で釣る",83], ["calumny","中傷",83], ["capricious","気まぐれな",83], ["castigate","酷評する",83],
-    ["daunt","ひるませる",84], ["dearth","不足",84], ["debacle","大失敗",84], ["decorum","礼儀作法",84], ["deference","服従",84],
-    ["ebullient","あふれ出る",85], ["eclectic","折衷的な",85], ["efficacy","効力",85], ["effrontery","厚かましさ",85], ["elegy","哀歌",85],
-    ["facetious","滑稽な",86], ["fallacy","誤った推論",86], ["fawn","へつらう",86], ["feckless","無気力な",86], ["felicitous","適切な",86],
-    ["garrulous","おしゃべりな",87], ["gauche","不器用な",87], ["germane","適切な",87], ["glib","口達者な",87], ["grandiloquence","大言壮語",87],
-    ["harangue","熱弁を振るう",88], ["hedonism","快楽主義",88], ["hegemony","覇権",88], ["heresy","異端",88], ["histrionic","芝居がかった",88],
-    ["iconoclast","因習打破主義者",89], ["idiosyncrasy","特異性",89], ["imminent","差し迫った",89], ["immutable","不変の",89], ["impassive","無感動な",89],
-    ["juxtapose","並列する",90], ["jeopardize","危うくする",90], ["jettison","投棄する",90], ["jocular","滑稽な",90], ["jubilant","歓喜した",90],
-    // --- Lv.91-100 ---
-    ["laconic","簡潔な",91], ["lament","嘆く",91], ["languid","物憂げな",91], ["laud","称賛する",91], ["lethargic","無気力な",91],
-    ["maverick","一匹狼",92], ["mendacious","虚偽の",92], ["mercurial","変わりやすい",92], ["mitigate","和らげる",92], ["mollify","なだめる",92],
-    ["nascent","発生期の",93], ["nebulous","曖昧な",93], ["neophyte","初心者",93], ["nostrum","特効薬",93], ["nugatory","無価値な",93],
-    ["obdurate","頑固な",94], ["obfuscate","曖昧にする",94], ["obsequious","こびへつらう",94], ["obviate","不要にする",94], ["occlude","ふさぐ",94],
-    ["paean","賛歌",95], ["palatable","好ましい",95], ["panacea","万能薬",95], ["paragon","模範",95], ["pariah","のけ者",95],
-    ["quaint","古風で趣のある",96], ["quandary","当惑",96], ["quell","鎮める",96], ["querulous","不平を言う",96], ["quiescent","静止した",96],
-    ["ramify","分岐する",97], ["rancor","恨み",97], ["rapacious","強欲な",97], ["raucous","耳障りな",97], ["recalcitrant","反抗的な",97],
-    ["sagacious","賢明な",98], ["salient","目立った",98], ["salubrious","健康に良い",98], ["sanctimonious","聖人ぶった",98], ["sanguine","楽観的な",98],
-    ["tacit","暗黙の",99], ["taciturn","無口な",99], ["tangential","脱線した",99], ["tenuous","希薄な",99], ["tirade","長広舌",99],
-    ["ubiquitous","偏在する",100], ["umbrage","不快",100], ["unctuous","あやしい",100], ["upbraid","非難する",100], ["usury","高利貸し",100],
-    ["vacillate","動揺する",100], ["venerate","尊敬する",100], ["veracity","真実",100], ["verbose","冗長な",100], ["vex","悩ませる",100],
-    ["zealot","狂信者",100], ["zenith","頂点",100], ["zephyr","西風",100]
-];
+if (typeof rawData === 'undefined') {
+    // words.js がない場合のフォールバック（エラー回避用）
+    var rawData = [["Error","データなし",1], ["Check","words.jsを確認",1]];
+    console.error("words.js not found.");
+}
+
+// データをオブジェクト形式に変換
 const wordData = rawData.map(d => ({ en: d[0], jp: d[1], lv: d[2] }));
 
 const dummyWords = [
@@ -154,21 +44,11 @@ const dummyWords = [
     "概念", "理論", "哲学", "経済", "政治", "法律", "医学", "芸術", "宗教", "歴史"
 ];
 
+// ==========================================
+//  システム変数定義 (ここを先に書く必要があります！)
+// ==========================================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-
-// ウィンドウリサイズ時の処理（レイアウトの再計算を含む）
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    
-    // ゲーム中ならボタンの位置を現在の画面幅に合わせて再計算する
-    if (currentState === STATE.PLAY && currentQuestion) {
-        layoutButtons();
-    }
-}
-window.addEventListener('resize', resize);
-resize();
 
 const TOTAL_LEVELS = 100;
 const MAX_ENERGY = 100;
@@ -179,7 +59,9 @@ const COLORS = {
 };
 
 const STATE = { TITLE: 0, PLAY: 1, RESULT: 2 };
-let currentState = STATE.TITLE;
+
+// ★ここで変数を先に定義します
+let currentState = STATE.TITLE; 
 let level = 1;
 let energy = 100;
 let currentQuestion = null;
@@ -190,6 +72,24 @@ let feedbackColor = null;
 let usedWordEn = []; 
 let wrongHistory = [];
 
+// ==========================================
+//  画面サイズ管理 (変数が定義された後に実行)
+// ==========================================
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // 変数定義後なのでエラーになりません
+    if (currentState === STATE.PLAY && currentQuestion) {
+        layoutButtons();
+    }
+}
+window.addEventListener('resize', resize);
+resize(); // 初期実行
+
+// ==========================================
+//  サウンド
+// ==========================================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -221,6 +121,10 @@ function playSound(type) {
         osc.start(now); osc.stop(now + 0.05);
     }
 }
+
+// ==========================================
+//  ゲームロジック
+// ==========================================
 
 function startGame() {
     level = 1;
@@ -258,24 +162,16 @@ function nextQuestion() {
     options.sort(() => Math.random() - 0.5);
 
     currentQuestion = { word: q, options: options };
-    
-    // レイアウト計算
     layoutButtons();
 }
 
-// ★レイアウト計算を関数化（リサイズ時にも呼ぶため）
 function layoutButtons() {
     if (!currentQuestion) return;
-    
     buttons = [];
     const margin = 10;
     const btnHeight = 55;
-    // 画面下部、タワーを避けて配置
     const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 40; 
-    
-    // 右端 15% はタワー領域
     const towerWidth = canvas.width * 0.15;
-    // ボタン領域: 左端から タワーの手前まで
     const btnX = 20;
     const btnW = canvas.width - towerWidth - 40; 
 
@@ -296,7 +192,6 @@ function handleAnswer(btn) {
 
     if (btn.isCorrect) {
         playSound('correct');
-        // 加速ロジック
         let increment = 1;
         if (level < 40) increment = 4;
         else if (level < 70) increment = 2;
@@ -345,6 +240,10 @@ function update() {
         }
     }
 }
+
+// ==========================================
+//  描画
+// ==========================================
 
 function draw() {
     ctx.fillStyle = COLORS.bg;
@@ -414,7 +313,6 @@ function drawWrongList() {
     if (wrongHistory.length === 0) return;
     const startX = 20;
     const startY = 60;
-    
     ctx.textAlign = 'left';
     ctx.font = '14px sans-serif';
     ctx.fillStyle = '#e74c3c';
@@ -435,8 +333,7 @@ function drawTitle() {
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
     ctx.font = 'bold 24px sans-serif';
     ctx.fillStyle = COLORS.accent;
-    ctx.fillText('FINAL', canvas.width / 2, canvas.height / 2 - 20);
-    
+    ctx.fillText('EXTERNAL DATA', canvas.width / 2, canvas.height / 2 - 20);
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
         w: 200, h: 60, text: 'START'
@@ -446,29 +343,26 @@ function drawTitle() {
 function drawGame() {
     drawTower();
     drawWrongList();
-
     ctx.fillStyle = COLORS.text;
     ctx.textAlign = 'center'; 
     ctx.font = 'bold 24px sans-serif';
     ctx.fillText(`Lv.${level}`, canvas.width / 2, 40);
-    
     ctx.textAlign = 'right';
     ctx.font = '20px sans-serif';
     ctx.fillText(`HP ${energy}`, canvas.width - (canvas.width * 0.15) - 20, 40);
 
     const gameAreaW = canvas.width - (canvas.width * 0.15);
-    const contentCenterX = gameAreaW / 2;
+    const cx = gameAreaW / 2;
     
     ctx.textAlign = 'center';
     ctx.fillStyle = feedbackColor || COLORS.text;
     ctx.font = 'bold 40px sans-serif';
     if (currentQuestion) {
-        ctx.fillText(currentQuestion.word.en, contentCenterX, canvas.height / 3);
+        ctx.fillText(currentQuestion.word.en, cx, canvas.height / 3);
         ctx.font = '14px sans-serif';
         ctx.fillStyle = '#7f8c8d';
-        ctx.fillText(`(Difficulty Lv.${currentQuestion.word.lv})`, contentCenterX, canvas.height / 3 + 40);
+        ctx.fillText(`(Lv.${currentQuestion.word.lv})`, cx, canvas.height / 3 + 40);
     }
-
     buttons.forEach(btn => {
         let color = COLORS.btnDefault;
         if (feedbackColor && btn.isCorrect) color = COLORS.correct;
@@ -479,10 +373,8 @@ function drawGame() {
 function drawResult() {
     drawTower();
     drawWrongList();
-
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     drawWrongList();
     drawTower();
 
@@ -506,7 +398,6 @@ function drawResult() {
         ctx.font = '20px sans-serif';
         ctx.fillText(`Reached: Lv.${level}`, cx, canvas.height / 2 - 10);
     }
-    
     drawButton({
         x: cx - 100, y: canvas.height / 2 + 80,
         w: 200, h: 60, text: 'RETRY'
@@ -526,16 +417,12 @@ function drawButton(btn, color) {
     ctx.textBaseline = 'alphabetic';
 }
 
-// ★修正ポイント：クリック位置のズレ補正
+// タッチ・クリック位置補正
 canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
-    
-    // キャンバスの描画サイズと、画面上の表示サイズの比率を計算
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-
-    // 補正後の座標
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
 
