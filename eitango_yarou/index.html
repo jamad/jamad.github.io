@@ -2,12 +2,12 @@
 <html lang="ja">
 <!-- 
   Word Tower 100
-  Version: 1.4 (Graph on Tower + Smart Options)
+  Version: 1.9 (Remove Stub Line + Integrated UI)
 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100 (Ver 1.4)</title>
+<title>Word Tower 100 (Ver 1.9)</title>
 <style>
     body {
         margin: 0;
@@ -35,7 +35,6 @@ let sourceData = [];
 if (typeof rawData !== 'undefined') {
     sourceData = rawData;
 } else {
-    alert("【エラー】words.js が見つかりません。");
     sourceData = [["Error","データなし",1]];
 }
 
@@ -49,13 +48,14 @@ const ctx = canvas.getContext('2d');
 
 const TOTAL_LEVELS = 100;
 const MAX_ENERGY = 100;
+const MAX_HISTORY_COUNT = 20;
 
 const COLORS = {
     bg: '#2c3e50', text: '#ecf0f1', accent: '#f1c40f',
     correct: '#2ecc71', wrong: '#e74c3c', btnDefault: '#34495e',
-    // グラフの色を少し濃くして視認性アップ
-    graphLine: 'rgba(241, 196, 15, 0.8)', 
-    graphFill: 'rgba(241, 196, 15, 0.2)'
+    graphLine: 'rgba(241, 196, 15, 0.9)', 
+    graphFill: 'rgba(241, 196, 15, 0.3)',
+    graphNode: '#f1c40f'
 };
 
 const STATE = { TITLE: 0, PLAY: 1, RESULT: 2 };
@@ -72,6 +72,9 @@ let usedWordEn = [];
 let wrongHistory = [];
 let levelHistory = [1]; 
 
+let startTime = 0;
+let endTime = 0;
+
 // ==========================================
 //  画面サイズ & 入力管理
 // ==========================================
@@ -85,34 +88,46 @@ function resize() {
 window.addEventListener('resize', resize);
 resize(); 
 
+// ==========================================
+//  サウンド管理
+// ==========================================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function initAudio() {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
 function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     
     const now = audioCtx.currentTime;
+    
     if (type === 'correct') {
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1);
         gain.gain.setValueAtTime(0.3, now);
-        gain.gain.linearRampToValueAtTime(0, now + 0.1);
-        osc.start(now); osc.stop(now + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.start(now); osc.stop(now + 0.15);
     } else if (type === 'wrong') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(150, now);
-        osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.3);
         gain.gain.setValueAtTime(0.3, now);
-        gain.gain.linearRampToValueAtTime(0, now + 0.2);
-        osc.start(now); osc.stop(now + 0.2);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now); osc.stop(now + 0.3);
     } else if (type === 'tap') {
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(400, now);
         gain.gain.setValueAtTime(0.1, now);
-        gain.gain.linearRampToValueAtTime(0, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
         osc.start(now); osc.stop(now + 0.05);
     }
 }
@@ -121,11 +136,15 @@ function playSound(type) {
 //  ゲームロジック
 // ==========================================
 function startGame() {
+    initAudio();
     level = 1;
     energy = MAX_ENERGY;
     usedWordEn = []; 
     wrongHistory = [];
     levelHistory = [1];
+    
+    startTime = Date.now();
+    
     currentState = STATE.PLAY;
     nextQuestion();
 }
@@ -139,56 +158,36 @@ function getQuestionData(currentLv) {
     return wordData[Math.floor(Math.random() * wordData.length)];
 }
 
-// ★改良版: ダミー選択肢生成ロジック
 function createSmartOptions(correctWord) {
     let options = [correctWord.jp];
-    
-    // 1. 正解単語に近いレベルの単語をリストアップ (±10レベル)
-    //    もし候補が少なければ範囲を広げる
     let candidates = [];
     let range = 10;
-    
     while (candidates.length < 10 && range <= 50) {
-        candidates = wordData.filter(w => 
-            Math.abs(w.lv - correctWord.lv) <= range && 
-            w.jp !== correctWord.jp // 正解そのものは除外
-        );
+        candidates = wordData.filter(w => Math.abs(w.lv - correctWord.lv) <= range && w.jp !== correctWord.jp);
         range += 10;
     }
-
-    // 2. 候補からランダムに抽出して選択肢を埋める
     while (options.length < 5) {
         if (candidates.length > 0) {
             const idx = Math.floor(Math.random() * candidates.length);
-            const picked = candidates[idx];
-            if (!options.includes(picked.jp)) {
-                options.push(picked.jp);
-            }
-            // 一度使った候補は削除（重複防止）
+            options.push(candidates[idx].jp);
             candidates.splice(idx, 1);
         } else {
-            // 万が一候補切れなら、ダミーテキスト（緊急回避）
-            options.push("ErrorOption" + options.length);
+            options.push("Error" + options.length);
         }
     }
-
-    // シャッフル
     return options.sort(() => Math.random() - 0.5);
 }
 
 function nextQuestion() {
     energy--;
     if (energy < 0) {
+        endTime = Date.now();
         currentState = STATE.RESULT;
         return;
     }
-
     let q = getQuestionData(level);
     usedWordEn.push(q.en);
-
-    // ★ここで「賢い選択肢」を生成
     let options = createSmartOptions(q);
-
     currentQuestion = { word: q, options: options };
     layoutButtons();
 }
@@ -200,11 +199,13 @@ function layoutButtons() {
     const btnHeight = 55;
     const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 40; 
     
-    // タワー幅は画面の15%（スリムに戻す）
-    const towerWidth = canvas.width * 0.15;
+    // タワー幅 (12%)
+    const towerW = canvas.width * 0.12;
+    const playAreaW = canvas.width - towerW;
     
-    const btnX = 20;
-    const btnW = canvas.width - towerWidth - 40; 
+    // ボタン幅は80%
+    const btnW = playAreaW * 0.8;
+    const btnX = (playAreaW - btnW) / 2;
 
     currentQuestion.options.forEach((opt, i) => {
         buttons.push({
@@ -223,31 +224,27 @@ function handleAnswer(btn) {
 
     if (btn.isCorrect) {
         playSound('correct');
-        
-        // サインカーブ上昇ロジック
         const maxIncrement = 5;
         const radian = (level / 100) * (Math.PI / 2);
         let increment = Math.max(1, Math.round(maxIncrement * Math.cos(radian)));
-        
         level += increment;
         
         feedbackColor = COLORS.correct;
         spawnParticles(canvas.width / 2, canvas.height / 2, COLORS.correct);
-        
         levelHistory.push(level);
 
         if (level > TOTAL_LEVELS) {
+            endTime = Date.now();
             currentState = STATE.RESULT;
             return;
         }
     } else {
         playSound('wrong');
         wrongHistory.unshift({ en: currentQuestion.word.en, jp: currentQuestion.word.jp });
-        if (wrongHistory.length > 6) wrongHistory.pop();
+        if (wrongHistory.length > MAX_HISTORY_COUNT) wrongHistory.pop();
 
         if (level > 1) level--; 
         levelHistory.push(level);
-
         feedbackColor = COLORS.wrong;
         spawnParticles(canvas.width / 2, canvas.height / 2, COLORS.wrong);
     }
@@ -278,9 +275,31 @@ function update() {
     }
 }
 
+function formatTime(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    const mm = m.toString().padStart(2, '0');
+    const ss = s.toString().padStart(2, '0');
+    return `${mm}:${ss}`;
+}
+
 // ==========================================
-//  描画関数
+//  描画関数群
 // ==========================================
+
+function drawFitText(text, x, y, maxWidth, initialFontSize) {
+    ctx.font = `bold ${initialFontSize}px sans-serif`;
+    let width = ctx.measureText(text).width;
+    let fontSize = initialFontSize;
+    while (width > maxWidth && fontSize > 10) {
+        fontSize--;
+        ctx.font = `bold ${fontSize}px sans-serif`;
+        width = ctx.measureText(text).width;
+    }
+    ctx.fillText(text, x, y);
+}
+
 function draw() {
     ctx.fillStyle = COLORS.bg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -301,18 +320,13 @@ function draw() {
 }
 function loop() { update(); draw(); }
 
-// ★タワー＋グラフ統合描画
-// グラフを「タワーの上に」圧縮して描く
 function drawTowerWithGraph() {
-    const w = canvas.width * 0.15; // 画面幅の15%（以前のサイズへ戻す）
+    const w = canvas.width * 0.12; 
     const h = canvas.height;
-    
-    // タワーの中心X座標（画面右端）
     const towerCenterX = canvas.width; 
     
-    // タワー形状
     const bottomW = w * 1.5; 
-    const topW = w * 0.4;
+    const topW = w * 0.5;
     const startY = h - 50;
     const endY = 50;
     const heightRange = startY - endY;
@@ -327,100 +341,104 @@ function drawTowerWithGraph() {
     ctx.closePath();
     ctx.fill();
 
-    // ------------------------------------------
-    // 折れ線グラフ（タワーの幅の中に描画）
-    // ------------------------------------------
+    // グラフ
     if (levelHistory.length >= 2) {
         ctx.strokeStyle = COLORS.graphLine;
         ctx.lineWidth = 2;
         ctx.beginPath();
 
-        // グラフのX軸範囲: タワーの左端 〜 タワーの右端(画面端)
-        // ※タワーは台形なので、Xの範囲は高さによって変わるが、
-        //   ここではシンプルに「底辺の幅」を基準にグラフを描く
-        //   （登山道のように見せるため）
-        
         const graphMinX = towerCenterX - bottomW;
         const graphMaxX = towerCenterX;
         const graphWidth = graphMaxX - graphMinX;
-
-        // 履歴のステップ数
         const totalSteps = Math.max(20, levelHistory.length);
         const stepX = graphWidth / totalSteps;
 
         levelHistory.forEach((lv, i) => {
-            // Y座標（高さ）
-            const ratioY = Math.min(1.0, lv / TOTAL_LEVELS);
+            const drawLv = Math.min(TOTAL_LEVELS, lv);
+            const ratioY = Math.min(1.0, drawLv / TOTAL_LEVELS);
             const y = startY - (ratioY * heightRange);
-
-            // X座標（タワーの幅の中に圧縮）
-            // 時間経過(i)とともに右へ進む
-            // グラフは「タワーの左端」からスタートし、「画面右端」へ向かう
             const x = graphMinX + (i * stepX);
-
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
         ctx.stroke();
 
-        // 下を塗りつぶし
-        // 最後の点
         const lastX = graphMinX + ((levelHistory.length - 1) * stepX);
-        const lastLv = levelHistory[levelHistory.length - 1];
-        const lastRatioY = Math.min(1.0, lastLv / TOTAL_LEVELS);
-        const lastY = startY - (lastRatioY * heightRange);
-
-        ctx.lineTo(lastX, startY); // 真下へ
-        ctx.lineTo(graphMinX, startY); // スタート地点の真下へ
+        ctx.lineTo(lastX, startY);
+        ctx.lineTo(graphMinX, startY);
         ctx.fillStyle = COLORS.graphFill;
         ctx.fill();
-    }
-    // ------------------------------------------
 
-    // 現在レベルの矢印とライン
-    const progress = Math.min(1.0, (level - 1) / 99);
+        // ノード
+        ctx.fillStyle = COLORS.graphNode;
+        levelHistory.forEach((lv, i) => {
+            const drawLv = Math.min(TOTAL_LEVELS, lv);
+            const ratioY = Math.min(1.0, drawLv / TOTAL_LEVELS);
+            const y = startY - (ratioY * heightRange);
+            const x = graphMinX + (i * stepX);
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2); 
+            ctx.fill();
+        });
+    }
+
+    // 現在地計算
+    const displayLevel = Math.min(TOTAL_LEVELS, level);
+    const progress = Math.min(1.0, (displayLevel - 1) / 99);
     const currentY = startY - (progress * heightRange);
     
-    // 矢印の位置計算（タワーの左斜辺に沿う）
+    // 矢印位置
     const leftEdgeX = (towerCenterX - bottomW) + ((towerCenterX - topW) - (towerCenterX - bottomW)) * progress;
 
     // 矢印
     ctx.fillStyle = '#f1c40f';
     ctx.beginPath();
-    ctx.moveTo(leftEdgeX - 5, currentY);
-    ctx.lineTo(leftEdgeX - 20, currentY - 10);
-    ctx.lineTo(leftEdgeX - 20, currentY + 10);
+    // ★修正1：矢印の先端と同じX座標から描画開始（後ろへの線は出さない）
+    ctx.moveTo(leftEdgeX, currentY); 
+    // 後ろ側
+    ctx.lineTo(leftEdgeX - 15, currentY - 8);
+    ctx.lineTo(leftEdgeX - 15, currentY + 8);
     ctx.fill();
 
-    // テキスト
+    // ★修正2：レベルとHPを矢印の下にまとめて表示
+    ctx.textAlign = 'right';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillStyle = '#f1c40f'; 
+    // LvとHPを並べて表示
+    ctx.fillText(`Lv.${displayLevel}  HP:${energy}`, leftEdgeX - 5, currentY + 25);
+
+    // 基準線 (矢印の先端から右へ)
+    ctx.strokeStyle = '#f1c40f';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(leftEdgeX, currentY); // 矢印の先端からスタート
+    ctx.lineTo(canvas.width, currentY);
+    ctx.stroke();
+
+    // 上下の固定テキスト
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'right';
     ctx.font = '12px sans-serif';
     ctx.fillText('Lv.100', canvas.width - 5, endY - 10);
     ctx.fillText('Start', canvas.width - 5, startY + 20);
-    
-    // 現在地ライン
-    ctx.strokeStyle = '#f1c40f';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(leftEdgeX - 25, currentY);
-    ctx.lineTo(canvas.width, currentY);
-    ctx.stroke();
 }
 
 function drawWrongList() {
     if (wrongHistory.length === 0) return;
+    
     const startX = 20;
     const startY = 60;
+    const lineHeight = 20;
+
     ctx.textAlign = 'left';
-    ctx.font = '14px sans-serif';
+    ctx.font = 'bold 14px sans-serif';
     ctx.fillStyle = '#e74c3c';
     ctx.fillText("--- MISSED ---", startX, startY);
 
+    ctx.font = '14px sans-serif';
     wrongHistory.forEach((item, i) => {
         ctx.fillStyle = '#ecf0f1';
-        ctx.font = '16px sans-serif';
-        const y = startY + 25 + (i * 25);
+        const y = startY + 25 + (i * lineHeight);
         ctx.fillText(`${item.en} : ${item.jp}`, startX, y);
     });
 }
@@ -430,10 +448,9 @@ function drawTitle() {
     ctx.textAlign = 'center';
     ctx.font = 'bold 36px sans-serif';
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
-    
     ctx.font = '20px sans-serif';
     ctx.fillStyle = '#95a5a6';
-    ctx.fillText("Ver 1.4", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText("Ver 1.9", canvas.width / 2, canvas.height / 2 - 20);
     
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
@@ -442,31 +459,23 @@ function drawTitle() {
 }
 
 function drawGame() {
-    // 1. タワーとグラフを描画
     drawTowerWithGraph();
-    // 2. UIパーツ
     drawWrongList();
     
-    ctx.fillStyle = COLORS.text;
-    ctx.textAlign = 'center'; 
-    ctx.font = 'bold 24px sans-serif';
-    ctx.fillText(`Lv.${level}`, canvas.width / 2, 40);
-    
-    ctx.textAlign = 'right';
-    ctx.font = '20px sans-serif';
-    ctx.fillText(`HP ${energy}`, canvas.width - (canvas.width * 0.15) - 20, 40);
+    // ★右上のHP表示は削除しました（矢印横に統合）
 
-    const gameAreaW = canvas.width - (canvas.width * 0.15);
-    const cx = gameAreaW / 2;
+    const towerW = canvas.width * 0.12;
+    const playAreaW = canvas.width - towerW;
+    const cx = playAreaW / 2;
     
     ctx.textAlign = 'center';
     ctx.fillStyle = feedbackColor || COLORS.text;
-    ctx.font = 'bold 40px sans-serif';
+    
     if (currentQuestion) {
-        ctx.fillText(currentQuestion.word.en, cx, canvas.height / 3);
+        drawFitText(currentQuestion.word.en, cx, canvas.height / 4, playAreaW * 0.9, 42);
         ctx.font = '14px sans-serif';
         ctx.fillStyle = '#7f8c8d';
-        ctx.fillText(`(Lv.${currentQuestion.word.lv})`, cx, canvas.height / 3 + 40);
+        ctx.fillText(`(Difficulty Lv.${currentQuestion.word.lv})`, cx, canvas.height / 4 + 40);
     }
     buttons.forEach(btn => {
         let color = COLORS.btnDefault;
@@ -478,34 +487,47 @@ function drawGame() {
 function drawResult() {
     drawTowerWithGraph();
     drawWrongList();
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillStyle = 'rgba(0,0,0,0.85)'; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     drawTowerWithGraph();
     drawWrongList();
 
-    const gameAreaW = canvas.width - (canvas.width * 0.15);
-    const cx = gameAreaW / 2;
+    const towerW = canvas.width * 0.12;
+    const playAreaW = canvas.width - towerW;
+    const cx = playAreaW / 2;
+    const cy = canvas.height / 2;
+
+    const duration = endTime - startTime;
+    const timeStr = formatTime(duration);
 
     ctx.fillStyle = COLORS.text;
     ctx.textAlign = 'center';
     if (level > TOTAL_LEVELS) {
         ctx.fillStyle = COLORS.correct;
         ctx.font = 'bold 50px sans-serif';
-        ctx.fillText('ALL CLEAR!!', cx, canvas.height / 2 - 60);
-        ctx.fillStyle = COLORS.text;
+        ctx.fillText('ALL CLEAR!!', cx, cy - 80);
+        
+        ctx.fillStyle = '#fff';
         ctx.font = '24px sans-serif';
-        ctx.fillText(`Tower Conquered!`, cx, canvas.height / 2 - 10);
+        ctx.fillText(`Time: ${timeStr}`, cx, cy - 20);
+        
+        ctx.font = 'bold 28px sans-serif';
+        ctx.fillStyle = COLORS.accent;
+        ctx.fillText(`Score: ${energy} (Remaining HP)`, cx, cy + 20);
+        
     } else {
         ctx.fillStyle = COLORS.wrong;
         ctx.font = 'bold 50px sans-serif';
-        ctx.fillText('GAME OVER', cx, canvas.height / 2 - 60);
-        ctx.fillStyle = COLORS.text;
+        ctx.fillText('GAME OVER', cx, cy - 80);
+        
+        ctx.fillStyle = '#fff';
         ctx.font = '24px sans-serif';
-        ctx.fillText(`Reached: Lv.${level}`, cx, canvas.height / 2 - 10);
+        ctx.fillText(`Time: ${timeStr}`, cx, cy - 20);
+        ctx.fillText(`Reached: Lv.${level}`, cx, cy + 20);
     }
     drawButton({
-        x: cx - 100, y: canvas.height / 2 + 80,
+        x: cx - 100, y: cy + 80,
         w: 200, h: 60, text: 'RETRY'
     }, COLORS.accent);
 }
@@ -516,15 +538,15 @@ function drawButton(btn, color) {
     ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 12);
     ctx.fill();
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 18px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(btn.text, btn.x + btn.w / 2, btn.y + btn.h / 2);
+    drawFitText(btn.text, btn.x + btn.w / 2, btn.y + btn.h / 2, btn.w - 20, 18);
     ctx.textBaseline = 'alphabetic';
 }
 
 canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
+    initAudio(); 
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
