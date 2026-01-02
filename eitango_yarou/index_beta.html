@@ -2,12 +2,12 @@
 <html lang="ja">
 <!-- 
   Word Tower 100
-  Version: 2.0 (Final Release: Big Buttons)
+  Version: 2.1 (Transparent Buttons for Mobile)
 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100 (Ver 2.0)</title>
+<title>Word Tower 100 (Ver 2.1)</title>
 <style>
     body {
         margin: 0;
@@ -50,9 +50,15 @@ const TOTAL_LEVELS = 100;
 const MAX_ENERGY = 100;
 const MAX_HISTORY_COUNT = 20;
 
+// ★変更点：ボタンの色をRGBA形式（半透明）に変更
+// 最後の数字(0.75)が不透明度です。1.0で不透明、0.0で完全透明。
 const COLORS = {
     bg: '#2c3e50', text: '#ecf0f1', accent: '#f1c40f',
-    correct: '#2ecc71', wrong: '#e74c3c', btnDefault: '#34495e',
+    // ボタンの背景色（透過あり）
+    btnDefault: 'rgba(52, 73, 94, 0.75)',  // 紺色
+    correct:    'rgba(46, 204, 113, 0.75)', // 緑
+    wrong:      'rgba(231, 76, 60, 0.75)',  // 赤
+    
     graphLine: 'rgba(241, 196, 15, 0.9)', 
     graphFill: 'rgba(241, 196, 15, 0.3)',
     graphNode: '#f1c40f'
@@ -192,22 +198,17 @@ function nextQuestion() {
     layoutButtons();
 }
 
-// ★修正点：ボタンサイズを大きく設定
 function layoutButtons() {
     if (!currentQuestion) return;
     buttons = [];
+    const margin = 15;
+    const btnHeight = 72; // 大きいボタン
     
-    // ★ボタンの高さと間隔をアップ
-    const margin = 15;  // 10 -> 15
-    const btnHeight = 72; // 55 -> 72
-    
-    // 画面下部から積み上げ
     const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 40; 
     
     const towerW = canvas.width * 0.12;
     const playAreaW = canvas.width - towerW;
     
-    // 幅80%
     const btnW = playAreaW * 0.8;
     const btnX = (playAreaW - btnW) / 2;
 
@@ -233,8 +234,8 @@ function handleAnswer(btn) {
         let increment = Math.max(1, Math.round(maxIncrement * Math.cos(radian)));
         level += increment;
         
-        feedbackColor = COLORS.correct;
-        spawnParticles(canvas.width / 2, canvas.height / 2, COLORS.correct);
+        feedbackColor = COLORS.correct; // 正解時の色は半透明緑
+        spawnParticles(canvas.width / 2, canvas.height / 2, '#2ecc71'); // パーティクルは不透明
         levelHistory.push(level);
 
         if (level > TOTAL_LEVELS) {
@@ -249,8 +250,8 @@ function handleAnswer(btn) {
 
         if (level > 1) level--; 
         levelHistory.push(level);
-        feedbackColor = COLORS.wrong;
-        spawnParticles(canvas.width / 2, canvas.height / 2, COLORS.wrong);
+        feedbackColor = COLORS.wrong; // 不正解時の色は半透明赤
+        spawnParticles(canvas.width / 2, canvas.height / 2, '#e74c3c');
     }
     feedbackTimer = 35;
 }
@@ -442,7 +443,7 @@ function drawTitle() {
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
     ctx.font = '20px sans-serif';
     ctx.fillStyle = '#95a5a6';
-    ctx.fillText("Ver 2.0", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText("Ver 2.1", canvas.width / 2, canvas.height / 2 - 20);
     
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
@@ -454,6 +455,8 @@ function drawGame() {
     drawTowerWithGraph();
     drawWrongList();
     
+    // HP表示(右上)は削除済み
+
     const towerW = canvas.width * 0.12;
     const playAreaW = canvas.width - towerW;
     const cx = playAreaW / 2;
@@ -523,15 +526,15 @@ function drawResult() {
 }
 
 function drawButton(btn, color) {
-    ctx.fillStyle = color;
+    ctx.fillStyle = color; // 半透明の背景色
     ctx.beginPath();
     ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 12);
     ctx.fill();
-    ctx.fillStyle = '#fff';
+    
+    ctx.fillStyle = '#fff'; // テキストは不透明
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    // ★変更点：ボタンの文字サイズを大きく (基準24px)
     drawFitText(btn.text, btn.x + btn.w / 2, btn.y + btn.h / 2, btn.w - 20, 24);
     
     ctx.textBaseline = 'alphabetic';
