@@ -2,12 +2,12 @@
 <html lang="ja">
 <!-- 
   Word Tower 100
-  Version: 1.6 (Fit-Text + Dynamic Level Pos + Narrow Buttons)
+  Version: 1.7 (Button 80%, Auto-Fit JP Text, Graph Nodes)
 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100 (Ver 1.6)</title>
+<title>Word Tower 100 (Ver 1.7)</title>
 <style>
     body {
         margin: 0;
@@ -54,7 +54,8 @@ const COLORS = {
     bg: '#2c3e50', text: '#ecf0f1', accent: '#f1c40f',
     correct: '#2ecc71', wrong: '#e74c3c', btnDefault: '#34495e',
     graphLine: 'rgba(241, 196, 15, 0.9)', 
-    graphFill: 'rgba(241, 196, 15, 0.3)'
+    graphFill: 'rgba(241, 196, 15, 0.3)',
+    graphNode: '#f1c40f' // グラフの点の色
 };
 
 const STATE = { TITLE: 0, PLAY: 1, RESULT: 2 };
@@ -184,7 +185,7 @@ function nextQuestion() {
     layoutButtons();
 }
 
-// ★修正点：ボタン幅を90%にし、中央揃えにする
+// ★修正点：ボタン幅を80%に縮小
 function layoutButtons() {
     if (!currentQuestion) return;
     buttons = [];
@@ -197,8 +198,8 @@ function layoutButtons() {
     // ゲームプレイエリア幅 (画面幅 - タワー幅)
     const playAreaW = canvas.width - towerW;
     
-    // ボタン幅はプレイエリアの90%
-    const btnW = playAreaW * 0.9;
+    // ボタン幅はプレイエリアの80%
+    const btnW = playAreaW * 0.8;
     
     // 中央寄せにするためのX座標
     const btnX = (playAreaW - btnW) / 2;
@@ -273,7 +274,7 @@ function update() {
 //  描画関数群
 // ==========================================
 
-// ★新機能：テキストが幅を超えたらフォントサイズを自動縮小して描画
+// テキストサイズ自動調整（中央揃え対応）
 function drawFitText(text, x, y, maxWidth, initialFontSize) {
     ctx.font = `bold ${initialFontSize}px sans-serif`;
     let width = ctx.measureText(text).width;
@@ -341,6 +342,7 @@ function drawTowerWithGraph() {
         const totalSteps = Math.max(20, levelHistory.length);
         const stepX = graphWidth / totalSteps;
 
+        // 線を描画
         levelHistory.forEach((lv, i) => {
             const ratioY = Math.min(1.0, lv / TOTAL_LEVELS);
             const y = startY - (ratioY * heightRange);
@@ -350,11 +352,24 @@ function drawTowerWithGraph() {
         });
         ctx.stroke();
 
+        // 塗りつぶし
         const lastX = graphMinX + ((levelHistory.length - 1) * stepX);
         ctx.lineTo(lastX, startY);
         ctx.lineTo(graphMinX, startY);
         ctx.fillStyle = COLORS.graphFill;
         ctx.fill();
+
+        // ★新機能：ノード（丸）を描画
+        ctx.fillStyle = COLORS.graphNode;
+        levelHistory.forEach((lv, i) => {
+            const ratioY = Math.min(1.0, lv / TOTAL_LEVELS);
+            const y = startY - (ratioY * heightRange);
+            const x = graphMinX + (i * stepX);
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2); // 半径2の丸
+            ctx.fill();
+        });
     }
 
     // 現在地計算
@@ -370,11 +385,12 @@ function drawTowerWithGraph() {
     ctx.lineTo(leftEdgeX - 20, currentY + 10);
     ctx.fill();
 
-    // ★変更点：レベル表示を矢印の横（左側）に移動
+    // ★変更点：レベル表示を矢印の「下」に移動
     ctx.textAlign = 'right';
     ctx.font = 'bold 16px sans-serif';
-    ctx.fillStyle = '#f1c40f'; // 矢印と同じ色で目立たせる
-    ctx.fillText(`Lv.${level}`, leftEdgeX - 25, currentY + 5);
+    ctx.fillStyle = '#f1c40f'; 
+    // leftEdgeX（矢印の先端付近）の真下へ
+    ctx.fillText(`Lv.${level}`, leftEdgeX - 5, currentY + 25);
 
     // 基準線
     ctx.strokeStyle = '#f1c40f';
@@ -419,7 +435,7 @@ function drawTitle() {
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
     ctx.font = '20px sans-serif';
     ctx.fillStyle = '#95a5a6';
-    ctx.fillText("Ver 1.6", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText("Ver 1.7", canvas.width / 2, canvas.height / 2 - 20);
     
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
@@ -437,7 +453,6 @@ function drawGame() {
     ctx.font = '20px sans-serif';
     ctx.fillText(`HP ${energy}`, canvas.width - (canvas.width * 0.15) - 20, 40);
 
-    // ゲームエリアの中心（タワーを除く）
     const towerW = canvas.width * 0.12;
     const playAreaW = canvas.width - towerW;
     const cx = playAreaW / 2;
@@ -446,13 +461,12 @@ function drawGame() {
     ctx.fillStyle = feedbackColor || COLORS.text;
     
     if (currentQuestion) {
-        // ★変更点：長文対応（drawFitTextを使用）
-        // 画面の80%くらいの幅に収まるようにする
-        drawFitText(currentQuestion.word.en, cx, canvas.height / 3, playAreaW * 0.8, 40);
+        // ★変更点：英単語の表示位置を画面上部（1/4）へ移動
+        drawFitText(currentQuestion.word.en, cx, canvas.height / 4, playAreaW * 0.9, 42);
 
         ctx.font = '14px sans-serif';
         ctx.fillStyle = '#7f8c8d';
-        ctx.fillText(`(Difficulty Lv.${currentQuestion.word.lv})`, cx, canvas.height / 3 + 40);
+        ctx.fillText(`(Difficulty Lv.${currentQuestion.word.lv})`, cx, canvas.height / 4 + 40);
     }
     buttons.forEach(btn => {
         let color = COLORS.btnDefault;
@@ -503,11 +517,14 @@ function drawButton(btn, color) {
     ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 12);
     ctx.fill();
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 18px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(btn.text, btn.x + btn.w / 2, btn.y + btn.h / 2);
-    ctx.textBaseline = 'alphabetic';
+    
+    // ★変更点：ボタン内の文字も自動縮小（drawFitText利用）
+    // パディングを考慮して幅-20pxを最大幅とする
+    drawFitText(btn.text, btn.x + btn.w / 2, btn.y + btn.h / 2, btn.w - 20, 18);
+    
+    ctx.textBaseline = 'alphabetic'; // リセット
 }
 
 canvas.addEventListener('pointerdown', (e) => {
