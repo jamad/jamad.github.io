@@ -10,8 +10,6 @@ source : https://github.com/jamad/jamad.github.io/blob/master/eitango_yarou/inde
 
 前回のバージョンが良かった時に、上書きすると残念すぎるので、β版を用意した。
 
+[βのソースコード](https://github.com/jamad/jamad.github.io/blob/master/eitango_yarou/index_beta.html)
 
-source : https://github.com/jamad/jamad.github.io/blob/master/eitango_yarou/index_beta.html
-
-
-https://jamad.github.io/eitango_yarou/index_beta.html
+[βのゲームのページ](https://jamad.github.io/eitango_yarou/index_beta.html)
