@@ -2,12 +2,12 @@
 <html lang="ja">
 <!-- 
   Word Tower 100
-  Version: 2.1 (Transparent Buttons for Mobile)
+  Version: 2.2 (Dynamic Text Positioning)
 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100 (Ver 2.1)</title>
+<title>Word Tower 100 (Ver 2.2)</title>
 <style>
     body {
         margin: 0;
@@ -50,14 +50,11 @@ const TOTAL_LEVELS = 100;
 const MAX_ENERGY = 100;
 const MAX_HISTORY_COUNT = 20;
 
-// ★変更点：ボタンの色をRGBA形式（半透明）に変更
-// 最後の数字(0.75)が不透明度です。1.0で不透明、0.0で完全透明。
 const COLORS = {
     bg: '#2c3e50', text: '#ecf0f1', accent: '#f1c40f',
-    // ボタンの背景色（透過あり）
-    btnDefault: 'rgba(52, 73, 94, 0.75)',  // 紺色
-    correct:    'rgba(46, 204, 113, 0.75)', // 緑
-    wrong:      'rgba(231, 76, 60, 0.75)',  // 赤
+    btnDefault: 'rgba(52, 73, 94, 0.75)', 
+    correct:    'rgba(46, 204, 113, 0.75)',
+    wrong:      'rgba(231, 76, 60, 0.75)', 
     
     graphLine: 'rgba(241, 196, 15, 0.9)', 
     graphFill: 'rgba(241, 196, 15, 0.3)',
@@ -202,7 +199,7 @@ function layoutButtons() {
     if (!currentQuestion) return;
     buttons = [];
     const margin = 15;
-    const btnHeight = 72; // 大きいボタン
+    const btnHeight = 72; 
     
     const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 40; 
     
@@ -234,8 +231,8 @@ function handleAnswer(btn) {
         let increment = Math.max(1, Math.round(maxIncrement * Math.cos(radian)));
         level += increment;
         
-        feedbackColor = COLORS.correct; // 正解時の色は半透明緑
-        spawnParticles(canvas.width / 2, canvas.height / 2, '#2ecc71'); // パーティクルは不透明
+        feedbackColor = COLORS.correct; 
+        spawnParticles(canvas.width / 2, canvas.height / 2, '#2ecc71'); 
         levelHistory.push(level);
 
         if (level > TOTAL_LEVELS) {
@@ -250,7 +247,7 @@ function handleAnswer(btn) {
 
         if (level > 1) level--; 
         levelHistory.push(level);
-        feedbackColor = COLORS.wrong; // 不正解時の色は半透明赤
+        feedbackColor = COLORS.wrong; 
         spawnParticles(canvas.width / 2, canvas.height / 2, '#e74c3c');
     }
     feedbackTimer = 35;
@@ -443,7 +440,7 @@ function drawTitle() {
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
     ctx.font = '20px sans-serif';
     ctx.fillStyle = '#95a5a6';
-    ctx.fillText("Ver 2.1", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText("Ver 2.2", canvas.width / 2, canvas.height / 2 - 20);
     
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
@@ -455,20 +452,30 @@ function drawGame() {
     drawTowerWithGraph();
     drawWrongList();
     
-    // HP表示(右上)は削除済み
-
     const towerW = canvas.width * 0.12;
     const playAreaW = canvas.width - towerW;
     const cx = playAreaW / 2;
     
+    // ★変更点：文字表示位置の動的計算
+    // ボタン領域の高さを計算
+    const margin = 15;
+    const btnHeight = 72;
+    // ボタン群の開始Y座標（＝空きスペースの下限）
+    const buttonsStartY = canvas.height - (btnHeight * 5) - (margin * 5) - 40;
+    
+    // 空きスペースの中心座標（少し上にずらすため -10px）
+    const textCenterY = (buttonsStartY / 2) - 10;
+
     ctx.textAlign = 'center';
     ctx.fillStyle = feedbackColor || COLORS.text;
     
     if (currentQuestion) {
-        drawFitText(currentQuestion.word.en, cx, canvas.height / 4, playAreaW * 0.9, 42);
+        // 動的に計算したY座標に描画
+        drawFitText(currentQuestion.word.en, cx, textCenterY, playAreaW * 0.9, 42);
+        
         ctx.font = '14px sans-serif';
         ctx.fillStyle = '#7f8c8d';
-        ctx.fillText(`(Difficulty Lv.${currentQuestion.word.lv})`, cx, canvas.height / 4 + 40);
+        ctx.fillText(`(Difficulty Lv.${currentQuestion.word.lv})`, cx, textCenterY + 35);
     }
     buttons.forEach(btn => {
         let color = COLORS.btnDefault;
@@ -526,12 +533,12 @@ function drawResult() {
 }
 
 function drawButton(btn, color) {
-    ctx.fillStyle = color; // 半透明の背景色
+    ctx.fillStyle = color; 
     ctx.beginPath();
     ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 12);
     ctx.fill();
     
-    ctx.fillStyle = '#fff'; // テキストは不透明
+    ctx.fillStyle = '#fff'; 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
