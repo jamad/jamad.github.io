@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
+<!-- 
+  Word Tower 100
+  Version: 1.1 (PC Click Fix + External Data Support)
+  Date: 2024
+-->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100 External</title>
+<title>Word Tower 100 (Ver 1.1)</title>
 <style>
     body {
         margin: 0;
@@ -24,16 +29,26 @@
 
 <script>
 // ==========================================
-//  データ読み込みチェック
+//  バージョン情報
 // ==========================================
-if (typeof rawData === 'undefined') {
-    // words.js がない場合のフォールバック（エラー回避用）
-    var rawData = [["Error","データなし",1], ["Check","words.jsを確認",1]];
-    console.error("words.js not found.");
+const APP_VERSION = "Ver 1.1";
+
+// ==========================================
+//  データ読み込み処理 (修正版)
+// ==========================================
+let sourceData = [];
+
+// rawData (words.js) が存在するかチェック
+if (typeof rawData !== 'undefined') {
+    sourceData = rawData;
+} else {
+    // 読み込めなかった場合の緊急用データ (再宣言エラーを防ぐため別変数で処理)
+    alert("【エラー】words.js が見つかりません。index.htmlと同じ場所に置いてください。");
+    sourceData = [["Error","データなし",1], ["Check","words.js",1]];
 }
 
-// データをオブジェクト形式に変換
-const wordData = rawData.map(d => ({ en: d[0], jp: d[1], lv: d[2] }));
+// データを使いやすい形に変換
+const wordData = sourceData.map(d => ({ en: d[0], jp: d[1], lv: d[2] }));
 
 const dummyWords = [
     "美しい", "静かな", "巨大な", "小さな", "速い", "遅い", "賢い", "愚かな", "強い", "弱い",
@@ -45,7 +60,7 @@ const dummyWords = [
 ];
 
 // ==========================================
-//  システム変数定義 (ここを先に書く必要があります！)
+//  システム変数定義
 // ==========================================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -60,7 +75,7 @@ const COLORS = {
 
 const STATE = { TITLE: 0, PLAY: 1, RESULT: 2 };
 
-// ★ここで変数を先に定義します
+// 変数初期化
 let currentState = STATE.TITLE; 
 let level = 1;
 let energy = 100;
@@ -73,19 +88,18 @@ let usedWordEn = [];
 let wrongHistory = [];
 
 // ==========================================
-//  画面サイズ管理 (変数が定義された後に実行)
+//  画面サイズ管理 & PCクリック補正
 // ==========================================
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    // 変数定義後なのでエラーになりません
     if (currentState === STATE.PLAY && currentQuestion) {
         layoutButtons();
     }
 }
 window.addEventListener('resize', resize);
-resize(); // 初期実行
+resize(); 
 
 // ==========================================
 //  サウンド
@@ -242,7 +256,7 @@ function update() {
 }
 
 // ==========================================
-//  描画
+//  描画関数
 // ==========================================
 
 function draw() {
@@ -331,9 +345,12 @@ function drawTitle() {
     ctx.textAlign = 'center';
     ctx.font = 'bold 36px sans-serif';
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
-    ctx.font = 'bold 24px sans-serif';
-    ctx.fillStyle = COLORS.accent;
-    ctx.fillText('EXTERNAL DATA', canvas.width / 2, canvas.height / 2 - 20);
+    
+    // バージョン表示
+    ctx.font = '20px sans-serif';
+    ctx.fillStyle = '#95a5a6';
+    ctx.fillText(APP_VERSION, canvas.width / 2, canvas.height / 2 - 20);
+    
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
         w: 200, h: 60, text: 'START'
@@ -417,7 +434,9 @@ function drawButton(btn, color) {
     ctx.textBaseline = 'alphabetic';
 }
 
-// タッチ・クリック位置補正
+// ==========================================
+//  入力処理 (PC対応)
+// ==========================================
 canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
