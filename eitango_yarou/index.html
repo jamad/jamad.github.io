@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Word Tower 100</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden; /* スクロール禁止 */
+        background-color: #2c3e50;
+        touch-action: none; /* ダブルタップ拡大などを禁止 */
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    }
+    canvas {
+        display: block;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+// --- 設定 & データ ---
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// 画面サイズ調整
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ゲーム定数
+const TOTAL_LEVELS = 100;
+const MAX_ENERGY = 100;
+
+// 色定義
+const COLORS = {
+    bg: '#2c3e50',
+    text: '#ecf0f1',
+    accent: '#f1c40f',
+    correct: '#2ecc71',
+    wrong: '#e74c3c',
+    btnDefault: '#34495e',
+    btnActive: '#95a5a6'
+};
+
+// 単語データ（ダミー）
+const wordData = [
+    { en: "apple", jp: "リンゴ", lv: 1 }, { en: "cat", jp: "猫", lv: 1 },
+    { en: "run", jp: "走る", lv: 2 }, { en: "sky", jp: "空", lv: 5 },
+    { en: "brave", jp: "勇敢な", lv: 10 }, { en: "galaxy", jp: "銀河", lv: 20 },
+    { en: "method", jp: "方法", lv: 30 }, { en: "obvious", jp: "明白な", lv: 50 },
+    { en: "crucial", jp: "重要な", lv: 70 }, { en: "bizarre", jp: "奇妙な", lv: 90 },
+    { en: "zenith", jp: "頂点", lv: 100 }
+];
+const dummyWords = ["巨大な", "早い", "冷たい", "美しい", "食べる", "眠る", "静かな", "熱い", "暗い", "重い"];
+
+// --- ゲーム状態管理 ---
+const STATE = { TITLE: 0, PLAY: 1, RESULT: 2 };
+let currentState = STATE.TITLE;
+
+let level = 1;
+let energy = 100;
+let currentQuestion = null;
+let buttons = []; // ボタンの座標管理
+let particles = []; // エフェクト用
+let feedbackTimer = 0; // 正誤判定後のウェイト
+let feedbackColor = null;
+
+// 音（Web Audio API）
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    const now = audioCtx.currentTime;
+    if (type === 'correct') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+    } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.2);
+        osc.start(now);
+        osc.stop(now + 0.2);
+    } else if (type === 'tap') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(400, now);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
+    }
+}
+
+// --- ロジック関数 ---
+
+function startGame() {
+    level = 1;
+    energy = MAX_ENERGY;
+    currentState = STATE.PLAY;
+    nextQuestion();
+}
+
+function nextQuestion() {
+    // エネルギー消費
+    energy--;
+    if (energy < 0) {
+        currentState = STATE.RESULT;
+        return;
+    }
+
+    // 問題選択（簡易ロジック）
+    let q = wordData.find(w => w.lv === level);
+    if (!q) q = wordData[Math.floor(Math.random() * wordData.length)];
+    
+    // 選択肢生成
+    let options = [q.jp];
+    while (options.length < 5) {
+        let d = dummyWords[Math.floor(Math.random() * dummyWords.length)];
+        if (!options.includes(d) && d !== q.jp) options.push(d);
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    currentQuestion = { word: q, options: options };
+    
+    // ボタン配置の計算（画面下部に配置）
+    buttons = [];
+    const margin = 15;
+    const btnHeight = 60;
+    const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 40; // 下から積み上げ
+
+    options.forEach((opt, i) => {
+        buttons.push({
+            x: margin,
+            y: startY + (btnHeight + margin) * i,
+            w: canvas.width - margin * 2,
+            h: btnHeight,
+            text: opt,
+            isCorrect: opt === q.jp
+        });
+    });
+}
+
+function handleAnswer(btn) {
+    if (feedbackTimer > 0) return; // 連打防止
+
+    if (btn.isCorrect) {
+        playSound('correct');
+        level++;
+        feedbackColor = COLORS.correct;
+        spawnParticles(canvas.width / 2, canvas.height / 3, COLORS.correct);
+        
+        // クリア判定
+        if (level > TOTAL_LEVELS) {
+            currentState = STATE.RESULT;
+            return;
+        }
+    } else {
+        playSound('wrong');
+        if (level > 1) level--;
+        feedbackColor = COLORS.wrong;
+        spawnParticles(canvas.width / 2, canvas.height / 3, COLORS.wrong);
+    }
+
+    feedbackTimer = 30; // 0.5秒程度待機 (60fpsベース)
+}
+
+// パーティクルシステム
+function spawnParticles(x, y, color) {
+    for (let i = 0; i < 20; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10,
+            life: 1.0,
+            color: color
+        });
+    }
+}
+
+function update() {
+    // パーティクル更新
+    particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.05;
+    });
+    particles = particles.filter(p => p.life > 0);
+
+    // 遷移ウェイト
+    if (feedbackTimer > 0) {
+        feedbackTimer--;
+        if (feedbackTimer === 0) {
+            feedbackColor = null;
+            nextQuestion();
+        }
+    }
+}
+
+// --- 描画関数 ---
+
+function draw() {
+    // 背景クリア
+    ctx.fillStyle = COLORS.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (currentState === STATE.TITLE) {
+        drawTitle();
+    } else if (currentState === STATE.PLAY) {
+        drawGame();
+    } else if (currentState === STATE.RESULT) {
+        drawResult();
+    }
+
+    // パーティクル描画
+    particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    });
+
+    requestAnimationFrame(loop);
+}
+
+function loop() {
+    update();
+    draw();
+}
+
+function drawTitle() {
+    ctx.fillStyle = COLORS.text;
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 40px sans-serif';
+    ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 50);
+    ctx.font = '20px sans-serif';
+    ctx.fillText('Goal: Level 100', canvas.width / 2, canvas.height / 2);
+    
+    // Start Button
+    drawButton({
+        x: canvas.width / 2 - 100,
+        y: canvas.height / 2 + 50,
+        w: 200, h: 60, text: 'START'
+    }, COLORS.accent);
+}
+
+function drawGame() {
+    // ヘッダー情報
+    ctx.fillStyle = COLORS.text;
+    ctx.textAlign = 'left';
+    ctx.font = '20px sans-serif';
+    ctx.fillText(`LEVEL ${level} / 100`, 20, 40);
+    
+    // エネルギーバー
+    ctx.textAlign = 'right';
+    ctx.fillText(`ENERGY ${energy}`, canvas.width - 20, 40);
+    
+    ctx.fillStyle = '#34495e';
+    ctx.fillRect(20, 50, canvas.width - 40, 10);
+    
+    const energyRate = Math.max(0, energy / MAX_ENERGY);
+    ctx.fillStyle = energy < 20 ? COLORS.wrong : (energy < 50 ? COLORS.accent : COLORS.correct);
+    ctx.fillRect(20, 50, (canvas.width - 40) * energyRate, 10);
+
+    // 問題文
+    ctx.textAlign = 'center';
+    ctx.fillStyle = feedbackColor || COLORS.text; // 正誤判定時は色を変える
+    ctx.font = 'bold 48px sans-serif';
+    if (currentQuestion) {
+        ctx.fillText(currentQuestion.word.en, canvas.width / 2, canvas.height / 3);
+        ctx.font = '16px sans-serif';
+        ctx.fillStyle = '#95a5a6';
+        ctx.fillText("Select the meaning", canvas.width / 2, canvas.height / 3 + 30);
+    }
+
+    // 選択肢ボタン
+    buttons.forEach(btn => {
+        let color = COLORS.btnDefault;
+        // 判定時の色変化（簡易的）
+        if (feedbackColor && btn.isCorrect) color = COLORS.correct;
+        // if (feedbackColor && !btn.isCorrect && /*自分が押したボタンなら*/) color = COLORS.wrong; 
+        
+        drawButton(btn, color);
+    });
+}
+
+function drawResult() {
+    ctx.fillStyle = COLORS.text;
+    ctx.textAlign = 'center';
+    
+    if (level > TOTAL_LEVELS) {
+        ctx.fillStyle = COLORS.correct;
+        ctx.font = 'bold 40px sans-serif';
+        ctx.fillText('GAME CLEAR!', canvas.width / 2, canvas.height / 2 - 50);
+        ctx.fillStyle = COLORS.text;
+        ctx.font = '20px sans-serif';
+        ctx.fillText(`Rem. Energy: ${energy}`, canvas.width / 2, canvas.height / 2);
+    } else {
+        ctx.fillStyle = COLORS.wrong;
+        ctx.font = 'bold 40px sans-serif';
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 50);
+        ctx.fillStyle = COLORS.text;
+        ctx.font = '20px sans-serif';
+        ctx.fillText(`Reached Level: ${level}`, canvas.width / 2, canvas.height / 2);
+    }
+
+    drawButton({
+        x: canvas.width / 2 - 100,
+        y: canvas.height / 2 + 80,
+        w: 200, h: 60, text: 'RETRY'
+    }, COLORS.accent);
+}
+
+function drawButton(btn, color) {
+    ctx.fillStyle = color;
+    // 角丸四角形風
+    ctx.beginPath();
+    ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 10);
+    ctx.fill();
+
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(btn.text, btn.x + btn.w / 2, btn.y + btn.h / 2);
+    ctx.textBaseline = 'alphabetic'; // Reset
+}
+
+// --- 入力処理 ---
+
+// スマホのタッチとPCのクリックを両方拾う
+canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault(); // スクロール等の標準動作を防ぐ
+    const rect = canvas.getBoundingClientRect();
+    const touchX = e.clientX - rect.left;
+    const touchY = e.clientY - rect.top;
+
+    if (currentState === STATE.TITLE) {
+        // スタートボタン判定（簡易エリア）
+        if (touchY > canvas.height / 2 && touchY < canvas.height / 2 + 110) {
+            playSound('tap');
+            startGame();
+        }
+    } else if (currentState === STATE.PLAY) {
+        // 選択肢判定
+        for (let btn of buttons) {
+            if (touchX >= btn.x && touchX <= btn.x + btn.w &&
+                touchY >= btn.y && touchY <= btn.y + btn.h) {
+                handleAnswer(btn);
+                break;
+            }
+        }
+    } else if (currentState === STATE.RESULT) {
+        // リトライボタン判定
+        if (touchY > canvas.height / 2 + 50) {
+            playSound('tap');
+            startGame();
+        }
+    }
+});
+
+// ゲーム開始
+requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>
