@@ -1,10 +1,9 @@
 # 英単語野郎　を作った。
 
 https://jamad.github.io/eitango_yarou
-
 でプレイできるように保存してみた。
 
-source : https://github.com/jamad/jamad.github.io/blob/master/eitango_yarou/index.html
+[ソースコード](https://github.com/jamad/jamad.github.io/blob/master/eitango_yarou/index.html)
 
 ---
 
