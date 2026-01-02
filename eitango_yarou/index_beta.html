@@ -2,12 +2,12 @@
 <html lang="ja">
 <!-- 
   Word Tower 100
-  Version: 1.9 (Remove Stub Line + Integrated UI)
+  Version: 2.0 (Final Release: Big Buttons)
 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100 (Ver 1.9)</title>
+<title>Word Tower 100 (Ver 2.0)</title>
 <style>
     body {
         margin: 0;
@@ -192,18 +192,22 @@ function nextQuestion() {
     layoutButtons();
 }
 
+// ★修正点：ボタンサイズを大きく設定
 function layoutButtons() {
     if (!currentQuestion) return;
     buttons = [];
-    const margin = 10;
-    const btnHeight = 55;
+    
+    // ★ボタンの高さと間隔をアップ
+    const margin = 15;  // 10 -> 15
+    const btnHeight = 72; // 55 -> 72
+    
+    // 画面下部から積み上げ
     const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 40; 
     
-    // タワー幅 (12%)
     const towerW = canvas.width * 0.12;
     const playAreaW = canvas.width - towerW;
     
-    // ボタン幅は80%
+    // 幅80%
     const btnW = playAreaW * 0.8;
     const btnX = (playAreaW - btnW) / 2;
 
@@ -331,7 +335,6 @@ function drawTowerWithGraph() {
     const endY = 50;
     const heightRange = startY - endY;
 
-    // タワー本体
     ctx.fillStyle = '#34495e';
     ctx.beginPath();
     ctx.moveTo(towerCenterX - bottomW, startY);
@@ -341,7 +344,6 @@ function drawTowerWithGraph() {
     ctx.closePath();
     ctx.fill();
 
-    // グラフ
     if (levelHistory.length >= 2) {
         ctx.strokeStyle = COLORS.graphLine;
         ctx.lineWidth = 2;
@@ -369,7 +371,6 @@ function drawTowerWithGraph() {
         ctx.fillStyle = COLORS.graphFill;
         ctx.fill();
 
-        // ノード
         ctx.fillStyle = COLORS.graphNode;
         levelHistory.forEach((lv, i) => {
             const drawLv = Math.min(TOTAL_LEVELS, lv);
@@ -382,40 +383,31 @@ function drawTowerWithGraph() {
         });
     }
 
-    // 現在地計算
     const displayLevel = Math.min(TOTAL_LEVELS, level);
     const progress = Math.min(1.0, (displayLevel - 1) / 99);
     const currentY = startY - (progress * heightRange);
     
-    // 矢印位置
     const leftEdgeX = (towerCenterX - bottomW) + ((towerCenterX - topW) - (towerCenterX - bottomW)) * progress;
 
-    // 矢印
     ctx.fillStyle = '#f1c40f';
     ctx.beginPath();
-    // ★修正1：矢印の先端と同じX座標から描画開始（後ろへの線は出さない）
     ctx.moveTo(leftEdgeX, currentY); 
-    // 後ろ側
     ctx.lineTo(leftEdgeX - 15, currentY - 8);
     ctx.lineTo(leftEdgeX - 15, currentY + 8);
     ctx.fill();
 
-    // ★修正2：レベルとHPを矢印の下にまとめて表示
     ctx.textAlign = 'right';
     ctx.font = 'bold 16px sans-serif';
     ctx.fillStyle = '#f1c40f'; 
-    // LvとHPを並べて表示
     ctx.fillText(`Lv.${displayLevel}  HP:${energy}`, leftEdgeX - 5, currentY + 25);
 
-    // 基準線 (矢印の先端から右へ)
     ctx.strokeStyle = '#f1c40f';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(leftEdgeX, currentY); // 矢印の先端からスタート
+    ctx.moveTo(leftEdgeX, currentY); 
     ctx.lineTo(canvas.width, currentY);
     ctx.stroke();
 
-    // 上下の固定テキスト
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'right';
     ctx.font = '12px sans-serif';
@@ -450,7 +442,7 @@ function drawTitle() {
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
     ctx.font = '20px sans-serif';
     ctx.fillStyle = '#95a5a6';
-    ctx.fillText("Ver 1.9", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText("Ver 2.0", canvas.width / 2, canvas.height / 2 - 20);
     
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
@@ -462,8 +454,6 @@ function drawGame() {
     drawTowerWithGraph();
     drawWrongList();
     
-    // ★右上のHP表示は削除しました（矢印横に統合）
-
     const towerW = canvas.width * 0.12;
     const playAreaW = canvas.width - towerW;
     const cx = playAreaW / 2;
@@ -540,7 +530,10 @@ function drawButton(btn, color) {
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    drawFitText(btn.text, btn.x + btn.w / 2, btn.y + btn.h / 2, btn.w - 20, 18);
+    
+    // ★変更点：ボタンの文字サイズを大きく (基準24px)
+    drawFitText(btn.text, btn.x + btn.w / 2, btn.y + btn.h / 2, btn.w - 20, 24);
+    
     ctx.textBaseline = 'alphabetic';
 }
 
