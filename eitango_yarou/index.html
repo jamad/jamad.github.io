@@ -7,14 +7,12 @@
 <style>
     body {
         margin: 0;
-        overflow: hidden; /* スクロール禁止 */
+        overflow: hidden;
         background-color: #2c3e50;
-        touch-action: none; /* ダブルタップ拡大などを禁止 */
+        touch-action: none;
         font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
     }
-    canvas {
-        display: block;
-    }
+    canvas { display: block; }
 </style>
 </head>
 <body>
@@ -22,11 +20,61 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
-// --- 設定 & データ ---
+// --- 1. 拡張された単語データベース (Lv.1 - Lv.100) ---
+// 実際のアプリでは数千語必要ですが、今回は動作確認用に約100語をバランスよく配置しました。
+const wordData = [
+    // Lv 1-10 (中学初級)
+    {en:"cat",jp:"猫",lv:1}, {en:"red",jp:"赤",lv:1}, {en:"big",jp:"大きい",lv:2},
+    {en:"run",jp:"走る",lv:2}, {en:"eat",jp:"食べる",lv:3}, {en:"sky",jp:"空",lv:3},
+    {en:"bird",jp:"鳥",lv:4}, {en:"rain",jp:"雨",lv:5}, {en:"happy",jp:"幸せな",lv:6},
+    {en:"friend",jp:"友達",lv:7}, {en:"school",jp:"学校",lv:8}, {en:"time",jp:"時間",lv:9},
+    {en:"summer",jp:"夏",lv:10}, {en:"start",jp:"始める",lv:10},
+
+    // Lv 11-30 (中学卒業〜高校基礎)
+    {en:"travel",jp:"旅行する",lv:12}, {en:"culture",jp:"文化",lv:15}, {en:"decide",jp:"決める",lv:18},
+    {en:"future",jp:"未来",lv:20}, {en:"health",jp:"健康",lv:22}, {en:"create",jp:"創造する",lv:25},
+    {en:"simple",jp:"単純な",lv:26}, {en:"planet",jp:"惑星",lv:28}, {en:"forest",jp:"森",lv:29},
+    {en:"damage",jp:"損害",lv:30},
+
+    // Lv 31-50 (高校中級・共通テスト)
+    {en:"ability",jp:"能力",lv:32}, {en:"benefit",jp:"利益",lv:35}, {en:"method",jp:"方法",lv:38},
+    {en:"advice",jp:"助言",lv:40}, {en:"manage",jp:"管理する",lv:42}, {en:"survey",jp:"調査",lv:45},
+    {en:"author",jp:"著者",lv:46}, {en:"theory",jp:"理論",lv:48}, {en:"region",jp:"地域",lv:50},
+
+    // Lv 51-70 (大学入試・中堅) -> ここが前回不足していたゾーン
+    {en:"enable",jp:"可能にする",lv:52}, {en:"reveal",jp:"明らかにする",lv:53},
+    {en:"mental",jp:"精神の",lv:54}, {en:"obtain",jp:"入手する",lv:55},
+    {en:"aware",jp:"気づいている",lv:56}, {en:"income",jp:"収入",lv:58},
+    {en:"labor",jp:"労働",lv:60}, {en:"desire",jp:"欲望",lv:62},
+    {en:"notion",jp:"概念",lv:64}, {en:"status",jp:"地位",lv:66},
+    {en:"ensure",jp:"確実にする",lv:68}, {en:"stable",jp:"安定した",lv:70},
+
+    // Lv 71-90 (難関大・TOEIC高得点)
+    {en:"crucial",jp:"重大な",lv:72}, {en:"precise",jp:"正確な",lv:74},
+    {en:"diverse",jp:"多様な",lv:76}, {en:"exhibit",jp:"展示する",lv:78},
+    {en:"pursue",jp:"追求する",lv:80}, {en:"submit",jp:"提出する",lv:82},
+    {en:"immune",jp:"免疫の",lv:84}, {en:"thrive",jp:"繁栄する",lv:86},
+    {en:"subtle",jp:"微妙な",lv:88}, {en:"legacy",jp:"遺産",lv:90},
+
+    // Lv 91-100 (マニアック・超上級)
+    {en:"vague",jp:"漠然とした",lv:91}, {en:"acute",jp:"鋭い",lv:92},
+    {en:"candid",jp:"率直な",lv:93}, {en:"evoke",jp:"呼び起こす",lv:94},
+    {en:"feudal",jp:"封建的な",lv:95}, {en:"lethal",jp:"致死の",lv:96},
+    {en:"invoke",jp:"発動する",lv:97}, {en:"fickle",jp:"気まぐれな",lv:98},
+    {en:"zenith",jp:"頂点",lv:99}, {en:"void",jp:"虚空",lv:100}
+];
+
+const dummyWords = [
+    "巨大な", "早い", "冷たい", "美しい", "食べる", "眠る", "静かな", "熱い", 
+    "暗い", "重い", "賢い", "若い", "古い", "新しい", "狭い", "広い",
+    "歩く", "泳ぐ", "飛ぶ", "光る", "消える", "探す", "待つ", "歌う",
+    "リンゴ", "犬", "机", "海", "山", "川", "都市", "宇宙"
+];
+
+// --- 設定 & システム変数 ---
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// 画面サイズ調整
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -34,43 +82,28 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-// ゲーム定数
 const TOTAL_LEVELS = 100;
 const MAX_ENERGY = 100;
 
 // 色定義
 const COLORS = {
-    bg: '#2c3e50',
-    text: '#ecf0f1',
-    accent: '#f1c40f',
-    correct: '#2ecc71',
-    wrong: '#e74c3c',
-    btnDefault: '#34495e',
-    btnActive: '#95a5a6'
+    bg: '#2c3e50', text: '#ecf0f1', accent: '#f1c40f',
+    correct: '#2ecc71', wrong: '#e74c3c',
+    btnDefault: '#34495e'
 };
 
-// 単語データ（ダミー）
-const wordData = [
-    { en: "apple", jp: "リンゴ", lv: 1 }, { en: "cat", jp: "猫", lv: 1 },
-    { en: "run", jp: "走る", lv: 2 }, { en: "sky", jp: "空", lv: 5 },
-    { en: "brave", jp: "勇敢な", lv: 10 }, { en: "galaxy", jp: "銀河", lv: 20 },
-    { en: "method", jp: "方法", lv: 30 }, { en: "obvious", jp: "明白な", lv: 50 },
-    { en: "crucial", jp: "重要な", lv: 70 }, { en: "bizarre", jp: "奇妙な", lv: 90 },
-    { en: "zenith", jp: "頂点", lv: 100 }
-];
-const dummyWords = ["巨大な", "早い", "冷たい", "美しい", "食べる", "眠る", "静かな", "熱い", "暗い", "重い"];
-
-// --- ゲーム状態管理 ---
 const STATE = { TITLE: 0, PLAY: 1, RESULT: 2 };
 let currentState = STATE.TITLE;
-
 let level = 1;
 let energy = 100;
 let currentQuestion = null;
-let buttons = []; // ボタンの座標管理
-let particles = []; // エフェクト用
-let feedbackTimer = 0; // 正誤判定後のウェイト
+let buttons = [];
+let particles = [];
+let feedbackTimer = 0;
 let feedbackColor = null;
+
+// ★重複出題を防ぐための履歴
+let usedWordEn = []; 
 
 // 音（Web Audio API）
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -113,22 +146,62 @@ function playSound(type) {
 function startGame() {
     level = 1;
     energy = MAX_ENERGY;
+    usedWordEn = []; // 履歴リセット
     currentState = STATE.PLAY;
     nextQuestion();
 }
 
+// ★改良版：適切なレベルの問題を選ぶロジック
+function getQuestionData(currentLv) {
+    // 1. まず「現在のレベル ±5」の範囲で、まだ使っていない単語を探す
+    let candidates = wordData.filter(w => 
+        Math.abs(w.lv - currentLv) <= 5 && 
+        !usedWordEn.includes(w.en)
+    );
+
+    // 2. もし見つからなければ範囲を「±15」に広げる
+    if (candidates.length === 0) {
+        candidates = wordData.filter(w => 
+            Math.abs(w.lv - currentLv) <= 15 && 
+            !usedWordEn.includes(w.en)
+        );
+    }
+
+    // 3. それでもなければ「±30」
+    if (candidates.length === 0) {
+        candidates = wordData.filter(w => 
+            Math.abs(w.lv - currentLv) <= 30 && 
+            !usedWordEn.includes(w.en)
+        );
+    }
+
+    // 4. 万が一データ切れなら、履歴を無視して一番近いレベルを選ぶ
+    if (candidates.length === 0) {
+        candidates = wordData.filter(w => Math.abs(w.lv - currentLv) <= 20);
+    }
+
+    // 候補の中からランダムに1つ選ぶ
+    if (candidates.length > 0) {
+        return candidates[Math.floor(Math.random() * candidates.length)];
+    } else {
+        // 完全なフォールバック（ここに来ることはほぼないはず）
+        return wordData[Math.floor(Math.random() * wordData.length)];
+    }
+}
+
 function nextQuestion() {
-    // エネルギー消費
     energy--;
     if (energy < 0) {
         currentState = STATE.RESULT;
         return;
     }
 
-    // 問題選択（簡易ロジック）
-    let q = wordData.find(w => w.lv === level);
-    if (!q) q = wordData[Math.floor(Math.random() * wordData.length)];
+    // 問題選択実行
+    let q = getQuestionData(level);
     
+    // 出題済みリストに追加
+    usedWordEn.push(q.en);
+
     // 選択肢生成
     let options = [q.jp];
     while (options.length < 5) {
@@ -139,11 +212,12 @@ function nextQuestion() {
 
     currentQuestion = { word: q, options: options };
     
-    // ボタン配置の計算（画面下部に配置）
+    // ボタン配置
     buttons = [];
     const margin = 15;
     const btnHeight = 60;
-    const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 40; // 下から積み上げ
+    // 画面下部に配置
+    const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 60; 
 
     options.forEach((opt, i) => {
         buttons.push({
@@ -158,7 +232,7 @@ function nextQuestion() {
 }
 
 function handleAnswer(btn) {
-    if (feedbackTimer > 0) return; // 連打防止
+    if (feedbackTimer > 0) return;
 
     if (btn.isCorrect) {
         playSound('correct');
@@ -166,44 +240,40 @@ function handleAnswer(btn) {
         feedbackColor = COLORS.correct;
         spawnParticles(canvas.width / 2, canvas.height / 3, COLORS.correct);
         
-        // クリア判定
         if (level > TOTAL_LEVELS) {
             currentState = STATE.RESULT;
             return;
         }
     } else {
         playSound('wrong');
-        if (level > 1) level--;
+        // 間違えたらレベルを下げる（最低1）
+        if (level > 1) level--; 
+        // 激ムズモードなら「-5」とかにしても面白い
+        
         feedbackColor = COLORS.wrong;
         spawnParticles(canvas.width / 2, canvas.height / 3, COLORS.wrong);
     }
 
-    feedbackTimer = 30; // 0.5秒程度待機 (60fpsベース)
+    feedbackTimer = 30; // 演出待ち時間
 }
 
-// パーティクルシステム
 function spawnParticles(x, y, color) {
     for (let i = 0; i < 20; i++) {
         particles.push({
             x: x, y: y,
-            vx: (Math.random() - 0.5) * 10,
-            vy: (Math.random() - 0.5) * 10,
-            life: 1.0,
-            color: color
+            vx: (Math.random() - 0.5) * 12,
+            vy: (Math.random() - 0.5) * 12,
+            life: 1.0, color: color
         });
     }
 }
 
 function update() {
-    // パーティクル更新
     particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life -= 0.05;
+        p.x += p.vx; p.y += p.vy; p.life -= 0.05;
     });
     particles = particles.filter(p => p.life > 0);
 
-    // 遷移ウェイト
     if (feedbackTimer > 0) {
         feedbackTimer--;
         if (feedbackTimer === 0) {
@@ -213,27 +283,20 @@ function update() {
     }
 }
 
-// --- 描画関数 ---
-
 function draw() {
-    // 背景クリア
     ctx.fillStyle = COLORS.bg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (currentState === STATE.TITLE) {
-        drawTitle();
-    } else if (currentState === STATE.PLAY) {
-        drawGame();
-    } else if (currentState === STATE.RESULT) {
-        drawResult();
-    }
+    if (currentState === STATE.TITLE) drawTitle();
+    else if (currentState === STATE.PLAY) drawGame();
+    else if (currentState === STATE.RESULT) drawResult();
 
-    // パーティクル描画
+    // パーティクル
     particles.forEach(p => {
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1.0;
     });
@@ -241,63 +304,57 @@ function draw() {
     requestAnimationFrame(loop);
 }
 
-function loop() {
-    update();
-    draw();
-}
+function loop() { update(); draw(); }
 
 function drawTitle() {
     ctx.fillStyle = COLORS.text;
     ctx.textAlign = 'center';
     ctx.font = 'bold 40px sans-serif';
-    ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 50);
+    ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
     ctx.font = '20px sans-serif';
-    ctx.fillText('Goal: Level 100', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('Target: Level 100', canvas.width / 2, canvas.height / 2 - 10);
     
     // Start Button
     drawButton({
-        x: canvas.width / 2 - 100,
-        y: canvas.height / 2 + 50,
+        x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
         w: 200, h: 60, text: 'START'
     }, COLORS.accent);
 }
 
 function drawGame() {
-    // ヘッダー情報
+    // Info
     ctx.fillStyle = COLORS.text;
     ctx.textAlign = 'left';
     ctx.font = '20px sans-serif';
-    ctx.fillText(`LEVEL ${level} / 100`, 20, 40);
+    ctx.fillText(`Lv.${level}`, 20, 40);
     
-    // エネルギーバー
     ctx.textAlign = 'right';
-    ctx.fillText(`ENERGY ${energy}`, canvas.width - 20, 40);
+    ctx.fillText(`HP ${energy}`, canvas.width - 20, 40);
     
+    // Energy Bar
     ctx.fillStyle = '#34495e';
-    ctx.fillRect(20, 50, canvas.width - 40, 10);
-    
+    ctx.fillRect(20, 50, canvas.width - 40, 8);
     const energyRate = Math.max(0, energy / MAX_ENERGY);
     ctx.fillStyle = energy < 20 ? COLORS.wrong : (energy < 50 ? COLORS.accent : COLORS.correct);
-    ctx.fillRect(20, 50, (canvas.width - 40) * energyRate, 10);
+    ctx.fillRect(20, 50, (canvas.width - 40) * energyRate, 8);
 
-    // 問題文
+    // Question
     ctx.textAlign = 'center';
-    ctx.fillStyle = feedbackColor || COLORS.text; // 正誤判定時は色を変える
-    ctx.font = 'bold 48px sans-serif';
+    ctx.fillStyle = feedbackColor || COLORS.text;
+    ctx.font = 'bold 42px sans-serif';
     if (currentQuestion) {
+        // 単語
         ctx.fillText(currentQuestion.word.en, canvas.width / 2, canvas.height / 3);
-        ctx.font = '16px sans-serif';
-        ctx.fillStyle = '#95a5a6';
-        ctx.fillText("Select the meaning", canvas.width / 2, canvas.height / 3 + 30);
+        // 難易度デバッグ表示（遊びながら確認用）
+        ctx.font = '14px sans-serif';
+        ctx.fillStyle = '#7f8c8d';
+        ctx.fillText(`(Difficulty: Lv.${currentQuestion.word.lv})`, canvas.width / 2, canvas.height / 3 + 40);
     }
 
-    // 選択肢ボタン
+    // Buttons
     buttons.forEach(btn => {
         let color = COLORS.btnDefault;
-        // 判定時の色変化（簡易的）
         if (feedbackColor && btn.isCorrect) color = COLORS.correct;
-        // if (feedbackColor && !btn.isCorrect && /*自分が押したボタンなら*/) color = COLORS.wrong; 
-        
         drawButton(btn, color);
     });
 }
@@ -309,31 +366,29 @@ function drawResult() {
     if (level > TOTAL_LEVELS) {
         ctx.fillStyle = COLORS.correct;
         ctx.font = 'bold 40px sans-serif';
-        ctx.fillText('GAME CLEAR!', canvas.width / 2, canvas.height / 2 - 50);
+        ctx.fillText('CLEAR!!', canvas.width / 2, canvas.height / 2 - 50);
         ctx.fillStyle = COLORS.text;
         ctx.font = '20px sans-serif';
-        ctx.fillText(`Rem. Energy: ${energy}`, canvas.width / 2, canvas.height / 2);
+        ctx.fillText(`Score: ${energy} pts`, canvas.width / 2, canvas.height / 2);
     } else {
         ctx.fillStyle = COLORS.wrong;
         ctx.font = 'bold 40px sans-serif';
         ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 50);
         ctx.fillStyle = COLORS.text;
         ctx.font = '20px sans-serif';
-        ctx.fillText(`Reached Level: ${level}`, canvas.width / 2, canvas.height / 2);
+        ctx.fillText(`Reached: Lv.${level}`, canvas.width / 2, canvas.height / 2);
     }
 
     drawButton({
-        x: canvas.width / 2 - 100,
-        y: canvas.height / 2 + 80,
+        x: canvas.width / 2 - 100, y: canvas.height / 2 + 80,
         w: 200, h: 60, text: 'RETRY'
     }, COLORS.accent);
 }
 
 function drawButton(btn, color) {
     ctx.fillStyle = color;
-    // 角丸四角形風
     ctx.beginPath();
-    ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 10);
+    ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 12);
     ctx.fill();
 
     ctx.fillStyle = '#fff';
@@ -341,45 +396,34 @@ function drawButton(btn, color) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(btn.text, btn.x + btn.w / 2, btn.y + btn.h / 2);
-    ctx.textBaseline = 'alphabetic'; // Reset
+    ctx.textBaseline = 'alphabetic';
 }
 
-// --- 入力処理 ---
-
-// スマホのタッチとPCのクリックを両方拾う
+// Touch Event
 canvas.addEventListener('pointerdown', (e) => {
-    e.preventDefault(); // スクロール等の標準動作を防ぐ
+    e.preventDefault();
     const rect = canvas.getBoundingClientRect();
-    const touchX = e.clientX - rect.left;
-    const touchY = e.clientY - rect.top;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
     if (currentState === STATE.TITLE) {
-        // スタートボタン判定（簡易エリア）
-        if (touchY > canvas.height / 2 && touchY < canvas.height / 2 + 110) {
-            playSound('tap');
-            startGame();
+        if (y > canvas.height / 2 && y < canvas.height / 2 + 110) {
+            playSound('tap'); startGame();
         }
     } else if (currentState === STATE.PLAY) {
-        // 選択肢判定
         for (let btn of buttons) {
-            if (touchX >= btn.x && touchX <= btn.x + btn.w &&
-                touchY >= btn.y && touchY <= btn.y + btn.h) {
-                handleAnswer(btn);
-                break;
+            if (x >= btn.x && x <= btn.x + btn.w && y >= btn.y && y <= btn.y + btn.h) {
+                handleAnswer(btn); break;
             }
         }
     } else if (currentState === STATE.RESULT) {
-        // リトライボタン判定
-        if (touchY > canvas.height / 2 + 50) {
-            playSound('tap');
-            startGame();
+        if (y > canvas.height / 2 + 50) {
+            playSound('tap'); startGame();
         }
     }
 });
 
-// ゲーム開始
 requestAnimationFrame(loop);
-
 </script>
 </body>
 </html>
