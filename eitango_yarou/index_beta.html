@@ -2,12 +2,12 @@
 <html lang="ja">
 <!-- 
   Word Tower 100
-  Version: 1.2 (Display Fix)
+  Version: 1.3 (Sine Curve Logic + History Graph)
 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Word Tower 100</title>
+<title>Word Tower 100 (Ver 1.3)</title>
 <style>
     body {
         margin: 0;
@@ -32,11 +32,9 @@
 // ==========================================
 let sourceData = [];
 
-// words.js が存在するかチェック
 if (typeof rawData !== 'undefined') {
     sourceData = rawData;
 } else {
-    // 読み込めなかった場合の緊急用データ
     alert("【エラー】words.js が見つかりません。");
     sourceData = [["Error","データなし",1]];
 }
@@ -63,7 +61,9 @@ const MAX_ENERGY = 100;
 
 const COLORS = {
     bg: '#2c3e50', text: '#ecf0f1', accent: '#f1c40f',
-    correct: '#2ecc71', wrong: '#e74c3c', btnDefault: '#34495e'
+    correct: '#2ecc71', wrong: '#e74c3c', btnDefault: '#34495e',
+    graphLine: 'rgba(241, 196, 15, 0.5)', // グラフの色（半透明の金）
+    graphFill: 'rgba(241, 196, 15, 0.1)'  // グラフの下塗り
 };
 
 const STATE = { TITLE: 0, PLAY: 1, RESULT: 2 };
@@ -79,13 +79,15 @@ let feedbackColor = null;
 let usedWordEn = []; 
 let wrongHistory = [];
 
+// ★レベルの履歴を記録する配列（グラフ用）
+let levelHistory = [1]; 
+
 // ==========================================
 //  画面サイズ & 入力管理
 // ==========================================
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
     if (currentState === STATE.PLAY && currentQuestion) {
         layoutButtons();
     }
@@ -133,6 +135,7 @@ function startGame() {
     energy = MAX_ENERGY;
     usedWordEn = []; 
     wrongHistory = [];
+    levelHistory = [1]; // 履歴リセット
     currentState = STATE.PLAY;
     nextQuestion();
 }
@@ -173,7 +176,11 @@ function layoutButtons() {
     const margin = 10;
     const btnHeight = 55;
     const startY = canvas.height - (btnHeight * 5) - (margin * 5) - 40; 
-    const towerWidth = canvas.width * 0.15;
+    
+    // タワーは右端に配置（画面の20%幅）
+    const towerWidth = canvas.width * 0.2;
+    
+    // ボタンは左側〜タワー手前まで
     const btnX = 20;
     const btnW = canvas.width - towerWidth - 40; 
 
@@ -194,16 +201,24 @@ function handleAnswer(btn) {
 
     if (btn.isCorrect) {
         playSound('correct');
-        // レベル上昇ロジック（加速あり）
-        let increment = 1;
-        if (level < 40) increment = 4;
-        else if (level < 70) increment = 2;
-        else increment = 1;
-
+        
+        // ★サインカーブ的上昇ロジック
+        // レベル0で最大値、レベル100に近づくほど1に収束する
+        // cos(0) = 1, cos(PI/2) = 0
+        const maxIncrement = 5; // 最大上昇幅
+        const radian = (level / 100) * (Math.PI / 2); // 0 〜 1.57(90度)
+        
+        // cosカーブに合わせて上昇幅を決定 (最低でも1は上がる)
+        let increment = Math.max(1, Math.round(maxIncrement * Math.cos(radian)));
+        
         level += increment;
         
         feedbackColor = COLORS.correct;
         spawnParticles(canvas.width / 2, canvas.height / 2, COLORS.correct);
+        
+        // 履歴追加
+        levelHistory.push(level);
+
         if (level > TOTAL_LEVELS) {
             currentState = STATE.RESULT;
             return;
@@ -214,6 +229,10 @@ function handleAnswer(btn) {
         if (wrongHistory.length > 6) wrongHistory.pop();
 
         if (level > 1) level--; 
+        
+        // 履歴追加（下がったことも記録）
+        levelHistory.push(level);
+
         feedbackColor = COLORS.wrong;
         spawnParticles(canvas.width / 2, canvas.height / 2, COLORS.wrong);
     }
@@ -267,47 +286,96 @@ function draw() {
 }
 function loop() { update(); draw(); }
 
+// ★背景に折れ線グラフを描く関数
+function drawGraph() {
+    if (levelHistory.length < 2) return;
+
+    const graphAreaW = canvas.width * 0.8; // タワー以外の左側エリア
+    const startY = canvas.height - 50;
+    const endY = 50;
+    const heightRange = startY - endY;
+
+    // X軸のステップ幅（履歴が増えるほど狭くなる）
+    // 最低でも20ステップ分の幅は確保して見た目を整える
+    const maxSteps = Math.max(20, levelHistory.length);
+    const stepX = graphAreaW / maxSteps;
+
+    ctx.strokeStyle = COLORS.graphLine;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+
+    levelHistory.forEach((lv, i) => {
+        const x = i * stepX;
+        // レベル100が一番上(endY)、レベル0が一番下(startY)
+        // グラフが上限突破しても描画は続ける（クリア演出用）
+        const ratio = Math.min(1.0, lv / TOTAL_LEVELS);
+        const y = startY - (ratio * heightRange);
+
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+
+    ctx.stroke();
+
+    // 下側を塗りつぶして山のように見せる
+    ctx.lineTo((levelHistory.length - 1) * stepX, startY);
+    ctx.lineTo(0, startY);
+    ctx.fillStyle = COLORS.graphFill;
+    ctx.fill();
+}
+
+// ★タワー描画（右端・半身表示）
 function drawTower() {
-    const w = canvas.width * 0.15;
+    const w = canvas.width * 0.2; // 画面幅の20%
     const h = canvas.height;
     
-    const towerCenterX = canvas.width - (w / 2);
-    const bottomW = w * 0.8;
-    const topW = w * 0.2;
+    // タワーの中心X座標を「画面の右端」にする
+    const towerCenterX = canvas.width; 
+    
+    const bottomW = w * 1.5; // 少し太めに
+    const topW = w * 0.4;
     const startY = h - 50;
     const endY = 50;
 
+    // タワー本体（台形）
     ctx.fillStyle = '#34495e';
     ctx.beginPath();
-    ctx.moveTo(towerCenterX - bottomW/2, startY);
-    ctx.lineTo(towerCenterX + bottomW/2, startY);
-    ctx.lineTo(towerCenterX + topW/2, endY);
-    ctx.lineTo(towerCenterX - topW/2, endY);
+    ctx.moveTo(towerCenterX - bottomW, startY); // 左下
+    ctx.lineTo(towerCenterX, startY);           // 右下（画面端）
+    ctx.lineTo(towerCenterX, endY);             // 右上（画面端）
+    ctx.lineTo(towerCenterX - topW, endY);      // 左上
     ctx.closePath();
     ctx.fill();
 
+    // 現在レベルの矢印とライン
     const progress = Math.min(1.0, (level - 1) / 99);
     const currentY = startY - (progress * (startY - endY));
-    const arrowRightX = towerCenterX - (bottomW/2) - 5; 
     
+    // 矢印の先端X座標（タワーの左斜辺に合わせる簡易計算）
+    // 斜辺のX座標 = 下底X + (上底X - 下底X) * progress
+    const leftEdgeX = (towerCenterX - bottomW) + ((towerCenterX - topW) - (towerCenterX - bottomW)) * progress;
+
+    // 矢印 (左向き ⬅)
     ctx.fillStyle = '#f1c40f';
     ctx.beginPath();
-    ctx.moveTo(arrowRightX - 15, currentY);
-    ctx.lineTo(arrowRightX, currentY - 10);
-    ctx.lineTo(arrowRightX, currentY + 10);
+    ctx.moveTo(leftEdgeX - 5, currentY);
+    ctx.lineTo(leftEdgeX - 20, currentY - 10);
+    ctx.lineTo(leftEdgeX - 20, currentY + 10);
     ctx.fill();
 
+    // レベルテキスト
     ctx.fillStyle = '#fff';
-    ctx.textAlign = 'center';
+    ctx.textAlign = 'right'; // 右寄せ
     ctx.font = '12px sans-serif';
-    ctx.fillText('Lv.100', towerCenterX, endY - 10);
-    ctx.fillText('Start', towerCenterX, startY + 20);
+    ctx.fillText('Lv.100', canvas.width - 5, endY - 10);
+    ctx.fillText('Start', canvas.width - 5, startY + 20);
     
+    // 現在地ライン
     ctx.strokeStyle = '#f1c40f';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(towerCenterX - 20, currentY);
-    ctx.lineTo(towerCenterX + 20, currentY);
+    ctx.moveTo(leftEdgeX - 25, currentY); // 矢印の尻から
+    ctx.lineTo(canvas.width, currentY);   // 画面右端まで
     ctx.stroke();
 }
 
@@ -333,6 +401,12 @@ function drawTitle() {
     ctx.textAlign = 'center';
     ctx.font = 'bold 36px sans-serif';
     ctx.fillText('WORD TOWER', canvas.width / 2, canvas.height / 2 - 60);
+    
+    // バージョン表示
+    ctx.font = '20px sans-serif';
+    ctx.fillStyle = '#95a5a6';
+    ctx.fillText("Ver 1.3", canvas.width / 2, canvas.height / 2 - 20);
+    
     drawButton({
         x: canvas.width / 2 - 100, y: canvas.height / 2 + 50,
         w: 200, h: 60, text: 'START'
@@ -340,17 +414,26 @@ function drawTitle() {
 }
 
 function drawGame() {
+    // 1. 背景グラフを描画
+    drawGraph();
+    // 2. タワーを描画
     drawTower();
+    // 3. UIパーツ
     drawWrongList();
+    
     ctx.fillStyle = COLORS.text;
     ctx.textAlign = 'center'; 
     ctx.font = 'bold 24px sans-serif';
+    // 現在レベルを画面上部中央へ
     ctx.fillText(`Lv.${level}`, canvas.width / 2, 40);
+    
+    // HP表示
     ctx.textAlign = 'right';
     ctx.font = '20px sans-serif';
-    ctx.fillText(`HP ${energy}`, canvas.width - (canvas.width * 0.15) - 20, 40);
+    // タワーに被らないよう少し左へ
+    ctx.fillText(`HP ${energy}`, canvas.width - (canvas.width * 0.2) - 20, 40);
 
-    const gameAreaW = canvas.width - (canvas.width * 0.15);
+    const gameAreaW = canvas.width - (canvas.width * 0.2);
     const cx = gameAreaW / 2;
     
     ctx.textAlign = 'center';
@@ -369,34 +452,36 @@ function drawGame() {
     });
 }
 
-// ★修正ポイント：クリア時はシンプルに「ALL CLEAR!!」と表示
 function drawResult() {
+    drawGraph();
     drawTower();
     drawWrongList();
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawWrongList();
+    
+    // 暗転後にもう一度描画して浮き上がらせる
+    drawGraph();
     drawTower();
+    drawWrongList();
 
-    const gameAreaW = canvas.width - (canvas.width * 0.15);
+    const gameAreaW = canvas.width - (canvas.width * 0.2);
     const cx = gameAreaW / 2;
 
     ctx.fillStyle = COLORS.text;
     ctx.textAlign = 'center';
     if (level > TOTAL_LEVELS) {
         ctx.fillStyle = COLORS.correct;
-        ctx.font = 'bold 40px sans-serif';
+        ctx.font = 'bold 50px sans-serif';
         ctx.fillText('ALL CLEAR!!', cx, canvas.height / 2 - 60);
-        
         ctx.fillStyle = COLORS.text;
         ctx.font = '24px sans-serif';
         ctx.fillText(`Tower Conquered!`, cx, canvas.height / 2 - 10);
     } else {
         ctx.fillStyle = COLORS.wrong;
-        ctx.font = 'bold 40px sans-serif';
+        ctx.font = 'bold 50px sans-serif';
         ctx.fillText('GAME OVER', cx, canvas.height / 2 - 60);
         ctx.fillStyle = COLORS.text;
-        ctx.font = '20px sans-serif';
+        ctx.font = '24px sans-serif';
         ctx.fillText(`Reached: Lv.${level}`, cx, canvas.height / 2 - 10);
     }
     drawButton({
@@ -418,7 +503,6 @@ function drawButton(btn, color) {
     ctx.textBaseline = 'alphabetic';
 }
 
-// 入力イベント（PC補正込み）
 canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
