@@ -6,6 +6,7 @@ https://jamad.github.io/eitango_yarou
 
 source : https://github.com/jamad/jamad.github.io/blob/master/eitango_yarou/index.html
 
+---
 
 前回のバージョンが良かった時に、上書きすると残念すぎるので、β版を用意した。
 
