@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vocab Store - Code D</title>
+    <title>Vocab Store - Code E</title>
     <style>
         body {
             margin: 0;
@@ -81,6 +81,7 @@
             cursor: pointer;
         }
 
+        /* Shopping List (Code O Style) */
         #basket-container {
             position: absolute;
             top: 20px;
@@ -127,6 +128,7 @@
             border-left: 4px solid #ff4757;
             cursor: pointer;
             align-items: center;
+            pointer-events: auto;
         }
 
         .level-badge {
@@ -141,6 +143,7 @@
             font-size: 10px;
         }
 
+        /* Joystick */
         #mobile-joystick {
             position: absolute;
             bottom: 30px;
@@ -272,13 +275,14 @@
 
     <div id="start-screen">
         <h1>Vocab Mega Store</h1>
-        <p>Loading... (テクスチャ準備中)</p>
-        <button class="btn" id="start-btn" style="display:none;">ENTER STORE</button>
+        <p>十字型の店舗です。リストをクリックで商品が棚に戻ります。</p>
+        <button class="btn" id="start-btn">ENTER STORE</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
+        // --- DATA ---
         const dictionary = [
             { id: 1, en: "Apple", ja: "リンゴ", fi: "Omena", level: 1 }, { id: 2, en: "Banana", ja: "バナナ", fi: "Banaani", level: 1 },
             { id: 3, en: "Coffee", ja: "コーヒー", fi: "Kahvi", level: 2 }, { id: 4, en: "Bread", ja: "パン", fi: "Leipä", level: 1 },
@@ -295,7 +299,7 @@
         let moveState = { forward: false, backward: false, left: false, right: false };
         let basketItems = [];
         let pitch = 0, yaw = 0, isGameStarted = false, isConfigOpen = false;
-        let touchStartPos = { x: 0, y: 0 }, touchStartTime = 0;
+        let lastTouch = null;
 
         const textureCache = {};
 
@@ -328,19 +332,16 @@
             return tex;
         }
 
-        // 言語切り替えの遅延をなくすためのプリレンダリング
         function preCacheTextures() {
             const langs = ['en', 'ja', 'fi'];
             dictionary.forEach(item => {
                 langs.forEach(lang => getTextTexture(item[lang]));
             });
-            // ついでにレジ用も
             getTextTexture("CHECKOUT", "#ff4757", "white");
         }
 
         function init() {
-            preCacheTextures(); // メインタイトルの裏で実行
-
+            preCacheTextures();
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0xf0f0f0);
             scene.fog = new THREE.Fog(0xf0f0f0, 5, 85);
@@ -362,10 +363,6 @@
             setupInputs();
             setupUI();
             animate();
-
-            // 準備ができたらボタンを表示
-            document.getElementById('start-btn').style.display = 'block';
-            document.querySelector('#start-screen p').innerText = "十字型の店舗です。中央に棚を追加しました。";
         }
 
         function generateWorld() {
@@ -377,7 +374,6 @@
             ceiling.position.y = 6; ceiling.rotation.x = Math.PI / 2;
             scene.add(ceiling);
 
-            // Ceiling Lights
             for (let x = -24; x <= 24; x += 12) {
                 for (let z = -24; z <= 24; z += 12) {
                     const light = new THREE.Mesh(new THREE.BoxGeometry(5, 0.1, 1), new THREE.MeshBasicMaterial({ color: 0xffffff }));
@@ -395,19 +391,18 @@
             };
 
             const s = 35;
-            createWall(12, 6, 1, 0, -s); createWall(1, 6, 15, -6, -28); createWall(1, 6, 15, 6, -28); // North
-            createWall(12, 6, 1, 0, s); createWall(1, 6, 15, -6, 28); createWall(1, 6, 15, 6, 28);  // South
-            createWall(1, 6, 12, -s, 0); createWall(15, 6, 1, -28, -6); createWall(15, 6, 1, -28, 6); // West
-            createWall(1, 6, 12, s, 0); createWall(15, 6, 1, 28, -6); createWall(15, 6, 1, 28, 6);  // East
+            createWall(12, 6, 1, 0, -s); createWall(1, 6, 15, -6, -28); createWall(1, 6, 15, 6, -28);
+            createWall(12, 6, 1, 0, s); createWall(1, 6, 15, -6, 28); createWall(1, 6, 15, 6, 28);
+            createWall(1, 6, 12, -s, 0); createWall(15, 6, 1, -28, -6); createWall(15, 6, 1, -28, 6);
+            createWall(1, 6, 12, s, 0); createWall(15, 6, 1, 28, -6); createWall(15, 6, 1, 28, 6);
             createWall(18, 6, 1, -15, -21); createWall(1, 6, 18, -21, -15);
             createWall(18, 6, 1, 15, -21); createWall(1, 6, 18, 21, -15);
             createWall(18, 6, 1, -15, 21); createWall(1, 6, 18, -21, 15);
             createWall(18, 6, 1, 15, 21); createWall(1, 6, 18, 21, 15);
 
-            // 2行5列レイアウトの棚
             let globalId = 0;
-            const colX = [-12, -6, 0, 6, 12]; // 5列
-            const rowZ = [-10, 10]; // 2行
+            const colX = [-12, -6, 0, 6, 12];
+            const rowZ = [-10, 10];
             for (let rz of rowZ) {
                 for (let cx of colX) {
                     createShelfUnit(cx, rz, 14, globalId);
@@ -471,25 +466,26 @@
 
             const lookArea = document.getElementById('touch-look-area');
             lookArea.addEventListener('touchstart', (e) => {
-                touchStartPos = { x: e.touches[0].pageX, y: e.touches[0].pageY };
-                touchStartTime = Date.now();
-                this.lastT = touchStartPos;
+                const touch = e.touches[0];
+                this.touchStartData = { x: touch.pageX, y: touch.pageY, time: Date.now() };
+                lastTouch = { x: touch.pageX, y: touch.pageY };
             });
             lookArea.addEventListener('touchmove', (e) => {
                 if (isConfigOpen) return;
                 const touch = e.touches[0];
-                if (this.lastT) {
-                    yaw -= (touch.pageX - this.lastT.x) * 0.005; pitch -= (touch.pageY - this.lastT.y) * 0.005;
+                if (lastTouch) {
+                    yaw -= (touch.pageX - lastTouch.x) * 0.005; pitch -= (touch.pageY - lastTouch.y) * 0.005;
                     pitch = Math.max(-1.5, Math.min(1.5, pitch));
                     camera.rotation.set(pitch, yaw, 0);
                 }
-                this.lastT = { x: touch.pageX, y: touch.pageY };
+                lastTouch = { x: touch.pageX, y: touch.pageY };
             });
             lookArea.addEventListener('touchend', (e) => {
-                const duration = Date.now() - touchStartTime;
-                const dist = Math.hypot(e.changedTouches[0].pageX - touchStartPos.x, e.changedTouches[0].pageY - touchStartPos.y);
+                const duration = Date.now() - this.touchStartData.time;
+                const touch = e.changedTouches[0];
+                const dist = Math.hypot(touch.pageX - this.touchStartData.x, touch.pageY - this.touchStartData.y);
                 if (duration < 250 && dist < 15) handleRaycast();
-                this.lastT = null;
+                lastTouch = null;
             });
 
             const setupJoy = (id, key) => {
@@ -519,6 +515,15 @@
             }
         }
 
+        // --- Original Return to Shelf Logic ---
+        function returnToShelf(index) {
+            const item = basketItems.splice(index, 1)[0];
+            const mesh = products.find(p => p.userData.id === item.meshId);
+            if (mesh) { mesh.visible = true; }
+            AudioSys.play('down');
+            renderBasket();
+        }
+
         function renderBasket() {
             const list = document.getElementById('basket-list');
             list.innerHTML = '';
@@ -526,16 +531,10 @@
             basketItems.forEach((item, i) => {
                 const li = document.createElement('li');
                 li.className = 'basket-item';
-                li.innerHTML = `<span>${item.data[CONFIG.listLanguage]}</span><div class="level-badge">${item.data.level}</div>`;
-
+                li.innerHTML = `<span>${item.data[CONFIG.listLanguage]}</span><span class="level-badge">${item.data.level}</span>`;
                 li.onclick = (e) => {
-                    e.preventDefault();
                     e.stopPropagation();
-                    const removed = basketItems.splice(i, 1)[0];
-                    const mesh = products.find(p => p.userData.id === removed.meshId);
-                    if (mesh) mesh.visible = true;
-                    AudioSys.play('down');
-                    renderBasket();
+                    returnToShelf(i);
                 };
                 list.appendChild(li);
             });
