@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vocab Store - Mega Cross Edition</title>
+    <title>Vocab Store - Final Mega Cross</title>
     <style>
         body {
             margin: 0;
@@ -82,7 +82,7 @@
             cursor: pointer;
         }
 
-        /* Shopping List (Original High-Grade UI) */
+        /* Shopping List (Restored Original Style) */
         #basket-container {
             position: absolute;
             top: 20px;
@@ -172,7 +172,7 @@
             position: absolute;
             top: 0;
             right: 0;
-            width: 60%;
+            width: 100%;
             height: 100%;
             pointer-events: auto;
             z-index: 50;
@@ -215,6 +215,7 @@
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
+            z-index: 100;
         }
 
         #message-area {
@@ -228,7 +229,7 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.5s;
-            z-index: 100;
+            z-index: 101;
         }
     </style>
 </head>
@@ -274,7 +275,7 @@
 
     <div id="start-screen">
         <h1>Vocab Mega Store</h1>
-        <p>十字型の広大な店舗です。商品は棚にぎっしりと並んでいます。<br>突き当たりのレジ（赤いサイン）を目指してください。</p>
+        <p>十字型の広大な店舗です。商品は棚にぎっしりと並んでいます。<br>iPadは左下で移動、画面のどこかをタップでアイテム取得です。</p>
         <button class="btn" id="start-btn">ENTER STORE</button>
     </div>
 
@@ -290,13 +291,14 @@
 
         const CONFIG = {
             moveSpeed: 0.15, lookSpeed: 0.003, shelfLanguage: 'en', listLanguage: 'ja',
-            shelfRows: 10, itemsPerRow: 30, shelfDepth: 1.5, storeSize: 60
+            shelfRows: 10, itemsPerRow: 28, shelfDepth: 1.5, storeSize: 70
         };
 
         let scene, camera, renderer, products = [], colliders = [];
         let moveState = { forward: false, backward: false, left: false, right: false };
         let basketItems = [];
         let pitch = 0, yaw = 0, isGameStarted = false, isConfigOpen = false;
+        let touchStartPos = { x: 0, y: 0 }, touchStartTime = 0;
 
         const AudioSys = {
             ctx: null,
@@ -315,7 +317,7 @@
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0xf0f0f0);
-            scene.fog = new THREE.Fog(0xf0f0f0, 5, 75);
+            scene.fog = new THREE.Fog(0xf0f0f0, 5, 80);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.rotation.order = 'YXZ';
@@ -348,8 +350,7 @@
         }
 
         function generateWorld() {
-            // Floor & Ceiling
-            const floorGeo = new THREE.PlaneGeometry(80, 80);
+            const floorGeo = new THREE.PlaneGeometry(100, 100);
             const floor = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ color: 0xcccccc }));
             floor.rotation.x = -Math.PI / 2;
             scene.add(floor);
@@ -357,7 +358,6 @@
             ceiling.position.y = 6; ceiling.rotation.x = Math.PI / 2;
             scene.add(ceiling);
 
-            // Crossroads Walls
             const wallMat = new THREE.MeshStandardMaterial({ color: 0xdddddd });
             const createWall = (w, h, d, x, z) => {
                 const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
@@ -366,36 +366,36 @@
                 colliders.push({ x, z, w, d });
             };
 
-            // Cross Layout Construction
-            const s = 30; // 突き出し
-            createWall(10, 6, 1, 0, -s); createWall(1, 6, 10, -5, -25); createWall(1, 6, 10, 5, -25); // North
-            createWall(10, 6, 1, 0, s); createWall(1, 6, 10, -5, 25); createWall(1, 6, 10, 5, 25);  // South
-            createWall(1, 6, 10, -s, 0); createWall(10, 6, 1, -25, -5); createWall(10, 6, 1, -25, 5); // West
-            createWall(1, 6, 10, s, 0); createWall(10, 6, 1, 25, -5); createWall(10, 6, 1, 25, 5);  // East
-            // Corners
-            createWall(15, 6, 1, -12.5, -20); createWall(1, 6, 15, -20, -12.5); // Top-Left
-            createWall(15, 6, 1, 12.5, -20); createWall(1, 6, 15, 20, -12.5);  // Top-Right
-            createWall(15, 6, 1, -12.5, 20); createWall(1, 6, 15, -20, 12.5);  // Bottom-Left
-            createWall(15, 6, 1, 12.5, 20); createWall(1, 6, 15, 20, 12.5);   // Bottom-Right
+            // 十字型の外周 (通路を広めに確保)
+            const s = 35;
+            createWall(12, 6, 1, 0, -s); createWall(1, 6, 15, -6, -28); createWall(1, 6, 15, 6, -28); // North
+            createWall(12, 6, 1, 0, s); createWall(1, 6, 15, -6, 28); createWall(1, 6, 15, 6, 28);  // South
+            createWall(1, 6, 12, -s, 0); createWall(15, 6, 1, -28, -6); createWall(15, 6, 1, -28, 6); // West
+            createWall(1, 6, 12, s, 0); createWall(15, 6, 1, 28, -6); createWall(15, 6, 1, 28, 6);  // East
+            // 角の壁 (通路が詰まらないよう少し外側に)
+            createWall(18, 6, 1, -15, -21); createWall(1, 6, 18, -21, -15); // 左上
+            createWall(18, 6, 1, 15, -21); createWall(1, 6, 18, 21, -15);  // 右上
+            createWall(18, 6, 1, -15, 21); createWall(1, 6, 18, -21, 15);  // 左下
+            createWall(18, 6, 1, 15, 21); createWall(1, 6, 18, 21, 15);   // 右下
 
-            // Shelves (Increased Count & Density)
+            // 棚 (十字路の四隅、各ブロックに2列ずつ配置)
             let globalId = 0;
             for (let sx of [-1, 1]) {
                 for (let sz of [-1, 1]) {
-                    for (let i = 0; i < 2; i++) { // 各コーナーに2列配置
-                        const px = sx * (7 + i * 6);
+                    for (let i = 0; i < 2; i++) {
+                        const px = sx * (6.5 + i * 5.5);
                         const pz = sz * 10;
-                        createShelfUnit(px, pz, 15, globalId);
+                        createShelfUnit(px, pz, 14, globalId);
                         globalId += CONFIG.shelfRows * CONFIG.itemsPerRow * 2;
                     }
                 }
             }
 
-            // Radial Checkout Signs
-            createCheckoutZone(0, -28, Math.PI); // North
-            createCheckoutZone(0, 28, 0);       // South
-            createCheckoutZone(-28, 0, -Math.PI / 2); // West
-            createCheckoutZone(28, 0, Math.PI / 2);  // East
+            // 放射状のレジ床サイン (中心 0,0 を向くように修正)
+            createCheckoutZone(0, -32, 0);           // 北 (文字が中心を向く)
+            createCheckoutZone(0, 32, Math.PI);      // 南
+            createCheckoutZone(-32, 0, Math.PI / 2);   // 西
+            createCheckoutZone(32, 0, -Math.PI / 2);  // 東
         }
 
         function createShelfUnit(x, z, len, startId) {
@@ -408,13 +408,12 @@
             let id = startId;
             for (let side = 0; side < 2; side++) {
                 const isRight = side === 0;
-                const offsetX = isRight ? 0.705 : -0.705; // 95% Embedded
+                const offsetX = isRight ? 0.705 : -0.705; // 95% 埋没
                 const rotY = isRight ? Math.PI / 2 : -Math.PI / 2;
                 for (let r = 0; r < CONFIG.shelfRows; r++) {
                     for (let c = 0; c < CONFIG.itemsPerRow; c++) {
                         const data = dictionary[id % dictionary.length];
-                        const mat = new THREE.MeshBasicMaterial({ map: getTextTexture(data[CONFIG.shelfLanguage]) });
-                        const plate = new THREE.Mesh(itemGeo, mat);
+                        const plate = new THREE.Mesh(itemGeo, new THREE.MeshBasicMaterial({ map: getTextTexture(data[CONFIG.shelfLanguage]) }));
                         plate.position.set(x + offsetX, 0.5 + (r * 0.35), z - (len / 2) + (c * (len / CONFIG.itemsPerRow)) + 0.3);
                         plate.rotation.y = rotY;
                         plate.userData = { id: id++, data: data, isProduct: true };
@@ -426,11 +425,11 @@
         }
 
         function createCheckoutZone(x, z, rotZ) {
-            const zone = new THREE.Mesh(new THREE.PlaneGeometry(7, 3.5), new THREE.MeshBasicMaterial({ map: getTextTexture("CHECKOUT", "#ff4757", "white") }));
+            const zone = new THREE.Mesh(new THREE.PlaneGeometry(8, 4), new THREE.MeshBasicMaterial({ map: getTextTexture("CHECKOUT", "#ff4757", "white") }));
             zone.rotation.x = -Math.PI / 2; zone.rotation.z = rotZ;
             zone.position.set(x, 0.01, z);
             scene.add(zone);
-            const trigger = new THREE.Mesh(new THREE.BoxGeometry(7, 4, 3.5), new THREE.MeshBasicMaterial({ visible: false }));
+            const trigger = new THREE.Mesh(new THREE.BoxGeometry(8, 4, 4), new THREE.MeshBasicMaterial({ visible: false }));
             trigger.position.set(x, 2, z); trigger.userData = { isGoal: true };
             products.push(trigger);
         }
@@ -438,6 +437,7 @@
         function setupInputs() {
             window.addEventListener('keydown', (e) => { if (e.code === 'KeyW') moveState.forward = true; if (e.code === 'KeyS') moveState.backward = true; if (e.code === 'KeyA') moveState.left = true; if (e.code === 'KeyD') moveState.right = true; });
             window.addEventListener('keyup', (e) => { if (e.code === 'KeyW') moveState.forward = false; if (e.code === 'KeyS') moveState.backward = false; if (e.code === 'KeyA') moveState.left = false; if (e.code === 'KeyD') moveState.right = false; });
+
             window.addEventListener('mousemove', (e) => {
                 if (document.pointerLockElement && !isConfigOpen) {
                     yaw -= e.movementX * CONFIG.lookSpeed; pitch -= e.movementY * CONFIG.lookSpeed;
@@ -445,7 +445,13 @@
                     camera.rotation.set(pitch, yaw, 0);
                 }
             });
+
             const lookArea = document.getElementById('touch-look-area');
+            lookArea.addEventListener('touchstart', (e) => {
+                touchStartPos = { x: e.touches[0].pageX, y: e.touches[0].pageY };
+                touchStartTime = Date.now();
+                this.lastT = touchStartPos;
+            });
             lookArea.addEventListener('touchmove', (e) => {
                 if (isConfigOpen) return;
                 const touch = e.touches[0];
@@ -456,13 +462,21 @@
                 }
                 this.lastT = { x: touch.pageX, y: touch.pageY };
             });
-            lookArea.addEventListener('touchend', () => this.lastT = null);
+            lookArea.addEventListener('touchend', (e) => {
+                const duration = Date.now() - touchStartTime;
+                const dist = Math.hypot(e.changedTouches[0].pageX - touchStartPos.x, e.changedTouches[0].pageY - touchStartPos.y);
+                // 短いタップ（250ms以内、移動距離が少ない）ならアイテム取得
+                if (duration < 250 && dist < 15) handleRaycast();
+                this.lastT = null;
+            });
+
             const setupJoy = (id, key) => {
                 const b = document.getElementById(id);
                 b.addEventListener('touchstart', (e) => { e.preventDefault(); moveState[key] = true; });
                 b.addEventListener('touchend', () => moveState[key] = false);
             };
             setupJoy('joy-w', 'forward'); setupJoy('joy-s', 'backward'); setupJoy('joy-a', 'left'); setupJoy('joy-d', 'right');
+
             window.addEventListener('click', () => {
                 if (!isGameStarted || isConfigOpen) return;
                 if (!document.pointerLockElement && window.innerWidth > 1024) renderer.domElement.requestPointerLock();
@@ -474,7 +488,7 @@
             const ray = new THREE.Raycaster();
             ray.setFromCamera(new THREE.Vector2(0, 0), camera);
             const hits = ray.intersectObjects(products.filter(p => p.visible));
-            if (hits.length > 0 && hits[0].distance < 5 && hits[0].object.userData.isProduct) {
+            if (hits.length > 0 && hits[0].distance < 6 && hits[0].object.userData.isProduct) {
                 const obj = hits[0].object;
                 obj.visible = false;
                 basketItems.unshift({ meshId: obj.userData.id, data: obj.userData.data });
@@ -520,7 +534,7 @@
                 if (moveState.backward) nPos.addScaledVector(dir, -CONFIG.moveSpeed);
                 if (moveState.left) nPos.addScaledVector(side, CONFIG.moveSpeed);
                 if (moveState.right) nPos.addScaledVector(side, -CONFIG.moveSpeed);
-                const r = 0.8;
+                const r = 0.6;
                 let collided = false;
                 for (let c of colliders) {
                     if (Math.abs(nPos.x - c.x) < (c.w / 2 + r) && Math.abs(nPos.z - c.z) < (c.d / 2 + r)) collided = true;
