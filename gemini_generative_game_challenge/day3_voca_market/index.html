@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vocab Labyrinth Mega Store v4</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        /* UI Overlay */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Config Button */
+        #config-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            font-size: 24px;
+            z-index: 200;
+        }
+
+        /* Config Modal */
+        #config-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            width: 300px;
+            z-index: 201;
+        }
+
+        #config-modal h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .config-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #close-config {
+            align-self: center;
+            padding: 8px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Shopping Basket */
+        #basket-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 240px;
+            max-height: 70vh;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto;
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s ease;
+        }
+
+        #basket-header {
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #basket-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .basket-item {
+            background: #eee;
+            margin-bottom: 5px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            border-left: 4px solid #ff4757;
+            cursor: pointer;
+        }
+
+        .basket-item .level-badge {
+            background: #333;
+            color: #fff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+        }
+
+        /* Game Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+            pointer-events: auto;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        #message-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            font-weight: bold;
+            color: #fffa65;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer">
+        <div id="crosshair"></div>
+        <div id="config-btn">⚙️</div>
+        <div id="basket-container">
+            <div id="basket-header"><span>SHOPPING LIST</span><span id="item-count">0</span></div>
+            <ul id="basket-list"></ul>
+        </div>
+        <div id="message-area">THANK YOU!</div>
+    </div>
+
+    <div id="config-modal">
+        <h2>Settings</h2>
+        <div class="config-row"><label>Shelf Language:</label><select id="shelf-lang-select">
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+                <option value="fi">Suomi</option>
+            </select></div>
+        <div class="config-row"><label>List Language:</label><select id="list-lang-select">
+                <option value="en">English</option>
+                <option value="ja" selected>日本語</option>
+                <option value="fi">Suomi</option>
+            </select></div>
+        <button id="close-config">Close</button>
+    </div>
+
+    <div id="start-screen">
+        <h1>Vocab Mega Store</h1>
+        <p>約8,000語が並ぶ巨大な店舗で学習しよう。</p>
+        <p>中央の出口（東西南北）からチェックアウトできます。</p>
+        <button class="btn" id="start-btn">ENTER STORE</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // --- DATA ---
+        const dictionary = [
+            { id: 1, en: "Apple", ja: "リンゴ", fi: "Omena", level: 1 },
+            { id: 2, en: "Banana", ja: "バナナ", fi: "Banaani", level: 1 },
+            { id: 3, en: "Coffee", ja: "コーヒー", fi: "Kahvi", level: 2 },
+            { id: 4, en: "Bread", ja: "パン", fi: "Leipä", level: 1 },
+            { id: 5, en: "Milk", ja: "牛乳", fi: "Maito", level: 1 },
+            { id: 6, en: "Cheese", ja: "チーズ", fi: "Juusto", level: 2 },
+            { id: 7, en: "Egg", ja: "卵", fi: "Kananmuna", level: 1 },
+            { id: 8, en: "Butter", ja: "バター", fi: "Voi", level: 2 },
+            { id: 9, en: "Yogurt", ja: "ヨーグルト", fi: "Jogurtti", level: 2 },
+            { id: 10, en: "Sugar", ja: "砂糖", fi: "Sokeri", level: 1 },
+            { id: 11, en: "Salt", ja: "塩", fi: "Suola", level: 1 },
+            { id: 12, en: "Water", ja: "水", fi: "Vesi", level: 1 },
+            { id: 13, en: "Juice", ja: "ジュース", fi: "Mehu", level: 1 },
+            { id: 14, en: "Tea", ja: "お茶", fi: "Tee", level: 1 }
+        ];
+
+        const CONFIG = {
+            moveSpeed: 0.2,
+            lookSpeed: 0.005,
+            shelfLanguage: 'en',
+            listLanguage: 'ja',
+            clickThreshold: 15,
+            shelfRows: 12, // 縦の密度: 前回の2倍
+            itemsPerRow: 40, // 横の密度
+            aisleCountX: 6, // 横に並ぶ棚の数
+            aisleCountZ: 4, // 縦に並ぶ棚の数
+            aisleWidth: 6,
+            shelfDepth: 1,
+            shelfLength: 20
+        };
+
+        let scene, camera, renderer, products = [];
+        let moveState = { forward: false, backward: false, left: false, right: false };
+        let basketItems = [];
+        let mouseDownPos = { x: 0, y: 0 };
+
+        // --- AUDIO ---
+        const AudioSys = {
+            ctx: null,
+            init() { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+            play(type) {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                if (type === 'up') {
+                    osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
+                } else {
+                    osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(200, this.ctx.currentTime + 0.2);
+                }
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+            }
+        };
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
+            scene.fog = new THREE.Fog(0xf5f5f5, 10, 50);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.7, 5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            const sun = new THREE.DirectionalLight(0xffffff, 0.4);
+            sun.position.set(10, 20, 10);
+            scene.add(sun);
+
+            generateWorld();
+            setupInputs();
+            setupUI();
+            animate();
+        }
+
+        const textureCache = {};
+        function getTextTexture(text) {
+            if (textureCache[text]) return textureCache[text];
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = "white"; ctx.fillRect(0, 0, 256, 128);
+            ctx.strokeStyle = "#333"; ctx.lineWidth = 10; ctx.strokeRect(0, 0, 256, 128);
+            ctx.fillStyle = "black"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.font = "bold 40px Arial";
+            ctx.fillText(text, 128, 64);
+            const tex = new THREE.CanvasTexture(canvas);
+            textureCache[text] = tex;
+            return tex;
+        }
+
+        function generateWorld() {
+            // Floor
+            const floorGeo = new THREE.PlaneGeometry(200, 200);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0xdddddd });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            scene.add(floor);
+
+            let globalProductCounter = 0;
+
+            // Generate Shelves in a Grid
+            const gridSpacingX = CONFIG.aisleWidth + CONFIG.shelfDepth;
+            const gridSpacingZ = CONFIG.shelfLength + 4;
+
+            for (let ix = -CONFIG.aisleCountX / 2; ix < CONFIG.aisleCountX / 2; ix++) {
+                for (let iz = -CONFIG.aisleCountZ / 2; iz < CONFIG.aisleCountZ / 2; iz++) {
+                    const posX = ix * gridSpacingX;
+                    const posZ = iz * gridSpacingZ;
+
+                    // Central corridor gap
+                    if (Math.abs(posX) < 2 || Math.abs(posZ) < 2) continue;
+
+                    createShelfUnit(posX, posZ, globalProductCounter);
+                    globalProductCounter += CONFIG.shelfRows * CONFIG.itemsPerRow * 2;
+                }
+            }
+
+            // Exits (Checkout)
+            createCheckoutSign(0, 0, 15);  // North
+            createCheckoutSign(0, 0, -15); // South
+            createCheckoutSign(15, 0, 0);  // East
+            createCheckoutSign(-15, 0, 0); // West
+        }
+
+        function createShelfUnit(x, z, startId) {
+            const shelfGeo = new THREE.BoxGeometry(CONFIG.shelfDepth, 4, CONFIG.shelfLength);
+            const shelfMat = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+            const shelf = new THREE.Mesh(shelfGeo, shelfMat);
+            shelf.position.set(x, 2, z);
+            scene.add(shelf);
+
+            const itemGeo = new THREE.BoxGeometry(0.4, 0.15, 0.05);
+            let id = startId;
+
+            for (let side = 0; side < 2; side++) {
+                const isLeft = side === 0;
+                const offsetX = isLeft ? 0.55 : -0.55;
+                const rotY = isLeft ? Math.PI / 2 : -Math.PI / 2;
+
+                for (let r = 0; r < CONFIG.shelfRows; r++) {
+                    for (let c = 0; c < CONFIG.itemsPerRow; c++) {
+                        const data = dictionary[id % dictionary.length];
+                        const tex = getTextTexture(data[CONFIG.shelfLanguage]);
+                        const mat = new THREE.MeshBasicMaterial({ map: tex });
+                        const plate = new THREE.Mesh(itemGeo, mat);
+
+                        const itemZ = z - (CONFIG.shelfLength / 2) + (c * (CONFIG.shelfLength / CONFIG.itemsPerRow)) + 0.2;
+                        plate.position.set(x + offsetX, 0.3 + (r * 0.32), itemZ);
+                        plate.rotation.y = rotY;
+
+                        plate.userData = { id: id++, data: data, isProduct: true, isCollected: false };
+                        scene.add(plate);
+                        products.push(plate);
+                    }
+                }
+            }
+        }
+
+        function createCheckoutSign(x, y, z) {
+            const group = new THREE.Group();
+
+            // Pillar
+            const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4), new THREE.MeshStandardMaterial({ color: 0xffff00 }));
+            pillar.position.y = 2;
+            group.add(pillar);
+
+            // Sign
+            const signGeo = new THREE.PlaneGeometry(3, 1.2);
+            const tex = getTextTexture("CHECKOUT");
+            const signMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
+            const sign = new THREE.Mesh(signGeo, signMat);
+            sign.position.y = 3.5;
+
+            // Make sign face the center
+            sign.lookAt(0, 3.5, 0);
+            group.add(sign);
+
+            group.position.set(x, 0, z);
+            scene.add(group);
+
+            const trigger = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 4), new THREE.MeshBasicMaterial({ visible: false }));
+            trigger.position.set(x, 2, z);
+            trigger.userData = { isGoal: true };
+            products.push(trigger);
+        }
+
+        function setupInputs() {
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'KeyW') moveState.forward = true;
+                if (e.code === 'KeyS') moveState.backward = true;
+                if (e.code === 'KeyA') moveState.left = true;
+                if (e.code === 'KeyD') moveState.right = true;
+            });
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'KeyW') moveState.forward = false;
+                if (e.code === 'KeyS') moveState.backward = false;
+                if (e.code === 'KeyA') moveState.left = false;
+                if (e.code === 'KeyD') moveState.right = false;
+            });
+            window.addEventListener('mousedown', (e) => mouseDownPos = { x: e.clientX, y: e.clientY });
+            window.addEventListener('mousemove', (e) => {
+                if (e.buttons === 1) camera.rotation.y -= e.movementX * CONFIG.lookSpeed;
+            });
+            window.addEventListener('click', (e) => {
+                if (e.target.closest('#ui-layer') || e.target.closest('#config-modal')) return;
+                const dist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
+                if (dist < CONFIG.clickThreshold) handleRaycast(e.clientX, e.clientY);
+            });
+        }
+
+        function handleRaycast(x, y) {
+            const mouse = new THREE.Vector2((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1);
+            const ray = new THREE.Raycaster();
+            ray.setFromCamera(mouse, camera);
+            const hits = ray.intersectObjects(products.filter(p => p.visible));
+            if (hits.length > 0) {
+                const obj = hits[0].object;
+                if (obj.userData.isProduct) addToBasket(obj);
+            }
+        }
+
+        function addToBasket(obj) {
+            obj.visible = false;
+            obj.userData.isCollected = true;
+            basketItems.unshift({ meshId: obj.userData.id, data: obj.userData.data });
+            AudioSys.play('up');
+            renderBasket();
+        }
+
+        function renderBasket() {
+            const list = document.getElementById('basket-list');
+            list.innerHTML = '';
+            document.getElementById('item-count').innerText = basketItems.length;
+            basketItems.forEach((item, i) => {
+                const li = document.createElement('li');
+                li.className = 'basket-item';
+                li.innerHTML = `<span>${item.data[CONFIG.listLanguage]}</span><span class="level-badge">${item.data.level}</span>`;
+                li.onclick = (e) => { e.stopPropagation(); returnToShelf(i); };
+                list.appendChild(li);
+            });
+        }
+
+        function returnToShelf(index) {
+            const item = basketItems.splice(index, 1)[0];
+            const mesh = products.find(p => p.userData.id === item.meshId);
+            if (mesh) { mesh.visible = true; mesh.userData.isCollected = false; }
+            AudioSys.play('down');
+            renderBasket();
+        }
+
+        function setupUI() {
+            document.getElementById('start-btn').onclick = () => {
+                document.getElementById('start-screen').style.display = 'none';
+                AudioSys.init();
+            };
+            document.getElementById('config-btn').onclick = () => document.getElementById('config-modal').style.display = 'flex';
+            document.getElementById('close-config').onclick = () => document.getElementById('config-modal').style.display = 'none';
+            document.getElementById('shelf-lang-select').onchange = (e) => {
+                CONFIG.shelfLanguage = e.target.value;
+                products.forEach(p => {
+                    if (p.userData.isProduct) p.material.map = getTextTexture(p.userData.data[CONFIG.shelfLanguage]);
+                });
+            };
+            document.getElementById('list-lang-select').onchange = (e) => {
+                CONFIG.listLanguage = e.target.value;
+                renderBasket();
+            };
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dir = new THREE.Vector3(); camera.getWorldDirection(dir); dir.y = 0; dir.normalize();
+            const side = new THREE.Vector3().crossVectors(camera.up, dir).normalize();
+            if (moveState.forward) camera.position.addScaledVector(dir, CONFIG.moveSpeed);
+            if (moveState.backward) camera.position.addScaledVector(dir, -CONFIG.moveSpeed);
+            if (moveState.left) camera.position.addScaledVector(side, CONFIG.moveSpeed);
+            if (moveState.right) camera.position.addScaledVector(side, -CONFIG.moveSpeed);
+
+            // Goal Check
+            products.forEach(p => {
+                if (p.userData.isGoal && camera.position.distanceTo(p.position) < 2.5) {
+                    document.getElementById('message-area').style.opacity = 1;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        init();
+    </script>
+</body>
+
+</html>
