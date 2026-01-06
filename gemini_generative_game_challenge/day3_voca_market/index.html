@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vocab Store - Final Edition</title>
+    <title>Vocab Store - Crossroads Final</title>
     <style>
         body {
             margin: 0;
@@ -233,7 +233,7 @@
 
     <div id="start-screen">
         <h1>Vocab Mega Store</h1>
-        <p>十字の通路を通り、4方向の出口（CHECKOUT）を目指しましょう。</p>
+        <p>中心に十字路、四方にレジがあります。設定中は視点が固定されます。</p>
         <button class="btn" id="start-btn">ENTER STORE</button>
     </div>
 
@@ -261,13 +261,15 @@
             moveSpeed: 0.15, lookSpeed: 0.002,
             shelfLanguage: 'en', listLanguage: 'ja',
             shelfRows: 10, itemsPerRow: 15,
-            aisleSpacing: 8, shelfDepth: 1.5, storeSize: 50
+            aisleSpacing: 8, shelfDepth: 1.5, storeSize: 60
         };
 
         let scene, camera, renderer, products = [], colliders = [];
         let moveState = { forward: false, backward: false, left: false, right: false };
         let basketItems = [];
         let pitch = 0, yaw = 0;
+        let isGameStarted = false;
+        let isConfigOpen = false;
 
         const AudioSys = {
             ctx: null,
@@ -286,11 +288,11 @@
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0xf5f5f5);
-            scene.fog = new THREE.Fog(0xf5f5f5, 5, 65);
+            scene.fog = new THREE.Fog(0xf5f5f5, 10, 75);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.rotation.order = 'YXZ';
-            camera.position.set(0, 1.7, 20); // 初期位置：南側
+            camera.position.set(0, 1.7, 25);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -324,7 +326,6 @@
         }
 
         function generateWorld() {
-            // Floor & Ceiling
             const planeGeo = new THREE.PlaneGeometry(CONFIG.storeSize, CONFIG.storeSize);
             const floor = new THREE.Mesh(planeGeo, new THREE.MeshStandardMaterial({ color: 0xdddddd }));
             floor.rotation.x = -Math.PI / 2;
@@ -336,44 +337,45 @@
             scene.add(ceiling);
 
             // Lights
-            for (let z = -20; z <= 20; z += 10) {
-                for (let x = -18; x <= 18; x += 12) {
+            for (let z = -24; z <= 24; z += 12) {
+                for (let x = -24; x <= 24; x += 12) {
                     const light = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 0.8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
                     light.position.set(x, 5.95, z);
                     scene.add(light);
                 }
             }
 
-            // External Walls
-            const wallMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee });
+            // Wall Colliders
             const createWall = (w, h, d, x, z) => {
-                const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+                const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: 0xeeeeee }));
                 wall.position.set(x, h / 2, z);
                 scene.add(wall);
+                colliders.push({ x, z, w, d });
             };
-            createWall(CONFIG.storeSize, 6, 0.5, 0, -CONFIG.storeSize / 2);
-            createWall(CONFIG.storeSize, 6, 0.5, 0, CONFIG.storeSize / 2);
-            createWall(0.5, 6, CONFIG.storeSize, -CONFIG.storeSize / 2, 0);
-            createWall(0.5, 6, CONFIG.storeSize, CONFIG.storeSize / 2, 0);
+            const s = CONFIG.storeSize;
+            createWall(s, 6, 1, 0, -s / 2);
+            createWall(s, 6, 1, 0, s / 2);
+            createWall(1, 6, s, -s / 2, 0);
+            createWall(1, 6, s, s / 2, 0);
 
-            // 十字路レイアウトの棚生成
+            // Crossroads Layout
             let globalId = 0;
-            for (let sideX of [-1, 1]) { // 左・右
-                for (let sideZ of [-1, 1]) { // 奥・手前
+            for (let sideX of [-1, 1]) {
+                for (let sideZ of [-1, 1]) {
                     for (let i = 0; i < 2; i++) {
-                        const posX = sideX * (5 + i * CONFIG.aisleSpacing);
-                        const posZ = sideZ * 12; // 中央から離す
-                        createShelfUnit(posX, posZ, 18, globalId);
+                        const posX = sideX * (6 + i * CONFIG.aisleSpacing);
+                        const posZ = sideZ * 14;
+                        createShelfUnit(posX, posZ, 20, globalId);
                         globalId += CONFIG.shelfRows * CONFIG.itemsPerRow * 2;
                     }
                 }
             }
 
-            // 4方向のCheckout床サイン (初期位置 Z=20 に合わせて下を向く)
-            createCheckoutZone(0, -22); // 北
-            createCheckoutZone(0, 22);  // 南
-            createCheckoutZone(-22, 0); // 西
-            createCheckoutZone(22, 0);  // 東
+            // 4 Radial Checkout Signs (Bottom edges face center 0,0)
+            createCheckoutZone(0, -26, Math.PI); // North
+            createCheckoutZone(0, 26, 0);       // South
+            createCheckoutZone(-26, 0, -Math.PI / 2); // West
+            createCheckoutZone(26, 0, Math.PI / 2);  // East
         }
 
         function createShelfUnit(x, z, len, startId) {
@@ -402,10 +404,10 @@
             }
         }
 
-        function createCheckoutZone(x, z) {
+        function createCheckoutZone(x, z, rot) {
             const zone = new THREE.Mesh(new THREE.PlaneGeometry(8, 4), new THREE.MeshBasicMaterial({ map: getTextTexture("CHECKOUT", "#ff4757", "white") }));
             zone.rotation.x = -Math.PI / 2;
-            zone.rotation.z = 0; // すべて初期位置Z=20を文字の下側にする
+            zone.rotation.z = rot;
             zone.position.set(x, 0.01, z);
             scene.add(zone);
 
@@ -424,10 +426,35 @@
         }
 
         function setupInputs() {
-            window.onkeydown = (e) => { if (e.code === 'KeyW') moveState.forward = true; if (e.code === 'KeyS') moveState.backward = true; if (e.code === 'KeyA') moveState.left = true; if (e.code === 'KeyD') moveState.right = true; };
-            window.onkeyup = (e) => { if (e.code === 'KeyW') moveState.forward = false; if (e.code === 'KeyS') moveState.backward = false; if (e.code === 'KeyA') moveState.left = false; if (e.code === 'KeyD') moveState.right = false; };
-            window.onmousemove = (e) => { if (document.pointerLockElement) { yaw -= e.movementX * CONFIG.lookSpeed; pitch -= e.movementY * CONFIG.lookSpeed; pitch = Math.max(-1.5, Math.min(1.5, pitch)); camera.rotation.set(pitch, yaw, 0); } };
-            window.onclick = () => { if (!document.pointerLockElement) renderer.domElement.requestPointerLock(); else handleRaycast(); };
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'KeyW') moveState.forward = true;
+                if (e.code === 'KeyS') moveState.backward = true;
+                if (e.code === 'KeyA') moveState.left = true;
+                if (e.code === 'KeyD') moveState.right = true;
+            });
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'KeyW') moveState.forward = false;
+                if (e.code === 'KeyS') moveState.backward = false;
+                if (e.code === 'KeyA') moveState.left = false;
+                if (e.code === 'KeyD') moveState.right = false;
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement && !isConfigOpen) {
+                    yaw -= e.movementX * CONFIG.lookSpeed;
+                    pitch -= e.movementY * CONFIG.lookSpeed;
+                    pitch = Math.max(-1.5, Math.min(1.5, pitch));
+                    camera.rotation.set(pitch, yaw, 0);
+                }
+            });
+            window.addEventListener('click', (e) => {
+                if (!isGameStarted) return;
+                if (isConfigOpen) return;
+                if (!document.pointerLockElement) {
+                    renderer.domElement.requestPointerLock();
+                } else {
+                    handleRaycast();
+                }
+            });
         }
 
         function handleRaycast() {
@@ -457,9 +484,27 @@
         }
 
         function setupUI() {
-            document.getElementById('start-btn').onclick = () => { document.getElementById('start-screen').style.display = 'none'; renderer.domElement.requestPointerLock(); AudioSys.init(); };
-            document.getElementById('config-btn').onclick = (e) => { e.stopPropagation(); document.getElementById('config-modal').style.display = 'flex'; document.exitPointerLock(); };
-            document.getElementById('close-config').onclick = () => document.getElementById('config-modal').style.display = 'none';
+            document.getElementById('start-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                isGameStarted = true;
+                document.getElementById('start-screen').style.display = 'none';
+                renderer.domElement.requestPointerLock();
+                AudioSys.init();
+            });
+
+            document.getElementById('config-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                isConfigOpen = true;
+                document.getElementById('config-modal').style.display = 'flex';
+                document.exitPointerLock();
+            });
+
+            document.getElementById('close-config').addEventListener('click', () => {
+                isConfigOpen = false;
+                document.getElementById('config-modal').style.display = 'none';
+                renderer.domElement.requestPointerLock();
+            });
+
             document.getElementById('shelf-lang-select').onchange = (e) => {
                 CONFIG.shelfLanguage = e.target.value;
                 products.forEach(p => { if (p.userData.isProduct) p.material.map = getTextTexture(p.userData.data[CONFIG.shelfLanguage]); });
@@ -469,7 +514,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            if (document.pointerLockElement) {
+            if (document.pointerLockElement && isGameStarted && !isConfigOpen) {
                 const dir = new THREE.Vector3(); camera.getWorldDirection(dir); dir.y = 0; dir.normalize();
                 const side = new THREE.Vector3().crossVectors(camera.up, dir).normalize();
                 let nextPos = camera.position.clone();
