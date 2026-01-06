@@ -233,7 +233,7 @@
 
     <div id="start-screen">
         <h1>Vocab Mega Store</h1>
-        <p>画面中央の照準でアイテムを狙ってクリック！<br>床の赤いエリア「CHECKOUT」で精算できます。</p>
+        <p>十字の通路を通り、4方向の出口（CHECKOUT）を目指しましょう。</p>
         <button class="btn" id="start-btn">ENTER STORE</button>
     </div>
 
@@ -260,8 +260,8 @@
         const CONFIG = {
             moveSpeed: 0.15, lookSpeed: 0.002,
             shelfLanguage: 'en', listLanguage: 'ja',
-            shelfRows: 10, itemsPerRow: 30,
-            aisleCount: 5, aisleSpacing: 8, shelfLength: 30, storeSize: 50
+            shelfRows: 10, itemsPerRow: 15,
+            aisleSpacing: 8, shelfDepth: 1.5, storeSize: 50
         };
 
         let scene, camera, renderer, products = [], colliders = [];
@@ -286,11 +286,11 @@
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0xf5f5f5);
-            scene.fog = new THREE.Fog(0xf5f5f5, 5, 60);
+            scene.fog = new THREE.Fog(0xf5f5f5, 5, 65);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.rotation.order = 'YXZ';
-            camera.position.set(0, 1.7, 20);
+            camera.position.set(0, 1.7, 20); // 初期位置：南側
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -337,7 +337,7 @@
 
             // Lights
             for (let z = -20; z <= 20; z += 10) {
-                for (let x = -15; x <= 15; x += 15) {
+                for (let x = -18; x <= 18; x += 12) {
                     const light = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 0.8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
                     light.position.set(x, 5.95, z);
                     scene.add(light);
@@ -356,39 +356,43 @@
             createWall(0.5, 6, CONFIG.storeSize, -CONFIG.storeSize / 2, 0);
             createWall(0.5, 6, CONFIG.storeSize, CONFIG.storeSize / 2, 0);
 
-            // Shelves
+            // 十字路レイアウトの棚生成
             let globalId = 0;
-            for (let i = 0; i < CONFIG.aisleCount; i++) {
-                const posX = (i - (CONFIG.aisleCount - 1) / 2) * CONFIG.aisleSpacing;
-                createShelfUnit(posX, 0, globalId);
-                globalId += CONFIG.shelfRows * CONFIG.itemsPerRow * 2;
+            for (let sideX of [-1, 1]) { // 左・右
+                for (let sideZ of [-1, 1]) { // 奥・手前
+                    for (let i = 0; i < 2; i++) {
+                        const posX = sideX * (5 + i * CONFIG.aisleSpacing);
+                        const posZ = sideZ * 12; // 中央から離す
+                        createShelfUnit(posX, posZ, 18, globalId);
+                        globalId += CONFIG.shelfRows * CONFIG.itemsPerRow * 2;
+                    }
+                }
             }
 
-            // Checkout Floor Signs (North faces South, South faces North)
-            createCheckoutZone(0, 22, 0);
-            createCheckoutZone(0, -22, Math.PI);
+            // 4方向のCheckout床サイン (初期位置 Z=20 に合わせて下を向く)
+            createCheckoutZone(0, -22); // 北
+            createCheckoutZone(0, 22);  // 南
+            createCheckoutZone(-22, 0); // 西
+            createCheckoutZone(22, 0);  // 東
         }
 
-        function createShelfUnit(x, z, startId) {
-            const shelfDepth = 1.5;
-            const shelf = new THREE.Mesh(new THREE.BoxGeometry(shelfDepth, 4, CONFIG.shelfLength), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+        function createShelfUnit(x, z, len, startId) {
+            const shelf = new THREE.Mesh(new THREE.BoxGeometry(CONFIG.shelfDepth, 4, len), new THREE.MeshStandardMaterial({ color: 0xffffff }));
             shelf.position.set(x, 2, z);
             scene.add(shelf);
-            colliders.push({ x: x, z: z, w: shelfDepth, d: CONFIG.shelfLength });
+            colliders.push({ x: x, z: z, w: CONFIG.shelfDepth, d: len });
 
             const itemGeo = new THREE.BoxGeometry(0.5, 0.25, 0.1);
             let id = startId;
-
             for (let side = 0; side < 2; side++) {
                 const isLeft = side === 0;
-                const offsetX = isLeft ? 0.705 : -0.705; // 95% Embedded
+                const offsetX = isLeft ? 0.745 : -0.745; // 95% Embedded
                 const rotY = isLeft ? Math.PI / 2 : -Math.PI / 2;
-
                 for (let r = 0; r < CONFIG.shelfRows; r++) {
                     for (let c = 0; c < CONFIG.itemsPerRow; c++) {
                         const data = dictionary[id % dictionary.length];
                         const plate = new THREE.Mesh(itemGeo, new THREE.MeshBasicMaterial({ map: getTextTexture(data[CONFIG.shelfLanguage]) }));
-                        plate.position.set(x + offsetX, 0.5 + (r * 0.35), z - (CONFIG.shelfLength / 2) + (c * (CONFIG.shelfLength / CONFIG.itemsPerRow)) + 0.5);
+                        plate.position.set(x + offsetX, 0.5 + (r * 0.35), z - (len / 2) + (c * (len / CONFIG.itemsPerRow)) + 0.5);
                         plate.rotation.y = rotY;
                         plate.userData = { id: id++, data: data, isProduct: true };
                         scene.add(plate);
@@ -398,10 +402,10 @@
             }
         }
 
-        function createCheckoutZone(x, z, rot) {
+        function createCheckoutZone(x, z) {
             const zone = new THREE.Mesh(new THREE.PlaneGeometry(8, 4), new THREE.MeshBasicMaterial({ map: getTextTexture("CHECKOUT", "#ff4757", "white") }));
             zone.rotation.x = -Math.PI / 2;
-            zone.rotation.z = rot;
+            zone.rotation.z = 0; // すべて初期位置Z=20を文字の下側にする
             zone.position.set(x, 0.01, z);
             scene.add(zone);
 
@@ -412,7 +416,7 @@
         }
 
         function checkCollision(pos) {
-            const r = 0.5; // Player radius
+            const r = 0.6;
             for (let c of colliders) {
                 if (Math.abs(pos.x - c.x) < (c.w / 2 + r) && Math.abs(pos.z - c.z) < (c.d / 2 + r)) return true;
             }
@@ -456,18 +460,11 @@
             document.getElementById('start-btn').onclick = () => { document.getElementById('start-screen').style.display = 'none'; renderer.domElement.requestPointerLock(); AudioSys.init(); };
             document.getElementById('config-btn').onclick = (e) => { e.stopPropagation(); document.getElementById('config-modal').style.display = 'flex'; document.exitPointerLock(); };
             document.getElementById('close-config').onclick = () => document.getElementById('config-modal').style.display = 'none';
-
-            // Language Switch Restored
             document.getElementById('shelf-lang-select').onchange = (e) => {
                 CONFIG.shelfLanguage = e.target.value;
-                products.forEach(p => {
-                    if (p.userData.isProduct) p.material.map = getTextTexture(p.userData.data[CONFIG.shelfLanguage]);
-                });
+                products.forEach(p => { if (p.userData.isProduct) p.material.map = getTextTexture(p.userData.data[CONFIG.shelfLanguage]); });
             };
-            document.getElementById('list-lang-select').onchange = (e) => {
-                CONFIG.listLanguage = e.target.value;
-                renderBasket();
-            };
+            document.getElementById('list-lang-select').onchange = (e) => { CONFIG.listLanguage = e.target.value; renderBasket(); };
         }
 
         function animate() {
@@ -475,16 +472,12 @@
             if (document.pointerLockElement) {
                 const dir = new THREE.Vector3(); camera.getWorldDirection(dir); dir.y = 0; dir.normalize();
                 const side = new THREE.Vector3().crossVectors(camera.up, dir).normalize();
-
                 let nextPos = camera.position.clone();
                 if (moveState.forward) nextPos.addScaledVector(dir, CONFIG.moveSpeed);
                 if (moveState.backward) nextPos.addScaledVector(dir, -CONFIG.moveSpeed);
                 if (moveState.left) nextPos.addScaledVector(side, CONFIG.moveSpeed);
                 if (moveState.right) nextPos.addScaledVector(side, -CONFIG.moveSpeed);
-
-                if (!checkCollision(nextPos)) {
-                    camera.position.copy(nextPos);
-                }
+                if (!checkCollision(nextPos)) camera.position.copy(nextPos);
 
                 products.forEach(p => {
                     if (p.userData.isGoal && camera.position.distanceTo(p.position) < 3 && basketItems.length > 0) {
@@ -496,7 +489,6 @@
             }
             renderer.render(scene, camera);
         }
-
         window.onresize = () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); };
         init();
     </script>
