@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vocab Store - Crossroads Final</title>
+    <title>Vocab Store - Mega Cross Edition</title>
     <style>
         body {
             margin: 0;
@@ -30,6 +30,7 @@
             pointer-events: none;
         }
 
+        /* Config */
         #config-btn {
             position: absolute;
             top: 20px;
@@ -65,14 +66,6 @@
             z-index: 201;
         }
 
-        #config-modal h2 {
-            margin: 0 0 10px 0;
-            font-size: 1.2rem;
-            color: #333;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 5px;
-        }
-
         .config-row {
             display: flex;
             justify-content: space-between;
@@ -89,6 +82,7 @@
             cursor: pointer;
         }
 
+        /* Shopping List (Original High-Grade UI) */
         #basket-container {
             position: absolute;
             top: 20px;
@@ -103,7 +97,6 @@
             flex-direction: column;
             pointer-events: auto;
             backdrop-filter: blur(5px);
-            transition: transform 0.3s ease;
         }
 
         #basket-header {
@@ -135,9 +128,10 @@
             justify-content: space-between;
             border-left: 4px solid #ff4757;
             cursor: pointer;
+            align-items: center;
         }
 
-        .basket-item .level-badge {
+        .level-badge {
             background: #333;
             color: #fff;
             border-radius: 50%;
@@ -147,6 +141,41 @@
             justify-content: center;
             align-items: center;
             font-size: 10px;
+        }
+
+        /* Mobile Controls */
+        #mobile-joystick {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 160px;
+            height: 160px;
+            display: none;
+            grid-template-columns: 1fr 1fr 1fr;
+            pointer-events: auto;
+            z-index: 500;
+            gap: 5px;
+        }
+
+        .joy-btn {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #000;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        #touch-look-area {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60%;
+            height: 100%;
+            pointer-events: auto;
+            z-index: 50;
         }
 
         #start-screen {
@@ -199,6 +228,7 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.5s;
+            z-index: 100;
         }
     </style>
 </head>
@@ -206,14 +236,25 @@
 <body>
 
     <div id="canvas-container"></div>
+    <div id="touch-look-area"></div>
+
     <div id="ui-layer">
         <div id="crosshair"></div>
         <div id="config-btn">⚙️</div>
         <div id="basket-container">
-            <div id="basket-header"><span>SHOPPING LIST</span><span id="item-count">0</span></div>
+            <div id="basket-header"><span>SHOPPING LIST</span> <span id="item-count">0</span></div>
             <ul id="basket-list"></ul>
         </div>
         <div id="message-area">THANK YOU!</div>
+
+        <div id="mobile-joystick">
+            <div></div>
+            <div class="joy-btn" id="joy-w">↑</div>
+            <div></div>
+            <div class="joy-btn" id="joy-a">←</div>
+            <div class="joy-btn" id="joy-s">↓</div>
+            <div class="joy-btn" id="joy-d">→</div>
+        </div>
     </div>
 
     <div id="config-modal">
@@ -233,7 +274,7 @@
 
     <div id="start-screen">
         <h1>Vocab Mega Store</h1>
-        <p>中心に十字路、四方にレジがあります。設定中は視点が固定されます。</p>
+        <p>十字型の広大な店舗です。商品は棚にぎっしりと並んでいます。<br>突き当たりのレジ（赤いサイン）を目指してください。</p>
         <button class="btn" id="start-btn">ENTER STORE</button>
     </div>
 
@@ -241,39 +282,25 @@
 
     <script>
         const dictionary = [
-            { id: 1, en: "Apple", ja: "リンゴ", fi: "Omena", level: 1 },
-            { id: 2, en: "Banana", ja: "バナナ", fi: "Banaani", level: 1 },
-            { id: 3, en: "Coffee", ja: "コーヒー", fi: "Kahvi", level: 2 },
-            { id: 4, en: "Bread", ja: "パン", fi: "Leipä", level: 1 },
-            { id: 5, en: "Milk", ja: "牛乳", fi: "Maito", level: 1 },
-            { id: 6, en: "Cheese", ja: "チーズ", fi: "Juusto", level: 2 },
-            { id: 7, en: "Egg", ja: "卵", fi: "Kananmuna", level: 1 },
-            { id: 8, en: "Butter", ja: "バター", fi: "Voi", level: 2 },
-            { id: 9, en: "Yogurt", ja: "ヨーグルト", fi: "Jogurtti", level: 2 },
-            { id: 10, en: "Sugar", ja: "砂糖", fi: "Sokeri", level: 1 },
-            { id: 11, en: "Salt", ja: "塩", fi: "Suola", level: 1 },
-            { id: 12, en: "Water", ja: "水", fi: "Vesi", level: 1 },
-            { id: 13, en: "Juice", ja: "ジュース", fi: "Mehu", level: 1 },
-            { id: 14, en: "Tea", ja: "お茶", fi: "Tee", level: 1 }
+            { id: 1, en: "Apple", ja: "リンゴ", fi: "Omena", level: 1 }, { id: 2, en: "Banana", ja: "バナナ", fi: "Banaani", level: 1 },
+            { id: 3, en: "Coffee", ja: "コーヒー", fi: "Kahvi", level: 2 }, { id: 4, en: "Bread", ja: "パン", fi: "Leipä", level: 1 },
+            { id: 5, en: "Milk", ja: "牛乳", fi: "Maito", level: 1 }, { id: 6, en: "Cheese", ja: "チーズ", fi: "Juusto", level: 2 },
+            { id: 7, en: "Egg", ja: "卵", fi: "Kananmuna", level: 1 }, { id: 8, en: "Butter", ja: "バター", fi: "Voi", level: 2 }
         ];
 
         const CONFIG = {
-            moveSpeed: 0.15, lookSpeed: 0.002,
-            shelfLanguage: 'en', listLanguage: 'ja',
-            shelfRows: 10, itemsPerRow: 15,
-            aisleSpacing: 8, shelfDepth: 1.5, storeSize: 60
+            moveSpeed: 0.15, lookSpeed: 0.003, shelfLanguage: 'en', listLanguage: 'ja',
+            shelfRows: 10, itemsPerRow: 30, shelfDepth: 1.5, storeSize: 60
         };
 
         let scene, camera, renderer, products = [], colliders = [];
         let moveState = { forward: false, backward: false, left: false, right: false };
         let basketItems = [];
-        let pitch = 0, yaw = 0;
-        let isGameStarted = false;
-        let isConfigOpen = false;
+        let pitch = 0, yaw = 0, isGameStarted = false, isConfigOpen = false;
 
         const AudioSys = {
             ctx: null,
-            init() { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
             play(type) {
                 if (!this.ctx) return;
                 const osc = this.ctx.createOscillator();
@@ -287,18 +314,18 @@
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xf5f5f5);
-            scene.fog = new THREE.Fog(0xf5f5f5, 10, 75);
+            scene.background = new THREE.Color(0xf0f0f0);
+            scene.fog = new THREE.Fog(0xf0f0f0, 5, 75);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.rotation.order = 'YXZ';
-            camera.position.set(0, 1.7, 25);
+            camera.position.set(0, 1.7, 0);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
             const sun = new THREE.DirectionalLight(0xffffff, 0.4);
             sun.position.set(10, 20, 10);
             scene.add(sun);
@@ -309,10 +336,7 @@
             animate();
         }
 
-        const textureCache = {};
         function getTextTexture(text, color = "white", textColor = "black") {
-            const key = text + color + textColor;
-            if (textureCache[key]) return textureCache[key];
             const canvas = document.createElement('canvas');
             canvas.width = 256; canvas.height = 128;
             const ctx = canvas.getContext('2d');
@@ -320,62 +344,58 @@
             ctx.fillStyle = textColor; ctx.textAlign = "center"; ctx.textBaseline = "middle";
             ctx.font = "bold 40px Arial";
             ctx.fillText(text, 128, 64);
-            const tex = new THREE.CanvasTexture(canvas);
-            textureCache[key] = tex;
-            return tex;
+            return new THREE.CanvasTexture(canvas);
         }
 
         function generateWorld() {
-            const planeGeo = new THREE.PlaneGeometry(CONFIG.storeSize, CONFIG.storeSize);
-            const floor = new THREE.Mesh(planeGeo, new THREE.MeshStandardMaterial({ color: 0xdddddd }));
+            // Floor & Ceiling
+            const floorGeo = new THREE.PlaneGeometry(80, 80);
+            const floor = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ color: 0xcccccc }));
             floor.rotation.x = -Math.PI / 2;
             scene.add(floor);
-
-            const ceiling = new THREE.Mesh(planeGeo, new THREE.MeshStandardMaterial({ color: 0xffffff }));
-            ceiling.position.y = 6;
-            ceiling.rotation.x = Math.PI / 2;
+            const ceiling = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ color: 0xffffff }));
+            ceiling.position.y = 6; ceiling.rotation.x = Math.PI / 2;
             scene.add(ceiling);
 
-            // Lights
-            for (let z = -24; z <= 24; z += 12) {
-                for (let x = -24; x <= 24; x += 12) {
-                    const light = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 0.8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-                    light.position.set(x, 5.95, z);
-                    scene.add(light);
-                }
-            }
-
-            // Wall Colliders
+            // Crossroads Walls
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0xdddddd });
             const createWall = (w, h, d, x, z) => {
-                const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: 0xeeeeee }));
+                const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
                 wall.position.set(x, h / 2, z);
                 scene.add(wall);
                 colliders.push({ x, z, w, d });
             };
-            const s = CONFIG.storeSize;
-            createWall(s, 6, 1, 0, -s / 2);
-            createWall(s, 6, 1, 0, s / 2);
-            createWall(1, 6, s, -s / 2, 0);
-            createWall(1, 6, s, s / 2, 0);
 
-            // Crossroads Layout
+            // Cross Layout Construction
+            const s = 30; // 突き出し
+            createWall(10, 6, 1, 0, -s); createWall(1, 6, 10, -5, -25); createWall(1, 6, 10, 5, -25); // North
+            createWall(10, 6, 1, 0, s); createWall(1, 6, 10, -5, 25); createWall(1, 6, 10, 5, 25);  // South
+            createWall(1, 6, 10, -s, 0); createWall(10, 6, 1, -25, -5); createWall(10, 6, 1, -25, 5); // West
+            createWall(1, 6, 10, s, 0); createWall(10, 6, 1, 25, -5); createWall(10, 6, 1, 25, 5);  // East
+            // Corners
+            createWall(15, 6, 1, -12.5, -20); createWall(1, 6, 15, -20, -12.5); // Top-Left
+            createWall(15, 6, 1, 12.5, -20); createWall(1, 6, 15, 20, -12.5);  // Top-Right
+            createWall(15, 6, 1, -12.5, 20); createWall(1, 6, 15, -20, 12.5);  // Bottom-Left
+            createWall(15, 6, 1, 12.5, 20); createWall(1, 6, 15, 20, 12.5);   // Bottom-Right
+
+            // Shelves (Increased Count & Density)
             let globalId = 0;
-            for (let sideX of [-1, 1]) {
-                for (let sideZ of [-1, 1]) {
-                    for (let i = 0; i < 2; i++) {
-                        const posX = sideX * (6 + i * CONFIG.aisleSpacing);
-                        const posZ = sideZ * 14;
-                        createShelfUnit(posX, posZ, 20, globalId);
+            for (let sx of [-1, 1]) {
+                for (let sz of [-1, 1]) {
+                    for (let i = 0; i < 2; i++) { // 各コーナーに2列配置
+                        const px = sx * (7 + i * 6);
+                        const pz = sz * 10;
+                        createShelfUnit(px, pz, 15, globalId);
                         globalId += CONFIG.shelfRows * CONFIG.itemsPerRow * 2;
                     }
                 }
             }
 
-            // 4 Radial Checkout Signs (Bottom edges face center 0,0)
-            createCheckoutZone(0, -26, Math.PI); // North
-            createCheckoutZone(0, 26, 0);       // South
-            createCheckoutZone(-26, 0, -Math.PI / 2); // West
-            createCheckoutZone(26, 0, Math.PI / 2);  // East
+            // Radial Checkout Signs
+            createCheckoutZone(0, -28, Math.PI); // North
+            createCheckoutZone(0, 28, 0);       // South
+            createCheckoutZone(-28, 0, -Math.PI / 2); // West
+            createCheckoutZone(28, 0, Math.PI / 2);  // East
         }
 
         function createShelfUnit(x, z, len, startId) {
@@ -387,14 +407,15 @@
             const itemGeo = new THREE.BoxGeometry(0.5, 0.25, 0.1);
             let id = startId;
             for (let side = 0; side < 2; side++) {
-                const isLeft = side === 0;
-                const offsetX = isLeft ? 0.745 : -0.745; // 95% Embedded
-                const rotY = isLeft ? Math.PI / 2 : -Math.PI / 2;
+                const isRight = side === 0;
+                const offsetX = isRight ? 0.705 : -0.705; // 95% Embedded
+                const rotY = isRight ? Math.PI / 2 : -Math.PI / 2;
                 for (let r = 0; r < CONFIG.shelfRows; r++) {
                     for (let c = 0; c < CONFIG.itemsPerRow; c++) {
                         const data = dictionary[id % dictionary.length];
-                        const plate = new THREE.Mesh(itemGeo, new THREE.MeshBasicMaterial({ map: getTextTexture(data[CONFIG.shelfLanguage]) }));
-                        plate.position.set(x + offsetX, 0.5 + (r * 0.35), z - (len / 2) + (c * (len / CONFIG.itemsPerRow)) + 0.5);
+                        const mat = new THREE.MeshBasicMaterial({ map: getTextTexture(data[CONFIG.shelfLanguage]) });
+                        const plate = new THREE.Mesh(itemGeo, mat);
+                        plate.position.set(x + offsetX, 0.5 + (r * 0.35), z - (len / 2) + (c * (len / CONFIG.itemsPerRow)) + 0.3);
                         plate.rotation.y = rotY;
                         plate.userData = { id: id++, data: data, isProduct: true };
                         scene.add(plate);
@@ -404,56 +425,48 @@
             }
         }
 
-        function createCheckoutZone(x, z, rot) {
-            const zone = new THREE.Mesh(new THREE.PlaneGeometry(8, 4), new THREE.MeshBasicMaterial({ map: getTextTexture("CHECKOUT", "#ff4757", "white") }));
-            zone.rotation.x = -Math.PI / 2;
-            zone.rotation.z = rot;
+        function createCheckoutZone(x, z, rotZ) {
+            const zone = new THREE.Mesh(new THREE.PlaneGeometry(7, 3.5), new THREE.MeshBasicMaterial({ map: getTextTexture("CHECKOUT", "#ff4757", "white") }));
+            zone.rotation.x = -Math.PI / 2; zone.rotation.z = rotZ;
             zone.position.set(x, 0.01, z);
             scene.add(zone);
-
-            const trigger = new THREE.Mesh(new THREE.BoxGeometry(8, 4, 4), new THREE.MeshBasicMaterial({ visible: false }));
-            trigger.position.set(x, 2, z);
-            trigger.userData = { isGoal: true };
+            const trigger = new THREE.Mesh(new THREE.BoxGeometry(7, 4, 3.5), new THREE.MeshBasicMaterial({ visible: false }));
+            trigger.position.set(x, 2, z); trigger.userData = { isGoal: true };
             products.push(trigger);
         }
 
-        function checkCollision(pos) {
-            const r = 0.6;
-            for (let c of colliders) {
-                if (Math.abs(pos.x - c.x) < (c.w / 2 + r) && Math.abs(pos.z - c.z) < (c.d / 2 + r)) return true;
-            }
-            return false;
-        }
-
         function setupInputs() {
-            window.addEventListener('keydown', (e) => {
-                if (e.code === 'KeyW') moveState.forward = true;
-                if (e.code === 'KeyS') moveState.backward = true;
-                if (e.code === 'KeyA') moveState.left = true;
-                if (e.code === 'KeyD') moveState.right = true;
-            });
-            window.addEventListener('keyup', (e) => {
-                if (e.code === 'KeyW') moveState.forward = false;
-                if (e.code === 'KeyS') moveState.backward = false;
-                if (e.code === 'KeyA') moveState.left = false;
-                if (e.code === 'KeyD') moveState.right = false;
-            });
+            window.addEventListener('keydown', (e) => { if (e.code === 'KeyW') moveState.forward = true; if (e.code === 'KeyS') moveState.backward = true; if (e.code === 'KeyA') moveState.left = true; if (e.code === 'KeyD') moveState.right = true; });
+            window.addEventListener('keyup', (e) => { if (e.code === 'KeyW') moveState.forward = false; if (e.code === 'KeyS') moveState.backward = false; if (e.code === 'KeyA') moveState.left = false; if (e.code === 'KeyD') moveState.right = false; });
             window.addEventListener('mousemove', (e) => {
                 if (document.pointerLockElement && !isConfigOpen) {
-                    yaw -= e.movementX * CONFIG.lookSpeed;
-                    pitch -= e.movementY * CONFIG.lookSpeed;
+                    yaw -= e.movementX * CONFIG.lookSpeed; pitch -= e.movementY * CONFIG.lookSpeed;
                     pitch = Math.max(-1.5, Math.min(1.5, pitch));
                     camera.rotation.set(pitch, yaw, 0);
                 }
             });
-            window.addEventListener('click', (e) => {
-                if (!isGameStarted) return;
+            const lookArea = document.getElementById('touch-look-area');
+            lookArea.addEventListener('touchmove', (e) => {
                 if (isConfigOpen) return;
-                if (!document.pointerLockElement) {
-                    renderer.domElement.requestPointerLock();
-                } else {
-                    handleRaycast();
+                const touch = e.touches[0];
+                if (this.lastT) {
+                    yaw -= (touch.pageX - this.lastT.x) * 0.005; pitch -= (touch.pageY - this.lastT.y) * 0.005;
+                    pitch = Math.max(-1.5, Math.min(1.5, pitch));
+                    camera.rotation.set(pitch, yaw, 0);
                 }
+                this.lastT = { x: touch.pageX, y: touch.pageY };
+            });
+            lookArea.addEventListener('touchend', () => this.lastT = null);
+            const setupJoy = (id, key) => {
+                const b = document.getElementById(id);
+                b.addEventListener('touchstart', (e) => { e.preventDefault(); moveState[key] = true; });
+                b.addEventListener('touchend', () => moveState[key] = false);
+            };
+            setupJoy('joy-w', 'forward'); setupJoy('joy-s', 'backward'); setupJoy('joy-a', 'left'); setupJoy('joy-d', 'right');
+            window.addEventListener('click', () => {
+                if (!isGameStarted || isConfigOpen) return;
+                if (!document.pointerLockElement && window.innerWidth > 1024) renderer.domElement.requestPointerLock();
+                handleRaycast();
             });
         }
 
@@ -465,8 +478,7 @@
                 const obj = hits[0].object;
                 obj.visible = false;
                 basketItems.unshift({ meshId: obj.userData.id, data: obj.userData.data });
-                AudioSys.play('up');
-                renderBasket();
+                AudioSys.play('up'); renderBasket();
             }
         }
 
@@ -477,34 +489,20 @@
             basketItems.forEach((item, i) => {
                 const li = document.createElement('li');
                 li.className = 'basket-item';
-                li.innerHTML = `<span>${item.data[CONFIG.listLanguage]}</span><span class="level-badge">${item.data.level}</span>`;
+                li.innerHTML = `<span>${item.data[CONFIG.listLanguage]}</span><div class="level-badge">${item.data.level}</div>`;
                 li.onclick = (e) => { e.stopPropagation(); basketItems.splice(i, 1); const m = products.find(p => p.userData.id === item.meshId); if (m) m.visible = true; AudioSys.play('down'); renderBasket(); };
                 list.appendChild(li);
             });
         }
 
         function setupUI() {
-            document.getElementById('start-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                isGameStarted = true;
-                document.getElementById('start-screen').style.display = 'none';
-                renderer.domElement.requestPointerLock();
+            document.getElementById('start-btn').onclick = () => {
+                isGameStarted = true; document.getElementById('start-screen').style.display = 'none';
+                if (window.innerWidth <= 1024) document.getElementById('mobile-joystick').style.display = 'grid';
                 AudioSys.init();
-            });
-
-            document.getElementById('config-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                isConfigOpen = true;
-                document.getElementById('config-modal').style.display = 'flex';
-                document.exitPointerLock();
-            });
-
-            document.getElementById('close-config').addEventListener('click', () => {
-                isConfigOpen = false;
-                document.getElementById('config-modal').style.display = 'none';
-                renderer.domElement.requestPointerLock();
-            });
-
+            };
+            document.getElementById('config-btn').onclick = (e) => { e.stopPropagation(); isConfigOpen = true; document.getElementById('config-modal').style.display = 'flex'; document.exitPointerLock(); };
+            document.getElementById('close-config').onclick = () => { isConfigOpen = false; document.getElementById('config-modal').style.display = 'none'; };
             document.getElementById('shelf-lang-select').onchange = (e) => {
                 CONFIG.shelfLanguage = e.target.value;
                 products.forEach(p => { if (p.userData.isProduct) p.material.map = getTextTexture(p.userData.data[CONFIG.shelfLanguage]); });
@@ -514,16 +512,20 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            if (document.pointerLockElement && isGameStarted && !isConfigOpen) {
+            if (isGameStarted && !isConfigOpen) {
                 const dir = new THREE.Vector3(); camera.getWorldDirection(dir); dir.y = 0; dir.normalize();
                 const side = new THREE.Vector3().crossVectors(camera.up, dir).normalize();
-                let nextPos = camera.position.clone();
-                if (moveState.forward) nextPos.addScaledVector(dir, CONFIG.moveSpeed);
-                if (moveState.backward) nextPos.addScaledVector(dir, -CONFIG.moveSpeed);
-                if (moveState.left) nextPos.addScaledVector(side, CONFIG.moveSpeed);
-                if (moveState.right) nextPos.addScaledVector(side, -CONFIG.moveSpeed);
-                if (!checkCollision(nextPos)) camera.position.copy(nextPos);
-
+                let nPos = camera.position.clone();
+                if (moveState.forward) nPos.addScaledVector(dir, CONFIG.moveSpeed);
+                if (moveState.backward) nPos.addScaledVector(dir, -CONFIG.moveSpeed);
+                if (moveState.left) nPos.addScaledVector(side, CONFIG.moveSpeed);
+                if (moveState.right) nPos.addScaledVector(side, -CONFIG.moveSpeed);
+                const r = 0.8;
+                let collided = false;
+                for (let c of colliders) {
+                    if (Math.abs(nPos.x - c.x) < (c.w / 2 + r) && Math.abs(nPos.z - c.z) < (c.d / 2 + r)) collided = true;
+                }
+                if (!collided) camera.position.copy(nPos);
                 products.forEach(p => {
                     if (p.userData.isGoal && camera.position.distanceTo(p.position) < 3 && basketItems.length > 0) {
                         document.getElementById('message-area').style.opacity = 1;
