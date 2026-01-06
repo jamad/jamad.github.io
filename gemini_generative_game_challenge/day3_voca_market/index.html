@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vocab Store - Code B Fixed</title>
+    <title>Vocab Store - Code D</title>
     <style>
         body {
             margin: 0;
@@ -272,8 +272,8 @@
 
     <div id="start-screen">
         <h1>Vocab Mega Store</h1>
-        <p>十字型の店舗です。リストの単語をタップすると棚に戻せます。<br>iPadは左下で移動、画面をタップして取得してください。</p>
-        <button class="btn" id="start-btn">ENTER STORE</button>
+        <p>Loading... (テクスチャ準備中)</p>
+        <button class="btn" id="start-btn" style="display:none;">ENTER STORE</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -288,7 +288,7 @@
 
         const CONFIG = {
             moveSpeed: 0.15, lookSpeed: 0.003, shelfLanguage: 'en', listLanguage: 'ja',
-            shelfRows: 10, itemsPerRow: 26, shelfDepth: 1.5, storeSize: 70
+            shelfRows: 10, itemsPerRow: 26, shelfDepth: 1.5, storeSize: 75
         };
 
         let scene, camera, renderer, products = [], colliders = [];
@@ -296,6 +296,8 @@
         let basketItems = [];
         let pitch = 0, yaw = 0, isGameStarted = false, isConfigOpen = false;
         let touchStartPos = { x: 0, y: 0 }, touchStartTime = 0;
+
+        const textureCache = {};
 
         const AudioSys = {
             ctx: null,
@@ -311,10 +313,37 @@
             }
         };
 
+        function getTextTexture(text, color = "white", textColor = "black") {
+            const key = text + color + textColor;
+            if (textureCache[key]) return textureCache[key];
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color; ctx.fillRect(0, 0, 256, 128);
+            ctx.fillStyle = textColor; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.font = "bold 40px Arial";
+            ctx.fillText(text, 128, 64);
+            const tex = new THREE.CanvasTexture(canvas);
+            textureCache[key] = tex;
+            return tex;
+        }
+
+        // 言語切り替えの遅延をなくすためのプリレンダリング
+        function preCacheTextures() {
+            const langs = ['en', 'ja', 'fi'];
+            dictionary.forEach(item => {
+                langs.forEach(lang => getTextTexture(item[lang]));
+            });
+            // ついでにレジ用も
+            getTextTexture("CHECKOUT", "#ff4757", "white");
+        }
+
         function init() {
+            preCacheTextures(); // メインタイトルの裏で実行
+
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0xf0f0f0);
-            scene.fog = new THREE.Fog(0xf0f0f0, 5, 80);
+            scene.fog = new THREE.Fog(0xf0f0f0, 5, 85);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.rotation.order = 'YXZ';
@@ -333,17 +362,10 @@
             setupInputs();
             setupUI();
             animate();
-        }
 
-        function getTextTexture(text, color = "white", textColor = "black") {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256; canvas.height = 128;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = color; ctx.fillRect(0, 0, 256, 128);
-            ctx.fillStyle = textColor; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.font = "bold 40px Arial";
-            ctx.fillText(text, 128, 64);
-            return new THREE.CanvasTexture(canvas);
+            // 準備ができたらボタンを表示
+            document.getElementById('start-btn').style.display = 'block';
+            document.querySelector('#start-screen p').innerText = "十字型の店舗です。中央に棚を追加しました。";
         }
 
         function generateWorld() {
@@ -377,31 +399,29 @@
             createWall(12, 6, 1, 0, s); createWall(1, 6, 15, -6, 28); createWall(1, 6, 15, 6, 28);  // South
             createWall(1, 6, 12, -s, 0); createWall(15, 6, 1, -28, -6); createWall(15, 6, 1, -28, 6); // West
             createWall(1, 6, 12, s, 0); createWall(15, 6, 1, 28, -6); createWall(15, 6, 1, 28, 6);  // East
-            createWall(18, 6, 1, -15, -21); createWall(1, 6, 18, -21, -15); // TL
-            createWall(18, 6, 1, 15, -21); createWall(1, 6, 18, 21, -15);  // TR
-            createWall(18, 6, 1, -15, 21); createWall(1, 6, 18, -21, 15);  // BL
-            createWall(18, 6, 1, 15, 21); createWall(1, 6, 18, 21, 15);   // BR
+            createWall(18, 6, 1, -15, -21); createWall(1, 6, 18, -21, -15);
+            createWall(18, 6, 1, 15, -21); createWall(1, 6, 18, 21, -15);
+            createWall(18, 6, 1, -15, 21); createWall(1, 6, 18, -21, 15);
+            createWall(18, 6, 1, 15, 21); createWall(1, 6, 18, 21, 15);
 
+            // 2行5列レイアウトの棚
             let globalId = 0;
-            for (let sx of [-1, 1]) {
-                for (let sz of [-1, 1]) {
-                    for (let i = 0; i < 2; i++) {
-                        const px = sx * (6.5 + i * 5.5);
-                        const pz = sz * 10;
-                        createShelfUnit(px, pz, 14, globalId);
-                        globalId += CONFIG.shelfRows * CONFIG.itemsPerRow * 2;
-                    }
+            const colX = [-12, -6, 0, 6, 12]; // 5列
+            const rowZ = [-10, 10]; // 2行
+            for (let rz of rowZ) {
+                for (let cx of colX) {
+                    createShelfUnit(cx, rz, 14, globalId);
+                    globalId += CONFIG.shelfRows * CONFIG.itemsPerRow * 2;
                 }
             }
 
-            createCheckoutZone(0, -32, 0);           // North
-            createCheckoutZone(0, 32, Math.PI);      // South
-            createCheckoutZone(-32, 0, Math.PI / 2);   // West
-            createCheckoutZone(32, 0, -Math.PI / 2);  // East
+            createCheckoutZone(0, -32, 0);
+            createCheckoutZone(0, 32, Math.PI);
+            createCheckoutZone(-32, 0, Math.PI / 2);
+            createCheckoutZone(32, 0, -Math.PI / 2);
         }
 
         function createShelfUnit(x, z, len, startId) {
-            // 棚の色を壁(0xdddddd)より暗い 0xbbbbbb に設定
             const shelf = new THREE.Mesh(new THREE.BoxGeometry(CONFIG.shelfDepth, 4, len), new THREE.MeshStandardMaterial({ color: 0xbbbbbb }));
             shelf.position.set(x, 2, z);
             scene.add(shelf);
@@ -480,7 +500,6 @@
             setupJoy('joy-w', 'forward'); setupJoy('joy-s', 'backward'); setupJoy('joy-a', 'left'); setupJoy('joy-d', 'right');
 
             window.addEventListener('click', (e) => {
-                // UI(リストや設定)をクリックした時はレイキャストを飛ばさない
                 if (e.target.closest('#basket-container') || e.target.closest('#config-btn') || e.target.closest('#config-modal')) return;
                 if (!isGameStarted || isConfigOpen) return;
                 if (!document.pointerLockElement && window.innerWidth > 1024) renderer.domElement.requestPointerLock();
@@ -509,8 +528,8 @@
                 li.className = 'basket-item';
                 li.innerHTML = `<span>${item.data[CONFIG.listLanguage]}</span><div class="level-badge">${item.data.level}</div>`;
 
-                // アイテムを戻す機能の修正
-                const returnFunc = (e) => {
+                li.onclick = (e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     const removed = basketItems.splice(i, 1)[0];
                     const mesh = products.find(p => p.userData.id === removed.meshId);
@@ -518,9 +537,6 @@
                     AudioSys.play('down');
                     renderBasket();
                 };
-                li.onclick = returnFunc;
-                li.ontouchend = returnFunc;
-
                 list.appendChild(li);
             });
         }
