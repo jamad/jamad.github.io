@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vocab Store - Code G</title>
+    <title>Vocab Store - Code H</title>
     <style>
         body {
             margin: 0;
@@ -81,7 +81,6 @@
             cursor: pointer;
         }
 
-        /* Shopping List (Code O Style) */
         #basket-container {
             position: absolute;
             top: 20px;
@@ -143,7 +142,6 @@
             font-size: 10px;
         }
 
-        /* Mobile Controls */
         #mobile-joystick {
             position: absolute;
             bottom: 30px;
@@ -227,6 +225,7 @@
 <body>
 
     <div id="canvas-container"></div>
+    <div id="touch-look-area"></div>
 
     <div id="ui-layer">
         <div id="crosshair"></div>
@@ -264,14 +263,13 @@
 
     <div id="start-screen">
         <h1>Vocab Mega Store</h1>
-        <p>Code O と同じ水平回転のみのカメラです。<br>単語を直接クリック/タップして取得できます。</p>
+        <p>PC: ドラッグで視点移動、クリックで拾う。<br>iPad: スワイプで視点移動、タップで拾う。</p>
         <button class="btn" id="start-btn">ENTER STORE</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        // --- DATA ---
         const dictionary = [
             { id: 1, en: "Apple", ja: "リンゴ", fi: "Omena", level: 1 }, { id: 2, en: "Banana", ja: "バナナ", fi: "Banaani", level: 1 },
             { id: 3, en: "Coffee", ja: "コーヒー", fi: "Kahvi", level: 2 }, { id: 4, en: "Bread", ja: "パン", fi: "Leipä", level: 1 },
@@ -442,14 +440,15 @@
             window.addEventListener('keydown', (e) => { if (e.code === 'KeyW') moveState.forward = true; if (e.code === 'KeyS') moveState.backward = true; if (e.code === 'KeyA') moveState.left = true; if (e.code === 'KeyD') moveState.right = true; });
             window.addEventListener('keyup', (e) => { if (e.code === 'KeyW') moveState.forward = false; if (e.code === 'KeyS') moveState.backward = false; if (e.code === 'KeyA') moveState.left = false; if (e.code === 'KeyD') moveState.right = false; });
 
-            // 水平回転のみ
+            // PC回転ロジック: Code O方式（左ボタンドラッグで水平回転）
             window.addEventListener('mousemove', (e) => {
-                if (document.pointerLockElement && !isConfigOpen) {
+                if (e.buttons === 1 && !isConfigOpen) {
                     yaw -= e.movementX * CONFIG.lookSpeed;
                     camera.rotation.y = yaw;
                 }
             });
 
+            // タッチ回転ロジック: iPad用
             const canvasArea = document.getElementById('canvas-container');
             canvasArea.addEventListener('touchstart', (e) => {
                 if (isConfigOpen) return;
@@ -484,7 +483,8 @@
             };
             setupJoy('joy-w', 'forward'); setupJoy('joy-s', 'backward'); setupJoy('joy-a', 'left'); setupJoy('joy-d', 'right');
 
-            window.addEventListener('mousedown', (e) => {
+            // ピックアップ判定
+            window.addEventListener('click', (e) => {
                 if (e.target.closest('#basket-container') || e.target.closest('#config-btn') || e.target.closest('#config-modal')) return;
                 if (!isGameStarted || isConfigOpen) return;
                 handleRaycast(e.clientX, e.clientY);
@@ -500,7 +500,7 @@
             ray.setFromCamera(mouse, camera);
             const hits = ray.intersectObjects(products.filter(p => p.visible));
 
-            if (hits.length > 0 && hits[0].distance < 10 && hits[0].object.userData.isProduct) {
+            if (hits.length > 0 && hits[0].distance < 12 && hits[0].object.userData.isProduct) {
                 const obj = hits[0].object;
                 obj.visible = false;
                 basketItems.unshift({ meshId: obj.userData.id, data: obj.userData.data });
@@ -536,7 +536,7 @@
                 if (window.innerWidth <= 1024) document.getElementById('mobile-joystick').style.display = 'grid';
                 AudioSys.init();
             };
-            document.getElementById('config-btn').onclick = (e) => { e.stopPropagation(); isConfigOpen = true; document.getElementById('config-modal').style.display = 'flex'; document.exitPointerLock(); };
+            document.getElementById('config-btn').onclick = (e) => { e.stopPropagation(); isConfigOpen = true; document.getElementById('config-modal').style.display = 'flex'; };
             document.getElementById('close-config').onclick = () => { isConfigOpen = false; document.getElementById('config-modal').style.display = 'none'; };
             document.getElementById('shelf-lang-select').onchange = (e) => {
                 CONFIG.shelfLanguage = e.target.value;
