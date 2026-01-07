@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vocab Store - Code F</title>
+    <title>Vocab Store - Code G</title>
     <style>
         body {
             margin: 0;
@@ -264,13 +264,14 @@
 
     <div id="start-screen">
         <h1>Vocab Mega Store</h1>
-        <p>単語を直接クリック/タップして取得できます。<br>2行5列の棚レイアウトに拡張しました。</p>
+        <p>Code O と同じ水平回転のみのカメラです。<br>単語を直接クリック/タップして取得できます。</p>
         <button class="btn" id="start-btn">ENTER STORE</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
+        // --- DATA ---
         const dictionary = [
             { id: 1, en: "Apple", ja: "リンゴ", fi: "Omena", level: 1 }, { id: 2, en: "Banana", ja: "バナナ", fi: "Banaani", level: 1 },
             { id: 3, en: "Coffee", ja: "コーヒー", fi: "Kahvi", level: 2 }, { id: 4, en: "Bread", ja: "パン", fi: "Leipä", level: 1 },
@@ -286,7 +287,7 @@
         let scene, camera, renderer, products = [], colliders = [];
         let moveState = { forward: false, backward: false, left: false, right: false };
         let basketItems = [];
-        let pitch = 0, yaw = 0, isGameStarted = false, isConfigOpen = false;
+        let yaw = 0, isGameStarted = false, isConfigOpen = false;
         let lastTouchLook = null;
 
         const textureCache = {};
@@ -333,7 +334,6 @@
             scene.fog = new THREE.Fog(0xf0f0f0, 5, 85);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.rotation.order = 'YXZ';
             camera.position.set(0, 1.7, 0);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -360,7 +360,6 @@
             ceiling.position.y = 6; ceiling.rotation.x = Math.PI / 2;
             scene.add(ceiling);
 
-            // 天井ライト
             for (let x = -24; x <= 24; x += 12) {
                 for (let z = -24; z <= 24; z += 12) {
                     const light = new THREE.Mesh(new THREE.BoxGeometry(5, 0.1, 1), new THREE.MeshBasicMaterial({ color: 0xffffff }));
@@ -387,7 +386,6 @@
             createWall(18, 6, 1, -15, 21); createWall(1, 6, 18, -21, 15);
             createWall(18, 6, 1, 15, 21); createWall(1, 6, 18, 21, 15);
 
-            // 2行5列レイアウト
             let globalId = 0;
             const colX = [-12, -6, 0, 6, 12];
             const rowZ = [-10, 10];
@@ -444,16 +442,14 @@
             window.addEventListener('keydown', (e) => { if (e.code === 'KeyW') moveState.forward = true; if (e.code === 'KeyS') moveState.backward = true; if (e.code === 'KeyA') moveState.left = true; if (e.code === 'KeyD') moveState.right = true; });
             window.addEventListener('keyup', (e) => { if (e.code === 'KeyW') moveState.forward = false; if (e.code === 'KeyS') moveState.backward = false; if (e.code === 'KeyA') moveState.left = false; if (e.code === 'KeyD') moveState.right = false; });
 
-            // マウス視点移動
+            // 水平回転のみ
             window.addEventListener('mousemove', (e) => {
                 if (document.pointerLockElement && !isConfigOpen) {
-                    yaw -= e.movementX * CONFIG.lookSpeed; pitch -= e.movementY * CONFIG.lookSpeed;
-                    pitch = Math.max(-1.5, Math.min(1.5, pitch));
-                    camera.rotation.set(pitch, yaw, 0);
+                    yaw -= e.movementX * CONFIG.lookSpeed;
+                    camera.rotation.y = yaw;
                 }
             });
 
-            // タッチ視点移動（iPad用）
             const canvasArea = document.getElementById('canvas-container');
             canvasArea.addEventListener('touchstart', (e) => {
                 if (isConfigOpen) return;
@@ -465,9 +461,8 @@
                 if (isConfigOpen) return;
                 const touch = e.touches[0];
                 if (lastTouchLook) {
-                    yaw -= (touch.pageX - lastTouchLook.x) * 0.005; pitch -= (touch.pageY - lastTouchLook.y) * 0.005;
-                    pitch = Math.max(-1.5, Math.min(1.5, pitch));
-                    camera.rotation.set(pitch, yaw, 0);
+                    yaw -= (touch.pageX - lastTouchLook.x) * 0.005;
+                    camera.rotation.y = yaw;
                 }
                 lastTouchLook = { x: touch.pageX, y: touch.pageY };
             });
@@ -476,14 +471,12 @@
                 const duration = Date.now() - this.touchStartData.time;
                 const touch = e.changedTouches[0];
                 const dist = Math.hypot(touch.pageX - this.touchStartData.x, touch.pageY - this.touchStartData.y);
-                // 短いタップなら、その座標でピックアップ
                 if (duration < 250 && dist < 15) {
                     handleRaycast(touch.pageX, touch.pageY);
                 }
                 lastTouchLook = null;
             });
 
-            // ジョイスティック（iPad移動用）
             const setupJoy = (id, key) => {
                 const b = document.getElementById(id);
                 b.addEventListener('touchstart', (e) => { e.preventDefault(); moveState[key] = true; });
@@ -491,16 +484,13 @@
             };
             setupJoy('joy-w', 'forward'); setupJoy('joy-s', 'backward'); setupJoy('joy-a', 'left'); setupJoy('joy-d', 'right');
 
-            // PC用クリックピックアップ
             window.addEventListener('mousedown', (e) => {
                 if (e.target.closest('#basket-container') || e.target.closest('#config-btn') || e.target.closest('#config-modal')) return;
                 if (!isGameStarted || isConfigOpen) return;
-                // クリック位置でレイキャスト（Code Oの挙動）
                 handleRaycast(e.clientX, e.clientY);
             });
         }
 
-        // --- レイキャスト（クリック/タップ位置を使用） ---
         function handleRaycast(clientX, clientY) {
             const mouse = new THREE.Vector2();
             mouse.x = (clientX / window.innerWidth) * 2 - 1;
@@ -510,7 +500,7 @@
             ray.setFromCamera(mouse, camera);
             const hits = ray.intersectObjects(products.filter(p => p.visible));
 
-            if (hits.length > 0 && hits[0].distance < 8 && hits[0].object.userData.isProduct) {
+            if (hits.length > 0 && hits[0].distance < 10 && hits[0].object.userData.isProduct) {
                 const obj = hits[0].object;
                 obj.visible = false;
                 basketItems.unshift({ meshId: obj.userData.id, data: obj.userData.data });
@@ -519,7 +509,6 @@
             }
         }
 
-        // --- ショッピングリストからの復帰（Code O 方式） ---
         function returnToShelf(index) {
             const item = basketItems.splice(index, 1)[0];
             const mesh = products.find(p => p.userData.id === item.meshId);
@@ -536,10 +525,7 @@
                 const li = document.createElement('li');
                 li.className = 'basket-item';
                 li.innerHTML = `<span>${item.data[CONFIG.listLanguage]}</span><span class="level-badge">${item.data.level}</span>`;
-                li.onclick = (e) => {
-                    e.stopPropagation();
-                    returnToShelf(i);
-                };
+                li.onclick = (e) => { e.stopPropagation(); returnToShelf(i); };
                 list.appendChild(li);
             });
         }
