@@ -1,6 +1,6 @@
 # 英単語野郎　を作った。
 
-* [geminiとの対話](https://aistudio.google.com/prompts/1PrirYuHq4fSwps3uYsM1LsZSI_DUcxRI)
+* [geminiとの対話](https://aistudio.google.com/prompts/1PrirYuHq4fSwps3uYsM1LsZSI_DUcxRI) `単語力　のような　英単語のクイズゲームを作りたい`
 
 https://jamad.github.io/eitango_yarou
 でプレイできるように保存してみた。
