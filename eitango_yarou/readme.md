@@ -1,5 +1,7 @@
 # 英単語野郎　を作った。
 
+* [geminiとの対話](https://aistudio.google.com/prompts/1PrirYuHq4fSwps3uYsM1LsZSI_DUcxRI)
+
 https://jamad.github.io/eitango_yarou
 でプレイできるように保存してみた。
 
