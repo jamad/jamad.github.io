@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>フィンランド語 辞書自動生成（API付き）</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+        }
+
+        .word {
+            margin-top: 10px;
+            padding: 5px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        input {
+            margin-left: 5px;
+        }
+
+        button {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>フィンランド語 → 辞書自動生成ツール（API付き）</h2>
+
+    <h3>1. 既存 dictionary.json を読み込む（任意）</h3>
+    <input type="file" id="fileInput" accept=".json">
+
+    <h3>2. フィンランド語の文章を貼り付ける</h3>
+    <textarea id="textInput"></textarea>
+    <br>
+    <button onclick="processText()">単語を解析する</button>
+
+    <h3>3. 新しく見つかった単語</h3>
+    <div id="newWords"></div>
+
+    <button onclick="downloadDictionary()">辞書をダウンロード</button>
+
+    <script>
+        let dictionary = {}; // 辞書データ
+
+        // JSON読み込み
+        document.getElementById("fileInput").addEventListener("change", function (event) {
+            const reader = new FileReader();
+            reader.onload = e => dictionary = JSON.parse(e.target.result);
+            reader.readAsText(event.target.files[0]);
+        });
+
+        // --- API ---
+        async function translate(word, source, target) {
+            const res = await fetch("https://libretranslate.com/translate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    q: word,
+                    source: source,
+                    target: target,
+                    format: "text"
+                })
+            });
+            const data = await res.json();
+            return data.translatedText || "";
+        }
+
+        // 英語辞書 API
+        async function fetchEnglishDefinition(word) {
+            try {
+                const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+                const data = await res.json();
+                if (data[0]?.meanings[0]?.definitions[0]?.definition) {
+                    return data[0].meanings[0].definitions[0].definition;
+                }
+            } catch (e) { }
+            return "";
+        }
+
+        // 単語解析
+        async function processText() {
+            const text = document.getElementById("textInput").value.toLowerCase();
+            const words = text.match(/[a-zåäö]+/gi) || [];
+
+            const container = document.getElementById("newWords");
+            container.innerHTML = "";
+
+            for (const word of words) {
+                if (!dictionary[word]) {
+                    dictionary[word] = { en: "", ja: "", count: 1 };
+                    const row = document.createElement("div");
+                    row.className = "word";
+                    row.innerHTML = `<strong>${word}</strong> (取得中...)`;
+                    container.appendChild(row);
+
+                    // --- API処理開始 ---
+                    const en = await translate(word, "fi", "en");
+                    const enMeaning = await fetchEnglishDefinition(en);
+                    const ja = await translate(en, "en", "ja");
+
+                    dictionary[word].en = enMeaning || en;
+                    dictionary[word].ja = ja;
+
+                    row.innerHTML = `
+                <strong>${word}</strong><br>
+                EN: <input value="${dictionary[word].en}"
+                    onchange="dictionary['${word}'].en=this.value">
+                JA: <input value="${dictionary[word].ja}"
+                    onchange="dictionary['${word}'].ja=this.value">
+            `;
+                } else {
+                    dictionary[word].count++;
+                }
+            }
+
+            alert("解析が完了しました！");
+        }
+
+        // JSON ダウンロード
+        function downloadDictionary() {
+            const blob = new Blob([JSON.stringify(dictionary, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "dictionary.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+
+</body>
+
+</html>
