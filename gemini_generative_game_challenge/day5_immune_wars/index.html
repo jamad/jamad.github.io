@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Immune Wars: Evolution</title>
+    <title>Immune Wars: Final Release</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap');
 
@@ -55,6 +55,18 @@
             background-color: #1a1a1a;
         }
 
+        /* スクロールバーのカスタマイズ */
+        #food-list-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        #food-list-container::-webkit-scrollbar-track {
+            background: #111;
+        }
+        #food-list-container::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
         #trash-zone {
             width: 80px;
             background: repeating-linear-gradient(
@@ -91,19 +103,20 @@
             background: linear-gradient(145deg, #2a2a2a, #202020);
             border: 1px solid #444;
             border-radius: 6px;
-            padding: 12px 2px;
-            margin-bottom: 8px;
+            padding: 6px 10px; 
+            margin-bottom: 5px;
             color: #ddd;
             font-size: 12px;
-            text-align: center;
             cursor: grab;
             transition: transform 0.1s, box-shadow 0.1s;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-direction: row; 
+            align-items: center; 
+            justify-content: flex-start; 
             touch-action: none;
             position: relative;
             z-index: 11;
+            height: 36px; 
         }
         
         .food-item:active { cursor: grabbing; }
@@ -113,17 +126,36 @@
             background: linear-gradient(145deg, #2a2020, #201a1a);
         }
 
-        .food-icon { font-size: 26px; margin-bottom: 4px; pointer-events: none; }
-        .food-name { pointer-events: none; }
+        .food-icon { 
+            font-size: 22px; 
+            margin-right: 12px; 
+            margin-bottom: 0;   
+            pointer-events: none; 
+            width: 25px; 
+            text-align: center;
+        }
+        
+        .food-name { 
+            pointer-events: none; 
+            font-weight: bold;
+            font-size: 11px;
+            text-align: left;
+            white-space: nowrap; 
+        }
 
         .dragging {
             opacity: 0.8;
             position: fixed;
             pointer-events: none;
             z-index: 1000;
-            width: 120px;
+            width: 140px;
             box-shadow: 0 0 15px rgba(255,255,255,0.3);
             background: rgba(30,30,30,0.9);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 5px;
+            border-radius: 6px;
         }
 
         #hud {
@@ -202,22 +234,12 @@
             color: #000;
             box-shadow: 0 0 20px #0ff;
         }
-        
-        #message-log {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            font-size: 12px;
-            color: rgba(255,255,255,0.7);
-            pointer-events: none;
-            text-shadow: 1px 1px 0 #000;
-        }
 
         @media (max-width: 600px) {
             #ui-panel { width: 140px; }
             #trash-zone { width: 50px; font-size: 12px; }
-            .food-item { font-size: 10px; }
-            .food-icon { font-size: 20px; }
+            .food-item { font-size: 10px; height: 30px; }
+            .food-icon { font-size: 18px; margin-right: 5px; width: 20px; }
             .title { font-size: 24px; }
             .subtitle { font-size: 11px; }
         }
@@ -230,20 +252,18 @@
         <div id="hud">
             <div class="stat-box" style="border-color:#ff3333; color:#ff3333">ENEMIES: <span id="enemy-count">0</span></div>
             <div class="stat-box">CELLS: <span id="cell-count">0</span></div>
+            <div class="stat-box" style="border-color:#ffff00; color:#ffff00; font-size:12px">FOOD: <span id="food-count">0</span>/30</div>
         </div>
-        <div id="message-log"></div>
         
         <div id="overlay">
             <div class="title">IMMUNE WARS</div>
             <div class="subtitle">
-                <span class="instruction">【操作方法】</span><br>
-                リストの食品をドラッグ＆ドロップで操作します。<br>
-                ◀ 左（画面）へ： 食べる（栄養吸収）<br>
-                ▶ 右（縞模様）へ： 捨てる（ゴミ箱）<br><br>
-                <span class="warning">変更点</span><br>
-                敵は悪い食事をとると<b>赤く変異し攻撃力が倍増</b>します。<br>
-                弱い敵は逃げますが、<b>強くなると襲ってきます</b>。<br>
-                4秒ごとに分裂するので早めに対処してください。
+                <span class="instruction">【FINAL MISSION】</span><br>
+                1. <b>殲滅せよ</b>：敵をゼロにすれば勝利です。無限には湧きません。<br>
+                2. <b>食品大量追加</b>：40種類以上の食品が登場。選び抜いてください。<br>
+                3. <b>進化と戦術</b>：育てた免疫細胞で、増殖する脅威を断ち切ってください。<br>
+                <br>
+                グッドラック、コマンダー。
             </div>
             <button class="start-btn" id="startBtn">START MISSION</button>
         </div>
@@ -297,7 +317,6 @@ const AudioSys = {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         if(isBad) {
-            // 悪いパワーアップ: 低く不気味な音
             osc.frequency.setValueAtTime(150, this.ctx.currentTime);
             osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 0.5);
             osc.type = 'sawtooth';
@@ -306,6 +325,20 @@ const AudioSys = {
             osc.frequency.linearRampToValueAtTime(800, this.ctx.currentTime + 0.3);
             osc.type = 'sine';
         }
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.5);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.5);
+    },
+    playLevelUp: function() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(1200, this.ctx.currentTime + 0.5);
+        osc.type = 'triangle';
         gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
         gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.5);
         osc.connect(gain);
@@ -321,28 +354,60 @@ const AudioSys = {
 const COLORS = {
     player: '#00ccff', 
     macrophage: '#00ff88',
-    enemy1: '#4444ff', // 青（初期）
+    enemy1: '#4444ff', 
     enemy2: '#8844ff', 
     nutrientGood: '#ffff00', 
     nutrientBad: '#cc00cc',  
     bullet: '#00ffff'
 };
 
+// --- 修正：食品DBの大幅拡張 ---
 const FOOD_DB = [
+    // --- Good Foods ---
     { id: 'broccoli', name: 'ブロッコリー', icon: '🥦', type: 'good' },
-    { id: 'salmon', name: '鮭', icon: '🐟', type: 'good' },
+    { id: 'salmon', name: 'サーモン', icon: '🐟', type: 'good' },
     { id: 'yogurt', name: 'ヨーグルト', icon: '🥛', type: 'good' },
     { id: 'lemon', name: 'レモン', icon: '🍋', type: 'good' },
     { id: 'garlic', name: 'ニンニク', icon: '🧄', type: 'good' },
+    { id: 'carrot', name: 'ニンジン', icon: '🥕', type: 'good' },
+    { id: 'spinach', name: 'ホウレンソウ', icon: '🥬', type: 'good' },
+    { id: 'tomato', name: 'トマト', icon: '🍅', type: 'good' },
+    { id: 'apple', name: 'リンゴ', icon: '🍎', type: 'good' },
+    { id: 'egg', name: 'タマゴ', icon: '🥚', type: 'good' },
+    { id: 'cheese', name: 'チーズ', icon: '🧀', type: 'good' },
+    { id: 'tea', name: '緑茶', icon: '🍵', type: 'good' },
+    { id: 'water', name: '天然水', icon: '💧', type: 'good' },
+    { id: 'rice', name: 'ご飯', icon: '🍚', type: 'good' },
+    { id: 'tofu', name: '豆腐', icon: '🧊', type: 'good' }, // 豆腐の絵文字がないので氷で代用
+    { id: 'mush', name: 'キノコ', icon: '🍄', type: 'good' },
+    { id: 'grape', name: 'ブドウ', icon: '🍇', type: 'good' },
+    { id: 'melon', name: 'メロン', icon: '🍈', type: 'good' },
+    { id: 'honey', name: 'ハチミツ', icon: '🍯', type: 'good' },
+    { id: 'chicken', name: 'チキン', icon: '🍗', type: 'good' },
+    
+    // --- Bad Foods ---
     { id: 'fries', name: 'ポテト', icon: '🍟', type: 'bad' },
     { id: 'donut', name: 'ドーナツ', icon: '🍩', type: 'bad' },
     { id: 'pizza', name: 'ピザ', icon: '🍕', type: 'bad' },
-    { id: 'soda', name: '炭酸飲料', icon: '🥤', type: 'bad' }
+    { id: 'soda', name: '炭酸飲料', icon: '🥤', type: 'bad' },
+    { id: 'burger', name: 'バーガー', icon: '🍔', type: 'bad' },
+    { id: 'hotdog', name: 'ホットドッグ', icon: '🌭', type: 'bad' },
+    { id: 'cake', name: 'ケーキ', icon: '🍰', type: 'bad' },
+    { id: 'cookie', name: 'クッキー', icon: '🍪', type: 'bad' },
+    { id: 'beer', name: 'ビール', icon: '🍺', type: 'bad' },
+    { id: 'wine', name: 'ワイン', icon: '🍷', type: 'bad' },
+    { id: 'candy', name: 'キャンディ', icon: '🍬', type: 'bad' },
+    { id: 'lolly', name: 'ペロペロ', icon: '🍭', type: 'bad' },
+    { id: 'choco', name: 'チョコ', icon: '🍫', type: 'bad' },
+    { id: 'ice', name: 'アイス', icon: '🍦', type: 'bad' },
+    { id: 'bacon', name: 'ベーコン', icon: '🥓', type: 'bad' },
+    { id: 'popcorn', name: 'ポップコーン', icon: '🍿', type: 'bad' },
+    { id: 'pudding', name: 'プリン', icon: '🍮', type: 'bad' },
+    { id: 'croissant', name: 'パン', icon: '🥐', type: 'bad' },
+    { id: 'taco', name: 'タコス', icon: '🌮', type: 'bad' },
+    { id: 'sandwich', name: 'サンド', icon: '🥪', type: 'bad' }
 ];
 
-/**
- * VECTOR CLASS
- */
 class Vec2 {
     constructor(x, y) { this.x = x; this.y = y; }
     add(v) { this.x += v.x; this.y += v.y; return this; }
@@ -356,18 +421,8 @@ class Vec2 {
     }
     dist(v) { return Math.sqrt((this.x-v.x)**2 + (this.y-v.y)**2); }
     copy() { return new Vec2(this.x, this.y); }
-    
-    wrap(w, h) {
-        if(this.x < 0) this.x = w;
-        if(this.x > w) this.x = 0;
-        if(this.y < 0) this.y = h;
-        if(this.y > h) this.y = 0;
-    }
 }
 
-/**
- * ENTITY CLASSES
- */
 class Entity {
     constructor(x, y, radius, color) {
         this.pos = new Vec2(x, y);
@@ -388,7 +443,23 @@ class Entity {
         }
         this.pos.add(this.vel);
         this.acc.mult(0);
-        this.pos.wrap(w, h);
+        
+        // 画面端バウンド
+        if (this.pos.x < this.radius) {
+            this.pos.x = this.radius;
+            this.vel.x *= -1;
+        } else if (this.pos.x > w - this.radius) {
+            this.pos.x = w - this.radius;
+            this.vel.x *= -1;
+        }
+
+        if (this.pos.y < this.radius) {
+            this.pos.y = this.radius;
+            this.vel.y *= -1;
+        } else if (this.pos.y > h - this.radius) {
+            this.pos.y = h - this.radius;
+            this.vel.y *= -1;
+        }
     }
 
     applyForce(force) {
@@ -396,6 +467,7 @@ class Entity {
     }
     
     draw(ctx) {
+        if(this.radius <= 0) return;
         ctx.save();
         ctx.translate(this.pos.x, this.pos.y);
         ctx.fillStyle = this.color;
@@ -414,18 +486,26 @@ class ImmuneCell extends Entity {
         this.type = type; 
         this.name = type === 'MACROPHAGE' ? 'マクロファージ' : (type === 'B-CELL' ? 'Ｂ細胞' : 'Ｔ細胞');
         this.shootCooldown = 0;
-        this.energy = 0;
-        
-        // 修正：すべての初期移動速度を半分に
-        // 元: 1.5 -> 新: 0.75
-        this.maxSpeed = 0.75; 
-        this.hp = 20; // 基礎体力
+        this.xp = 0;
+        this.level = 1;
         
         if (type === 'MACROPHAGE') {
-            this.radius = 18;
+            this.hp = 30; // 巨大
+            this.maxSpeed = 1.0; 
             this.color = COLORS.macrophage;
-            this.maxSpeed = 0.5; // 元: 1.2 -> 新: 0.6
-            this.hp = 50; // 食細胞はタフ
+        } else {
+            this.hp = 15; // 標準
+            this.maxSpeed = 1.2; 
+        }
+    }
+
+    update(w, h) {
+        super.update(w, h);
+        this.radius = Math.max(0, this.hp);
+        
+        if (this.radius < 5) {
+            this.dead = true;
+            game.createParticles(this.pos.x, this.pos.y, this.color, 15);
         }
     }
 
@@ -436,9 +516,6 @@ class ImmuneCell extends Entity {
 
         enemies.forEach(e => {
             let toEnemy = e.pos.copy().sub(this.pos);
-            // 画面端処理
-            if (toEnemy.x > w/2) toEnemy.x -= w; else if (toEnemy.x < -w/2) toEnemy.x += w;
-            if (toEnemy.y > h/2) toEnemy.y -= h; else if (toEnemy.y < -h/2) toEnemy.y += h;
             let d = toEnemy.mag();
             if (d < minDist) {
                 minDist = d;
@@ -449,15 +526,34 @@ class ImmuneCell extends Entity {
 
         if (closest) {
             distVec.normalize();
+            
+            let isExterminationMode = (enemies.length <= 10);
+
             if (this.type === 'MACROPHAGE') {
-                // マクロファージは積極的に食べる
-                this.applyForce(distVec.mult(0.25));
+                let speedMult = isExterminationMode ? 0.6 : 0.4;
+                this.applyForce(distVec.mult(speedMult));
             } else {
-                // B/T細胞は距離を取って射撃
-                if (minDist < 150) this.applyForce(distVec.mult(-0.2));
-                else if (minDist > 250) this.applyForce(distVec.mult(0.1));
+                // 射撃部隊
+                let isOverwhelming = (this.hp > closest.power * 2);
+
+                if (isExterminationMode) {
+                    this.applyForce(distVec.mult(0.35)); 
+                } else {
+                    if (minDist > 250) {
+                        this.applyForce(distVec.mult(0.25)); 
+                    } else if (minDist < 100) {
+                        if (!isOverwhelming) {
+                            this.applyForce(distVec.mult(-0.3)); 
+                        } else {
+                            this.applyForce(distVec.mult(-0.05));
+                        }
+                    } else {
+                        this.applyForce(new Vec2(Math.random()-0.5, Math.random()-0.5).mult(0.1));
+                    }
+                }
                 
-                if (this.shootCooldown <= 0 && minDist < 350) {
+                let range = isExterminationMode ? 500 : 350;
+                if (this.shootCooldown <= 0 && minDist < range) {
                     this.shoot(distVec);
                     this.shootCooldown = (this.type === 'T-CELL') ? 30 : 45; 
                 }
@@ -471,28 +567,34 @@ class ImmuneCell extends Entity {
         AudioSys.playShoot();
     }
     
-    absorb() {
-        this.energy += 1;
-        this.hp = Math.min(this.hp + 5, 100); // 回復
-        if(this.energy >= 3) {
-            this.energy = 0;
-            game.spawnMessage("免疫細胞分裂！", this.pos.x, this.pos.y);
-            let child = new ImmuneCell(this.pos.x + 10, this.pos.y, this.type);
-            child.maxSpeed = this.maxSpeed; // 速度継承
-            game.cells.push(child);
+    absorb(amount = 5) {
+        this.hp += amount;
+        this.hp = Math.min(this.hp, 50); 
+        
+        this.xp++;
+        if(this.xp >= 3) {
+            this.xp = 0;
+            this.levelUp();
         }
+    }
+    
+    levelUp() {
+        this.level++;
+        this.maxSpeed += 0.4; 
+        
+        game.spawnMessage(`SPEED UP! Lv.${this.level}`, this.pos.x, this.pos.y, "#00ffff");
+        AudioSys.playLevelUp();
+        game.createParticles(this.pos.x, this.pos.y, "#ffffff", 10);
     }
     
     draw(ctx) {
         super.draw(ctx);
-        // 名前表示
         ctx.fillStyle = "rgba(255,255,255,0.7)";
         ctx.font = "10px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(this.name, this.pos.x, this.pos.y + this.radius + 12);
-        // HPバー
-        ctx.fillStyle = "#0f0";
-        ctx.fillRect(this.pos.x - 10, this.pos.y - this.radius - 8, 20 * (this.hp / (this.type==='MACROPHAGE'?50:20)), 3);
+        if (this.radius > 10) {
+            ctx.fillText(`Lv.${this.level} ${this.name}`, this.pos.x, this.pos.y + this.radius + 12);
+        }
     }
 }
 
@@ -500,135 +602,141 @@ class Enemy extends Entity {
     constructor(x, y, type) {
         super(x, y, 10, type === 1 ? COLORS.enemy1 : COLORS.enemy2);
         this.type = type; 
-        
-        // 修正：攻撃力(Power)の概念を追加
-        this.power = type === 1 ? 5 : 8; 
-        
-        // 修正：移動速度を半分に
-        // 元: 2.5 -> 新: 1.25, 元: 1.0 -> 新: 0.5
-        this.maxSpeed = type === 1 ? 1.25 : 0.5;
-        
-        this.radius = type === 1 ? 8 : 12;
-        this.angle = 0;
+        this.power = type === 1 ? 12 : 20; 
+        this.maxSpeed = type === 1 ? 1.5 : 0.8;
         this.reproduceTimer = 0;
-        
-        // 修正：分裂間隔を4秒に固定 (60fps * 4 = 240)
-        this.reproduceInterval = 240; 
+        this.reproduceInterval = 480; 
+        this.updateColor(); 
     }
 
-    // 修正：色を更新するメソッド（攻撃力が上がると赤くなる）
     updateColor() {
-        // パワーに応じて赤みを増す
-        // 初期パワー(5)なら青、パワーが20を超えると真っ赤に近づく
         let t = Math.min((this.power - 5) / 40, 1); 
-        
-        // 青(0,0,255) -> 赤(255,0,0) への補間
         let r = Math.floor(50 + 205 * t);
         let g = Math.floor(50 * (1 - t));
         let b = Math.floor(255 * (1 - t));
-        
         this.color = `rgb(${r},${g},${b})`;
-        
-        // サイズも少し大きく
-        this.radius = Math.min(25, (this.type===1?8:12) + this.power * 0.3);
+        this.radius = Math.max(0, this.power);
     }
 
-    behavior(cells, w, h) {
-        this.angle += 0.1;
-        this.reproduceTimer++;
+    update(w, h) {
+        super.update(w, h);
+        if (this.power < 5) {
+            this.dead = true;
+            game.createParticles(this.pos.x, this.pos.y, this.color, 10);
+        }
+    }
 
-        // 修正：4秒おきに分裂
+    behavior(cells, enemies, w, h) {
+        this.reproduceTimer++;
         if(this.reproduceTimer > this.reproduceInterval) {
             this.reproduceTimer = 0;
             this.split();
-            return; // 分裂したらこの個体は消えるか処理終了
+            return;
+        }
+
+        // 分離力 (Separation)
+        let separation = new Vec2(0, 0);
+        let count = 0;
+        let desiredSeparation = this.radius * 2.5;
+
+        enemies.forEach(other => {
+            if (other === this) return;
+            let d = this.pos.dist(other.pos);
+            if (d > 0 && d < desiredSeparation) {
+                let diff = this.pos.copy().sub(other.pos);
+                diff.normalize();
+                diff.mult(1 / d); 
+                separation.add(diff);
+                count++;
+            }
+        });
+
+        if (count > 0) {
+            separation.mult(1 / count);
+            separation.normalize();
+            separation.mult(0.6); 
+            this.applyForce(separation);
         }
 
         let closest = null;
         let minDist = Infinity;
         cells.forEach(c => {
             let toCell = c.pos.copy().sub(this.pos);
-            if (toCell.x > w/2) toCell.x -= w; else if (toCell.x < -w/2) toCell.x += w;
-            if (toCell.y > h/2) toCell.y -= h; else if (toCell.y < -h/2) toCell.y += h;
             let d = toCell.mag();
             if (d < minDist) { minDist = d; closest = c; }
         });
 
-        // 修正：AI挙動
-        // 免疫細胞(Power: HPとみなす)より強いか？
-        // 基準値: プレイヤーの平均的な強さを10-20と仮定
-        let immunityStrength = 20; 
+        let isAttacking = false;
+        const margin = 80;
+        const avoidP = 0.8; 
 
         if (closest) {
-            let dir = closest.pos.copy().sub(this.pos);
-            if (dir.x > w/2) dir.x -= w; else if (dir.x < -w/2) dir.x += w;
-            if (dir.y > h/2) dir.y -= h; else if (dir.y < -h/2) dir.y += h;
-            dir.normalize();
-
-            // 修正：強い時は襲う、弱い時は逃げる
-            if (this.power >= immunityStrength) {
-                // 襲う (Chase)
-                this.applyForce(dir.mult(0.15));
+            let isMobMode = (enemies.length >= 10);
+            
+            if (isMobMode || this.power >= closest.hp) {
+                isAttacking = true;
+                let dir = closest.pos.copy().sub(this.pos);
+                dir.normalize();
+                this.applyForce(dir.mult(0.25)); 
             } else {
-                // 逃げる (Flee) - 負の走化性
-                this.applyForce(dir.mult(-0.10));
+                let dir = closest.pos.copy().sub(this.pos);
+                dir.normalize();
+                this.applyForce(dir.mult(-0.2));
             }
         } else {
-            // 近くにいないときはランダム
-            this.applyForce(new Vec2(Math.random()-0.5, Math.random()-0.5).mult(0.1));
+            this.applyForce(new Vec2(Math.random()-0.5, Math.random()-0.5).mult(0.2));
+        }
+
+        if (!isAttacking || (isAttacking && minDist > 200)) {
+            if (this.pos.x < margin) this.applyForce(new Vec2(avoidP, 0));
+            if (this.pos.x > w - margin) this.applyForce(new Vec2(-avoidP, 0));
+            if (this.pos.y < margin) this.applyForce(new Vec2(0, avoidP));
+            if (this.pos.y > h - margin) this.applyForce(new Vec2(0, -avoidP));
         }
     }
     
-    // 悪い栄養素を食べた時の処理
     absorbBadNutrient() {
-        game.spawnMessage("敵が変異！攻撃力倍増", this.pos.x, this.pos.y, "#ff0000");
-        // 修正：攻撃力が倍になる
-        this.power *= 2;
-        this.updateColor(); // 色更新
+        game.spawnMessage("敵強化！", this.pos.x, this.pos.y, "#ff0000");
+        this.power *= 1.3; 
+        this.updateColor(); 
     }
     
     split() {
-        if(game.enemies.length < 100) { 
-            // 修正：花火のように放射状に発散
-            // 2つに分裂し、反対方向に飛び出す
+        if(game.enemies.length < 80) { 
             let angle = Math.random() * Math.PI * 2;
-            let speed = 2.5; // 飛び出し速度
+            let speed = 2.5; 
 
-            // 子1
             let child1 = new Enemy(this.pos.x, this.pos.y, this.type);
             child1.vel = new Vec2(Math.cos(angle)*speed, Math.sin(angle)*speed);
-            child1.power = this.power; // パワー継承
+            child1.power = this.power; 
             child1.updateColor();
 
-            // 子2 (180度反対)
             let child2 = new Enemy(this.pos.x, this.pos.y, this.type);
             child2.vel = new Vec2(Math.cos(angle + Math.PI)*speed, Math.sin(angle + Math.PI)*speed);
             child2.power = this.power;
             child2.updateColor();
 
             game.enemies.push(child1, child2);
-            this.dead = true; // 親は消滅（分裂したため）
+            this.dead = true; 
             
-            // エフェクト
             AudioSys.playSpawn();
             game.createParticles(this.pos.x, this.pos.y, this.color, 5);
         }
     }
 
     draw(ctx) {
+        if(this.radius <= 0) return;
         ctx.save();
         ctx.translate(this.pos.x, this.pos.y);
-        ctx.rotate(this.angle);
+        ctx.rotate(this.angle); 
         ctx.fillStyle = this.color;
         ctx.shadowBlur = 10;
         ctx.shadowColor = this.color;
         
         ctx.beginPath();
         if (this.type === 1) {
-            // ウイルス型（トゲトゲ）
             ctx.moveTo(0, -this.radius); ctx.lineTo(this.radius, 0); ctx.lineTo(0, this.radius); ctx.lineTo(-this.radius, 0);
         } else {
-            // バクテリア型（多角形）
             for(let i=0; i<8; i++) {
                 let r = this.radius + (i%2===0 ? 2 : -2);
                 let a = (Math.PI*2 / 8) * i;
@@ -636,14 +744,6 @@ class Enemy extends Entity {
             }
         }
         ctx.fill();
-        
-        // パワー表示
-        ctx.rotate(-this.angle); // 文字は回転させない
-        ctx.fillStyle = "#fff";
-        ctx.font = "10px sans-serif";
-        ctx.textAlign = "center";
-        // ctx.fillText(Math.floor(this.power), 0, 4); // 数値が見たい場合はコメントアウト解除
-        
         ctx.restore();
     }
 }
@@ -651,7 +751,7 @@ class Enemy extends Entity {
 class Bullet extends Entity {
     constructor(x, y, dir) {
         super(x, y, 3, COLORS.bullet);
-        this.vel = dir.copy().mult(5); // 弾速も少し調整
+        this.vel = dir.copy().mult(7); 
         this.life = 60;
         this.friction = 1.0;
     }
@@ -668,32 +768,23 @@ class Nutrient extends Entity {
         this.isGood = (foodData.type === 'good');
         this.foodData = foodData;
         this.friction = 1.0;
-        this.life = 600; 
-        this.maxSpeed = 1.0; // 栄養素もゆっくりに
+        this.maxSpeed = 1.0; 
     }
     
     behavior(cells, enemies, w, h) {
-        this.life--;
-        if(this.life <= 0) this.dead = true;
-
         let targets = this.isGood ? cells : enemies;
         let closest = null;
-        let minDist = 250; 
+        let minDist = 300; 
 
         targets.forEach(t => {
             let toTarget = t.pos.copy().sub(this.pos);
-            if (toTarget.x > w/2) toTarget.x -= w; else if (toTarget.x < -w/2) toTarget.x += w;
-            if (toTarget.y > h/2) toTarget.y -= h; else if (toTarget.y < -h/2) toTarget.y += h;
             let d = toTarget.mag();
             if (d < minDist) { minDist = d; closest = t; }
         });
 
         if (closest) {
             let dir = closest.pos.copy().sub(this.pos);
-            if (dir.x > w/2) dir.x -= w; else if (dir.x < -w/2) dir.x += w;
-            if (dir.y > h/2) dir.y -= h; else if (dir.y < -h/2) dir.y += h;
-            // 吸い寄せられる速度
-            dir.normalize().mult(0.2); 
+            dir.normalize().mult(0.25); 
             this.applyForce(dir);
         }
     }
@@ -726,13 +817,12 @@ class UIManager {
         this.dragItem = null;
         this.dragData = null;
         this.touchOffset = {x:0, y:0};
-        
         this.refillList();
     }
     
     refillList() {
         this.listEl.innerHTML = '';
-        for(let i=0; i<6; i++) {
+        for(let i=0; i<12; i++) {
             this.addRandomFood();
         }
     }
@@ -760,7 +850,7 @@ class UIManager {
         
         this.dragItem = el.cloneNode(true);
         this.dragItem.classList.add('dragging');
-        this.dragItem.style.width = rect.width + 'px';
+        this.dragItem.style.width = '160px';
         document.body.appendChild(this.dragItem);
         
         this.dragData = food;
@@ -844,6 +934,7 @@ class Game {
         
         this.enemyCountEl = document.getElementById('enemy-count');
         this.cellCountEl = document.getElementById('cell-count');
+        this.foodCountEl = document.getElementById('food-count');
     }
 
     resize() {
@@ -866,12 +957,12 @@ class Game {
         this.particles = [];
         this.ui.refillList();
 
-        // 初期配置
         this.cells.push(new ImmuneCell(this.width/2, this.height/2, 'MACROPHAGE'));
         this.cells.push(new ImmuneCell(this.width/2 - 40, this.height/2, 'B-CELL'));
         this.cells.push(new ImmuneCell(this.width/2 + 40, this.height/2, 'T-CELL'));
         
-        for(let i=0; i<5; i++) { this.spawnEnemy(); }
+        // --- 修正：初期敵数を8体に増強 ---
+        for(let i=0; i<8; i++) { this.spawnEnemy(); }
 
         this.loop();
     }
@@ -891,15 +982,20 @@ class Game {
 
     spawnFood(food) {
         AudioSys.playSpawn();
-        // 修正: 栄養素の速度も控えめに
+        const MAX_NUTRIENTS = 30;
+        
         for(let i=0; i<4; i++) {
             let n = new Nutrient(this.width, Math.random() * this.height, food);
             n.vel = new Vec2(-0.8 - Math.random()*1, Math.random() * 1 - 0.5); 
             this.nutrients.push(n);
         }
         
+        while (this.nutrients.length > MAX_NUTRIENTS) {
+            this.nutrients.shift();
+        }
+        
         if(food.type === 'bad') {
-            this.spawnMessage("有害物質検知！敵強化注意", this.width/2, this.height/2, "#ff0000");
+            this.spawnMessage("有害物質検知！", this.width/2, this.height/2, "#ff0000");
         }
     }
     
@@ -940,30 +1036,30 @@ class Game {
         });
 
         this.enemies.forEach(e => {
-            e.behavior(this.cells, this.width, this.height);
+            e.behavior(this.cells, this.enemies, this.width, this.height);
             e.update(this.width, this.height);
-            
+            e.updateColor(); 
+
             // 敵 vs 免疫
             this.cells.forEach(c => {
                 let dist = c.pos.dist(e.pos);
                 if(dist < c.radius + e.radius) {
                     
-                    // マクロファージの捕食
                     if(c.type === 'MACROPHAGE') {
-                        // 敵が強すぎるとダメージを受ける
-                        if (e.power > c.hp / 2) {
-                            c.hp -= 5;
-                            e.dead = true; // それでも食べる（相打ち気味）
-                            this.createParticles(e.pos.x, e.pos.y, "#ff0000", 10);
-                        } else {
-                            e.dead = true;
-                            AudioSys.playEat();
-                            this.createParticles(e.pos.x, e.pos.y, e.color, 10);
-                        }
+                        // マクロファージの消化
+                        let damage = e.power;
+                        let recovery = e.power * 0.5;
+                        c.hp = c.hp - damage + recovery;
+                        
+                        e.dead = true; 
+                        AudioSys.playEat();
+                        this.createParticles(e.pos.x, e.pos.y, e.color, 10);
+                        this.createParticles(c.pos.x, c.pos.y, "#00ff00", 5);
+
                     } else {
-                        // 他の細胞はダメージを受ける
-                        c.hp -= (e.power * 0.5); // パワー依存ダメージ
-                        if(c.hp <= 0) {
+                        // B/T細胞はダメージ
+                        c.hp -= (e.power * 0.5); 
+                        if(c.hp <= 5) { 
                             c.dead = true;
                             this.createParticles(c.pos.x, c.pos.y, c.color, 20);
                             AudioSys.playExplosion();
@@ -973,18 +1069,18 @@ class Game {
             });
         });
 
-        // 弾の当たり判定
         this.bullets.forEach(b => {
             b.update(this.width, this.height);
             this.enemies.forEach(e => {
                 if(!e.dead && b.pos.dist(e.pos) < e.radius + b.radius) {
-                    e.power -= 2; // パワーダウン
-                    if (e.power <= 0) {
+                    e.power -= 2; 
+                    e.updateColor();
+                    
+                    if (e.power < 5) { 
                         e.dead = true;
                         AudioSys.playExplosion();
                         this.createParticles(e.pos.x, e.pos.y, e.color, 15);
                     } else {
-                        // ヒット演出
                         b.dead = true;
                         this.createParticles(b.pos.x, b.pos.y, COLORS.bullet, 3);
                     }
@@ -992,7 +1088,6 @@ class Game {
             });
         });
 
-        // 栄養素の当たり判定
         this.nutrients.forEach(n => {
             n.behavior(this.cells, this.enemies, this.width, this.height);
             n.update(this.width, this.height);
@@ -1001,14 +1096,13 @@ class Game {
                 if(!n.dead && n.isGood && c.pos.dist(n.pos) < c.radius + n.radius + 15) {
                     n.dead = true;
                     AudioSys.playPowerUp(false);
-                    c.absorb(); 
+                    c.absorb(5); 
                 }
             });
             this.enemies.forEach(e => {
                 if(!n.dead && !n.isGood && e.pos.dist(n.pos) < e.radius + n.radius + 15) {
                     n.dead = true;
                     AudioSys.playPowerUp(true);
-                    // 修正：敵が悪い栄養素を吸収
                     e.absorbBadNutrient(); 
                 }
             });
@@ -1022,12 +1116,14 @@ class Game {
         this.particles = this.particles.filter(p => !p.dead);
         this.cells = this.cells.filter(c => !c.dead);
 
-        if(this.enemies.length === 0) this.spawnEnemy(); // 全滅したら追加
+        // --- 修正：クリア条件のバグ修正 ---
+        if(this.enemies.length === 0) this.gameOver(true); // 敵全滅＝クリア
         if(this.cells.length === 0) this.gameOver(false);
-        if(this.enemies.length > 150) this.gameOver(false); // 増えすぎたら負け
+        if(this.enemies.length > 150) this.gameOver(false); 
         
         this.enemyCountEl.innerText = this.enemies.length;
         this.cellCountEl.innerText = this.cells.length;
+        this.foodCountEl.innerText = this.nutrients.length;
     }
 
     draw() {
@@ -1070,7 +1166,7 @@ class Game {
         if(isWin) {
             title.innerText = "MISSION CLEAR";
             title.style.color = "#00ffcc";
-            sub.innerHTML = "体内環境は正常化されました。";
+            sub.innerHTML = "体内環境は正常化されました。<br>免疫システム勝利！";
         } else {
             title.innerText = "SYSTEM FAILURE";
             title.style.color = "#ff3333";
