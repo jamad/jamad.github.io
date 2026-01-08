@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Immune Wars: Final Release</title>
+    <title>Immune Wars: Formation</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap');
 
@@ -55,7 +55,6 @@
             background-color: #1a1a1a;
         }
 
-        /* スクロールバーのカスタマイズ */
         #food-list-container::-webkit-scrollbar {
             width: 8px;
         }
@@ -117,6 +116,7 @@
             position: relative;
             z-index: 11;
             height: 36px; 
+            flex-shrink: 0;
         }
         
         .food-item:active { cursor: grabbing; }
@@ -258,12 +258,12 @@
         <div id="overlay">
             <div class="title">IMMUNE WARS</div>
             <div class="subtitle">
-                <span class="instruction">【FINAL MISSION】</span><br>
-                1. <b>殲滅せよ</b>：敵をゼロにすれば勝利です。無限には湧きません。<br>
-                2. <b>食品大量追加</b>：40種類以上の食品が登場。選び抜いてください。<br>
-                3. <b>進化と戦術</b>：育てた免疫細胞で、増殖する脅威を断ち切ってください。<br>
+                <span class="instruction">【陣形制御アップデート】</span><br>
+                1. <b>密集回避</b>：免疫細胞も互いに距離を取り、重ならずに行動します。<br>
+                2. <b>軍団形成</b>：数が増えると綺麗な包囲網を形成しやすくなります。<br>
+                3. <b>増殖＆強化</b>：栄養を取って即分裂し、圧倒的物量で制圧せよ。<br>
                 <br>
-                グッドラック、コマンダー。
+                美しく、そして強力な免疫軍団を指揮してください。
             </div>
             <button class="start-btn" id="startBtn">START MISSION</button>
         </div>
@@ -361,7 +361,6 @@ const COLORS = {
     bullet: '#00ffff'
 };
 
-// --- 修正：食品DBの大幅拡張 ---
 const FOOD_DB = [
     // --- Good Foods ---
     { id: 'broccoli', name: 'ブロッコリー', icon: '🥦', type: 'good' },
@@ -378,7 +377,7 @@ const FOOD_DB = [
     { id: 'tea', name: '緑茶', icon: '🍵', type: 'good' },
     { id: 'water', name: '天然水', icon: '💧', type: 'good' },
     { id: 'rice', name: 'ご飯', icon: '🍚', type: 'good' },
-    { id: 'tofu', name: '豆腐', icon: '🧊', type: 'good' }, // 豆腐の絵文字がないので氷で代用
+    { id: 'tofu', name: '豆腐', icon: '🧊', type: 'good' }, 
     { id: 'mush', name: 'キノコ', icon: '🍄', type: 'good' },
     { id: 'grape', name: 'ブドウ', icon: '🍇', type: 'good' },
     { id: 'melon', name: 'メロン', icon: '🍈', type: 'good' },
@@ -486,8 +485,6 @@ class ImmuneCell extends Entity {
         this.type = type; 
         this.name = type === 'MACROPHAGE' ? 'マクロファージ' : (type === 'B-CELL' ? 'Ｂ細胞' : 'Ｔ細胞');
         this.shootCooldown = 0;
-        this.xp = 0;
-        this.level = 1;
         
         if (type === 'MACROPHAGE') {
             this.hp = 30; // 巨大
@@ -509,7 +506,32 @@ class ImmuneCell extends Entity {
         }
     }
 
-    behavior(enemies, w, h) {
+    behavior(cells, enemies, w, h) {
+        // --- 修正：味方同士の分離 (Separation) ---
+        let separation = new Vec2(0, 0);
+        let count = 0;
+        let desiredSeparation = this.radius * 2.5;
+
+        cells.forEach(other => {
+            if (other === this) return;
+            let d = this.pos.dist(other.pos);
+            if (d > 0 && d < desiredSeparation) {
+                let diff = this.pos.copy().sub(other.pos);
+                diff.normalize();
+                diff.mult(1 / d); 
+                separation.add(diff);
+                count++;
+            }
+        });
+
+        if (count > 0) {
+            separation.mult(1 / count);
+            separation.normalize();
+            separation.mult(0.5); // 分離力
+            this.applyForce(separation);
+        }
+
+        // --- 既存のAIロジック ---
         let closest = null;
         let minDist = Infinity;
         let distVec = new Vec2(0,0);
@@ -526,29 +548,27 @@ class ImmuneCell extends Entity {
 
         if (closest) {
             distVec.normalize();
-            
             let isExterminationMode = (enemies.length <= 10);
 
             if (this.type === 'MACROPHAGE') {
                 let speedMult = isExterminationMode ? 0.6 : 0.4;
                 this.applyForce(distVec.mult(speedMult));
             } else {
-                // 射撃部隊
-                let isOverwhelming = (this.hp > closest.power * 2);
+                let isWeaker = (this.hp < closest.power);
 
-                if (isExterminationMode) {
-                    this.applyForce(distVec.mult(0.35)); 
+                if (isWeaker) {
+                    this.applyForce(distVec.mult(-0.4));
                 } else {
-                    if (minDist > 250) {
-                        this.applyForce(distVec.mult(0.25)); 
-                    } else if (minDist < 100) {
-                        if (!isOverwhelming) {
+                    if (isExterminationMode) {
+                        this.applyForce(distVec.mult(0.35)); 
+                    } else {
+                        if (minDist > 250) {
+                            this.applyForce(distVec.mult(0.25)); 
+                        } else if (minDist < 100) {
                             this.applyForce(distVec.mult(-0.3)); 
                         } else {
-                            this.applyForce(distVec.mult(-0.05));
+                            this.applyForce(new Vec2(Math.random()-0.5, Math.random()-0.5).mult(0.1));
                         }
-                    } else {
-                        this.applyForce(new Vec2(Math.random()-0.5, Math.random()-0.5).mult(0.1));
                     }
                 }
                 
@@ -570,21 +590,22 @@ class ImmuneCell extends Entity {
     absorb(amount = 5) {
         this.hp += amount;
         this.hp = Math.min(this.hp, 50); 
-        
-        this.xp++;
-        if(this.xp >= 3) {
-            this.xp = 0;
-            this.levelUp();
-        }
+        this.split();
     }
     
-    levelUp() {
-        this.level++;
-        this.maxSpeed += 0.4; 
-        
-        game.spawnMessage(`SPEED UP! Lv.${this.level}`, this.pos.x, this.pos.y, "#00ffff");
-        AudioSys.playLevelUp();
-        game.createParticles(this.pos.x, this.pos.y, "#ffffff", 10);
+    split() {
+        if (game.cells.length < 50) {
+            let child = new ImmuneCell(this.pos.x, this.pos.y, this.type);
+            child.hp = this.hp; 
+            child.vel = new Vec2(Math.random()-0.5, Math.random()-0.5).mult(5);
+            game.cells.push(child);
+            
+            game.spawnMessage("増殖！", this.pos.x, this.pos.y, "#00ffcc");
+            AudioSys.playLevelUp();
+            game.createParticles(this.pos.x, this.pos.y, "#ffffff", 10);
+        } else {
+            game.spawnMessage("MAXIMUM", this.pos.x, this.pos.y, "#ffffff");
+        }
     }
     
     draw(ctx) {
@@ -593,7 +614,7 @@ class ImmuneCell extends Entity {
         ctx.font = "10px sans-serif";
         ctx.textAlign = "center";
         if (this.radius > 10) {
-            ctx.fillText(`Lv.${this.level} ${this.name}`, this.pos.x, this.pos.y + this.radius + 12);
+            ctx.fillText(this.name, this.pos.x, this.pos.y + this.radius + 12);
         }
     }
 }
@@ -634,7 +655,6 @@ class Enemy extends Entity {
             return;
         }
 
-        // 分離力 (Separation)
         let separation = new Vec2(0, 0);
         let count = 0;
         let desiredSeparation = this.radius * 2.5;
@@ -774,7 +794,7 @@ class Nutrient extends Entity {
     behavior(cells, enemies, w, h) {
         let targets = this.isGood ? cells : enemies;
         let closest = null;
-        let minDist = 300; 
+        let minDist = 1000; 
 
         targets.forEach(t => {
             let toTarget = t.pos.copy().sub(this.pos);
@@ -783,9 +803,17 @@ class Nutrient extends Entity {
         });
 
         if (closest) {
+            let magnetRange = closest.radius * 16;
+            
             let dir = closest.pos.copy().sub(this.pos);
-            dir.normalize().mult(0.25); 
-            this.applyForce(dir);
+            dir.normalize();
+            
+            if (minDist < magnetRange) {
+                let pullStrength = 1.5 * (magnetRange / minDist); 
+                this.applyForce(dir.mult(pullStrength * 0.1));
+            } else {
+                this.applyForce(dir.mult(0.25)); 
+            }
         }
     }
 }
@@ -822,7 +850,7 @@ class UIManager {
     
     refillList() {
         this.listEl.innerHTML = '';
-        for(let i=0; i<12; i++) {
+        for(let i=0; i<24; i++) {
             this.addRandomFood();
         }
     }
@@ -961,7 +989,6 @@ class Game {
         this.cells.push(new ImmuneCell(this.width/2 - 40, this.height/2, 'B-CELL'));
         this.cells.push(new ImmuneCell(this.width/2 + 40, this.height/2, 'T-CELL'));
         
-        // --- 修正：初期敵数を8体に増強 ---
         for(let i=0; i<8; i++) { this.spawnEnemy(); }
 
         this.loop();
@@ -984,9 +1011,41 @@ class Game {
         AudioSys.playSpawn();
         const MAX_NUTRIENTS = 30;
         
+        let speed = 3.0 + Math.random() * 2.0;
+
         for(let i=0; i<4; i++) {
-            let n = new Nutrient(this.width, Math.random() * this.height, food);
-            n.vel = new Vec2(-0.8 - Math.random()*1, Math.random() * 1 - 0.5); 
+            let side = Math.floor(Math.random() * 4);
+            let x, y, vx, vy;
+
+            switch(side) {
+                case 0: // 上から
+                    x = Math.random() * this.width;
+                    y = -20;
+                    vx = (Math.random() - 0.5) * 2;
+                    vy = speed;
+                    break;
+                case 1: // 右から
+                    x = this.width + 20;
+                    y = Math.random() * this.height;
+                    vx = -speed;
+                    vy = (Math.random() - 0.5) * 2;
+                    break;
+                case 2: // 下から
+                    x = Math.random() * this.width;
+                    y = this.height + 20;
+                    vx = (Math.random() - 0.5) * 2;
+                    vy = -speed;
+                    break;
+                case 3: // 左から
+                    x = -20;
+                    y = Math.random() * this.height;
+                    vx = speed;
+                    vy = (Math.random() - 0.5) * 2;
+                    break;
+            }
+
+            let n = new Nutrient(x, y, food);
+            n.vel = new Vec2(vx, vy);
             this.nutrients.push(n);
         }
         
@@ -1031,7 +1090,8 @@ class Game {
         if(!this.isPlaying) return;
 
         this.cells.forEach(c => {
-            c.behavior(this.enemies, this.width, this.height);
+            // --- 修正：引数にcellsを追加（分離ロジック用） ---
+            c.behavior(this.cells, this.enemies, this.width, this.height);
             c.update(this.width, this.height);
         });
 
@@ -1046,7 +1106,6 @@ class Game {
                 if(dist < c.radius + e.radius) {
                     
                     if(c.type === 'MACROPHAGE') {
-                        // マクロファージの消化
                         let damage = e.power;
                         let recovery = e.power * 0.5;
                         c.hp = c.hp - damage + recovery;
@@ -1057,7 +1116,6 @@ class Game {
                         this.createParticles(c.pos.x, c.pos.y, "#00ff00", 5);
 
                     } else {
-                        // B/T細胞はダメージ
                         c.hp -= (e.power * 0.5); 
                         if(c.hp <= 5) { 
                             c.dead = true;
@@ -1096,7 +1154,8 @@ class Game {
                 if(!n.dead && n.isGood && c.pos.dist(n.pos) < c.radius + n.radius + 15) {
                     n.dead = true;
                     AudioSys.playPowerUp(false);
-                    c.absorb(5); 
+                    // --- 修正：栄養摂取時の効果倍増 (5 -> 10) ---
+                    c.absorb(10); 
                 }
             });
             this.enemies.forEach(e => {
@@ -1116,8 +1175,7 @@ class Game {
         this.particles = this.particles.filter(p => !p.dead);
         this.cells = this.cells.filter(c => !c.dead);
 
-        // --- 修正：クリア条件のバグ修正 ---
-        if(this.enemies.length === 0) this.gameOver(true); // 敵全滅＝クリア
+        if(this.enemies.length === 0) this.gameOver(true); 
         if(this.cells.length === 0) this.gameOver(false);
         if(this.enemies.length > 150) this.gameOver(false); 
         
