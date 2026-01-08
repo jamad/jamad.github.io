@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Immune Wars: Formation</title>
+    <title>Immune Wars: Full Course</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap');
 
@@ -258,12 +258,12 @@
         <div id="overlay">
             <div class="title">IMMUNE WARS</div>
             <div class="subtitle">
-                <span class="instruction">【陣形制御アップデート】</span><br>
-                1. <b>密集回避</b>：免疫細胞も互いに距離を取り、重ならずに行動します。<br>
-                2. <b>軍団形成</b>：数が増えると綺麗な包囲網を形成しやすくなります。<br>
-                3. <b>増殖＆強化</b>：栄養を取って即分裂し、圧倒的物量で制圧せよ。<br>
+                <span class="instruction">【食品データベース倍増】</span><br>
+                1. <b>メニュー拡張</b>：合計80種類以上の食品が登場します。<br>
+                2. <b>バランス維持</b>：良い食品と悪い食品の比率は半々です。<br>
+                3. <b>免疫増殖</b>：栄養補給で免疫軍団を育て、敵を殲滅してください。<br>
                 <br>
-                美しく、そして強力な免疫軍団を指揮してください。
+                適切な食事選択が、勝利への鍵です。
             </div>
             <button class="start-btn" id="startBtn">START MISSION</button>
         </div>
@@ -362,7 +362,7 @@ const COLORS = {
 };
 
 const FOOD_DB = [
-    // --- Good Foods ---
+    // --- Good Foods (Original + New) ---
     { id: 'broccoli', name: 'ブロッコリー', icon: '🥦', type: 'good' },
     { id: 'salmon', name: 'サーモン', icon: '🐟', type: 'good' },
     { id: 'yogurt', name: 'ヨーグルト', icon: '🥛', type: 'good' },
@@ -383,8 +383,31 @@ const FOOD_DB = [
     { id: 'melon', name: 'メロン', icon: '🍈', type: 'good' },
     { id: 'honey', name: 'ハチミツ', icon: '🍯', type: 'good' },
     { id: 'chicken', name: 'チキン', icon: '🍗', type: 'good' },
+    // New Good
+    { id: 'banana', name: 'バナナ', icon: '🍌', type: 'good' },
+    { id: 'orange', name: 'オレンジ', icon: '🍊', type: 'good' },
+    { id: 'strawberry', name: 'イチゴ', icon: '🍓', type: 'good' },
+    { id: 'kiwi', name: 'キウイ', icon: '🥝', type: 'good' },
+    { id: 'peach', name: 'モモ', icon: '🍑', type: 'good' },
+    { id: 'onion', name: 'タマネギ', icon: '🧅', type: 'good' },
+    { id: 'corn', name: 'トウモロコシ', icon: '🌽', type: 'good' },
+    { id: 'potato', name: 'ジャガイモ', icon: '🥔', type: 'good' },
+    { id: 'sweetpotato', name: 'サツマイモ', icon: '🍠', type: 'good' },
+    { id: 'avocado', name: 'アボカド', icon: '🥑', type: 'good' },
+    { id: 'beef', name: '牛肉', icon: '🥩', type: 'good' },
+    { id: 'shrimp', name: 'エビ', icon: '🦐', type: 'good' },
+    { id: 'octopus', name: 'タコ', icon: '🐙', type: 'good' },
+    { id: 'squid', name: 'イカ', icon: '🦑', type: 'good' },
+    { id: 'beans', name: '豆類', icon: '🫘', type: 'good' },
+    { id: 'nuts', name: 'ナッツ', icon: '🥜', type: 'good' },
+    { id: 'salad', name: 'サラダ', icon: '🥗', type: 'good' },
+    { id: 'soup', name: 'スープ', icon: '🥣', type: 'good' },
+    { id: 'pineapple', name: 'パイン', icon: '🍍', type: 'good' },
+    { id: 'cherry', name: 'サクランボ', icon: '🍒', type: 'good' },
+    { id: 'watermelon', name: 'スイカ', icon: '🍉', type: 'good' },
+    { id: 'cucumber', name: 'キュウリ', icon: '🥒', type: 'good' },
     
-    // --- Bad Foods ---
+    // --- Bad Foods (Original + New) ---
     { id: 'fries', name: 'ポテト', icon: '🍟', type: 'bad' },
     { id: 'donut', name: 'ドーナツ', icon: '🍩', type: 'bad' },
     { id: 'pizza', name: 'ピザ', icon: '🍕', type: 'bad' },
@@ -404,7 +427,30 @@ const FOOD_DB = [
     { id: 'pudding', name: 'プリン', icon: '🍮', type: 'bad' },
     { id: 'croissant', name: 'パン', icon: '🥐', type: 'bad' },
     { id: 'taco', name: 'タコス', icon: '🌮', type: 'bad' },
-    { id: 'sandwich', name: 'サンド', icon: '🥪', type: 'bad' }
+    { id: 'sandwich', name: 'サンド', icon: '🥪', type: 'bad' },
+    // New Bad
+    { id: 'ramen', name: 'ラーメン', icon: '🍜', type: 'bad' },
+    { id: 'spaghetti', name: 'パスタ', icon: '🍝', type: 'bad' },
+    { id: 'pancake', name: 'パンケーキ', icon: '🥞', type: 'bad' },
+    { id: 'waffle', name: 'ワッフル', icon: '🧇', type: 'bad' },
+    { id: 'bagel', name: 'ベーグル', icon: '🥯', type: 'bad' },
+    { id: 'pretzel', name: 'プレッツェル', icon: '🥨', type: 'bad' },
+    { id: 'butter', name: 'バター', icon: '🧈', type: 'bad' },
+    { id: 'cupcake', name: 'カップケーキ', icon: '🧁', type: 'bad' },
+    { id: 'pie', name: 'パイ', icon: '🥧', type: 'bad' },
+    { id: 'dango', name: '団子', icon: '🍡', type: 'bad' },
+    { id: 'sake', name: '日本酒', icon: '🍶', type: 'bad' },
+    { id: 'whiskey', name: 'ウイスキー', icon: '🥃', type: 'bad' },
+    { id: 'cocktail', name: 'カクテル', icon: '🍸', type: 'bad' },
+    { id: 'boba', name: 'タピオカ', icon: '🧋', type: 'bad' },
+    { id: 'canned', name: '缶詰', icon: '🥫', type: 'bad' },
+    { id: 'salt', name: '塩分過多', icon: '🧂', type: 'bad' },
+    { id: 'dumpling', name: '餃子', icon: '🥟', type: 'bad' },
+    { id: 'friedshrimp', name: 'エビフライ', icon: '🍤', type: 'bad' },
+    { id: 'skewer', name: '串カツ', icon: '🍢', type: 'bad' },
+    { id: 'mooncake', name: '月餅', icon: '🥮', type: 'bad' },
+    { id: 'bread', name: '食パン', icon: '🍞', type: 'bad' },
+    { id: 'baguette', name: 'フランスパン', icon: '🥖', type: 'bad' }
 ];
 
 class Vec2 {
@@ -485,6 +531,8 @@ class ImmuneCell extends Entity {
         this.type = type; 
         this.name = type === 'MACROPHAGE' ? 'マクロファージ' : (type === 'B-CELL' ? 'Ｂ細胞' : 'Ｔ細胞');
         this.shootCooldown = 0;
+        this.xp = 0;
+        this.level = 1;
         
         if (type === 'MACROPHAGE') {
             this.hp = 30; // 巨大
@@ -507,7 +555,7 @@ class ImmuneCell extends Entity {
     }
 
     behavior(cells, enemies, w, h) {
-        // --- 修正：味方同士の分離 (Separation) ---
+        // --- 味方同士の分離 (Separation) ---
         let separation = new Vec2(0, 0);
         let count = 0;
         let desiredSeparation = this.radius * 2.5;
@@ -527,7 +575,7 @@ class ImmuneCell extends Entity {
         if (count > 0) {
             separation.mult(1 / count);
             separation.normalize();
-            separation.mult(0.5); // 分離力
+            separation.mult(0.5); 
             this.applyForce(separation);
         }
 
@@ -1090,7 +1138,6 @@ class Game {
         if(!this.isPlaying) return;
 
         this.cells.forEach(c => {
-            // --- 修正：引数にcellsを追加（分離ロジック用） ---
             c.behavior(this.cells, this.enemies, this.width, this.height);
             c.update(this.width, this.height);
         });
@@ -1154,7 +1201,6 @@ class Game {
                 if(!n.dead && n.isGood && c.pos.dist(n.pos) < c.radius + n.radius + 15) {
                     n.dead = true;
                     AudioSys.playPowerUp(false);
-                    // --- 修正：栄養摂取時の効果倍増 (5 -> 10) ---
                     c.absorb(10); 
                 }
             });
