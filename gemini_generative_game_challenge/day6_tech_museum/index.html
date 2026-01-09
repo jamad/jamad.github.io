@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tech Museum Prototype v10</title>
+    <title>Tech Museum Prototype Final</title>
     <style>
         body {
             margin: 0;
@@ -280,7 +280,7 @@
     </div>
 
     <div id="start-screen">
-        <h1>Tech Museum v10</h1>
+        <h1>Tech Museum Final</h1>
         <p class="blink">- CLICK TO START -</p>
         <div style="margin-top:30px; text-align:center; color:#888; font-size:12px;">
             [W/S] Move Fwd/Back<br>
@@ -710,11 +710,15 @@
         const closeCamDist = 0.1; 
         const closeCamHeight = 2.1; 
 
-        // カメラ状態（スムーズな移動用）
+        // カメラ補間用ステート
         const camState = {
             dist: 7.0,
             height: 5.0
         };
+
+        // 修正: 注視点の補間用（ヌルっとした視点移動を実現）
+        // 初期値はプレイヤーの頭
+        const currentLookAt = new THREE.Vector3(0, 1.6, 0);
 
         function animate() {
             requestAnimationFrame(animate);
@@ -763,39 +767,31 @@
                 stepTimer = 0;
             }
 
-            // Camera Smoothing Logic
+            // Camera Smoothing
             const targetDist = isMoving ? defaultCamDist : closeCamDist;
             const targetHeight = isMoving ? defaultCamHeight : closeCamHeight;
             
-            // 距離と高さを毎フレーム少しずつ目標に近づける（ガタつき・急発進の防止）
             const smoothFactor = 0.05;
             camState.dist += (targetDist - camState.dist) * smoothFactor;
             camState.height += (targetHeight - camState.height) * smoothFactor;
 
-            // 計算されたスムーズなパラメータを使ってカメラの理想位置を決定
             const rot = player.rotation.y;
             const idealX = player.position.x - Math.sin(rot) * camState.dist;
             const idealZ = player.position.z - Math.cos(rot) * camState.dist;
             const idealY = player.position.y + camState.height;
 
             const targetPos = new THREE.Vector3(idealX, idealY, idealZ);
-            
-            // 物理的なカメラ移動も補間する
             camera.position.lerp(targetPos, 0.2);
 
-
-            // 状態判定
+            // 状態チェック
             const distToPlayer = camera.position.distanceTo(player.position);
             
-            // プレイヤー不可視化
             if (!isMoving && distToPlayer < 0.8) {
                 player.visible = false;
             } else {
                 player.visible = true;
             }
 
-            // FPS Mode判定 (Look Around有効化)
-            // 最終目標（頭上）に近いか判定
             const goalX = player.position.x - Math.sin(rot) * closeCamDist;
             const goalZ = player.position.z - Math.cos(rot) * closeCamDist;
             const goalY = player.position.y + closeCamHeight;
@@ -805,26 +801,11 @@
                 lookState.enabled = true;
             }
 
-            // LookAt ブレンド (TPS視点 <-> FPS視点)
-            const blendStart = 7.0; 
-            const blendEnd = 0.5;
-
-            let t = 0;
-            if (distToPlayer <= blendEnd) {
-                t = 1.0;
-            } else {
-                t = 1.0 - (distToPlayer - blendEnd) / (blendStart - blendEnd);
-                t = Math.max(0, Math.min(1, t));
-            }
-
-            const tpsLookTarget = player.position.clone().add(new THREE.Vector3(0, 1.6, 0));
-            const forwardDir = new THREE.Vector3(Math.sin(rot), 0, Math.cos(rot));
-            const fpsBaseTarget = player.position.clone().add(new THREE.Vector3(0, 2.1, 0)).add(forwardDir.multiplyScalar(10));
-
-            const currentLookBase = new THREE.Vector3().lerpVectors(tpsLookTarget, fpsBaseTarget, t);
+            // LookAt Target Calculation
+            let idealLookTarget = new THREE.Vector3();
 
             if (lookState.enabled) {
-                // FPSモード：マウス操作反映
+                // FPSモード(Manual)
                 const totalYaw = rot + lookState.yaw; 
                 const totalPitch = lookState.pitch;
                 const lookDir = new THREE.Vector3(
@@ -832,12 +813,30 @@
                     Math.sin(totalPitch),
                     Math.cos(totalYaw) * Math.cos(totalPitch)
                 );
-                const freeLookTarget = camera.position.clone().add(lookDir);
-                camera.lookAt(freeLookTarget);
+                idealLookTarget.copy(camera.position).add(lookDir);
             } else {
-                // 移動中または移行中
-                camera.lookAt(currentLookBase);
+                // TPS/Transition Mode (Auto)
+                const blendStart = 7.0; 
+                const blendEnd = 0.5;
+                let t = 0;
+                if (distToPlayer <= blendEnd) {
+                    t = 1.0;
+                } else {
+                    t = 1.0 - (distToPlayer - blendEnd) / (blendStart - blendEnd);
+                    t = Math.max(0, Math.min(1, t));
+                }
+
+                const tpsLookTarget = player.position.clone().add(new THREE.Vector3(0, 1.6, 0));
+                const forwardDir = new THREE.Vector3(Math.sin(rot), 0, Math.cos(rot));
+                const fpsBaseTarget = player.position.clone().add(new THREE.Vector3(0, 2.1, 0)).add(forwardDir.multiplyScalar(10));
+                
+                idealLookTarget.lerpVectors(tpsLookTarget, fpsBaseTarget, t);
             }
+
+            // 修正ポイント: 実際のLookAtターゲットもLerpさせる
+            // これによりロジック切り替え時の「飛び」を吸収する
+            currentLookAt.lerp(idealLookTarget, 0.2); // 追従速度0.2
+            camera.lookAt(currentLookAt);
 
             updateInteraction();
 
@@ -890,7 +889,6 @@
 
         const startScreen = document.getElementById('start-screen');
         startScreen.addEventListener('click', () => {
-            // エラーハンドリングを追加
             try {
                 startScreen.style.display = 'none';
                 initAudio();
@@ -899,7 +897,6 @@
                 animate();
             } catch (e) {
                 console.error("Game start failed:", e);
-                // フォールバック: 再度表示するなど
             }
         });
 
