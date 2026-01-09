@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tech Museum Prototype v8</title>
+    <title>Tech Museum Prototype v10</title>
     <style>
         body {
             margin: 0;
@@ -280,7 +280,7 @@
     </div>
 
     <div id="start-screen">
-        <h1>Tech Museum v8</h1>
+        <h1>Tech Museum v10</h1>
         <p class="blink">- CLICK TO START -</p>
         <div style="margin-top:30px; text-align:center; color:#888; font-size:12px;">
             [W/S] Move Fwd/Back<br>
@@ -306,43 +306,53 @@
         let audioContext;
 
         function initAudio() {
-            if (!audioContext) audioContext = new AudioCtx();
-            if (audioContext.state === 'suspended') audioContext.resume();
+            try {
+                if (AudioCtx) {
+                    if (!audioContext) audioContext = new AudioCtx();
+                    if (audioContext.state === 'suspended') audioContext.resume();
+                }
+            } catch (e) {
+                console.warn("Audio init failed", e);
+            }
         }
 
         const playSound = (type) => {
             if (!audioContext || state.inExhibit) return;
 
-            const osc = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            osc.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            const now = audioContext.currentTime;
+            try {
+                const osc = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                const now = audioContext.currentTime;
 
-            if (type === 'step') {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(80, now);
-                osc.frequency.exponentialRampToValueAtTime(10, now + 0.05);
-                gainNode.gain.setValueAtTime(0.03, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                osc.start(now);
-                osc.stop(now + 0.05);
-            } else if (type === 'hover') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1000, now);
-                osc.frequency.exponentialRampToValueAtTime(1500, now + 0.1);
-                gainNode.gain.setValueAtTime(0.05, now);
-                gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
-                osc.start(now);
-                osc.stop(now + 0.1);
-            } else if (type === 'select') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(440, now);
-                osc.frequency.linearRampToValueAtTime(880, now + 0.2);
-                gainNode.gain.setValueAtTime(0.1, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
+                if (type === 'step') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(80, now);
+                    osc.frequency.exponentialRampToValueAtTime(10, now + 0.05);
+                    gainNode.gain.setValueAtTime(0.03, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'hover') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(1000, now);
+                    osc.frequency.exponentialRampToValueAtTime(1500, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.05, now);
+                    gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'select') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.linearRampToValueAtTime(880, now + 0.2);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch (e) {
+                // Ignore audio errors
             }
         };
 
@@ -697,10 +707,14 @@
         // Camera Params
         const defaultCamDist = 7.0;
         const defaultCamHeight = 5.0;
-        
-        // Target: Player Top 1.9 + 0.2 = 2.1
         const closeCamDist = 0.1; 
         const closeCamHeight = 2.1; 
+
+        // カメラ状態（スムーズな移動用）
+        const camState = {
+            dist: 7.0,
+            height: 5.0
+        };
 
         function animate() {
             requestAnimationFrame(animate);
@@ -727,7 +741,7 @@
                 lookState.yaw *= 0.8;
                 lookState.pitch *= 0.8;
                 lookState.enabled = false;
-                player.visible = true; // 動いたら表示
+                player.visible = true; 
             }
 
             // Apply Physics
@@ -749,55 +763,60 @@
                 stepTimer = 0;
             }
 
-            // Camera Pos Calculation
+            // Camera Smoothing Logic
             const targetDist = isMoving ? defaultCamDist : closeCamDist;
             const targetHeight = isMoving ? defaultCamHeight : closeCamHeight;
-            const lerpFactor = isMoving ? 0.2 : 0.05;
+            
+            // 距離と高さを毎フレーム少しずつ目標に近づける（ガタつき・急発進の防止）
+            const smoothFactor = 0.05;
+            camState.dist += (targetDist - camState.dist) * smoothFactor;
+            camState.height += (targetHeight - camState.height) * smoothFactor;
 
+            // 計算されたスムーズなパラメータを使ってカメラの理想位置を決定
             const rot = player.rotation.y;
-            const idealX = player.position.x - Math.sin(rot) * targetDist;
-            const idealZ = player.position.z - Math.cos(rot) * targetDist;
-            const idealY = player.position.y + targetHeight;
+            const idealX = player.position.x - Math.sin(rot) * camState.dist;
+            const idealZ = player.position.z - Math.cos(rot) * camState.dist;
+            const idealY = player.position.y + camState.height;
 
             const targetPos = new THREE.Vector3(idealX, idealY, idealZ);
-            camera.position.lerp(targetPos, lerpFactor);
+            
+            // 物理的なカメラ移動も補間する
+            camera.position.lerp(targetPos, 0.2);
 
-            // Distance Check for Logic
+
+            // 状態判定
             const distToPlayer = camera.position.distanceTo(player.position);
             
-            // 修正: FPSモード有効化判定は「目標位置(targetPos)」との距離で行う
-            // （player.positionとの距離だと高さ分があるので0.15以下にならない）
-            const distToTarget = camera.position.distanceTo(targetPos);
-
-            // プレイヤー不可視化 (クリッピング対策)
-            // ここはdistToPlayerでOK（物理的な距離）
+            // プレイヤー不可視化
             if (!isMoving && distToPlayer < 0.8) {
                 player.visible = false;
             } else {
                 player.visible = true;
             }
 
-            // FPS Mode Enable判定
-            if (!isMoving && distToTarget < 0.15) {
+            // FPS Mode判定 (Look Around有効化)
+            // 最終目標（頭上）に近いか判定
+            const goalX = player.position.x - Math.sin(rot) * closeCamDist;
+            const goalZ = player.position.z - Math.cos(rot) * closeCamDist;
+            const goalY = player.position.y + closeCamHeight;
+            const distToGoal = camera.position.distanceTo(new THREE.Vector3(goalX, goalY, goalZ));
+
+            if (!isMoving && distToGoal < 0.2) {
                 lookState.enabled = true;
             }
 
-            // ブレンド計算用距離: TPS(7.0) -> FPS(0.0)
-            // ここも目標地点までの距離を使うのが自然
-            // distToTarget は TPS時=7.0, FPS時=0.0 になる
-            
+            // LookAt ブレンド (TPS視点 <-> FPS視点)
             const blendStart = 7.0; 
-            const blendEnd = 0.5; // 水平化完了距離
+            const blendEnd = 0.5;
 
             let t = 0;
-            if (distToTarget <= blendEnd) {
+            if (distToPlayer <= blendEnd) {
                 t = 1.0;
             } else {
-                t = 1.0 - (distToTarget - blendEnd) / (blendStart - blendEnd);
+                t = 1.0 - (distToPlayer - blendEnd) / (blendStart - blendEnd);
                 t = Math.max(0, Math.min(1, t));
             }
 
-            // POI (LookAt) Logic
             const tpsLookTarget = player.position.clone().add(new THREE.Vector3(0, 1.6, 0));
             const forwardDir = new THREE.Vector3(Math.sin(rot), 0, Math.cos(rot));
             const fpsBaseTarget = player.position.clone().add(new THREE.Vector3(0, 2.1, 0)).add(forwardDir.multiplyScalar(10));
@@ -805,10 +824,9 @@
             const currentLookBase = new THREE.Vector3().lerpVectors(tpsLookTarget, fpsBaseTarget, t);
 
             if (lookState.enabled) {
-                // FPSモード：ブレンドした基準方向 + マウス操作
+                // FPSモード：マウス操作反映
                 const totalYaw = rot + lookState.yaw; 
                 const totalPitch = lookState.pitch;
-                
                 const lookDir = new THREE.Vector3(
                     Math.sin(totalYaw) * Math.cos(totalPitch),
                     Math.sin(totalPitch),
@@ -817,11 +835,10 @@
                 const freeLookTarget = camera.position.clone().add(lookDir);
                 camera.lookAt(freeLookTarget);
             } else {
-                // 接近中：計算されたブレンドターゲットを見る
+                // 移動中または移行中
                 camera.lookAt(currentLookBase);
             }
 
-            // Interaction & Animation
             updateInteraction();
 
             interactables.forEach(i => {
@@ -833,7 +850,6 @@
             renderer.render(scene, camera);
         }
 
-        // UIを展示物位置に固定
         function updateInteraction() {
             const threshold = 3.0;
             let found = null;
@@ -846,13 +862,9 @@
 
             if (found) {
                 activeTarget = found;
-
-                // 展示物の位置（ホログラムの上あたり）を基準にする
                 const labelPos = found.pos.clone().add(new THREE.Vector3(0, 2.2, 0));
-                
                 labelPos.project(camera);
                 
-                // 画面外（背面）チェック
                 if (labelPos.z > 1) {
                      bubble.style.display = 'none';
                      return;
@@ -878,11 +890,17 @@
 
         const startScreen = document.getElementById('start-screen');
         startScreen.addEventListener('click', () => {
-            initAudio();
-            startScreen.style.display = 'none';
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1);
-            if (isMobile) document.getElementById('mobile-controls').style.display = 'block';
-            animate();
+            // エラーハンドリングを追加
+            try {
+                startScreen.style.display = 'none';
+                initAudio();
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1);
+                if (isMobile) document.getElementById('mobile-controls').style.display = 'block';
+                animate();
+            } catch (e) {
+                console.error("Game start failed:", e);
+                // フォールバック: 再度表示するなど
+            }
         });
 
         window.addEventListener('resize', () => {
