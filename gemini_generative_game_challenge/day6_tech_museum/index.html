@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tech Museum Prototype v3</title>
+    <title>Tech Museum Prototype v8</title>
     <style>
         body {
             margin: 0;
@@ -20,6 +20,11 @@
             width: 100vw;
             height: 100vh;
             display: block;
+            cursor: grab;
+        }
+        
+        #canvas-container:active {
+            cursor: grabbing;
         }
 
         /* UI Layer */
@@ -47,7 +52,7 @@
             white-space: nowrap;
             box-shadow: 0 4px 15px rgba(0, 255, 204, 0.4);
             transform: translate(-50%, -100%);
-            transition: opacity 0.2s;
+            transition: opacity 0.1s;
             z-index: 10;
         }
 
@@ -275,7 +280,7 @@
     </div>
 
     <div id="start-screen">
-        <h1>Tech Museum v3</h1>
+        <h1>Tech Museum v8</h1>
         <p class="blink">- CLICK TO START -</p>
         <div style="margin-top:30px; text-align:center; color:#888; font-size:12px;">
             [W/S] Move Fwd/Back<br>
@@ -378,7 +383,7 @@
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // Player Construction (Corrected Joint Pivot)
+        // Player Construction
         const player = new THREE.Group();
         scene.add(player);
 
@@ -407,7 +412,6 @@
         player.add(visor);
 
         // 4. Limbs
-        // Legs
         const legGeo = new THREE.BoxGeometry(0.15, 0.6, 0.15);
         const legL = new THREE.Mesh(legGeo, bodyMat);
         legL.position.set(-0.15, 0.3, 0);
@@ -419,41 +423,30 @@
         legR.castShadow = true;
         player.add(legR);
 
-        /**
-         * 修正1: 腕の接続（ピボット）修正
-         * BoxGeometryは中心が原点(0,0,0)のため、そのままだと中心から回転してしまう。
-         * .translate(0, -0.3, 0) を使って、ジオメトリの原点を「箱の上部」に移動させる。
-         */
+        // Arms
         const armGeo = new THREE.BoxGeometry(0.15, 0.6, 0.15);
-        armGeo.translate(0, -0.3, 0); // 腕の長さ0.6の半分(0.3)下げて、原点を上端にする
+        armGeo.translate(0, -0.3, 0);
 
-        // 肩の位置計算: 
-        // Body幅 0.5 -> 半分 0.25
-        // 腕幅 0.15 -> 半分 0.075
-        // 中心から 0.25 + 0.075 = 0.325 の位置だと接するが、少し埋め込むため 0.32 とする
-        const shoulderY = 1.35; // Body(Center 1.0, Height 0.8 => Top 1.4)の少し下
+        const shoulderY = 1.35; 
         const shoulderX = 0.32; 
 
         // Left Arm
         const shoulderL = new THREE.Group();
         shoulderL.position.set(-shoulderX, shoulderY, 0);
         player.add(shoulderL);
-        
         const armL = new THREE.Mesh(armGeo, bodyMat);
-        // 原点をジオメトリ側でずらしたので、positionは(0,0,0)でOK
         armL.castShadow = true;
         shoulderL.add(armL);
-        shoulderL.rotation.z = 0.2; // 自然な広がり
+        shoulderL.rotation.z = 0.2;
 
         // Right Arm
         const shoulderR = new THREE.Group();
         shoulderR.position.set(shoulderX, shoulderY, 0);
         player.add(shoulderR);
-
         const armR = new THREE.Mesh(armGeo, bodyMat);
         armR.castShadow = true;
         shoulderR.add(armR);
-        shoulderR.rotation.z = -0.2; // 自然な広がり
+        shoulderR.rotation.z = -0.2;
 
 
         // Exhibits
@@ -503,12 +496,10 @@
 
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-
             if (state.inExhibit && e.key === 'Escape') {
                 closeExhibit();
                 return;
             }
-
             if (state.inExhibit) return;
             
             if (key === 'w' || key === 'arrowup') keys.w = true;
@@ -530,7 +521,7 @@
             if (e.key === 'Enter') keys.Enter = false;
         });
 
-        // Mobile Joystick
+        // Joystick
         const joystickZone = document.getElementById('joystick-zone');
         const joystickKnob = document.getElementById('joystick-knob');
         let touchId = null;
@@ -538,6 +529,7 @@
 
         joystickZone.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             const t = e.changedTouches[0];
             touchId = t.identifier;
             const rect = joystickZone.getBoundingClientRect();
@@ -547,6 +539,7 @@
 
         joystickZone.addEventListener('touchmove', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             for (let i = 0; i < e.changedTouches.length; i++) {
                 if (e.changedTouches[i].identifier === touchId) {
                     updateJoystick(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
@@ -579,8 +572,77 @@
 
         document.getElementById('btn-action').addEventListener('touchstart', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             tryInteract();
         }, { passive: false });
+
+
+        /**
+         * LOOK AROUND LOGIC
+         */
+        const lookState = {
+            yaw: 0,
+            pitch: 0,
+            isDragging: false,
+            lastX: 0,
+            lastY: 0,
+            enabled: false
+        };
+
+        const canvasContainer = document.getElementById('canvas-container');
+
+        canvasContainer.addEventListener('mousedown', (e) => {
+            if (!lookState.enabled) return;
+            lookState.isDragging = true;
+            lookState.lastX = e.clientX;
+            lookState.lastY = e.clientY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!lookState.isDragging) return;
+            const sensitivity = 0.005;
+            const dx = e.clientX - lookState.lastX;
+            const dy = e.clientY - lookState.lastY;
+            
+            lookState.yaw -= dx * sensitivity;
+            lookState.pitch -= dy * sensitivity;
+            lookState.pitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, lookState.pitch));
+
+            lookState.lastX = e.clientX;
+            lookState.lastY = e.clientY;
+        });
+
+        window.addEventListener('mouseup', () => {
+            lookState.isDragging = false;
+        });
+
+        canvasContainer.addEventListener('touchstart', (e) => {
+            if (!lookState.enabled || e.target.id === 'joystick-zone' || e.target.id === 'btn-action') return;
+            const t = e.touches[0];
+            lookState.isDragging = true;
+            lookState.lastX = t.clientX;
+            lookState.lastY = t.clientY;
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchmove', (e) => {
+            if (!lookState.isDragging) return;
+            e.preventDefault();
+            const t = e.touches[0];
+            const sensitivity = 0.005;
+            const dx = t.clientX - lookState.lastX;
+            const dy = t.clientY - lookState.lastY;
+            
+            lookState.yaw -= dx * sensitivity;
+            lookState.pitch -= dy * sensitivity;
+            lookState.pitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, lookState.pitch));
+
+            lookState.lastX = t.clientX;
+            lookState.lastY = t.clientY;
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchend', () => {
+            lookState.isDragging = false;
+        });
 
 
         /**
@@ -636,9 +698,9 @@
         const defaultCamDist = 7.0;
         const defaultCamHeight = 5.0;
         
-        // プレイヤー視点（FPSライク）
+        // Target: Player Top 1.9 + 0.2 = 2.1
         const closeCamDist = 0.1; 
-        const closeCamHeight = 1.7; // 目の高さ
+        const closeCamHeight = 2.1; 
 
         function animate() {
             requestAnimationFrame(animate);
@@ -660,6 +722,14 @@
 
             const isMoving = (move !== 0 || turn !== 0);
 
+            // リセットロジック
+            if (isMoving) {
+                lookState.yaw *= 0.8;
+                lookState.pitch *= 0.8;
+                lookState.enabled = false;
+                player.visible = true; // 動いたら表示
+            }
+
             // Apply Physics
             if (isMoving) {
                 player.rotation.y += turn * rotSpeed;
@@ -668,7 +738,6 @@
                 player.position.x += dx;
                 player.position.z += dz;
 
-                // Step Sound
                 if (move !== 0) {
                     stepTimer++;
                     if (stepTimer > 20) {
@@ -680,17 +749,10 @@
                 stepTimer = 0;
             }
 
-            // Camera Update logic
-            // 修正2: 入力が無いときは即座に「近づく」モードに入る。
-            // WとA/Dでの距離感のズレをなくすため、移動中のLerp係数を高くして追従性を上げる。
-            
+            // Camera Pos Calculation
             const targetDist = isMoving ? defaultCamDist : closeCamDist;
             const targetHeight = isMoving ? defaultCamHeight : closeCamHeight;
-            
-            // 旋回時のショートカット現象（カメラが近づいて見える）を防ぐため、
-            // 移動中はLerp係数を大きく(0.2)して、カメラが遅れずにピッタリ付いていくようにする。
-            // 逆に静止時(近づく時)はゆっくり(0.01)で情緒を出す。
-            const lerpFactor = isMoving ? 0.2 : 0.01;
+            const lerpFactor = isMoving ? 0.2 : 0.05;
 
             const rot = player.rotation.y;
             const idealX = player.position.x - Math.sin(rot) * targetDist;
@@ -700,17 +762,64 @@
             const targetPos = new THREE.Vector3(idealX, idealY, idealZ);
             camera.position.lerp(targetPos, lerpFactor);
 
-            // LookAt
-            // 移動中はプレイヤーの背中〜少し上を見る。
-            // FPSモード(静止)に入った時は、カメラ位置が頭の中に入るので、前方を見るようにしたいが、
-            // 今回はシンプルに「プレイヤー位置の少し上」を見続けることで、
-            // カメラがプレイヤー位置(0距離)に重なると、自然と前を見るようになる（カメラが頭位置に来て、LookAtが前方にあるため）
-            const lookTarget = player.position.clone();
-            lookTarget.y += 1.6; // 目の高さ付近を見る
+            // Distance Check for Logic
+            const distToPlayer = camera.position.distanceTo(player.position);
             
-            // 補足: カメラ位置とLookAt位置が完全に一致するとバグる可能性があるが、
-            // targetDistが0.1(完全に0ではない)なので大丈夫。
-            camera.lookAt(lookTarget);
+            // 修正: FPSモード有効化判定は「目標位置(targetPos)」との距離で行う
+            // （player.positionとの距離だと高さ分があるので0.15以下にならない）
+            const distToTarget = camera.position.distanceTo(targetPos);
+
+            // プレイヤー不可視化 (クリッピング対策)
+            // ここはdistToPlayerでOK（物理的な距離）
+            if (!isMoving && distToPlayer < 0.8) {
+                player.visible = false;
+            } else {
+                player.visible = true;
+            }
+
+            // FPS Mode Enable判定
+            if (!isMoving && distToTarget < 0.15) {
+                lookState.enabled = true;
+            }
+
+            // ブレンド計算用距離: TPS(7.0) -> FPS(0.0)
+            // ここも目標地点までの距離を使うのが自然
+            // distToTarget は TPS時=7.0, FPS時=0.0 になる
+            
+            const blendStart = 7.0; 
+            const blendEnd = 0.5; // 水平化完了距離
+
+            let t = 0;
+            if (distToTarget <= blendEnd) {
+                t = 1.0;
+            } else {
+                t = 1.0 - (distToTarget - blendEnd) / (blendStart - blendEnd);
+                t = Math.max(0, Math.min(1, t));
+            }
+
+            // POI (LookAt) Logic
+            const tpsLookTarget = player.position.clone().add(new THREE.Vector3(0, 1.6, 0));
+            const forwardDir = new THREE.Vector3(Math.sin(rot), 0, Math.cos(rot));
+            const fpsBaseTarget = player.position.clone().add(new THREE.Vector3(0, 2.1, 0)).add(forwardDir.multiplyScalar(10));
+
+            const currentLookBase = new THREE.Vector3().lerpVectors(tpsLookTarget, fpsBaseTarget, t);
+
+            if (lookState.enabled) {
+                // FPSモード：ブレンドした基準方向 + マウス操作
+                const totalYaw = rot + lookState.yaw; 
+                const totalPitch = lookState.pitch;
+                
+                const lookDir = new THREE.Vector3(
+                    Math.sin(totalYaw) * Math.cos(totalPitch),
+                    Math.sin(totalPitch),
+                    Math.cos(totalYaw) * Math.cos(totalPitch)
+                );
+                const freeLookTarget = camera.position.clone().add(lookDir);
+                camera.lookAt(freeLookTarget);
+            } else {
+                // 接近中：計算されたブレンドターゲットを見る
+                camera.lookAt(currentLookBase);
+            }
 
             // Interaction & Animation
             updateInteraction();
@@ -724,6 +833,7 @@
             renderer.render(scene, camera);
         }
 
+        // UIを展示物位置に固定
         function updateInteraction() {
             const threshold = 3.0;
             let found = null;
@@ -737,23 +847,24 @@
             if (found) {
                 activeTarget = found;
 
-                const headPos = player.position.clone();
-                headPos.y += 2.5;
-
-                headPos.project(camera);
-                // 画面外判定
-                if (headPos.z > 1) {
+                // 展示物の位置（ホログラムの上あたり）を基準にする
+                const labelPos = found.pos.clone().add(new THREE.Vector3(0, 2.2, 0));
+                
+                labelPos.project(camera);
+                
+                // 画面外（背面）チェック
+                if (labelPos.z > 1) {
                      bubble.style.display = 'none';
                      return;
                 }
 
-                const x = (headPos.x * .5 + .5) * window.innerWidth;
-                const y = (-(headPos.y * .5) + .5) * window.innerHeight;
+                const x = (labelPos.x * .5 + .5) * window.innerWidth;
+                const y = (-(labelPos.y * .5) + .5) * window.innerHeight;
 
                 bubble.style.display = 'block';
                 bubble.style.left = `${x}px`;
                 bubble.style.top = `${y}px`;
-
+                
                 const text = found.type === 'help' ? 'ヘルプデスク' : '見る';
                 bubbleText.innerText = text;
 
