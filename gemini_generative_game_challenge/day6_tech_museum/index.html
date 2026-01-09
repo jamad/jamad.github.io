@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tech Museum Prototype</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050505;
+            font-family: 'Courier New', Courier, monospace;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        /* UI Layer */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Speech Bubble Popup */
+        #speech-bubble {
+            position: absolute;
+            background: rgba(0, 20, 40, 0.9);
+            border: 1px solid #00ffcc;
+            color: #00ffcc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+            /* クリックを透過 */
+            display: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.4);
+            transform: translate(-50%, -100%);
+            /* 中心下を基準に配置 */
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+
+        /* Bubble Tail */
+        #speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px 6px 0;
+            border-style: solid;
+            border-color: #00ffcc transparent transparent transparent;
+        }
+
+        .key-icon {
+            display: inline-block;
+            background: #fff;
+            color: #000;
+            border-radius: 4px;
+            padding: 0 4px;
+            margin-right: 6px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        /* Exhibit Overlay (Full Screen) */
+        #exhibit-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            z-index: 2000;
+            display: none;
+            /* Hidden by default */
+            flex-direction: column;
+            pointer-events: auto;
+        }
+
+        #exhibit-header {
+            height: 60px;
+            background: #000;
+            border-bottom: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        #exhibit-title {
+            color: #fff;
+            font-size: 20px;
+            letter-spacing: 2px;
+        }
+
+        #btn-exit {
+            background: transparent;
+            border: 1px solid #ff0055;
+            color: #ff0055;
+            padding: 8px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        #btn-exit:hover {
+            background: #ff0055;
+            color: #fff;
+        }
+
+        #exhibit-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Mock Visuals inside Exhibit */
+        .mock-visual {
+            width: 80%;
+            height: 80%;
+            border: 1px dashed #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #555;
+            font-size: 24px;
+            background: #0a0a0a;
+            position: relative;
+        }
+
+        .mock-anim-box {
+            width: 100px;
+            height: 100px;
+            background: #00ffcc;
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            color: #00ffcc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        h1 {
+            margin: 0 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        .blink {
+            animation: blinker 1.5s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Mobile Controls */
+        #mobile-controls {
+            display: none;
+            /* JS enables this */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        #joystick-zone {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            pointer-events: auto;
+        }
+
+        #joystick-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 255, 204, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #btn-action {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 0, 100, 0.2);
+            border: 2px solid #ff0055;
+            border-radius: 50%;
+            color: #ff0055;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            pointer-events: auto;
+        }
+    </style>
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+
+    <div id="canvas-container"></div>
+
+    <!-- UI Overlay -->
+    <div id="ui-layer">
+        <!-- Speech Bubble (Dynamically positioned) -->
+        <div id="speech-bubble">
+            <span class="key-icon">ENTER</span><span id="bubble-text">見る</span>
+        </div>
+    </div>
+
+    <!-- Exhibit Overlay (Simulates opening a new page) -->
+    <div id="exhibit-overlay">
+        <div id="exhibit-header">
+            <div id="exhibit-title">EXHIBIT TITLE</div>
+            <button id="btn-exit" onclick="closeExhibit()">EXIT MUSEUM MODE</button>
+        </div>
+        <div id="exhibit-content">
+            <!-- Mock Content -->
+            <div class="mock-visual">
+                <div class="mock-anim-box"></div>
+                <div style="position:absolute; bottom: 20px;">Interactive Content Placeholder</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div id="mobile-controls">
+        <div id="joystick-zone">
+            <div id="joystick-knob"></div>
+        </div>
+        <div id="btn-action">A</div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <h1>Tech Museum</h1>
+        <p class="blink">- CLICK TO START -</p>
+        <div style="margin-top:30px; text-align:center; color:#888; font-size:12px;">
+            [W/S] Move Fwd/Back<br>
+            [A/D] Rotate Left/Right<br>
+            [ENTER] Interact
+        </div>
+    </div>
+
+    <script>
+        /**
+         * GLOBAL STATE
+         */
+        const state = {
+            isPaused: false, // 展示を見ているときはTrue
+            inExhibit: false
+        };
+
+        /**
+         * SOUND MANAGER
+         */
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioContext;
+
+        function initAudio() {
+            if (!audioContext) audioContext = new AudioCtx();
+            if (audioContext.state === 'suspended') audioContext.resume();
+        }
+
+        const playSound = (type) => {
+            if (!audioContext || state.inExhibit) return; // 展示中はミュート（仮）
+
+            const osc = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            const now = audioContext.currentTime;
+
+            if (type === 'step') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(80, now);
+                osc.frequency.exponentialRampToValueAtTime(10, now + 0.05);
+                gainNode.gain.setValueAtTime(0.03, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'hover') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1000, now);
+                osc.frequency.exponentialRampToValueAtTime(1500, now + 0.1);
+                gainNode.gain.setValueAtTime(0.05, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'select') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.linearRampToValueAtTime(880, now + 0.2);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        };
+
+        /**
+         * THREE.JS SETUP
+         */
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050505);
+        scene.fog = new THREE.Fog(0x050505, 10, 60);
+
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // 初期位置
+        camera.position.set(0, 5, -10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0x404040, 2);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 30, 10);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        scene.add(dirLight);
+
+        // Environment
+        const gridHelper = new THREE.GridHelper(100, 50, 0x00ffcc, 0x222222);
+        scene.add(gridHelper);
+
+        const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(100, 100),
+            new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.8, metalness: 0.2 })
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Player Construction (Pictogram style)
+        const player = new THREE.Group();
+        scene.add(player);
+
+        // 1. Body
+        const bodyGeo = new THREE.BoxGeometry(0.5, 0.8, 0.3);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 1.0; // Legs are 0.6 height
+        body.castShadow = true;
+        player.add(body);
+
+        // 2. Head
+        const headGeo = new THREE.SphereGeometry(0.25, 16, 16);
+        const head = new THREE.Mesh(headGeo, bodyMat);
+        head.position.y = 1.65;
+        head.castShadow = true;
+        player.add(head);
+
+        // 3. Visor (to indicate forward direction Z+)
+        const visorGeo = new THREE.BoxGeometry(0.3, 0.1, 0.15);
+        const visorMat = new THREE.MeshStandardMaterial({ color: 0x00ffcc, emissive: 0x00ffcc, emissiveIntensity: 0.5 });
+        const visor = new THREE.Mesh(visorGeo, visorMat);
+        visor.position.set(0, 1.65, 0.18); // Slightly forward
+        visor.castShadow = true;
+        player.add(visor);
+
+        // 4. Limbs
+        const limbGeo = new THREE.BoxGeometry(0.15, 0.6, 0.15);
+
+        // Legs
+        const legL = new THREE.Mesh(limbGeo, bodyMat);
+        legL.position.set(-0.15, 0.3, 0);
+        legL.castShadow = true;
+        player.add(legL);
+
+        const legR = new THREE.Mesh(limbGeo, bodyMat);
+        legR.position.set(0.15, 0.3, 0);
+        legR.castShadow = true;
+        player.add(legR);
+
+        // Arms
+        const armL = new THREE.Mesh(limbGeo, bodyMat);
+        armL.position.set(-0.35, 1.1, 0);
+        armL.rotation.z = 0.2; // A-pose
+        armL.castShadow = true;
+        player.add(armL);
+
+        const armR = new THREE.Mesh(limbGeo, bodyMat);
+        armR.position.set(0.35, 1.1, 0);
+        armR.rotation.z = -0.2; // A-pose
+        armR.castShadow = true;
+        player.add(armR);
+
+
+        // Exhibits
+        const interactables = [];
+
+        function createExhibit(x, z, color, label, type = 'exhibit') {
+            // Base
+            const base = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 1, 1.5),
+                new THREE.MeshStandardMaterial({ color: 0x111111, emissive: color, emissiveIntensity: 0.2 })
+            );
+            base.position.set(x, 0.5, z);
+            base.castShadow = true;
+            scene.add(base);
+
+            // Holo
+            let holo;
+            if (type === 'exhibit') {
+                holo = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.8, 0.8, 0.8),
+                    new THREE.MeshBasicMaterial({ color: color, wireframe: true })
+                );
+                holo.position.set(0, 1.2, 0);
+                base.add(holo);
+            }
+
+            const data = {
+                mesh: base,
+                holo: holo,
+                type: type,
+                id: label,
+                color: color,
+                pos: new THREE.Vector3(x, 0, z)
+            };
+            interactables.push(data);
+        }
+
+        createExhibit(-8, 8, 0x00ffff, 'Shader Art 01');
+        createExhibit(8, 8, 0xff00ff, '3D Install 02');
+        createExhibit(0, 12, 0xffff00, 'WebGL Exp 03');
+
+        // Help Desk
+        createExhibit(0, -5, 0x00ff00, 'Help Desk', 'help');
+
+
+        /**
+         * INPUT & CONTROLS (Tank Controls)
+         */
+        const keys = { w: false, s: false, a: false, d: false, Enter: false };
+        const inputState = { move: 0, turn: 0 };
+
+        window.addEventListener('keydown', (e) => {
+            if (state.inExhibit) return;
+            const key = e.key.toLowerCase();
+            if (key === 'w' || key === 'arrowup') keys.w = true;
+            if (key === 's' || key === 'arrowdown') keys.s = true;
+            if (key === 'a' || key === 'arrowleft') keys.a = true;
+            if (key === 'd' || key === 'arrowright') keys.d = true;
+            if (e.key === 'Enter') {
+                keys.Enter = true;
+                tryInteract();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w' || key === 'arrowup') keys.w = false;
+            if (key === 's' || key === 'arrowdown') keys.s = false;
+            if (key === 'a' || key === 'arrowleft') keys.a = false;
+            if (key === 'd' || key === 'arrowright') keys.d = false;
+            if (e.key === 'Enter') keys.Enter = false;
+        });
+
+        // Mobile Joystick
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickKnob = document.getElementById('joystick-knob');
+        let touchId = null;
+        let joyCenter = { x: 0, y: 0 };
+
+        joystickZone.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const t = e.changedTouches[0];
+            touchId = t.identifier;
+            const rect = joystickZone.getBoundingClientRect();
+            joyCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            updateJoystick(t.clientX, t.clientY);
+        }, { passive: false });
+
+        joystickZone.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === touchId) {
+                    updateJoystick(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
+                }
+            }
+        }, { passive: false });
+
+        joystickZone.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            touchId = null;
+            inputState.move = 0;
+            inputState.turn = 0;
+            joystickKnob.style.transform = `translate(-50%, -50%)`;
+        });
+
+        function updateJoystick(cx, cy) {
+            const maxDist = 40;
+            let dx = cx - joyCenter.x;
+            let dy = cy - joyCenter.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > maxDist) {
+                const ang = Math.atan2(dy, dx);
+                dx = Math.cos(ang) * maxDist;
+                dy = Math.sin(ang) * maxDist;
+            }
+            joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+
+            inputState.move = -dy / maxDist; // Up is forward
+            inputState.turn = -dx / maxDist; // Left is positive turn
+        }
+
+        document.getElementById('btn-action').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            tryInteract();
+        }, { passive: false });
+
+
+        /**
+         * INTERACTION LOGIC
+         */
+        let activeTarget = null;
+        const bubble = document.getElementById('speech-bubble');
+        const bubbleText = document.getElementById('bubble-text');
+
+        function tryInteract() {
+            if (!activeTarget || state.inExhibit) return;
+            playSound('select');
+            openExhibit(activeTarget);
+        }
+
+        function openExhibit(target) {
+            state.inExhibit = true;
+            state.isPaused = true;
+
+            // Show Overlay
+            const overlay = document.getElementById('exhibit-overlay');
+            const title = document.getElementById('exhibit-title');
+            const animBox = document.querySelector('.mock-anim-box');
+
+            overlay.style.display = 'flex';
+            title.innerText = target.id;
+
+            if (target.type === 'help') {
+                animBox.style.backgroundColor = '#00ff00';
+                animBox.style.borderRadius = '50%';
+            } else {
+                animBox.style.backgroundColor = '#' + target.color.toString(16).padStart(6, '0');
+                animBox.style.borderRadius = '0';
+            }
+        }
+
+        window.closeExhibit = function () {
+            state.inExhibit = false;
+            state.isPaused = false;
+            document.getElementById('exhibit-overlay').style.display = 'none';
+            keys.w = keys.s = keys.a = keys.d = keys.Enter = false;
+            inputState.move = 0;
+            inputState.turn = 0;
+        };
+
+        /**
+         * GAME LOOP
+         */
+        const moveSpeed = 0.2;
+        const rotSpeed = 0.08;
+        let stepTimer = 0;
+
+        // Camera settings
+        const camOffsetHeight = 5.0; // Height above player
+        const camOffsetDist = 7.0;   // Distance behind player
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (state.isPaused) return;
+
+            // 1. Determine Input
+            let move = 0;
+            let turn = 0;
+
+            // Keyboard
+            if (keys.w) move += 1;
+            if (keys.s) move -= 1;
+            if (keys.a) turn += 1; // Left
+            if (keys.d) turn -= 1; // Right
+
+            if (touchId !== null) {
+                move = inputState.move;
+                turn = inputState.turn;
+            }
+
+            // 2. Apply Physics
+            if (move !== 0 || turn !== 0) {
+                player.rotation.y += turn * rotSpeed;
+
+                // Forward vector is Z+ based on current rotation
+                const dx = Math.sin(player.rotation.y) * move * moveSpeed;
+                const dz = Math.cos(player.rotation.y) * move * moveSpeed;
+
+                player.position.x += dx;
+                player.position.z += dz;
+
+                // Step Sound
+                if (move !== 0) {
+                    stepTimer++;
+                    if (stepTimer > 20) {
+                        playSound('step');
+                        stepTimer = 0;
+                    }
+                }
+            } else {
+                stepTimer = 0;
+            }
+
+            // 3. Camera Follow (TPS Logic)
+            // Calculate ideal position: Behind the player and slightly up
+            // "Behind" implies opposite to the facing direction.
+            // If Facing is (sin(rot), 0, cos(rot)), then Behind is (-sin(rot), 0, -cos(rot))
+
+            const rot = player.rotation.y;
+            const idealX = player.position.x - Math.sin(rot) * camOffsetDist;
+            const idealZ = player.position.z - Math.cos(rot) * camOffsetDist;
+            const idealY = player.position.y + camOffsetHeight;
+
+            const targetPos = new THREE.Vector3(idealX, idealY, idealZ);
+
+            // Smoothly interpolate current camera pos to target pos
+            camera.position.lerp(targetPos, 0.08);
+
+            // Make camera look slightly ahead of the player or at the player
+            const lookTarget = player.position.clone();
+            lookTarget.y += 1.0; // Look at head height
+            camera.lookAt(lookTarget);
+
+
+            // 4. Interaction
+            updateInteraction();
+
+            // 5. Animation
+            interactables.forEach(i => {
+                if (i.holo) {
+                    i.holo.rotation.y += 0.02;
+                    i.holo.rotation.x += 0.01;
+                }
+            });
+            renderer.render(scene, camera);
+        }
+
+        function updateInteraction() {
+            const threshold = 3.0;
+            let found = null;
+
+            interactables.forEach(target => {
+                if (player.position.distanceTo(target.pos) < threshold) {
+                    found = target;
+                }
+            });
+
+            if (found) {
+                activeTarget = found;
+
+                // Show bubble above player head
+                const headPos = player.position.clone();
+                headPos.y += 2.5;
+
+                headPos.project(camera);
+                const x = (headPos.x * .5 + .5) * window.innerWidth;
+                const y = (-(headPos.y * .5) + .5) * window.innerHeight;
+
+                bubble.style.display = 'block';
+                bubble.style.left = `${x}px`;
+                bubble.style.top = `${y}px`;
+
+                const text = found.type === 'help' ? 'ヘルプデスク' : '見る';
+                bubbleText.innerText = text;
+
+                if (activeTarget !== found) playSound('hover');
+
+            } else {
+                activeTarget = null;
+                bubble.style.display = 'none';
+            }
+        }
+
+        // Start Sequence
+        const startScreen = document.getElementById('start-screen');
+        startScreen.addEventListener('click', () => {
+            initAudio();
+            startScreen.style.display = 'none';
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1);
+            if (isMobile) document.getElementById('mobile-controls').style.display = 'block';
+            animate();
+        });
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>
