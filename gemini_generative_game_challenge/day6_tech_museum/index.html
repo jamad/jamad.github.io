@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tech Museum Prototype</title>
+    <title>Tech Museum Prototype v3</title>
     <style>
         body {
             margin: 0;
@@ -43,17 +43,14 @@
             font-size: 14px;
             font-weight: bold;
             pointer-events: none;
-            /* クリックを透過 */
             display: none;
             white-space: nowrap;
             box-shadow: 0 4px 15px rgba(0, 255, 204, 0.4);
             transform: translate(-50%, -100%);
-            /* 中心下を基準に配置 */
             transition: opacity 0.2s;
             z-index: 10;
         }
 
-        /* Bubble Tail */
         #speech-bubble::after {
             content: '';
             position: absolute;
@@ -86,7 +83,6 @@
             background: #111;
             z-index: 2000;
             display: none;
-            /* Hidden by default */
             flex-direction: column;
             pointer-events: auto;
         }
@@ -132,7 +128,6 @@
             overflow: hidden;
         }
 
-        /* Mock Visuals inside Exhibit */
         .mock-visual {
             width: 80%;
             height: 80%;
@@ -197,7 +192,6 @@
         /* Mobile Controls */
         #mobile-controls {
             display: none;
-            /* JS enables this */
             position: absolute;
             bottom: 0;
             left: 0;
@@ -254,22 +248,18 @@
 
     <div id="canvas-container"></div>
 
-    <!-- UI Overlay -->
     <div id="ui-layer">
-        <!-- Speech Bubble (Dynamically positioned) -->
         <div id="speech-bubble">
             <span class="key-icon">ENTER</span><span id="bubble-text">見る</span>
         </div>
     </div>
 
-    <!-- Exhibit Overlay (Simulates opening a new page) -->
     <div id="exhibit-overlay">
         <div id="exhibit-header">
             <div id="exhibit-title">EXHIBIT TITLE</div>
-            <button id="btn-exit" onclick="closeExhibit()">EXIT MUSEUM MODE</button>
+            <button id="btn-exit" onclick="closeExhibit()">EXIT [ESC]</button>
         </div>
         <div id="exhibit-content">
-            <!-- Mock Content -->
             <div class="mock-visual">
                 <div class="mock-anim-box"></div>
                 <div style="position:absolute; bottom: 20px;">Interactive Content Placeholder</div>
@@ -277,7 +267,6 @@
         </div>
     </div>
 
-    <!-- Mobile Controls -->
     <div id="mobile-controls">
         <div id="joystick-zone">
             <div id="joystick-knob"></div>
@@ -285,14 +274,14 @@
         <div id="btn-action">A</div>
     </div>
 
-    <!-- Start Screen -->
     <div id="start-screen">
-        <h1>Tech Museum</h1>
+        <h1>Tech Museum v3</h1>
         <p class="blink">- CLICK TO START -</p>
         <div style="margin-top:30px; text-align:center; color:#888; font-size:12px;">
             [W/S] Move Fwd/Back<br>
             [A/D] Rotate Left/Right<br>
-            [ENTER] Interact
+            [ENTER] Interact<br>
+            [ESC] Close Exhibit
         </div>
     </div>
 
@@ -301,7 +290,7 @@
          * GLOBAL STATE
          */
         const state = {
-            isPaused: false, // 展示を見ているときはTrue
+            isPaused: false,
             inExhibit: false
         };
 
@@ -317,7 +306,7 @@
         }
 
         const playSound = (type) => {
-            if (!audioContext || state.inExhibit) return; // 展示中はミュート（仮）
+            if (!audioContext || state.inExhibit) return;
 
             const osc = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -360,7 +349,6 @@
         scene.fog = new THREE.Fog(0x050505, 10, 60);
 
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // 初期位置
         camera.position.set(0, 5, -10);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -390,15 +378,16 @@
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // Player Construction (Pictogram style)
+        // Player Construction (Corrected Joint Pivot)
         const player = new THREE.Group();
         scene.add(player);
 
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+
         // 1. Body
         const bodyGeo = new THREE.BoxGeometry(0.5, 0.8, 0.3);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
         const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = 1.0; // Legs are 0.6 height
+        body.position.y = 1.0; 
         body.castShadow = true;
         player.add(body);
 
@@ -409,47 +398,68 @@
         head.castShadow = true;
         player.add(head);
 
-        // 3. Visor (to indicate forward direction Z+)
+        // 3. Visor
         const visorGeo = new THREE.BoxGeometry(0.3, 0.1, 0.15);
         const visorMat = new THREE.MeshStandardMaterial({ color: 0x00ffcc, emissive: 0x00ffcc, emissiveIntensity: 0.5 });
         const visor = new THREE.Mesh(visorGeo, visorMat);
-        visor.position.set(0, 1.65, 0.18); // Slightly forward
+        visor.position.set(0, 1.65, 0.18);
         visor.castShadow = true;
         player.add(visor);
 
         // 4. Limbs
-        const limbGeo = new THREE.BoxGeometry(0.15, 0.6, 0.15);
-
         // Legs
-        const legL = new THREE.Mesh(limbGeo, bodyMat);
+        const legGeo = new THREE.BoxGeometry(0.15, 0.6, 0.15);
+        const legL = new THREE.Mesh(legGeo, bodyMat);
         legL.position.set(-0.15, 0.3, 0);
         legL.castShadow = true;
         player.add(legL);
 
-        const legR = new THREE.Mesh(limbGeo, bodyMat);
+        const legR = new THREE.Mesh(legGeo, bodyMat);
         legR.position.set(0.15, 0.3, 0);
         legR.castShadow = true;
         player.add(legR);
 
-        // Arms
-        const armL = new THREE.Mesh(limbGeo, bodyMat);
-        armL.position.set(-0.35, 1.1, 0);
-        armL.rotation.z = 0.2; // A-pose
-        armL.castShadow = true;
-        player.add(armL);
+        /**
+         * 修正1: 腕の接続（ピボット）修正
+         * BoxGeometryは中心が原点(0,0,0)のため、そのままだと中心から回転してしまう。
+         * .translate(0, -0.3, 0) を使って、ジオメトリの原点を「箱の上部」に移動させる。
+         */
+        const armGeo = new THREE.BoxGeometry(0.15, 0.6, 0.15);
+        armGeo.translate(0, -0.3, 0); // 腕の長さ0.6の半分(0.3)下げて、原点を上端にする
 
-        const armR = new THREE.Mesh(limbGeo, bodyMat);
-        armR.position.set(0.35, 1.1, 0);
-        armR.rotation.z = -0.2; // A-pose
+        // 肩の位置計算: 
+        // Body幅 0.5 -> 半分 0.25
+        // 腕幅 0.15 -> 半分 0.075
+        // 中心から 0.25 + 0.075 = 0.325 の位置だと接するが、少し埋め込むため 0.32 とする
+        const shoulderY = 1.35; // Body(Center 1.0, Height 0.8 => Top 1.4)の少し下
+        const shoulderX = 0.32; 
+
+        // Left Arm
+        const shoulderL = new THREE.Group();
+        shoulderL.position.set(-shoulderX, shoulderY, 0);
+        player.add(shoulderL);
+        
+        const armL = new THREE.Mesh(armGeo, bodyMat);
+        // 原点をジオメトリ側でずらしたので、positionは(0,0,0)でOK
+        armL.castShadow = true;
+        shoulderL.add(armL);
+        shoulderL.rotation.z = 0.2; // 自然な広がり
+
+        // Right Arm
+        const shoulderR = new THREE.Group();
+        shoulderR.position.set(shoulderX, shoulderY, 0);
+        player.add(shoulderR);
+
+        const armR = new THREE.Mesh(armGeo, bodyMat);
         armR.castShadow = true;
-        player.add(armR);
+        shoulderR.add(armR);
+        shoulderR.rotation.z = -0.2; // 自然な広がり
 
 
         // Exhibits
         const interactables = [];
 
         function createExhibit(x, z, color, label, type = 'exhibit') {
-            // Base
             const base = new THREE.Mesh(
                 new THREE.BoxGeometry(1.5, 1, 1.5),
                 new THREE.MeshStandardMaterial({ color: 0x111111, emissive: color, emissiveIntensity: 0.2 })
@@ -458,7 +468,6 @@
             base.castShadow = true;
             scene.add(base);
 
-            // Holo
             let holo;
             if (type === 'exhibit') {
                 holo = new THREE.Mesh(
@@ -483,20 +492,25 @@
         createExhibit(-8, 8, 0x00ffff, 'Shader Art 01');
         createExhibit(8, 8, 0xff00ff, '3D Install 02');
         createExhibit(0, 12, 0xffff00, 'WebGL Exp 03');
-
-        // Help Desk
         createExhibit(0, -5, 0x00ff00, 'Help Desk', 'help');
 
 
         /**
-         * INPUT & CONTROLS (Tank Controls)
+         * INPUT & CONTROLS
          */
         const keys = { w: false, s: false, a: false, d: false, Enter: false };
         const inputState = { move: 0, turn: 0 };
 
         window.addEventListener('keydown', (e) => {
-            if (state.inExhibit) return;
             const key = e.key.toLowerCase();
+
+            if (state.inExhibit && e.key === 'Escape') {
+                closeExhibit();
+                return;
+            }
+
+            if (state.inExhibit) return;
+            
             if (key === 'w' || key === 'arrowup') keys.w = true;
             if (key === 's' || key === 'arrowdown') keys.s = true;
             if (key === 'a' || key === 'arrowleft') keys.a = true;
@@ -559,9 +573,8 @@
                 dy = Math.sin(ang) * maxDist;
             }
             joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-
-            inputState.move = -dy / maxDist; // Up is forward
-            inputState.turn = -dx / maxDist; // Left is positive turn
+            inputState.move = -dy / maxDist; 
+            inputState.turn = -dx / maxDist; 
         }
 
         document.getElementById('btn-action').addEventListener('touchstart', (e) => {
@@ -586,8 +599,7 @@
         function openExhibit(target) {
             state.inExhibit = true;
             state.isPaused = true;
-
-            // Show Overlay
+            
             const overlay = document.getElementById('exhibit-overlay');
             const title = document.getElementById('exhibit-title');
             const animBox = document.querySelector('.mock-anim-box');
@@ -620,38 +632,39 @@
         const rotSpeed = 0.08;
         let stepTimer = 0;
 
-        // Camera settings
-        const camOffsetHeight = 5.0; // Height above player
-        const camOffsetDist = 7.0;   // Distance behind player
+        // Camera Params
+        const defaultCamDist = 7.0;
+        const defaultCamHeight = 5.0;
+        
+        // プレイヤー視点（FPSライク）
+        const closeCamDist = 0.1; 
+        const closeCamHeight = 1.7; // 目の高さ
 
         function animate() {
             requestAnimationFrame(animate);
 
             if (state.isPaused) return;
 
-            // 1. Determine Input
             let move = 0;
             let turn = 0;
 
-            // Keyboard
             if (keys.w) move += 1;
             if (keys.s) move -= 1;
-            if (keys.a) turn += 1; // Left
-            if (keys.d) turn -= 1; // Right
+            if (keys.a) turn += 1;
+            if (keys.d) turn -= 1;
 
             if (touchId !== null) {
                 move = inputState.move;
                 turn = inputState.turn;
             }
 
-            // 2. Apply Physics
-            if (move !== 0 || turn !== 0) {
-                player.rotation.y += turn * rotSpeed;
+            const isMoving = (move !== 0 || turn !== 0);
 
-                // Forward vector is Z+ based on current rotation
+            // Apply Physics
+            if (isMoving) {
+                player.rotation.y += turn * rotSpeed;
                 const dx = Math.sin(player.rotation.y) * move * moveSpeed;
                 const dz = Math.cos(player.rotation.y) * move * moveSpeed;
-
                 player.position.x += dx;
                 player.position.z += dz;
 
@@ -667,31 +680,41 @@
                 stepTimer = 0;
             }
 
-            // 3. Camera Follow (TPS Logic)
-            // Calculate ideal position: Behind the player and slightly up
-            // "Behind" implies opposite to the facing direction.
-            // If Facing is (sin(rot), 0, cos(rot)), then Behind is (-sin(rot), 0, -cos(rot))
+            // Camera Update logic
+            // 修正2: 入力が無いときは即座に「近づく」モードに入る。
+            // WとA/Dでの距離感のズレをなくすため、移動中のLerp係数を高くして追従性を上げる。
+            
+            const targetDist = isMoving ? defaultCamDist : closeCamDist;
+            const targetHeight = isMoving ? defaultCamHeight : closeCamHeight;
+            
+            // 旋回時のショートカット現象（カメラが近づいて見える）を防ぐため、
+            // 移動中はLerp係数を大きく(0.2)して、カメラが遅れずにピッタリ付いていくようにする。
+            // 逆に静止時(近づく時)はゆっくり(0.01)で情緒を出す。
+            const lerpFactor = isMoving ? 0.2 : 0.01;
 
             const rot = player.rotation.y;
-            const idealX = player.position.x - Math.sin(rot) * camOffsetDist;
-            const idealZ = player.position.z - Math.cos(rot) * camOffsetDist;
-            const idealY = player.position.y + camOffsetHeight;
+            const idealX = player.position.x - Math.sin(rot) * targetDist;
+            const idealZ = player.position.z - Math.cos(rot) * targetDist;
+            const idealY = player.position.y + targetHeight;
 
             const targetPos = new THREE.Vector3(idealX, idealY, idealZ);
+            camera.position.lerp(targetPos, lerpFactor);
 
-            // Smoothly interpolate current camera pos to target pos
-            camera.position.lerp(targetPos, 0.08);
-
-            // Make camera look slightly ahead of the player or at the player
+            // LookAt
+            // 移動中はプレイヤーの背中〜少し上を見る。
+            // FPSモード(静止)に入った時は、カメラ位置が頭の中に入るので、前方を見るようにしたいが、
+            // 今回はシンプルに「プレイヤー位置の少し上」を見続けることで、
+            // カメラがプレイヤー位置(0距離)に重なると、自然と前を見るようになる（カメラが頭位置に来て、LookAtが前方にあるため）
             const lookTarget = player.position.clone();
-            lookTarget.y += 1.0; // Look at head height
+            lookTarget.y += 1.6; // 目の高さ付近を見る
+            
+            // 補足: カメラ位置とLookAt位置が完全に一致するとバグる可能性があるが、
+            // targetDistが0.1(完全に0ではない)なので大丈夫。
             camera.lookAt(lookTarget);
 
-
-            // 4. Interaction
+            // Interaction & Animation
             updateInteraction();
 
-            // 5. Animation
             interactables.forEach(i => {
                 if (i.holo) {
                     i.holo.rotation.y += 0.02;
@@ -714,11 +737,16 @@
             if (found) {
                 activeTarget = found;
 
-                // Show bubble above player head
                 const headPos = player.position.clone();
                 headPos.y += 2.5;
 
                 headPos.project(camera);
+                // 画面外判定
+                if (headPos.z > 1) {
+                     bubble.style.display = 'none';
+                     return;
+                }
+
                 const x = (headPos.x * .5 + .5) * window.innerWidth;
                 const y = (-(headPos.y * .5) + .5) * window.innerHeight;
 
@@ -737,7 +765,6 @@
             }
         }
 
-        // Start Sequence
         const startScreen = document.getElementById('start-screen');
         startScreen.addEventListener('click', () => {
             initAudio();
@@ -747,7 +774,6 @@
             animate();
         });
 
-        // Resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
