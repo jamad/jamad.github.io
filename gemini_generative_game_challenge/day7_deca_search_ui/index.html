@@ -1,3 +1,6 @@
+<!--  https://aistudio.google.com/prompts/10FQ5JcrTLYQj0h7DhTfHjWFpAR9D5twS -->
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -17,17 +20,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap"
         rel="stylesheet">
 
     <style>
-        /* Base Settings */
+        /* Base Settings - Original Dark Theme */
         body {
             font-family: 'Inter', 'Noto Sans JP', sans-serif;
             background-color: #020617;
-            /* slate-950 */
             color: #e2e8f0;
-            /* slate-200 */
             overflow: hidden;
             touch-action: none;
         }
@@ -36,7 +38,7 @@
             font-family: 'Share Tech Mono', monospace;
         }
 
-        /* --- Range Slider Customization (Tailwind doesn't cover pseudo-elements well) --- */
+        /* --- Range Slider Customization (Original) --- */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -51,9 +53,7 @@
             height: 100%;
             width: 48px;
             background: rgba(15, 23, 42, 0.8);
-            /* slate-900 */
             border: 1px solid rgba(34, 211, 238, 0.5);
-            /* cyan-400 */
             box-shadow: 0 0 10px rgba(6, 182, 212, 0.1);
             cursor: ew-resize;
             border-radius: 2px;
@@ -64,7 +64,6 @@
 
         input[type=range]:active::-webkit-slider-thumb {
             background: rgba(8, 145, 178, 0.3);
-            /* cyan-600 */
             border-color: rgba(34, 211, 238, 0.9);
         }
 
@@ -86,8 +85,7 @@
             background: transparent;
         }
 
-        /* --- Safety-Conscious Effects --- */
-        /* Static Scanline (No flicker) */
+        /* --- Effects --- */
         .scanline {
             background: linear-gradient(to bottom,
                     rgba(0, 0, 0, 0) 0%,
@@ -98,30 +96,16 @@
             pointer-events: none;
         }
 
-        /* Grid Cell Hover */
         .grid-cell {
             transition: all 0.2s ease-out;
             border: 1px solid #1e293b;
-            /* slate-800 */
         }
 
         .grid-cell:hover {
             background-color: #0f172a;
-            /* slate-900 */
             border-color: #06b6d4;
-            /* cyan-500 */
             transform: translateY(-2px);
             z-index: 20;
-        }
-
-        /* Scrollbar Hide */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
         }
     </style>
 </head>
@@ -132,23 +116,23 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- Configuration (Original) ---
+        // --- Configuration (RESTORED ORIGINAL) ---
         const BASE = 10;
-        const STEPS = 100; // 0-99
+        const STEPS = 100; // 0-99 Steps Restored
 
-        // Data Hierarchy Definition (Original)
-        // Total Capacity: ~10^11
+        // Data Hierarchy Definition (RESTORED ORIGINAL)
+        // Levels match the original powers
         const LEVELS = [
             { id: 0, name: "COSMIC", pow: 9, color: "from-slate-900 to-indigo-950", freq: 40 },  // 10^9
-            { id: 1, name: "GRAND", pow: 7, color: "from-indigo-950 to-blue-900", freq: 60 },  // 10^7
-            { id: 2, name: "MAJOR", pow: 5, color: "from-blue-900 to-cyan-900", freq: 100 }, // 10^5
-            { id: 3, name: "MINOR", pow: 3, color: "from-cyan-900 to-teal-900", freq: 200 }, // 10^3
-            { id: 4, name: "PATCH", pow: 1, color: "from-teal-900 to-emerald-900", freq: 400 }, // 10^1
+            { id: 1, name: "GRAND", pow: 7, color: "from-indigo-950 to-blue-900", freq: 60 },    // 10^7
+            { id: 2, name: "MAJOR", pow: 5, color: "from-blue-900 to-cyan-900", freq: 100 },     // 10^5 (Dictionary fits here)
+            { id: 3, name: "MINOR", pow: 3, color: "from-cyan-900 to-teal-900", freq: 200 },     // 10^3
+            { id: 4, name: "PATCH", pow: 1, color: "from-teal-900 to-emerald-900", freq: 400 },  // 10^1
         ];
 
         const MULTIPLIERS = LEVELS.map(l => Math.pow(BASE, l.pow));
 
-        // --- Audio Engine (Web Audio API) ---
+        // --- Audio Engine ---
         const AudioEngine = {
             ctx: null,
             init: () => {
@@ -161,58 +145,51 @@
             },
             playTick: (levelIdx) => {
                 if (!AudioEngine.ctx) return;
-
                 const t = AudioEngine.ctx.currentTime;
                 const osc = AudioEngine.ctx.createOscillator();
                 const gain = AudioEngine.ctx.createGain();
-
-                // Frequency based on level (Lower levels = deeper sound)
                 const baseFreq = LEVELS[levelIdx].freq;
-
-                // Waveform selection
                 osc.type = levelIdx < 2 ? 'triangle' : 'sine';
-
                 osc.frequency.setValueAtTime(baseFreq, t);
                 osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, t + 0.1);
-
-                // Envelope (Short blip)
                 gain.gain.setValueAtTime(0, t);
-                gain.gain.linearRampToValueAtTime(0.05, t + 0.01); // Very quiet
+                gain.gain.linearRampToValueAtTime(0.05, t + 0.01);
                 gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-
                 osc.connect(gain);
                 gain.connect(AudioEngine.ctx.destination);
-
                 osc.start(t);
                 osc.stop(t + 0.15);
             }
         };
 
-        // --- Main Application Component ---
         const App = () => {
-            // -- State --
             const [positions, setPositions] = useState([0, 0, 0, 0, 0]);
             const [dataMap, setDataMap] = useState({});
             const [audioReady, setAudioReady] = useState(false);
             const [activeRow, setActiveRow] = useState(null);
-            const [isLoading, setIsLoading] = useState(true);
+            const [loadState, setLoadState] = useState("INITIALIZING"); // LOADING, READY, ERROR
 
-            // -- Initialization --
+            // --- Load Data ONCE (Fastest) ---
             useEffect(() => {
-                // Fetch Data from JSON
                 const loadData = async () => {
                     try {
+                        setLoadState("LOADING DATABASE...");
+                        // 100k data is ~8MB. It loads in < 100ms locally.
                         const response = await fetch('data.json');
                         if (response.ok) {
                             const json = await response.json();
                             if (json && json.items) {
                                 setDataMap(json.items);
+                                //setLoadState("SYSTEM ONLINE");
+                                const count = Object.keys(json.items).length;
+                                setLoadState(`SYSTEM ONLINE // ${count.toLocaleString()} RECORDS`);
                             }
+                        } else {
+                            setLoadState("DB CONNECTION FAILED");
                         }
                     } catch (err) {
                         console.warn("Could not load external data.json", err);
-                    } finally {
-                        setIsLoading(false);
+                        setLoadState("OFFLINE MODE");
                     }
                 };
                 loadData();
@@ -225,8 +202,6 @@
                 }
             };
 
-            // -- Logic --
-            // Calculate total index based on sliders
             const globalIndex = useMemo(() => {
                 return positions.reduce((acc, pos, idx) => {
                     return acc + (pos * MULTIPLIERS[idx]);
@@ -249,32 +224,30 @@
                 }
             };
 
-            // -- Render Helpers (Revised for Dictionary Data) --
             const getDisplayData = (offset) => {
                 const targetIdx = globalIndex + offset;
                 const key = targetIdx.toString();
-                
-                // Check if data exists in loaded JSON
+
+                // 1. Try to find in loaded JSON (Dictionary Data)
                 if (dataMap[key]) {
-                    const item = dataMap[key];
                     return {
-                        value: item, // Object {en, fi, ja}
-                        type: 'RECORD_FOUND',
+                        value: dataMap[key],
+                        type: 'ARCHIVE_DATA', // Found in JSON
                         highlight: true,
                         isDict: true
                     };
-                } 
-                
-                // Fallback (Original Auto-Gen behavior)
+                }
+
+                // 2. Fallback (The "Cosmic" procedural generation)
+                // This preserves the feel that the system is bigger than the dictionary
                 return {
-                    value: `#${targetIdx.toLocaleString()}`,
+                    value: `SEC::${(targetIdx * 12345).toString(16).toUpperCase().slice(0, 8)}`,
                     type: 'AUTO_GEN',
                     highlight: false,
                     isDict: false
                 };
             };
 
-            // -- Layout --
             return (
                 <div
                     className="flex flex-col h-screen w-screen bg-slate-950 text-slate-300 relative"
@@ -291,15 +264,15 @@
                     {/* --- HEADER --- */}
                     <header className="flex-none h-12 border-b border-slate-800 flex items-center justify-between px-4 z-20 bg-slate-950">
                         <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${audioReady ? 'bg-cyan-500' : 'bg-slate-600 animate-pulse'}`}></div>
+                            <div className={`w-2 h-2 rounded-full ${audioReady ? 'bg-cyan-500 shadow-[0_0_10px_cyan]' : 'bg-slate-600 animate-pulse'}`}></div>
                             <h1 className="mono-font text-sm md:text-base font-bold text-cyan-500 tracking-wider">DECA-SEARCH v3</h1>
                         </div>
                         <div className="text-[10px] md:text-xs text-slate-500 mono-font">
-                            CAPACITY: 10^11 // {isLoading ? 'LOADING...' : 'READY'}
+                            CAPACITY: 10^11 // {loadState}
                         </div>
                     </header>
 
-                    {/* --- CONTROLS AREA (Top 55%) --- */}
+                    {/* --- CONTROLS AREA (Original Layout) --- */}
                     <section className="flex-1 flex flex-col relative z-10 min-h-0 border-b border-slate-800 shadow-xl shadow-black/50">
                         {LEVELS.map((lvl, i) => (
                             <div key={lvl.id} className="flex-1 relative border-b border-slate-800/50 last:border-0 group">
@@ -320,7 +293,7 @@
                                     <div className="text-[9px] text-slate-700">x{BASE}^{lvl.pow}</div>
                                 </div>
 
-                                {/* Slider Input */}
+                                {/* Slider Input (0-99 Steps Restored) */}
                                 <input
                                     type="range"
                                     min="0"
@@ -332,7 +305,7 @@
 
                                 {/* Visual Guides */}
                                 <div className="absolute inset-x-0 h-[1px] bg-slate-700/30 top-1/2 -translate-y-1/2 pointer-events-none"></div>
-                                {/* The 'Ghost' Thumb */}
+                                {/* Ghost Thumb */}
                                 <div
                                     className="absolute top-0 bottom-0 w-1 bg-cyan-600/50 pointer-events-none transition-all duration-100"
                                     style={{
@@ -342,7 +315,6 @@
                                         backgroundColor: activeRow === i ? 'rgba(6, 182, 212, 0.2)' : 'rgba(6, 182, 212, 0.4)'
                                     }}
                                 >
-                                    {/* Tick Marks inside the ghost thumb */}
                                     {activeRow === i && (
                                         <div className="w-full h-full flex justify-center items-center gap-1 opacity-50">
                                             <div className="w-[1px] h-4 bg-cyan-400"></div>
@@ -355,7 +327,7 @@
                         ))}
                     </section>
 
-                    {/* --- DATA GRID AREA (Bottom 45% approx) --- */}
+                    {/* --- DATA GRID AREA --- */}
                     <section className="h-[40vh] bg-slate-950 relative z-10 p-2 border-t border-cyan-900/30">
                         {/* 2 Rows x 5 Cols Grid */}
                         <div className="h-full w-full grid grid-cols-5 grid-rows-2 gap-2">
@@ -375,20 +347,20 @@
                                     >
                                         {/* Cell Header */}
                                         <div className="flex justify-between items-start text-[8px] md:text-[10px] text-slate-500">
-                                            <span className="mono-font text-slate-400">{offset}</span>
+                                            <span className="mono-font text-slate-400">+{offset}</span>
                                             <span className="mono-font opacity-50">{data.type}</span>
                                         </div>
 
                                         {/* Main Value Area */}
-                                        <div className="flex-1 flex flex-col items-center justify-center text-center">
+                                        <div className="flex-1 flex flex-col items-center justify-center text-center overflow-hidden w-full">
                                             {isDict ? (
-                                                <div className="w-full">
-                                                    <div className="text-cyan-200 text-sm md:text-lg font-bold mb-1 truncate">{data.value.en}</div>
-                                                    <div className="text-cyan-500 text-[10px] md:text-xs truncate">{data.value.fi}</div>
-                                                    <div className="text-slate-400 text-[10px] md:text-xs truncate">{data.value.ja}</div>
+                                                <div className="w-full animate-in fade-in duration-75">
+                                                    <div className="text-cyan-100 text-sm md:text-lg font-bold mb-1 truncate leading-none pb-1">{data.value.en}</div>
+                                                    <div className="text-cyan-500 text-[10px] md:text-xs truncate leading-tight">{data.value.fi}</div>
+                                                    <div className="text-slate-400 text-[10px] md:text-xs truncate leading-tight font-sans">{data.value.ja}</div>
                                                 </div>
                                             ) : (
-                                                <div className="text-slate-600 text-xs md:text-sm mono-font font-bold break-all leading-tight">
+                                                <div className="text-slate-600 text-xs md:text-sm mono-font font-bold break-all leading-tight opacity-50">
                                                     {data.value}
                                                 </div>
                                             )}
@@ -396,7 +368,7 @@
 
                                         {/* Cell Footer */}
                                         <div className="text-[8px] text-slate-700 text-center truncate">
-                                            ID: {idx.toString().slice(-4)}
+                                            ID: {idx.toString().slice(-6)}
                                         </div>
 
                                         {/* Active Highlight Corner */}
@@ -416,13 +388,13 @@
                     {!audioReady && (
                         <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
                             <div className="border border-cyan-900 bg-slate-900/90 p-6 max-w-sm text-center shadow-2xl rounded-sm">
-                                <h2 className="text-cyan-500 text-xl font-bold mb-2 mono-font tracking-widest">SYSTEM STANDBY</h2>
+                                <h2 className="text-cyan-500 text-xl font-bold mb-2 mono-font tracking-widest">DECA-SEARCH v3</h2>
                                 <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-                                    Initialize Deca-Search Protocol.<br />
-                                    Accessing Multilingual Database.
+                                    Capacity: 100,000,000,000<br />
+                                    Loaded Records: 100,000
                                 </p>
-                                <button className="px-6 py-2 bg-cyan-900/50 hover:bg-cyan-800 text-cyan-200 text-sm font-bold border border-cyan-700 tracking-wider transition-all">
-                                    [ INITIALIZE ]
+                                <button className="px-6 py-2 bg-cyan-900/50 hover:bg-cyan-800 text-cyan-200 text-sm font-bold border border-cyan-700 tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                                    [ INITIALIZE SYSTEM ]
                                 </button>
                             </div>
                         </div>
