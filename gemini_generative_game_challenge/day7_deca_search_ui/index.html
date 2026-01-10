@@ -17,13 +17,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap"
         rel="stylesheet">
 
     <style>
         /* Base Settings */
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
             background-color: #020617;
             /* slate-950 */
             color: #e2e8f0;
@@ -132,11 +132,11 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- Configuration ---
+        // --- Configuration (Original) ---
         const BASE = 10;
         const STEPS = 100; // 0-99
 
-        // Data Hierarchy Definition
+        // Data Hierarchy Definition (Original)
         // Total Capacity: ~10^11
         const LEVELS = [
             { id: 0, name: "COSMIC", pow: 9, color: "from-slate-900 to-indigo-950", freq: 40 },  // 10^9
@@ -149,7 +149,6 @@
         const MULTIPLIERS = LEVELS.map(l => Math.pow(BASE, l.pow));
 
         // --- Audio Engine (Web Audio API) ---
-        // Designed for non-intrusive, procedural feedback
         const AudioEngine = {
             ctx: null,
             init: () => {
@@ -203,7 +202,6 @@
                 // Fetch Data from JSON
                 const loadData = async () => {
                     try {
-                        // Attempt to fetch data.json
                         const response = await fetch('data.json');
                         if (response.ok) {
                             const json = await response.json();
@@ -212,7 +210,7 @@
                             }
                         }
                     } catch (err) {
-                        console.warn("Could not load external data.json, falling back to algorithmic generation.", err);
+                        console.warn("Could not load external data.json", err);
                     } finally {
                         setIsLoading(false);
                     }
@@ -247,33 +245,32 @@
                     setActiveRow(idx);
                     AudioEngine.playTick(idx);
 
-                    // Clear active highlight after animation
                     setTimeout(() => setActiveRow(null), 200);
                 }
             };
 
-            // -- Render Helpers --
+            // -- Render Helpers (Revised for Dictionary Data) --
             const getDisplayData = (offset) => {
                 const targetIdx = globalIndex + offset;
+                const key = targetIdx.toString();
+                
                 // Check if data exists in loaded JSON
-                if (dataMap[targetIdx]) {
+                if (dataMap[key]) {
+                    const item = dataMap[key];
                     return {
-                        value: dataMap[targetIdx],
-                        type: 'JSON_SRC',
-                        highlight: true
+                        value: item, // Object {en, fi, ja}
+                        type: 'RECORD_FOUND',
+                        highlight: true,
+                        isDict: true
                     };
-                } else if (dataMap[targetIdx.toString()]) {
-                    return {
-                        value: dataMap[targetIdx.toString()],
-                        type: 'JSON_SRC',
-                        highlight: true
-                    };
-                }
-                // Fallback
+                } 
+                
+                // Fallback (Original Auto-Gen behavior)
                 return {
                     value: `#${targetIdx.toLocaleString()}`,
                     type: 'AUTO_GEN',
-                    highlight: false
+                    highlight: false,
+                    isDict: false
                 };
             };
 
@@ -335,7 +332,7 @@
 
                                 {/* Visual Guides */}
                                 <div className="absolute inset-x-0 h-[1px] bg-slate-700/30 top-1/2 -translate-y-1/2 pointer-events-none"></div>
-                                {/* The 'Ghost' Thumb (Always visible indicator) */}
+                                {/* The 'Ghost' Thumb */}
                                 <div
                                     className="absolute top-0 bottom-0 w-1 bg-cyan-600/50 pointer-events-none transition-all duration-100"
                                     style={{
@@ -366,6 +363,7 @@
                                 const data = getDisplayData(offset);
                                 const idx = globalIndex + offset;
                                 const isTarget = data.highlight;
+                                const isDict = data.isDict;
 
                                 return (
                                     <div
@@ -381,14 +379,19 @@
                                             <span className="mono-font opacity-50">{data.type}</span>
                                         </div>
 
-                                        {/* Main Value */}
-                                        <div className="flex-1 flex items-center justify-center text-center">
-                                            <div className={`
-                                                font-bold break-all leading-tight transition-all duration-300
-                                                ${isTarget ? 'text-cyan-200 text-sm md:text-lg' : 'text-slate-600 text-xs md:text-sm mono-font'}
-                                            `}>
-                                                {data.value}
-                                            </div>
+                                        {/* Main Value Area */}
+                                        <div className="flex-1 flex flex-col items-center justify-center text-center">
+                                            {isDict ? (
+                                                <div className="w-full">
+                                                    <div className="text-cyan-200 text-sm md:text-lg font-bold mb-1 truncate">{data.value.en}</div>
+                                                    <div className="text-cyan-500 text-[10px] md:text-xs truncate">{data.value.fi}</div>
+                                                    <div className="text-slate-400 text-[10px] md:text-xs truncate">{data.value.ja}</div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-slate-600 text-xs md:text-sm mono-font font-bold break-all leading-tight">
+                                                    {data.value}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Cell Footer */}
@@ -416,7 +419,7 @@
                                 <h2 className="text-cyan-500 text-xl font-bold mb-2 mono-font tracking-widest">SYSTEM STANDBY</h2>
                                 <p className="text-slate-400 text-sm mb-6 leading-relaxed">
                                     Initialize Deca-Search Protocol.<br />
-                                    Contains 100,000,000,000 records.
+                                    Accessing Multilingual Database.
                                 </p>
                                 <button className="px-6 py-2 bg-cyan-900/50 hover:bg-cyan-800 text-cyan-200 text-sm font-bold border border-cyan-700 tracking-wider transition-all">
                                     [ INITIALIZE ]
