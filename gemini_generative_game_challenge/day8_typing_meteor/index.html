@@ -108,12 +108,17 @@
 
     <div class="ui-layer top-0 left-0 w-full p-4 flex justify-between items-start z-10">
         <div class="flex flex-col">
-            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md">FINNISH DEFENSE v4.0</h1>
+            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md">FINNISH DEFENSE v5.0</h1>
+
+            <!-- 追加: メイン画面のハイスコア -->
+            <div class="text-sm font-bold text-yellow-600">HI-SCORE: <span id="highScoreDisplay">0</span></div>
+
             <div class="text-xl mt-2">SCORE: <span id="scoreDisplay" class="text-cyan-400">0</span></div>
             <div class="text-lg">CITY SHIELD: <span id="healthDisplay" class="text-green-400">100%</span></div>
         </div>
 
-        <div class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col">
+        <!-- 変更: z-[60] relative を追加して、Game Over画面より手前に表示させる -->
+        <div class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col z-[60] relative">
             <div class="text-xs text-slate-400 border-b border-slate-600 mb-1 pb-1">DEFEATED WORDS LOG</div>
             <ul id="defeatedList" class="flex-1 overflow-y-auto text-sm space-y-1 font-mono text-green-400"></ul>
         </div>
@@ -136,6 +141,10 @@
         <h1 class="text-6xl font-bold text-white mb-4">GAME OVER</h1>
         <p class="text-2xl mb-8">City Destroyed.</p>
         <div class="text-3xl mb-8">Final Score: <span id="finalScore">0</span></div>
+
+        <!-- 追加: ゲームオーバー画面のハイスコア -->
+        <div class="text-xl text-yellow-400 mb-8 font-bold">High Score: <span id="finalHighScore">0</span></div>
+
         <div id="restartContainer" class="hidden">
             <button id="restartButton"
                 class="px-8 py-4 bg-white text-red-900 text-2xl rounded font-bold hover:bg-gray-200 shadow-lg">
@@ -259,6 +268,10 @@
         let animationFrameId; // ← この行を追加（ループ管理用）
         let score = 0, health = 100, frameCount = 0;
         let cityShakeTimer = 0; // ← これを追加（街の揺れ管理用）
+
+        // 追加: ローカルストレージからハイスコアを読み込む（なければ0）
+        let highScore = localStorage.getItem('finnishMeteorHighScore') || 0;
+
         let meteors = [], particles = [], lasers = [], stars = [], buildings = [];
         let spawnRate = 120, difficultyMultiplier = 1.0;
 
@@ -402,6 +415,10 @@
             score = 0; health = 100; frameCount = 0; difficultyMultiplier = 1.0; // RESET SPEED
             meteors = []; lasers = []; particles = [];
             defeatedList.innerHTML = ''; inputElement.value = ''; inputElement.focus();
+
+            // 追加: 開始時にハイスコア表示を更新
+            document.getElementById('highScoreDisplay').textContent = highScore;
+
             updateUI(); generateCity(); gameLoop();
         }
 
@@ -455,7 +472,20 @@
 
         function endGame() {
             gameState = 'gameover';
+
+            // 追加: ハイスコアの更新と保存処理
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('finnishMeteorHighScore', highScore);
+            }
+
             document.getElementById('finalScore').textContent = score;
+
+            // 追加: ゲームオーバー画面にハイスコアを表示
+            document.getElementById('finalHighScore').textContent = highScore;
+            // メイン画面の表示も更新しておく
+            document.getElementById('highScoreDisplay').textContent = highScore;
+
             document.getElementById('gameOverScreen').classList.remove('hidden');
             setTimeout(() => {
                 document.getElementById('restartContainer').classList.remove('hidden');
