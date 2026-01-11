@@ -109,7 +109,7 @@
     <!-- 修正: z-10 を z-[60] に変更して、Game Over画面(z-50)より手前にする -->
     <div class="ui-layer top-0 left-0 w-full p-4 flex justify-between items-start z-[60]">
         <div class="flex flex-col">
-            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md">FINNISH DEFENSE v5.1</h1>
+            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md">FINNISH DEFENSE v5.2</h1>
 
             <!-- 追加: メイン画面のハイスコア -->
             <div class="text-sm font-bold text-yellow-600">HI-SCORE: <span id="highScoreDisplay">0</span></div>
@@ -119,7 +119,9 @@
         </div>
 
         <!-- 変更: z-[60] relative を追加して、Game Over画面より手前に表示させる -->
-        <div class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col z-[60] relative">
+        <!-- 修正: id="logContainer" を追加 -->
+        <div id="logContainer"
+            class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col z-[60] relative">
             <div class="text-xs text-slate-400 border-b border-slate-600 mb-1 pb-1">DEFEATED WORDS LOG</div>
             <ul id="defeatedList" class="flex-1 overflow-y-auto text-sm space-y-1 font-mono text-green-400"></ul>
         </div>
@@ -418,6 +420,12 @@
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('gameOverScreen').classList.add('hidden');
             document.getElementById('restartContainer').classList.add('hidden');
+
+            // 追加: リストのサイズを元に戻す (画面の80% -> 高さ64)
+            const logContainer = document.getElementById('logContainer');
+            logContainer.classList.add('h-64');
+            logContainer.classList.remove('h-[80vh]');
+
             gameState = 'playing';
             score = 0; health = 100; frameCount = 0; difficultyMultiplier = 1.0; // RESET SPEED
             meteors = []; lasers = []; particles = [];
@@ -494,6 +502,12 @@
             document.getElementById('highScoreDisplay').textContent = highScore;
 
             document.getElementById('gameOverScreen').classList.remove('hidden');
+
+            // 追加: ゲームオーバー時にリストの枠を画面下まで伸ばす (高さ64 -> 画面の80%)
+            const logContainer = document.getElementById('logContainer');
+            logContainer.classList.remove('h-64');
+            logContainer.classList.add('h-[80vh]');
+
             setTimeout(() => {
                 document.getElementById('restartContainer').classList.remove('hidden');
                 document.getElementById('restartContainer').classList.add('fade-in');
