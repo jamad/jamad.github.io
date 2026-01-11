@@ -256,6 +256,7 @@
         const sound = new SoundManager();
 
         let gameState = 'start';
+        let animationFrameId; // ← この行を追加（ループ管理用）
         let score = 0, health = 100, frameCount = 0;
         let meteors = [], particles = [], lasers = [], stars = [], buildings = [];
         let spawnRate = 120, difficultyMultiplier = 1.0;
@@ -367,6 +368,8 @@
         }
 
         function startGame() {
+            // 修正: 既に動いているループがあれば止める（倍速バグの防止）
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
             sound.init();
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('gameOverScreen').classList.add('hidden');
@@ -457,7 +460,7 @@
             } else {
                 meteors.forEach(m => m.draw()); lasers.forEach(l => l.draw()); particles.forEach(p => p.draw());
             }
-            requestAnimationFrame(gameLoop);
+            animationFrameId = requestAnimationFrame(gameLoop); // IDを保存する
         }
 
         function init() {
