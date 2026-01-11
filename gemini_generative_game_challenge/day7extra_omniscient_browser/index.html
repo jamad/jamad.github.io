@@ -10,25 +10,92 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', 'Noto Sans JP', sans-serif; background-color: #020617; color: #e2e8f0; overflow: hidden; touch-action: none; }
-        .mono-font { font-family: 'Share Tech Mono', monospace; }
-        
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #020617;
+            color: #e2e8f0;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .mono-font {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
         /* Slider Styling */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; cursor: pointer; outline: none; z-index: 20; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 100%; width: 60px; background: transparent; cursor: ew-resize; z-index: 30; position: relative; }
-        
-        .scanline { background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2) 100%); background-size: 100% 4px; pointer-events: none; }
-        .grid-cell { transition: all 0.2s ease-out; border: 1px solid #1e293b; }
-        .grid-cell:hover { background-color: #0f172a; border-color: #06b6d4; transform: translateY(-2px); z-index: 20; }
-        .btn-active { background-color: rgba(6, 182, 212, 0.2); border-color: #06b6d4; color: #22d3ee; box-shadow: 0 0 15px rgba(6, 182, 212, 0.3); }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            cursor: pointer;
+            outline: none;
+            z-index: 20;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 100%;
+            width: 60px;
+            background: transparent;
+            cursor: ew-resize;
+            z-index: 30;
+            position: relative;
+        }
+
+        .scanline {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2) 100%);
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
+        .grid-cell {
+            transition: all 0.2s ease-out;
+            border: 1px solid #1e293b;
+        }
+
+        .grid-cell:hover {
+            background-color: #0f172a;
+            border-color: #06b6d4;
+            transform: translateY(-2px);
+            z-index: 20;
+        }
+
+        .btn-active {
+            background-color: rgba(6, 182, 212, 0.2);
+            border-color: #06b6d4;
+            color: #22d3ee;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+        }
 
         /* Search Input */
-        .search-input { background: rgba(15, 23, 42, 0.8); border: 1px solid #1e293b; color: #22d3ee; font-family: 'Share Tech Mono', monospace; transition: all 0.2s; }
-        .search-input:focus { outline: none; border-color: #06b6d4; box-shadow: 0 0 10px rgba(6, 182, 212, 0.2); }
+        .search-input {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #1e293b;
+            color: #22d3ee;
+            font-family: 'Share Tech Mono', monospace;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #06b6d4;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+        }
     </style>
+
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QEJBQQMWT9"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-QEJBQQMWT9');
+    </script>
 </head>
 
 <body>
@@ -112,10 +179,10 @@
             const [sortedIds, setSortedIds] = useState([]); // For Heatmap
             const [audioReady, setAudioReady] = useState(false);
             const [activeRow, setActiveRow] = useState(null);
-            
+
             const [loadState, setLoadState] = useState("INITIALIZING");
             const [totalCount, setTotalCount] = useState(0);
-            
+
             // Search
             const [searchQuery, setSearchQuery] = useState("");
             const [isAutoPiloting, setIsAutoPiloting] = useState(false);
@@ -150,7 +217,7 @@
             // Calculates which steps (0-99) have data for a given slider level
             const getHeatmap = (levelIdx) => {
                 if (sortedIds.length === 0) return [];
-                
+
                 // Calculate the "Base Index" determined by parent sliders
                 let base = 0;
                 for (let i = 0; i < levelIdx; i++) {
@@ -159,15 +226,15 @@
 
                 const multiplier = MULTIPLIERS[levelIdx];
                 const map = [];
-                
+
                 // Check each step 0-99
                 for (let step = 0; step < STEPS; step++) {
                     const min = base + (step * multiplier);
                     const max = base + ((step + 1) * multiplier);
-                    
+
                     // L4 (PATCH) is special: it displays 10 items.
                     // If levelIdx is 4, max is min + 10.
-                    
+
                     if (hasDataInRange(sortedIds, min, max)) {
                         map.push(true);
                     } else {
@@ -207,10 +274,10 @@
             const performSearch = (e) => {
                 e.preventDefault();
                 if (!searchQuery) return;
-                
+
                 enableAudio();
                 const q = searchQuery.toLowerCase().trim();
-                
+
                 // Simple linear search (fast enough for <500k)
                 const foundId = Object.keys(dataMap).find(key => {
                     const item = dataMap[key];
@@ -227,25 +294,25 @@
             const startAutoPilot = (targetId) => {
                 setIsAutoPiloting(true);
                 AudioEngine.playFound();
-                
+
                 // Decompose ID into slider positions
                 let remain = targetId;
-                const newPos = [0,0,0,0,0];
-                
+                const newPos = [0, 0, 0, 0, 0];
+
                 newPos[0] = Math.floor(remain / MULTIPLIERS[0]);
                 remain %= MULTIPLIERS[0];
-                
+
                 newPos[1] = Math.floor(remain / MULTIPLIERS[1]);
                 remain %= MULTIPLIERS[1];
-                
+
                 newPos[2] = Math.floor(remain / MULTIPLIERS[2]);
                 remain %= MULTIPLIERS[2];
-                
+
                 newPos[3] = Math.floor(remain / MULTIPLIERS[3]);
                 remain %= MULTIPLIERS[3];
-                
+
                 newPos[4] = Math.floor(remain / MULTIPLIERS[4]);
-                
+
                 // Animate change? For now, instant jump with effect
                 setPositions(newPos);
                 setTimeout(() => setIsAutoPiloting(false), 500);
@@ -257,7 +324,7 @@
                 if (dataMap[key]) {
                     return { value: dataMap[key], type: dataMap[key].sector || 'DATA', highlight: true, isDict: true };
                 }
-                return { value: `SEC::${(targetIdx * 12345).toString(16).toUpperCase().slice(0,8)}`, type: 'VOID', highlight: false, isDict: false };
+                return { value: `SEC::${(targetIdx * 12345).toString(16).toUpperCase().slice(0, 8)}`, type: 'VOID', highlight: false, isDict: false };
             };
 
             const currentSector = SECTORS.find(s => s.id === positions[0]) || SECTORS[0];
@@ -274,8 +341,8 @@
 
                         {/* Search Bar */}
                         <form onSubmit={performSearch} className="flex-1 max-w-md flex relative">
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="SEARCH KEYWORD..."
@@ -294,7 +361,7 @@
 
                     {/* --- CONTROL AREA --- */}
                     <section className="flex-1 flex flex-col relative z-10 min-h-0 border-b border-slate-800 shadow-xl">
-                        
+
                         {/* 1. SECTOR SELECTOR */}
                         <div className="h-16 flex border-b border-slate-800/50 bg-slate-900/50">
                             {SECTORS.map((s) => {
@@ -333,7 +400,7 @@
 
                                     {/* Slider Area */}
                                     <div className="absolute left-24 right-0 top-0 bottom-0 px-8"> {/* Added Padding */}
-                                        
+
                                         {/* Heatmap Layer (Behind Input) */}
                                         <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 h-1 flex pointer-events-none opacity-50">
                                             {heatmap.map((hasData, i) => (
@@ -362,7 +429,7 @@
                                         >
                                             {/* Thumb Bar */}
                                             <div className="h-full w-1 mx-auto bg-cyan-600/50 group-hover:bg-cyan-500/80 transition-colors"></div>
-                                            
+
                                             {/* Floating Value (Big Font) */}
                                             <div className={`
                                                 absolute -top-3 left-1/2 -translate-x-1/2 
@@ -413,7 +480,7 @@
                             })}
                         </div>
                     </section>
-                    
+
                     <div className="absolute inset-0 pointer-events-none z-30 scanline opacity-20"></div>
 
                     {!audioReady && (
@@ -421,7 +488,7 @@
                             <div className="border border-cyan-900 bg-slate-900/90 p-6 max-w-sm text-center shadow-2xl rounded-sm">
                                 <h2 className="text-cyan-500 text-xl font-bold mb-2 mono-font tracking-widest">DECA-SEARCH v4</h2>
                                 <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-                                    System Online.<br/>
+                                    System Online.<br />
                                     Heatmap & Auto-Pilot Active.
                                 </p>
                                 <button className="px-6 py-2 bg-cyan-900/50 hover:bg-cyan-800 text-cyan-200 text-sm font-bold border border-cyan-700 tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]">
@@ -437,5 +504,19 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+
+    <!-- Footer / Credits -->
+    <div
+        class="absolute bottom-1 right-2 z-50 text-[9px] md:text-[10px] text-slate-600 mono-font text-right pointer-events-none">
+        <div class="pointer-events-auto">
+            <span class="opacity-50">SYSTEM:</span> <a href="https://github.com/jamad" target="_blank"
+                class="text-cyan-800 hover:text-cyan-500 transition-colors">JAMAD</a>
+            <span class="mx-1 opacity-20">|</span>
+            <span class="opacity-50">DATA:</span> <a href="https://github.com/dwyl/english-words" target="_blank"
+                class="text-slate-600 hover:text-slate-400">Open Source Dictionaries</a>
+        </div>
+        <div class="opacity-30 mt-0.5">Built with React, Tailwind & Web Audio API</div>
+    </div>
 </body>
+
 </html>
