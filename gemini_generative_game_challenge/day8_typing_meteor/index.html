@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finnish Defense: Meteor Typist v4.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'VT323', monospace;
+            background-color: #0f172a;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-layer {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .neon-text {
+            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #ff00de, 0 0 30px #ff00de;
+        }
+
+        #defeatedList::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #defeatedList::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        #defeatedList::-webkit-scrollbar-thumb {
+            background: #4ade80;
+        }
+
+        #inputArea {
+            pointer-events: auto;
+            background: rgba(15, 23, 42, 0.9);
+            border-top: 2px solid #334155;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+            animation-iteration-count: 1;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="text-white h-screen w-screen flex flex-col relative">
+
+    <canvas id="gameCanvas" class="absolute inset-0 z-0"></canvas>
+
+    <div class="ui-layer top-0 left-0 w-full p-4 flex justify-between items-start z-10">
+        <div class="flex flex-col">
+            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md">FINNISH DEFENSE v4.0</h1>
+            <div class="text-xl mt-2">SCORE: <span id="scoreDisplay" class="text-cyan-400">0</span></div>
+            <div class="text-lg">CITY SHIELD: <span id="healthDisplay" class="text-green-400">100%</span></div>
+        </div>
+
+        <div class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col">
+            <div class="text-xs text-slate-400 border-b border-slate-600 mb-1 pb-1">DEFEATED WORDS LOG</div>
+            <ul id="defeatedList" class="flex-1 overflow-y-auto text-sm space-y-1 font-mono text-green-400"></ul>
+        </div>
+    </div>
+
+    <div id="startScreen"
+        class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center pointer-events-auto">
+        <h1
+            class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 mb-8 neon-text text-center">
+            METEOR<br>TYPIST</h1>
+        <p class="text-xl mb-8 text-center px-4">Protect the city from Finnish meteors!<br>Type the words to shoot
+            lasers.</p>
+        <button id="startButton"
+            class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white text-2xl rounded border-b-4 border-cyan-800 active:border-0 active:translate-y-1 transition-all">START
+            DEFENSE</button>
+    </div>
+
+    <div id="gameOverScreen"
+        class="hidden absolute inset-0 z-50 bg-red-900/90 flex flex-col items-center justify-center pointer-events-auto">
+        <h1 class="text-6xl font-bold text-white mb-4">GAME OVER</h1>
+        <p class="text-2xl mb-8">City Destroyed.</p>
+        <div class="text-3xl mb-8">Final Score: <span id="finalScore">0</span></div>
+        <div id="restartContainer" class="hidden">
+            <button id="restartButton"
+                class="px-8 py-4 bg-white text-red-900 text-2xl rounded font-bold hover:bg-gray-200 shadow-lg">
+                TRY AGAIN <span class="text-sm font-normal block text-center text-gray-500">(PRESS ENTER)</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="inputArea" class="absolute bottom-0 w-full p-4 z-20 flex justify-center items-center">
+        <div class="relative w-full max-w-2xl">
+            <div
+                class="absolute bottom-full left-1/2 -translate-x-1/2 w-16 h-8 bg-slate-700 rounded-t-lg border-t-2 border-x-2 border-slate-500 flex justify-center">
+                <div class="w-2 h-4 bg-cyan-500 rounded-full mt-1 animate-pulse"></div>
+            </div>
+            <input type="text" id="playerInput"
+                class="w-full bg-slate-800 text-cyan-400 text-2xl px-4 py-3 rounded border-2 border-slate-600 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 uppercase placeholder-slate-600 text-center"
+                placeholder="TYPE THE METEOR NAME..." autocomplete="off" autocorrect="off" autocapitalize="off"
+                spellcheck="false">
+        </div>
+    </div>
+
+    <script>
+        class SoundManager {
+            constructor() { this.ctx = null; this.masterGain = null; }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.value = 0.3;
+                    this.masterGain.connect(this.ctx.destination);
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            }
+            playLaser() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(880, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(110, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+            }
+            playExplosion() {
+                if (!this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * 0.5;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1000, this.ctx.currentTime);
+                filter.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.5);
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+                noise.connect(filter); filter.connect(gain); gain.connect(this.masterGain);
+                noise.start();
+            }
+            playType() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.05);
+            }
+            playError() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+            }
+        }
+
+        const WORD_LIST = [
+            // Basics
+            { fi: "koti", en: "home" }, { fi: "koulu", en: "school" }, { fi: "aurinko", en: "sun" }, { fi: "ruoka", en: "food" }, { fi: "kiitos", en: "thank you" }, { fi: "ystävä", en: "friend" }, { fi: "kissa", en: "cat" }, { fi: "koira", en: "dog" }, { fi: "vesi", en: "water" }, { fi: "metsä", en: "forest" }, { fi: "järvi", en: "lake" }, { fi: "yö", en: "night" }, { fi: "päivä", en: "day" }, { fi: "kuu", en: "moon" }, { fi: "tuli", en: "fire" }, { fi: "ilma", en: "air" }, { fi: "maa", en: "earth" }, { fi: "kirja", en: "book" }, { fi: "ovi", en: "door" }, { fi: "ikkuna", en: "window" },
+            // Family & People
+            { fi: "isä", en: "father" }, { fi: "äiti", en: "mother" }, { fi: "veli", en: "brother" }, { fi: "sisko", en: "sister" }, { fi: "poika", en: "boy" }, { fi: "tyttö", en: "girl" }, { fi: "mies", en: "man" }, { fi: "nainen", en: "woman" }, { fi: "lapsi", en: "child" }, { fi: "perhe", en: "family" }, { fi: "nimi", en: "name" }, { fi: "ihminen", en: "human" }, { fi: "mummo", en: "grandma" }, { fi: "vaari", en: "grandpa" }, { fi: "serkku", en: "cousin" }, { fi: "vauva", en: "baby" },
+            // Time & Seasons
+            { fi: "aamu", en: "morning" }, { fi: "ilta", en: "evening" }, { fi: "tänään", en: "today" }, { fi: "huomenna", en: "tomorrow" }, { fi: "eilen", en: "yesterday" }, { fi: "kevät", en: "spring" }, { fi: "kesä", en: "summer" }, { fi: "syksy", en: "autumn" }, { fi: "talvi", en: "winter" }, { fi: "viikko", en: "week" }, { fi: "vuosi", en: "year" }, { fi: "kello", en: "clock" }, { fi: "aika", en: "time" }, { fi: "hetki", en: "moment" }, { fi: "loma", en: "holiday" },
+            // Nature & Animals
+            { fi: "joki", en: "river" }, { fi: "meri", en: "sea" }, { fi: "vuori", en: "mountain" }, { fi: "saari", en: "island" }, { fi: "puu", en: "tree" }, { fi: "kukka", en: "flower" }, { fi: "lintu", en: "bird" }, { fi: "kala", en: "fish" }, { fi: "karhu", en: "bear" }, { fi: "hirvi", en: "moose" }, { fi: "lumi", en: "snow" }, { fi: "sade", en: "rain" }, { fi: "pilvi", en: "cloud" }, { fi: "tähti", en: "star" }, { fi: "taivas", en: "sky" }, { fi: "ruoho", en: "grass" }, { fi: "kivi", en: "stone" }, { fi: "hiekka", en: "sand" }, { fi: "kettu", en: "fox" }, { fi: "susi", en: "wolf" }, { fi: "pupu", en: "bunny" }, { fi: "hevonen", en: "horse" }, { fi: "lehmä", en: "cow" }, { fi: "lammas", en: "sheep" },
+            // Body & Clothes
+            { fi: "pää", en: "head" }, { fi: "silmä", en: "eye" }, { fi: "käsi", en: "hand" }, { fi: "jalka", en: "foot" }, { fi: "suu", en: "mouth" }, { fi: "korva", en: "ear" }, { fi: "nenä", en: "nose" }, { fi: "vatsa", en: "stomach" }, { fi: "paita", en: "shirt" }, { fi: "housut", en: "pants" }, { fi: "kengät", en: "shoes" }, { fi: "takki", en: "coat" }, { fi: "hattu", en: "hat" }, { fi: "mekko", en: "dress" }, { fi: "sormus", en: "ring" },
+            // Food & Drink
+            { fi: "leipä", en: "bread" }, { fi: "voi", en: "butter" }, { fi: "maito", en: "milk" }, { fi: "kahvi", en: "coffee" }, { fi: "tee", en: "tea" }, { fi: "omena", en: "apple" }, { fi: "marja", en: "berry" }, { fi: "liha", en: "meat" }, { fi: "juusto", en: "cheese" }, { fi: "muna", en: "egg" }, { fi: "peruna", en: "potato" }, { fi: "pulla", en: "bun" }, { fi: "kakku", en: "cake" }, { fi: "mehu", en: "juice" }, { fi: "olut", en: "beer" }, { fi: "viini", en: "wine" },
+            // Adjectives
+            { fi: "iso", en: "big" }, { fi: "pieni", en: "small" }, { fi: "hyvä", en: "good" }, { fi: "paha", en: "bad" }, { fi: "kaunis", en: "beautiful" }, { fi: "uusi", en: "new" }, { fi: "vanha", en: "old" }, { fi: "kuuma", en: "hot" }, { fi: "kylmä", en: "cold" }, { fi: "pitkä", en: "long" }, { fi: "lyhyt", en: "short" }, { fi: "rikas", en: "rich" }, { fi: "köyhä", en: "poor" }, { fi: "iloinen", en: "happy" }, { fi: "surullinen", en: "sad" }, { fi: "vihainen", en: "angry" }, { fi: "nopea", en: "fast" }, { fi: "hidas", en: "slow" },
+            // Verbs
+            { fi: "olla", en: "to be" }, { fi: "tulla", en: "to come" }, { fi: "mennä", en: "to go" }, { fi: "syödä", en: "to eat" }, { fi: "juoda", en: "to drink" }, { fi: "nukkua", en: "to sleep" }, { fi: "puhua", en: "to speak" }, { fi: "lukea", en: "to read" }, { fi: "ostaa", en: "to buy" }, { fi: "antaa", en: "to give" }, { fi: "tehdä", en: "to do" }, { fi: "nähdä", en: "to see" }, { fi: "kuulla", en: "to hear" }, { fi: "ajaa", en: "to drive" }, { fi: "uida", en: "to swim" }, { fi: "laulaa", en: "to sing" }, { fi: "nauraa", en: "to laugh" }, { fi: "itkeä", en: "to cry" }, { fi: "juosta", en: "to run" }, { fi: "seisoa", en: "to stand" }, { fi: "istua", en: "to sit" },
+            // Places & Objects
+            { fi: "talo", en: "house" }, { fi: "pöytä", en: "table" }, { fi: "tuoli", en: "chair" }, { fi: "kynä", en: "pen" }, { fi: "paperi", en: "paper" }, { fi: "raha", en: "money" }, { fi: "avain", en: "key" }, { fi: "laukku", en: "bag" }, { fi: "tori", en: "market" }, { fi: "kauppa", en: "shop" }, { fi: "puisto", en: "park" }, { fi: "koulu", en: "school" }, { fi: "kirkko", en: "church" }, { fi: "silta", en: "bridge" }, { fi: "sauna", en: "sauna" }, { fi: "vene", en: "boat" }, { fi: "mökki", en: "cottage" },
+            // Questions & Other
+            { fi: "kyllä", en: "yes" }, { fi: "ei", en: "no" }, { fi: "hei", en: "hello" }, { fi: "kiitos", en: "thanks" }, { fi: "miksi", en: "why" }, { fi: "mitä", en: "what" }, { fi: "kuka", en: "who" }, { fi: "missä", en: "where" }, { fi: "koska", en: "when" }, { fi: "miten", en: "how" }, { fi: "paljon", en: "much" }, { fi: "vähän", en: "little" }, { fi: "ehkä", en: "maybe" }
+        ];
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const healthDisplay = document.getElementById('healthDisplay');
+        const defeatedList = document.getElementById('defeatedList');
+        const inputElement = document.getElementById('playerInput');
+        const sound = new SoundManager();
+
+        let gameState = 'start';
+        let score = 0, health = 100, frameCount = 0;
+        let meteors = [], particles = [], lasers = [], stars = [], buildings = [];
+        let spawnRate = 120, difficultyMultiplier = 1.0;
+
+        class Meteor {
+            constructor() {
+                const wordObj = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+                this.word = wordObj.fi;
+                this.translation = wordObj.en;
+                this.x = Math.random() * (canvas.width - 100) + 50;
+                this.y = -50;
+                const baseSpeed = 0.25 * difficultyMultiplier;
+                const lengthFactor = Math.max(0, 10 - this.word.length) * 0.06;
+                this.speed = baseSpeed + lengthFactor + (Math.random() * 0.2);
+                this.radius = 5; this.isHit = false; this.hitTimer = 0; this.trail = [];
+            }
+            update() {
+                if (this.isHit) { this.hitTimer++; return; }
+                this.trail.push({ x: this.x, y: this.y, alpha: 1.0 });
+                if (this.trail.length > 160) this.trail.shift();
+                this.y += this.speed;
+                if (this.y > canvas.height - 100) { takeDamage(15); createExplosion(this.x, this.y, '#ef4444'); return 'destroyed'; }
+                return 'active';
+            }
+            draw() {
+                for (let i = 0; i < this.trail.length; i++) {
+                    const point = this.trail[i];
+                    point.alpha -= 0.006;
+                    if (point.alpha <= 0) continue;
+                    ctx.beginPath();
+                    const trailSize = this.radius * (i / this.trail.length) * 0.75;
+                    ctx.arc(point.x, point.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 100, 0, ${point.alpha})`;
+                    ctx.fill();
+                }
+                if (!this.isHit) {
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    let grad = ctx.createRadialGradient(this.x, this.y, 1, this.x, this.y, this.radius);
+                    grad.addColorStop(0, '#fdba74'); grad.addColorStop(1, '#dc2626');
+                    ctx.fillStyle = grad; ctx.fill();
+                    ctx.font = '24px "VT323"'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
+                    ctx.shadowColor = "black"; ctx.shadowBlur = 4;
+                    ctx.fillText(this.word.toUpperCase(), this.x, this.y + 25);
+                    ctx.shadowBlur = 0;
+                } else {
+                    const alpha = 1.0 - (this.hitTimer / 60);
+                    ctx.font = 'bold 28px "VT323"'; ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`;
+                    ctx.textAlign = 'center'; ctx.fillText(this.translation.toUpperCase(), this.x, this.y);
+                }
+            }
+        }
+
+        class Laser {
+            constructor(tx, ty) { this.sx = canvas.width / 2; this.sy = canvas.height - 80; this.tx = tx; this.ty = ty; this.p = 0; this.v = 0.15; this.active = true; }
+            update() { this.p += this.v; if (this.p >= 1) { this.active = false; return 'hit'; } return 'active'; }
+            draw() {
+                if (!this.active) return;
+                const cx = this.sx + (this.tx - this.sx) * this.p;
+                const cy = this.sy + (this.ty - this.sy) * this.p;
+                ctx.beginPath(); ctx.moveTo(this.sx, this.sy); ctx.lineTo(cx, cy);
+                ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 4; ctx.shadowBlur = 10; ctx.shadowColor = '#22d3ee';
+                ctx.stroke(); ctx.shadowBlur = 0;
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y; this.vx = (Math.random() - 0.5) * 8; this.vy = (Math.random() - 0.5) * 8;
+                this.life = 1.0; this.color = color; this.size = Math.random() * 4 + 2;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.life -= 0.03; this.size *= 0.95; return this.life > 0; }
+            draw() { ctx.globalAlpha = this.life; ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.size, this.size); ctx.globalAlpha = 1.0; }
+        }
+
+        function generateCity() {
+            buildings = [];
+            let cx = 0;
+            while (cx < canvas.width) {
+                const w = Math.random() * 30 + 30;
+                const h = Math.random() * 60 + 40;
+                const windows = [];
+                for (let wy = 5; wy < h - 5; wy += 10) {
+                    for (let wx = 5; wx < w - 5; wx += 8) {
+                        if (Math.random() > 0.4) windows.push({ x: wx, y: wy });
+                    }
+                }
+                buildings.push({ x: cx, y: canvas.height - 80 - h, w: w, h: h, windows: windows });
+                cx += w;
+            }
+        }
+
+        function drawCity() {
+            let color = health > 30 ? '#4ade80' : `rgba(239, 68, 68, ${0.5 + Math.sin(frameCount * 0.2) * 0.5})`;
+            ctx.fillStyle = color;
+            ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
+            buildings.forEach(b => {
+                ctx.fillStyle = color;
+                ctx.fillRect(b.x, b.y, b.w, b.h);
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                b.windows.forEach(win => { ctx.fillRect(b.x + win.x, b.y + win.y, 4, 6); });
+            });
+        }
+
+        function startGame() {
+            sound.init();
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('restartContainer').classList.add('hidden');
+            gameState = 'playing';
+            score = 0; health = 100; frameCount = 0; difficultyMultiplier = 1.0; // RESET SPEED
+            meteors = []; lasers = []; particles = [];
+            defeatedList.innerHTML = ''; inputElement.value = ''; inputElement.focus();
+            updateUI(); generateCity(); gameLoop();
+        }
+
+        function processInput() {
+            const val = inputElement.value.toLowerCase().trim();
+            if (!val) return;
+            const targets = meteors.filter(m => !m.isHit).sort((a, b) => b.y - a.y);
+            const target = targets.find(m => m.word === val);
+            if (target) {
+                sound.playLaser(); lasers.push(new Laser(target.x, target.y));
+                target.isHit = true; score += target.word.length * 100;
+                addDefeatedWord(target.word, target.translation); inputElement.value = '';
+            } else {
+                sound.playError(); document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 500);
+            }
+        }
+
+        function addDefeatedWord(fi, en) {
+            const li = document.createElement('li');
+            li.innerHTML = `<span class="text-white">${fi}</span> <span class="text-gray-400 text-xs">-> ${en}</span>`;
+            defeatedList.prepend(li);
+            if (defeatedList.children.length > 20) defeatedList.removeChild(defeatedList.lastChild);
+        }
+
+        function takeDamage(amt) {
+            health -= amt; sound.playExplosion();
+            document.body.classList.add('shake'); setTimeout(() => document.body.classList.remove('shake'), 500);
+            if (health <= 0) { health = 0; endGame(); }
+            updateUI();
+        }
+
+        function updateUI() {
+            scoreDisplay.textContent = score;
+            healthDisplay.textContent = health + '%';
+            healthDisplay.className = health < 30 ? 'text-red-500 animate-pulse font-bold shadow-red-500' : 'text-green-400';
+        }
+
+        function createExplosion(x, y, c) { for (let i = 0; i < 15; i++) particles.push(new Particle(x, y, c)); }
+
+        function endGame() {
+            gameState = 'gameover';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('restartContainer').classList.remove('hidden');
+                document.getElementById('restartContainer').classList.add('fade-in');
+                gameState = 'waiting_restart';
+            }, 1000);
+        }
+
+        function gameLoop() {
+            if (gameState === 'start') return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            frameCount++;
+            drawCity();
+            if (gameState === 'playing') {
+                if (frameCount % 600 === 0) difficultyMultiplier += 0.12;
+                let curRate = Math.max(25, Math.floor(spawnRate / difficultyMultiplier));
+                if (frameCount % curRate === 0) meteors.push(new Meteor());
+                for (let i = meteors.length - 1; i >= 0; i--) {
+                    const status = meteors[i].update();
+                    meteors[i].draw();
+                    if (status === 'destroyed') meteors.splice(i, 1);
+                    else if (meteors[i].isHit && meteors[i].hitTimer > 60) {
+                        createExplosion(meteors[i].x, meteors[i].y, '#4ade80');
+                        meteors.splice(i, 1);
+                    }
+                }
+                for (let i = lasers.length - 1; i >= 0; i--) {
+                    if (lasers[i].update() === 'hit') lasers.splice(i, 1);
+                    else lasers[i].draw();
+                }
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    if (!particles[i].update()) particles.splice(i, 1);
+                    else particles[i].draw();
+                }
+            } else {
+                meteors.forEach(m => m.draw()); lasers.forEach(l => l.draw()); particles.forEach(p => p.draw());
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        function init() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            generateCity();
+            window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; generateCity(); });
+            inputElement.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    if (gameState === 'playing') processInput();
+                    else if (gameState === 'waiting_restart') startGame();
+                }
+                if (gameState === 'playing') sound.playType();
+            });
+            inputElement.addEventListener('input', () => {
+                if (gameState !== 'playing') return;
+                const val = inputElement.value.toLowerCase().trim();
+                if (meteors.find(m => !m.isHit && m.word === val)) processInput();
+            });
+            document.getElementById('startButton').addEventListener('click', startGame);
+            document.getElementById('restartButton').addEventListener('click', startGame);
+        }
+        init();
+    </script>
+</body>
+
+</html>
