@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Deca-Search v5.1: Final Release</title>
+    <title>Deca-Search v5.2: Precision UI</title>
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -166,11 +166,13 @@
                 return map;
             };
 
+            // --- Reset Logic: When Sector changes, reset all sliders to 0 ---
             const handleSectorClick = (sectorId) => {
                 enableAudio();
-                const newPos = [...positions];
-                newPos[0] = sectorId;
-                setPositions(newPos);
+                
+                // [SectorID, 0, 0, 0, 0] -> Resets Grand, Major, Minor, Patch
+                setPositions([sectorId, 0, 0, 0, 0]);
+                
                 AudioEngine.playTick(40);
 
                 if (typeof gtag === 'function') {
@@ -181,7 +183,6 @@
                 }
             };
 
-            // --- Custom Touch/Pointer Handler ---
             const handlePointerDown = (e, arrIdx) => {
                 e.preventDefault();
                 enableAudio();
@@ -266,7 +267,7 @@
                     <header className="flex-none h-14 border-b border-slate-800 flex items-center justify-between px-4 z-20 bg-slate-950/90 backdrop-blur gap-4">
                         <div className="flex items-center gap-2 flex-none">
                             <div className={`w-2 h-2 rounded-full ${audioReady ? 'bg-cyan-500 shadow-[0_0_10px_cyan]' : 'bg-slate-600 animate-pulse'}`}></div>
-                            <h1 className="mono-font text-base md:text-lg font-bold text-cyan-500 tracking-wider hidden md:block">DECA-SEARCH v5.1</h1>
+                            <h1 className="mono-font text-base md:text-lg font-bold text-cyan-500 tracking-wider hidden md:block">DECA-SEARCH v5.2</h1>
                             <h1 className="mono-font text-base font-bold text-cyan-500 tracking-wider md:hidden">DS-v5</h1>
                         </div>
 
@@ -312,11 +313,14 @@
                             })}
                         </div>
 
-                        {/* 2. SLIDERS (TOUCH OPTIMIZED) */}
+                        {/* 2. SLIDERS (v5.2 Update: Dynamic Alignment) */}
                         {SLIDERS.map((lvl) => {
                             const val = positions[lvl.idx];
                             const heatmap = useMemo(() => getHeatmap(lvl.idx), [positions.slice(0, lvl.idx), sortedIds]);
-
+                            
+                            // Percentage for positioning (0.0 to 1.0)
+                            const p = val / (STEPS - 1);
+                            
                             return (
                                 <div key={lvl.idx} className="flex-1 relative border-b border-slate-800/50 last:border-0 group">
                                     <div className={`absolute inset-0 bg-gradient-to-r ${lvl.color} opacity-10 transition-opacity duration-300 ${activeRow === lvl.idx ? 'opacity-30' : ''}`}></div>
@@ -328,7 +332,7 @@
                                         <span className="text-[9px] text-slate-600 mono-font mt-0.5">x10^{lvl.pow}</span>
                                     </div>
 
-                                    {/* Slider Touch Area */}
+                                    {/* Slider Touch Area (Padding keeps text from hitting edge, but track is full width inside) */}
                                     <div 
                                         className="absolute left-24 right-0 top-0 bottom-0 px-8 cursor-ew-resize"
                                         style={{ touchAction: 'none' }} 
@@ -348,11 +352,12 @@
                                         <div className="absolute inset-x-8 h-[1px] bg-slate-700/30 top-1/2 -translate-y-1/2 pointer-events-none"></div>
 
                                         {/* Custom Thumb & Floating Value */}
+                                        {/* v5.2 FIX: Dynamic transform for edge alignment */}
                                         <div
                                             className="absolute top-0 bottom-0 pointer-events-none transition-all duration-75 ease-out"
                                             style={{
-                                                left: `${(val / (STEPS - 1)) * 100}%`,
-                                                transform: 'translateX(-50%)',
+                                                left: `${p * 100}%`,
+                                                transform: `translateX(-${p * 100}%)`,
                                                 width: '60px'
                                             }}
                                         >
@@ -425,9 +430,9 @@
                     {!audioReady && (
                         <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
                             <div className="border border-cyan-900 bg-slate-900/90 p-6 max-w-sm text-center shadow-2xl rounded-sm">
-                                <h2 className="text-cyan-500 text-xl font-bold mb-2 mono-font tracking-widest">DECA-SEARCH v5.1</h2>
+                                <h2 className="text-cyan-500 text-xl font-bold mb-2 mono-font tracking-widest">DECA-SEARCH v5.2</h2>
                                 <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-                                    Touch Optimized.<br/>
+                                    Precision UI Update.<br/>
                                     System Online.
                                 </p>
                                 <button className="px-6 py-2 bg-cyan-900/50 hover:bg-cyan-800 text-cyan-200 text-sm font-bold border border-cyan-700 tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]">
