@@ -106,7 +106,8 @@
 
     <canvas id="gameCanvas" class="absolute inset-0 z-0"></canvas>
 
-    <div class="ui-layer top-0 left-0 w-full p-4 flex justify-between items-start z-10">
+    <!-- 修正: z-10 を z-[60] に変更して、Game Over画面(z-50)より手前にする -->
+    <div class="ui-layer top-0 left-0 w-full p-4 flex justify-between items-start z-[60]">
         <div class="flex flex-col">
             <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md">FINNISH DEFENSE v5.0</h1>
 
@@ -285,6 +286,12 @@
                 const baseSpeed = 0.25 * difficultyMultiplier;
                 const lengthFactor = Math.max(0, 10 - this.word.length) * 0.06;
                 this.speed = baseSpeed + lengthFactor + (Math.random() * 0.2);
+
+                // 追加: ä や ö が含まれている場合は、入力が難しいので速度を70%に落とす
+                if (/[äö]/.test(this.word)) {
+                    this.speed *= 0.7;
+                }
+
                 this.radius = 5; this.isHit = false; this.hitTimer = 0; this.trail = [];
             }
             update() {
