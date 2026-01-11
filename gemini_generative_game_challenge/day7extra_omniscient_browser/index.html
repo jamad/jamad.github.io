@@ -4,89 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Deca-Search v4: Density Map & Search</title>
+    <title>Deca-Search v5.1: Final Release</title>
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap"
-        rel="stylesheet">
-
-    <style>
-        body {
-            font-family: 'Inter', 'Noto Sans JP', sans-serif;
-            background-color: #020617;
-            color: #e2e8f0;
-            overflow: hidden;
-            touch-action: none;
-        }
-
-        .mono-font {
-            font-family: 'Share Tech Mono', monospace;
-        }
-
-        /* Slider Styling */
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-            cursor: pointer;
-            outline: none;
-            z-index: 20;
-        }
-
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 100%;
-            width: 60px;
-            background: transparent;
-            cursor: ew-resize;
-            z-index: 30;
-            position: relative;
-        }
-
-        .scanline {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2) 100%);
-            background-size: 100% 4px;
-            pointer-events: none;
-        }
-
-        .grid-cell {
-            transition: all 0.2s ease-out;
-            border: 1px solid #1e293b;
-        }
-
-        .grid-cell:hover {
-            background-color: #0f172a;
-            border-color: #06b6d4;
-            transform: translateY(-2px);
-            z-index: 20;
-        }
-
-        .btn-active {
-            background-color: rgba(6, 182, 212, 0.2);
-            border-color: #06b6d4;
-            color: #22d3ee;
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
-        }
-
-        /* Search Input */
-        .search-input {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid #1e293b;
-            color: #22d3ee;
-            font-family: 'Share Tech Mono', monospace;
-            transition: all 0.2s;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #06b6d4;
-            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 
     <!-- Google Analytics (GA4) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QEJBQQMWT9"></script>
@@ -96,6 +20,22 @@
         gtag('js', new Date());
         gtag('config', 'G-QEJBQQMWT9');
     </script>
+
+    <style>
+        body { font-family: 'Inter', 'Noto Sans JP', sans-serif; background-color: #020617; color: #e2e8f0; overflow: hidden; touch-action: none; }
+        .mono-font { font-family: 'Share Tech Mono', monospace; }
+        
+        /* Scanline Effect */
+        .scanline { background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2) 100%); background-size: 100% 4px; pointer-events: none; }
+        
+        /* Grid Animations */
+        .grid-cell { transition: all 0.2s ease-out; border: 1px solid #1e293b; }
+        .grid-cell:hover { background-color: #0f172a; border-color: #06b6d4; transform: translateY(-2px); z-index: 20; }
+        .btn-active { background-color: rgba(6, 182, 212, 0.2); border-color: #06b6d4; color: #22d3ee; box-shadow: 0 0 15px rgba(6, 182, 212, 0.3); }
+
+        /* Search Input */
+        .search-input:focus { outline: none; border-color: #06b6d4; box-shadow: 0 0 10px rgba(6, 182, 212, 0.2); }
+    </style>
 </head>
 
 <body>
@@ -121,7 +61,6 @@
             { idx: 4, name: "PATCH", pow: 1, color: "from-teal-900 to-emerald-900", freq: 400 },
         ];
 
-        // L0(10^9), L1(10^7), L2(10^5), L3(10^3), L4(10^1)
         const MULTIPLIERS = [1000000000, 10000000, 100000, 1000, 10];
 
         const AudioEngine = {
@@ -159,8 +98,6 @@
             }
         };
 
-        // --- Helper: Check if data exists in range [min, max) ---
-        // Uses binary search on sorted IDs for performance
         const hasDataInRange = (sortedIds, min, max) => {
             let left = 0;
             let right = sortedIds.length - 1;
@@ -176,14 +113,13 @@
         const App = () => {
             const [positions, setPositions] = useState([0, 0, 0, 0, 0]);
             const [dataMap, setDataMap] = useState({});
-            const [sortedIds, setSortedIds] = useState([]); // For Heatmap
+            const [sortedIds, setSortedIds] = useState([]);
             const [audioReady, setAudioReady] = useState(false);
             const [activeRow, setActiveRow] = useState(null);
-
+            
             const [loadState, setLoadState] = useState("INITIALIZING");
             const [totalCount, setTotalCount] = useState(0);
-
-            // Search
+            
             const [searchQuery, setSearchQuery] = useState("");
             const [isAutoPiloting, setIsAutoPiloting] = useState(false);
 
@@ -213,33 +149,19 @@
                 return positions.reduce((acc, pos, idx) => acc + (pos * MULTIPLIERS[idx]), 0);
             }, [positions]);
 
-            // --- Heatmap Generator ---
-            // Calculates which steps (0-99) have data for a given slider level
             const getHeatmap = (levelIdx) => {
                 if (sortedIds.length === 0) return [];
-
-                // Calculate the "Base Index" determined by parent sliders
                 let base = 0;
                 for (let i = 0; i < levelIdx; i++) {
                     base += positions[i] * MULTIPLIERS[i];
                 }
-
                 const multiplier = MULTIPLIERS[levelIdx];
                 const map = [];
-
-                // Check each step 0-99
                 for (let step = 0; step < STEPS; step++) {
                     const min = base + (step * multiplier);
                     const max = base + ((step + 1) * multiplier);
-
-                    // L4 (PATCH) is special: it displays 10 items.
-                    // If levelIdx is 4, max is min + 10.
-
-                    if (hasDataInRange(sortedIds, min, max)) {
-                        map.push(true);
-                    } else {
-                        map.push(false);
-                    }
+                    if (hasDataInRange(sortedIds, min, max)) map.push(true);
+                    else map.push(false);
                 }
                 return map;
             };
@@ -248,275 +170,86 @@
                 enableAudio();
                 const newPos = [...positions];
                 newPos[0] = sectorId;
-                // Reset lower sliders to 0 to avoid getting lost? Or keep them?
-                // Let's keep them but maybe they land in void.
-                // Better: Reset lower sliders to find start of data in that sector?
-                // For now, simple switch.
                 setPositions(newPos);
                 AudioEngine.playTick(40);
-            };
 
-            const handleSlide = (arrIdx, val) => {
-                enableAudio();
-                const numVal = parseInt(val, 10);
-                if (positions[arrIdx] !== numVal) {
-                    const newPos = [...positions];
-                    newPos[arrIdx] = numVal;
-                    setPositions(newPos);
-                    setActiveRow(arrIdx);
-                    const freq = SLIDERS.find(s => s.idx === arrIdx)?.freq || 100;
-                    AudioEngine.playTick(freq);
-                    setTimeout(() => setActiveRow(null), 200);
+                // GA Event: Sector Change
+                if (typeof gtag === 'function') {
+                    gtag('event', 'select_content', {
+                        content_type: 'sector',
+                        item_id: SECTORS[sectorId].full
+                    });
                 }
             };
 
-            // --- Search & Auto-Pilot ---
+            // --- Custom Touch/Pointer Handler (iPad Fix) ---
+            const handlePointerDown = (e, arrIdx) => {
+                e.preventDefault();
+                enableAudio();
+                e.currentTarget.setPointerCapture(e.pointerId);
+                setActiveRow(arrIdx);
+                updateSliderFromPointer(e, arrIdx);
+            };
+
+            const handlePointerMove = (e, arrIdx) => {
+                if (activeRow === arrIdx) {
+                    updateSliderFromPointer(e, arrIdx);
+                }
+            };
+
+            const handlePointerUp = (e) => {
+                 e.currentTarget.releasePointerCapture(e.pointerId);
+                 setActiveRow(null);
+            };
+
+            const updateSliderFromPointer = (e, arrIdx) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                let percent = x / rect.width;
+                percent = Math.max(0, Math.min(1, percent));
+                const newVal = Math.floor(percent * (STEPS - 1));
+                
+                if (positions[arrIdx] !== newVal) {
+                    const newPos = [...positions];
+                    newPos[arrIdx] = newVal;
+                    setPositions(newPos);
+                    const freq = SLIDERS.find(s => s.idx === arrIdx)?.freq || 100;
+                    AudioEngine.playTick(freq);
+                }
+            };
+
             const performSearch = (e) => {
                 e.preventDefault();
                 if (!searchQuery) return;
-
                 enableAudio();
                 const q = searchQuery.toLowerCase().trim();
 
-                // Simple linear search (fast enough for <500k)
+                // GA Event: Search
+                if (typeof gtag === 'function') {
+                    gtag('event', 'search', { search_term: q });
+                }
+
                 const foundId = Object.keys(dataMap).find(key => {
                     const item = dataMap[key];
                     return item.en && item.en.toLowerCase() === q;
                 });
-
-                if (foundId) {
-                    startAutoPilot(Number(foundId));
-                } else {
-                    alert("NOT FOUND");
-                }
+                if (foundId) startAutoPilot(Number(foundId));
+                else alert("NOT FOUND");
             };
 
             const startAutoPilot = (targetId) => {
                 setIsAutoPiloting(true);
                 AudioEngine.playFound();
-
-                // Decompose ID into slider positions
                 let remain = targetId;
-                const newPos = [0, 0, 0, 0, 0];
-
-                newPos[0] = Math.floor(remain / MULTIPLIERS[0]);
-                remain %= MULTIPLIERS[0];
-
-                newPos[1] = Math.floor(remain / MULTIPLIERS[1]);
-                remain %= MULTIPLIERS[1];
-
-                newPos[2] = Math.floor(remain / MULTIPLIERS[2]);
-                remain %= MULTIPLIERS[2];
-
-                newPos[3] = Math.floor(remain / MULTIPLIERS[3]);
-                remain %= MULTIPLIERS[3];
-
+                const newPos = [0,0,0,0,0];
+                newPos[0] = Math.floor(remain / MULTIPLIERS[0]); remain %= MULTIPLIERS[0];
+                newPos[1] = Math.floor(remain / MULTIPLIERS[1]); remain %= MULTIPLIERS[1];
+                newPos[2] = Math.floor(remain / MULTIPLIERS[2]); remain %= MULTIPLIERS[2];
+                newPos[3] = Math.floor(remain / MULTIPLIERS[3]); remain %= MULTIPLIERS[3];
                 newPos[4] = Math.floor(remain / MULTIPLIERS[4]);
-
-                // Animate change? For now, instant jump with effect
                 setPositions(newPos);
                 setTimeout(() => setIsAutoPiloting(false), 500);
             };
 
             const getDisplayData = (offset) => {
-                const targetIdx = globalIndex + offset;
-                const key = targetIdx.toString();
-                if (dataMap[key]) {
-                    return { value: dataMap[key], type: dataMap[key].sector || 'DATA', highlight: true, isDict: true };
-                }
-                return { value: `SEC::${(targetIdx * 12345).toString(16).toUpperCase().slice(0, 8)}`, type: 'VOID', highlight: false, isDict: false };
-            };
-
-            const currentSector = SECTORS.find(s => s.id === positions[0]) || SECTORS[0];
-
-            return (
-                <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-300 relative" onClick={enableAudio}>
-                    {/* Header */}
-                    <header className="flex-none h-14 border-b border-slate-800 flex items-center justify-between px-4 z-20 bg-slate-950/90 backdrop-blur gap-4">
-                        <div className="flex items-center gap-2 flex-none">
-                            <div className={`w-2 h-2 rounded-full ${audioReady ? 'bg-cyan-500 shadow-[0_0_10px_cyan]' : 'bg-slate-600 animate-pulse'}`}></div>
-                            <h1 className="mono-font text-base md:text-lg font-bold text-cyan-500 tracking-wider hidden md:block">DECA-SEARCH v4</h1>
-                            <h1 className="mono-font text-base font-bold text-cyan-500 tracking-wider md:hidden">DS-v4</h1>
-                        </div>
-
-                        {/* Search Bar */}
-                        <form onSubmit={performSearch} className="flex-1 max-w-md flex relative">
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="SEARCH KEYWORD..."
-                                className="w-full bg-slate-900 border border-slate-700 rounded-l px-3 py-1 text-sm text-cyan-300 mono-font focus:outline-none focus:border-cyan-500 placeholder-slate-600"
-                            />
-                            <button type="submit" className="bg-slate-800 border-y border-r border-slate-700 px-3 text-cyan-500 hover:bg-slate-700 rounded-r">
-                                <span className="mono-font text-xs font-bold">GO</span>
-                            </button>
-                        </form>
-
-                        <div className="text-right flex-none hidden md:block">
-                            <div className="text-xs text-cyan-400 mono-font font-bold">{currentSector.full}</div>
-                            <div className="text-[10px] text-slate-500 mono-font">{totalCount > 0 ? `${totalCount.toLocaleString()} RECS` : loadState}</div>
-                        </div>
-                    </header>
-
-                    {/* --- CONTROL AREA --- */}
-                    <section className="flex-1 flex flex-col relative z-10 min-h-0 border-b border-slate-800 shadow-xl">
-
-                        {/* 1. SECTOR SELECTOR */}
-                        <div className="h-16 flex border-b border-slate-800/50 bg-slate-900/50">
-                            {SECTORS.map((s) => {
-                                const isActive = positions[0] === s.id;
-                                return (
-                                    <button
-                                        key={s.id}
-                                        onClick={() => handleSectorClick(s.id)}
-                                        className={`flex-1 flex flex-col items-center justify-center border-r border-slate-800/50 transition-all duration-200 group
-                                            ${isActive ? 'btn-active z-10' : 'hover:bg-slate-800/50 text-slate-500'}
-                                        `}
-                                    >
-                                        <span className={`text-xs md:text-sm font-bold tracking-widest ${isActive ? 'text-cyan-300' : 'text-slate-400'}`}>{s.label}</span>
-                                        <span className="text-[8px] md:text-[9px] opacity-70 mono-font mt-1">{s.desc}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-                        {/* 2. SLIDERS (L1 - L4) */}
-                        {SLIDERS.map((lvl) => {
-                            const val = positions[lvl.idx];
-                            // Generate Heatmap for this slider
-                            const heatmap = useMemo(() => getHeatmap(lvl.idx), [positions.slice(0, lvl.idx), sortedIds]); // Depend only on parent sliders
-
-                            return (
-                                <div key={lvl.idx} className="flex-1 relative border-b border-slate-800/50 last:border-0 group">
-                                    <div className={`absolute inset-0 bg-gradient-to-r ${lvl.color} opacity-10 transition-opacity duration-300 ${activeRow === lvl.idx ? 'opacity-30' : ''}`}></div>
-
-                                    {/* Left Label */}
-                                    <div className="absolute left-0 top-0 bottom-0 w-24 bg-slate-950/30 border-r border-slate-800/30 flex flex-col justify-center px-3 z-10 pointer-events-none">
-                                        <span className="text-[10px] font-bold text-cyan-700 tracking-widest leading-none">L{lvl.idx}</span>
-                                        <span className="text-xs md:text-sm font-semibold text-slate-400 group-hover:text-slate-200 transition-colors mt-1">{lvl.name}</span>
-                                        <span className="text-[9px] text-slate-600 mono-font mt-0.5">x10^{lvl.pow}</span>
-                                    </div>
-
-                                    {/* Slider Area */}
-                                    <div className="absolute left-24 right-0 top-0 bottom-0 px-8"> {/* Added Padding */}
-
-                                        {/* Heatmap Layer (Behind Input) */}
-                                        <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 h-1 flex pointer-events-none opacity-50">
-                                            {heatmap.map((hasData, i) => (
-                                                <div key={i} className={`flex-1 h-full mx-[1px] rounded-sm ${hasData ? 'bg-cyan-500 shadow-[0_0_4px_cyan]' : 'bg-slate-800'}`}></div>
-                                            ))}
-                                        </div>
-
-                                        {/* Input */}
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max={STEPS - 1}
-                                            value={val}
-                                            onChange={(e) => handleSlide(lvl.idx, e.target.value)}
-                                            className="relative w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                                        />
-
-                                        {/* Custom Thumb & Floating Value */}
-                                        <div
-                                            className="absolute top-0 bottom-0 pointer-events-none transition-all duration-100 ease-out"
-                                            style={{
-                                                left: `${(val / (STEPS - 1)) * 100}%`,
-                                                transform: 'translateX(-50%)',
-                                                width: '60px'
-                                            }}
-                                        >
-                                            {/* Thumb Bar */}
-                                            <div className="h-full w-1 mx-auto bg-cyan-600/50 group-hover:bg-cyan-500/80 transition-colors"></div>
-
-                                            {/* Floating Value (Big Font) */}
-                                            <div className={`
-                                                absolute -top-3 left-1/2 -translate-x-1/2 
-                                                bg-slate-900 border border-cyan-800 text-cyan-400 
-                                                text-xl md:text-2xl font-bold 
-                                                px-3 py-1 rounded shadow-[0_0_15px_rgba(0,0,0,0.8)] mono-font z-40
-                                                transition-all
-                                                ${activeRow === lvl.idx || isAutoPiloting ? 'scale-110 border-cyan-500 text-cyan-200' : ''}
-                                            `}>
-                                                {String(val).padStart(2, '0')}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </section>
-
-                    {/* --- GRID --- */}
-                    <section className="h-[40vh] bg-slate-950 relative z-10 p-2 border-t border-cyan-900/30">
-                        <div className="h-full w-full grid grid-cols-5 grid-rows-2 gap-2">
-                            {Array.from({ length: 10 }).map((_, offset) => {
-                                const data = getDisplayData(offset);
-                                const isDict = data.isDict;
-                                return (
-                                    <div key={offset} className={`grid-cell relative rounded p-2 flex flex-col justify-between overflow-hidden ${data.highlight ? 'bg-cyan-950/30 border-cyan-700' : 'bg-slate-900/50'} ${isAutoPiloting && data.highlight ? 'animate-pulse' : ''}`}>
-                                        <div className="flex justify-between items-start text-[8px] md:text-[10px] text-slate-500">
-                                            <span className="mono-font text-slate-400">+{offset}</span>
-                                            <span className="mono-font opacity-50">{data.type}</span>
-                                        </div>
-                                        <div className="flex-1 flex flex-col items-center justify-center text-center overflow-hidden w-full">
-                                            {isDict ? (
-                                                <div className="w-full animate-in fade-in duration-75">
-                                                    <div className="text-cyan-100 text-sm md:text-lg font-bold mb-1 truncate leading-none pb-1">{data.value.en}</div>
-                                                    <div className="text-cyan-500 text-[10px] md:text-xs truncate leading-tight">{data.value.fi}</div>
-                                                    <div className="text-slate-400 text-[10px] md:text-xs truncate leading-tight font-sans">{data.value.ja}</div>
-                                                </div>
-                                            ) : (
-                                                <div className="text-slate-600 text-xs md:text-sm mono-font font-bold break-all leading-tight opacity-50">
-                                                    {data.value}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="text-[8px] text-slate-700 text-center truncate">ID: {(globalIndex + offset).toString()}</div>
-                                        {data.highlight && <div className="absolute top-0 right-0 w-2 h-2 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]"></div>}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </section>
-
-                    <div className="absolute inset-0 pointer-events-none z-30 scanline opacity-20"></div>
-
-                    {!audioReady && (
-                        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
-                            <div className="border border-cyan-900 bg-slate-900/90 p-6 max-w-sm text-center shadow-2xl rounded-sm">
-                                <h2 className="text-cyan-500 text-xl font-bold mb-2 mono-font tracking-widest">DECA-SEARCH v4</h2>
-                                <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-                                    System Online.<br />
-                                    Heatmap & Auto-Pilot Active.
-                                </p>
-                                <button className="px-6 py-2 bg-cyan-900/50 hover:bg-cyan-800 text-cyan-200 text-sm font-bold border border-cyan-700 tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                                    [ ACTIVATE ]
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-
-    <!-- Footer / Credits -->
-    <div
-        class="absolute bottom-1 right-2 z-50 text-[9px] md:text-[10px] text-slate-600 mono-font text-right pointer-events-none">
-        <div class="pointer-events-auto">
-            <span class="opacity-50">SYSTEM:</span> <a href="https://github.com/jamad" target="_blank"
-                class="text-cyan-800 hover:text-cyan-500 transition-colors">JAMAD</a>
-            <span class="mx-1 opacity-20">|</span>
-            <span class="opacity-50">DATA:</span> <a href="https://github.com/dwyl/english-words" target="_blank"
-                class="text-slate-600 hover:text-slate-400">Open Source Dictionaries</a>
-        </div>
-        <div class="opacity-30 mt-0.5">Built with React, Tailwind & Web Audio API</div>
-    </div>
-</body>
-
-</html>
+               
