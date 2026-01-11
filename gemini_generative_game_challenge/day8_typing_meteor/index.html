@@ -348,7 +348,14 @@
         }
 
         function drawCity() {
-            let color = health > 30 ? '#4ade80' : `rgba(239, 68, 68, ${0.5 + Math.sin(frameCount * 0.2) * 0.5})`;
+
+            // 修正: HPが0以下の場合は静止した赤色にする
+            let color;
+            if (health <= 0) {
+                color = '#991b1b'; // 静止した暗い赤
+            } else {
+                color = health > 30 ? '#4ade80' : `rgba(239, 68, 68, ${0.5 + Math.sin(frameCount * 0.2) * 0.5})`;
+            }
             ctx.fillStyle = color;
             ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
             buildings.forEach(b => {
@@ -425,8 +432,10 @@
             frameCount++;
             drawCity();
             if (gameState === 'playing') {
-                if (frameCount % 600 === 0) difficultyMultiplier += 0.12;
+                // 修正: frameCountが0より大きい時だけ難易度を上げる（開始直後の急上昇を防ぐ）
+                if (frameCount > 0 && frameCount % 600 === 0) difficultyMultiplier += 0.12;
                 let curRate = Math.max(25, Math.floor(spawnRate / difficultyMultiplier));
+
                 if (frameCount % curRate === 0) meteors.push(new Meteor());
                 for (let i = meteors.length - 1; i >= 0; i--) {
                     const status = meteors[i].update();
@@ -455,13 +464,23 @@
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             generateCity();
             window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; generateCity(); });
+
+
+            // 修正: ゲームプレイ中のEnterとタイピング音はInputエリアで処理
             inputElement.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    if (gameState === 'playing') processInput();
-                    else if (gameState === 'waiting_restart') startGame();
+                if (gameState === 'playing') {
+                    if (e.key === 'Enter') processInput();
+                    sound.playType();
                 }
-                if (gameState === 'playing') sound.playType();
             });
+
+            // 修正: リスタートのEnterはウィンドウ全体で監視（フォーカス外れ対策）
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && gameState === 'waiting_restart') {
+                    startGame();
+                }
+            });
+
             inputElement.addEventListener('input', () => {
                 if (gameState !== 'playing') return;
                 const val = inputElement.value.toLowerCase().trim();
