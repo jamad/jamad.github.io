@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finnish Defense: Meteor Typist v4.0</title>
+    <title>Finnish Defense: Meteor Typist v5.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -19,17 +19,19 @@
             display: block;
             width: 100%;
             height: 100%;
+            pointer-events: none; /* キャンバス自体はクリックを透過させる */
         }
 
-        .ui-layer {
-            position: absolute;
-            pointer-events: none;
+        /* 背景色専用レイヤー */
+        #bgLayer {
+            background-color: #0f172a;
         }
 
         .neon-text {
             text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #ff00de, 0 0 30px #ff00de;
         }
 
+        /* スクロールバーのカスタマイズ */
         #defeatedList::-webkit-scrollbar {
             width: 4px;
         }
@@ -48,34 +50,15 @@
             border-top: 2px solid #334155;
         }
 
+        /* アニメーション定義 */
         @keyframes shake {
-            0% {
-                transform: translate(1px, 1px) rotate(0deg);
-            }
-
-            10% {
-                transform: translate(-1px, -2px) rotate(-1deg);
-            }
-
-            20% {
-                transform: translate(-3px, 0px) rotate(1deg);
-            }
-
-            30% {
-                transform: translate(3px, 2px) rotate(0deg);
-            }
-
-            40% {
-                transform: translate(1px, -1px) rotate(1deg);
-            }
-
-            50% {
-                transform: translate(-1px, 2px) rotate(-1deg);
-            }
-
-            100% {
-                transform: translate(1px, -2px) rotate(-1deg);
-            }
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
 
         .shake {
@@ -89,31 +72,21 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 追加: 画面の高さが500px以下（スマホ横持ちやキーボード表示時）の場合 */
+        /* キーボード表示時のレイアウト調整 */
         @media (max-height: 500px) {
             .hide-on-keyboard {
                 display: none !important;
-                /* 強制的に隠す */
             }
-
-            /* スコアなどは少し小さくして表示場所を確保 */
-            .ui-layer {
+            .ui-layer-left {
                 padding-top: 5px !important;
             }
         }
 
-        /* 追加: スマホ（幅が狭い）かつプレイ中の場合、リストを隠す */
+        /* スマホプレイ中はリストを隠す */
         @media (max-width: 768px) {
             .playing-mode #logContainer {
                 display: none !important;
@@ -122,34 +95,42 @@
     </style>
 </head>
 
-
 <body class="text-white h-[100dvh] w-screen flex flex-col relative overflow-hidden">
-    <!-- 修正: h-screen -> h-[100dvh] にしてスマホのアドレスバー対策 -->
-    <canvas id="gameCanvas" class="absolute inset-0 z-0"></canvas>
+    
+    <!-- レイヤー1: 背景色 (z-0) -->
+    <div id="bgLayer" class="absolute inset-0 z-0"></div>
 
-    <!-- 修正: z-10 を z-[60] に変更して、Game Over画面(z-50)より手前にする -->
-    <!-- 修正2nd: pt-[...] を追加して、ノッチ（カメラ部分）と重ならないようにする -->
-    <!-- 修正3rd: absolute -> fixed に変更 -->
-    <div
-        class="ui-layer top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-[60] fixed">
+    <!-- レイヤー2: UI 左側 (タイトル・スコア) (z-10) -->
+    <!-- 修正: 隕石より後ろにするため z-10 に設定 -->
+    <div class="absolute top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-10 ui-layer-left pointer-events-none">
         <div class="flex flex-col">
-            <!-- 修正: タイトルに hide-on-keyboard を追加 -->
-            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md hide-on-keyboard">
-                FINNISH DEFENSE v5.7</h1>
+            <!-- 修正: モバイルでは文字サイズを小さく (text-xl md:text-3xl) -->
+            <h1 class="text-xl md:text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md hide-on-keyboard">
+                FINNISH DEFENSE v5.8
+            </h1>
 
             <div class="text-sm font-bold text-yellow-600">HI-SCORE: <span id="highScoreDisplay">0</span></div>
             <div class="text-xl mt-2">SCORE: <span id="scoreDisplay" class="text-cyan-400">0</span></div>
             <div class="text-lg">CITY SHIELD: <span id="healthDisplay" class="text-green-400">100%</span></div>
         </div>
+    </div>
 
-        <!-- 修正: ログコンテナに hide-on-keyboard を追加 -->
+    <!-- レイヤー3: キャンバス (隕石) (z-20) -->
+    <!-- 修正: タイトルより手前にするため z-20 に設定 -->
+    <canvas id="gameCanvas" class="absolute inset-0 z-20"></canvas>
+
+    <!-- レイヤー4: UI 右側 (リスト) (z-30) -->
+    <!-- 修正: リストは隕石よりさらに手前にしないと読めないため z-30 -->
+    <div class="absolute top-0 right-0 p-4 pt-[max(1rem,env(safe-area-inset-top))] z-30 pointer-events-none">
+         <!-- 修正: Game Over時に大きくなりすぎないよう max-h を設定 -->
         <div id="logContainer"
-            class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col z-[60] relative hide-on-keyboard">
+            class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col relative hide-on-keyboard transition-all duration-500">
             <div class="text-xs text-slate-400 border-b border-slate-600 mb-1 pb-1">DEFEATED WORDS LOG</div>
-            <ul id="defeatedList" class="flex-1 overflow-y-auto text-sm space-y-1 font-mono text-green-400"></ul>
+            <ul id="defeatedList" class="flex-1 overflow-y-auto text-sm space-y-1 font-mono text-green-400 pointer-events-auto"></ul>
         </div>
     </div>
 
+    <!-- レイヤー5: ゲームオーバー・スタート画面 (z-50) -->
     <div id="startScreen"
         class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center pointer-events-auto">
         <h1
@@ -168,7 +149,6 @@
         <p class="text-2xl mb-8">City Destroyed.</p>
         <div class="text-3xl mb-8">Final Score: <span id="finalScore">0</span></div>
 
-        <!-- 追加: ゲームオーバー画面のハイスコア -->
         <div class="text-xl text-yellow-400 mb-8 font-bold">High Score: <span id="finalHighScore">0</span></div>
 
         <div id="restartContainer" class="hidden">
@@ -179,16 +159,24 @@
         </div>
     </div>
 
-    <div id="inputArea" class="absolute bottom-0 w-full p-4 z-20 flex justify-center items-center">
+    <!-- レイヤー6: 入力エリア (z-40) -->
+    <div id="inputArea" class="absolute bottom-0 w-full p-4 z-40 flex justify-center items-center">
         <div class="relative w-full max-w-2xl">
             <div
                 class="absolute bottom-full left-1/2 -translate-x-1/2 w-16 h-8 bg-slate-700 rounded-t-lg border-t-2 border-x-2 border-slate-500 flex justify-center">
                 <div class="w-2 h-4 bg-cyan-500 rounded-full mt-1 animate-pulse"></div>
             </div>
-            <input type="text" id="playerInput" name="game-input-field"
-                class="w-full bg-slate-800 text-cyan-400 text-2xl px-4 py-3 rounded border-2 border-slate-600 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 uppercase placeholder-slate-600 text-center"
-                placeholder="TYPE THE METEOR NAME..." autocomplete="new-password" autocorrect="off" autocapitalize="off"
-                spellcheck="false">
+            
+            <!-- 修正: AutoFill対策のためのFormラップ -->
+            <form id="gameForm" action="#" onsubmit="return false;" class="w-full">
+                <input type="text" id="playerInput"
+                    class="w-full bg-slate-800 text-cyan-400 text-2xl px-4 py-3 rounded border-2 border-slate-600 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 uppercase placeholder-slate-600 text-center"
+                    placeholder="TYPE THE METEOR NAME..." 
+                    autocomplete="off" 
+                    autocorrect="off" 
+                    autocapitalize="off"
+                    spellcheck="false">
+            </form>
         </div>
     </div>
 
@@ -291,14 +279,10 @@
         const sound = new SoundManager();
 
         let gameState = 'start';
-        let animationFrameId; // ← この行を追加（ループ管理用）
+        let animationFrameId; 
         let score = 0, health = 100, frameCount = 0;
-        let cityShakeTimer = 0; // ← これを追加（街の揺れ管理用）
-
-        // 追加: ローカルストレージからハイスコアを読み込む（なければ0）
+        let cityShakeTimer = 0; 
         let highScore = localStorage.getItem('finnishMeteorHighScore') || 0;
-
-        // 追加: 撃破した単語コレクションの読み込み
         let wordCollection = JSON.parse(localStorage.getItem('finnishWordCollection')) || {};
 
         let meteors = [], particles = [], lasers = [], stars = [], buildings = [];
@@ -310,7 +294,6 @@
                 this.word = wordObj.fi;
                 this.translation = wordObj.en;
 
-                // 修正: 画面幅の10%〜90%の範囲に出現させる（スマホで端が見切れるのを防ぐ）
                 const margin = canvas.width * 0.1;
                 this.x = Math.random() * (canvas.width - margin * 2) + margin;
 
@@ -319,7 +302,6 @@
                 const lengthFactor = Math.max(0, 10 - this.word.length) * 0.06;
                 this.speed = baseSpeed + lengthFactor + (Math.random() * 0.2);
 
-                // 追加: ä や ö が含まれている場合は、入力が難しいので速度を70%に落とす
                 if (/[äö]/.test(this.word)) {
                     this.speed *= 0.7;
                 }
@@ -333,8 +315,6 @@
                 this.trail.push({ x: this.x, y: this.y, alpha: 1.0 });
                 if (this.trail.length > 160) this.trail.shift();
 
-                // 修正: 画面の高さに応じて速度を調整する（基準を高さ800pxとする）
-                // 画面が狭くなれば（キーボード表示など）、落下速度も遅くなる
                 const heightRatio = canvas.height / 800;
                 this.y += this.speed * heightRatio;
 
@@ -366,8 +346,6 @@
                     const alpha = 1.0 - (this.hitTimer / 60);
                     ctx.font = 'bold 28px "VT323"'; ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`;
                     ctx.textAlign = 'center';
-
-                    // 修正: 英語訳が出る位置を下に+30pxずらす
                     ctx.fillText(this.translation.toUpperCase(), this.x, this.y + 30);
                 }
             }
@@ -382,11 +360,7 @@
                 const cy = this.sy + (this.ty - this.sy) * this.p;
 
                 ctx.beginPath(); ctx.moveTo(this.sx, this.sy); ctx.lineTo(cx, cy);
-
-                // 修正: レーザーの輝き（外側の太い半透明線）
                 ctx.strokeStyle = 'rgba(34, 211, 238, 0.4)'; ctx.lineWidth = 10; ctx.stroke();
-
-                // 修正: レーザーの芯（内側の白い線）
                 ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.shadowBlur = 10; ctx.shadowColor = '#22d3ee';
                 ctx.stroke(); ctx.shadowBlur = 0;
             }
@@ -422,7 +396,6 @@
             let shakeX = 0;
             let shakeY = 0;
 
-            // シェイク計算
             if (cityShakeTimer > 0) {
                 cityShakeTimer--;
                 shakeX = (Math.random() - 0.5) * 10;
@@ -436,11 +409,12 @@
                 color = health > 30 ? '#4ade80' : `rgba(239, 68, 68, ${0.5 + Math.sin(frameCount * 0.2) * 0.5})`;
             }
 
+            // 修正: ビルを暗くして、隕石を見やすくする (透明度0.5)
+            ctx.globalAlpha = 0.5;
+            
             ctx.fillStyle = color;
-            // 地面（揺れを適用）
             ctx.fillRect(0 + shakeX, canvas.height - 80 + shakeY, canvas.width, 80);
 
-            // 建物（揺れを適用）
             buildings.forEach(b => {
                 ctx.fillStyle = color;
                 ctx.fillRect(b.x + shakeX, b.y + shakeY, b.w, b.h);
@@ -449,31 +423,31 @@
                     ctx.fillRect(b.x + win.x + shakeX, b.y + win.y + shakeY, 4, 6);
                 });
             });
+
+            // 描画設定を元に戻す
+            ctx.globalAlpha = 1.0;
         }
 
         function startGame() {
-            // 修正: 既に動いているループがあれば止める（倍速バグの防止）
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             sound.init();
 
-            // 追加: プレイ中クラスを追加（CSSでリストを隠すため）
             document.body.classList.add('playing-mode');
 
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('gameOverScreen').classList.add('hidden');
             document.getElementById('restartContainer').classList.add('hidden');
 
-            // 追加: リストのサイズを元に戻す (画面の80% -> 高さ64)
+            // 修正: リストを縮める (高さ64)
             const logContainer = document.getElementById('logContainer');
             logContainer.classList.add('h-64');
-            logContainer.classList.remove('h-[80vh]');
+            logContainer.classList.remove('h-[60vh]'); // 修正: Game Over時は60vhにするので、それを削除
 
             gameState = 'playing';
-            score = 0; health = 100; frameCount = 0; difficultyMultiplier = 1.0; // RESET SPEED
+            score = 0; health = 100; frameCount = 0; difficultyMultiplier = 1.0; 
             meteors = []; lasers = []; particles = [];
             defeatedList.innerHTML = ''; inputElement.value = ''; inputElement.focus();
 
-            // 追加: 開始時にハイスコア表示を更新
             document.getElementById('highScoreDisplay').textContent = highScore;
 
             updateUI(); generateCity(); gameLoop();
@@ -489,13 +463,11 @@
                 lasers.push(new Laser(target.x, target.y));
                 target.isHit = true;
 
-                // 修正: 撃破した瞬間に爆発エフェクトを出す
                 createExplosion(target.x, target.y, '#4ade80');
 
                 score += target.word.length * 100;
                 addDefeatedWord(target.word, target.translation);
 
-                // 追加: コレクションの更新と保存
                 if (!wordCollection[target.word]) {
                     wordCollection[target.word] = {
                         en: target.translation,
@@ -508,7 +480,6 @@
                 inputElement.value = '';
             } else {
                 sound.playError();
-                // 入力ミスのシェイクも、とりあえず街を揺らす（お好みで削除可）
                 cityShakeTimer = 5;
             }
         }
@@ -523,7 +494,6 @@
         function takeDamage(amt) {
             health -= amt;
             sound.playExplosion();
-            // 修正: 画面全体(body)ではなく、街の変数を揺らす
             cityShakeTimer = 20;
 
             if (health <= 0) { health = 0; endGame(); }
@@ -541,28 +511,23 @@
         function endGame() {
             gameState = 'gameover';
 
-            // 追加: プレイ中クラスを削除（リストを再表示するため）
             document.body.classList.remove('playing-mode');
 
-            // 追加: ハイスコアの更新と保存処理
             if (score > highScore) {
                 highScore = score;
                 localStorage.setItem('finnishMeteorHighScore', highScore);
             }
 
             document.getElementById('finalScore').textContent = score;
-
-            // 追加: ゲームオーバー画面にハイスコアを表示
             document.getElementById('finalHighScore').textContent = highScore;
-            // メイン画面の表示も更新しておく
             document.getElementById('highScoreDisplay').textContent = highScore;
 
             document.getElementById('gameOverScreen').classList.remove('hidden');
 
-            // 追加: ゲームオーバー時にリストの枠を画面下まで伸ばす (高さ64 -> 画面の80%)
+            // 修正: リストを伸ばす (画面の60%の高さまで)
             const logContainer = document.getElementById('logContainer');
             logContainer.classList.remove('h-64');
-            logContainer.classList.add('h-[80vh]');
+            logContainer.classList.add('h-[60vh]');
 
             setTimeout(() => {
                 document.getElementById('restartContainer').classList.remove('hidden');
@@ -573,11 +538,11 @@
 
         function gameLoop() {
             if (gameState === 'start') return;
+            // 修正: キャンバス背景を透明にするため clearRect を使用 (背景色は bgLayer にある)
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             frameCount++;
             drawCity();
             if (gameState === 'playing') {
-                // 修正: frameCountが0より大きい時だけ難易度を上げる（開始直後の急上昇を防ぐ）
                 if (frameCount > 0 && frameCount % 600 === 0) difficultyMultiplier += 0.12;
                 let curRate = Math.max(25, Math.floor(spawnRate / difficultyMultiplier));
 
@@ -587,7 +552,6 @@
                     meteors[i].draw();
                     if (status === 'destroyed') meteors.splice(i, 1);
                     else if (meteors[i].isHit && meteors[i].hitTimer > 60) {
-                        // createExplosion(meteors[i].x, meteors[i].y, '#4ade80'); // 修正: 爆発処理は削除（入力時に移動したため）。削除のみ行う
                         meteors.splice(i, 1);
                     }
                 }
@@ -602,52 +566,50 @@
             } else {
                 meteors.forEach(m => m.draw()); lasers.forEach(l => l.draw()); particles.forEach(p => p.draw());
             }
-            animationFrameId = requestAnimationFrame(gameLoop); // IDを保存する
+            animationFrameId = requestAnimationFrame(gameLoop); 
         }
 
         function init() {
-            // 修正: 初期化処理
+            // 修正: AutoFill対策。ランダムなname属性を付与してブラウザの学習を回避
+            const randomName = 'input_' + Math.random().toString(36).substring(2, 15);
+            inputElement.setAttribute('name', randomName);
+
             const resizeGame = () => {
-                // visualViewportが使える場合はそちらを優先（iOS対策）
                 const width = window.visualViewport ? window.visualViewport.width : window.innerWidth;
                 const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
                 canvas.width = width;
                 canvas.height = height;
 
-                // スクロールを禁止するためにbodyの高さも強制的に合わせる
                 document.body.style.height = `${height}px`;
                 document.body.style.width = `${width}px`;
 
-                // 強制的に上端へスクロール（めくり上がり防止）
                 window.scrollTo(0, 0);
 
                 generateCity();
             };
 
-            // 初回実行
             resizeGame();
 
-            // リサイズ監視（visualViewport APIを優先）
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', resizeGame);
-                window.visualViewport.addEventListener('scroll', () => window.scrollTo(0, 0)); // ズレ防止
+                window.visualViewport.addEventListener('scroll', () => window.scrollTo(0, 0)); 
             } else {
                 window.addEventListener('resize', resizeGame);
             }
 
-            // 修正: キャンバスのどこを触っても入力欄にフォーカスする（スマホ対策）
-            canvas.addEventListener('click', (e) => {
-                // ゲーム中でなければ無効
-                if (gameState !== 'playing') return;
-
-                inputElement.focus();
-
-                // タップした直後にもリサイズを念の為走らせる（キーボード起動ラグ対策）
-                setTimeout(resizeGame, 300);
+            // キャンバスをクリックしても入力エリアにフォーカスする
+            // 修正: canvasは pointer-events: none なので、背景レイヤーかwindowで監視する
+            window.addEventListener('click', (e) => {
+                // 入力エリア内やボタンのクリックなら無視
+                if (e.target.closest('button') || e.target.closest('#inputArea')) return;
+                
+                if (gameState === 'playing') {
+                    inputElement.focus();
+                    setTimeout(resizeGame, 300);
+                }
             });
 
-            // 修正: ゲームプレイ中のEnterとタイピング音はInputエリアで処理
             inputElement.addEventListener('keydown', (e) => {
                 if (gameState === 'playing') {
                     if (e.key === 'Enter') processInput();
@@ -655,7 +617,6 @@
                 }
             });
 
-            // 修正: リスタートのEnterはウィンドウ全体で監視（フォーカス外れ対策）
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && gameState === 'waiting_restart') {
                     startGame();
