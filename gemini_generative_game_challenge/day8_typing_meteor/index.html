@@ -102,14 +102,15 @@
     </style>
 </head>
 
-<body class="text-white h-screen w-screen flex flex-col relative">
 
+<body class="text-white h-[100dvh] w-screen flex flex-col relative overflow-hidden">
+    <!-- 修正: h-screen -> h-[100dvh] にしてスマホのアドレスバー対策 -->
     <canvas id="gameCanvas" class="absolute inset-0 z-0"></canvas>
 
     <!-- 修正: z-10 を z-[60] に変更して、Game Over画面(z-50)より手前にする -->
     <div class="ui-layer top-0 left-0 w-full p-4 flex justify-between items-start z-[60]">
         <div class="flex flex-col">
-            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md">FINNISH DEFENSE v5.2</h1>
+            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md">FINNISH DEFENSE v5.3</h1>
 
             <!-- 追加: メイン画面のハイスコア -->
             <div class="text-sm font-bold text-yellow-600">HI-SCORE: <span id="highScoreDisplay">0</span></div>
@@ -275,6 +276,9 @@
         // 追加: ローカルストレージからハイスコアを読み込む（なければ0）
         let highScore = localStorage.getItem('finnishMeteorHighScore') || 0;
 
+        // 追加: 撃破した単語コレクションの読み込み
+        let wordCollection = JSON.parse(localStorage.getItem('finnishWordCollection')) || {};
+
         let meteors = [], particles = [], lasers = [], stars = [], buildings = [];
         let spawnRate = 120, difficultyMultiplier = 1.0;
 
@@ -283,7 +287,11 @@
                 const wordObj = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
                 this.word = wordObj.fi;
                 this.translation = wordObj.en;
-                this.x = Math.random() * (canvas.width - 100) + 50;
+
+                // 修正: 画面幅の10%〜90%の範囲に出現させる（スマホで端が見切れるのを防ぐ）
+                const margin = canvas.width * 0.1;
+                this.x = Math.random() * (canvas.width - margin * 2) + margin;
+
                 this.y = -50;
                 const baseSpeed = 0.25 * difficultyMultiplier;
                 const lengthFactor = Math.max(0, 10 - this.word.length) * 0.06;
@@ -452,6 +460,17 @@
 
                 score += target.word.length * 100;
                 addDefeatedWord(target.word, target.translation);
+
+                // 追加: コレクションの更新と保存
+                if (!wordCollection[target.word]) {
+                    wordCollection[target.word] = {
+                        en: target.translation,
+                        count: 0
+                    };
+                }
+                wordCollection[target.word].count++;
+                localStorage.setItem('finnishWordCollection', JSON.stringify(wordCollection));
+
                 inputElement.value = '';
             } else {
                 sound.playError();
