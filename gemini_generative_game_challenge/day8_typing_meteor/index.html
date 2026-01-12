@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finnish Defense: Meteor Typist v5.9</title>
+    <title>Finnish Defense: Meteor Typist v6.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -13,7 +13,6 @@
             background-color: #0f172a;
             overflow: hidden;
             touch-action: none;
-            /* iOSでのタップハイライトを無効化 */
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -29,7 +28,7 @@
         }
 
         .neon-text {
-            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #ff00de, 0 0 30px #ff00de;
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 0, 222, 0.4);
         }
 
         #defeatedList::-webkit-scrollbar {
@@ -75,7 +74,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* キーボード表示時のレイアウト調整 (高さが500px以下の時) */
         @media (max-height: 500px) {
             .hide-on-keyboard {
                 display: none !important;
@@ -85,7 +83,6 @@
             }
         }
 
-        /* スマホプレイ中(playing-mode)はリストを隠す */
         @media (max-width: 768px) {
             .playing-mode #logContainer {
                 display: none !important;
@@ -96,14 +93,12 @@
 
 <body class="text-white h-[100dvh] w-screen flex flex-col relative overflow-hidden">
     
-    <!-- 背景色 (z-0) -->
     <div id="bgLayer" class="absolute inset-0 z-0"></div>
 
-    <!-- UI 左側 (タイトル・スコア) (z-10) -->
     <div class="absolute top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-10 ui-layer-left pointer-events-none">
         <div class="flex flex-col">
             <h1 class="text-xl md:text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md hide-on-keyboard">
-                FINNISH DEFENSE v5.9
+                FINNISH DEFENSE v6.0
             </h1>
 
             <div class="text-sm font-bold text-yellow-600">HI-SCORE: <span id="highScoreDisplay">0</span></div>
@@ -112,12 +107,9 @@
         </div>
     </div>
 
-    <!-- キャンバス (隕石) (z-20) -->
     <canvas id="gameCanvas" class="absolute inset-0 z-20"></canvas>
 
-    <!-- UI 右側 (リスト) (z-30) -->
-    <!-- 親要素に pointer-events-none があるとクリックできないので、ここだけ auto に戻すか注意が必要 -->
-    <div class="absolute top-0 right-0 p-4 pt-[max(1rem,env(safe-area-inset-top))] z-30 pointer-events-none">
+    <div class="absolute top-0 right-0 p-4 pt-[max(1rem,env(safe-area-inset-top))] z-[60] pointer-events-none">
         <div id="logContainer"
             class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col relative hide-on-keyboard transition-all duration-500 pointer-events-auto">
             <div class="text-xs text-slate-400 border-b border-slate-600 mb-1 pb-1">DEFEATED WORDS LOG</div>
@@ -125,7 +117,6 @@
         </div>
     </div>
 
-    <!-- ゲームオーバー・スタート画面 (z-50) -->
     <div id="startScreen"
         class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center pointer-events-auto">
         <h1
@@ -154,7 +145,6 @@
         </div>
     </div>
 
-    <!-- 入力エリア (z-40) -->
     <div id="inputArea" class="absolute bottom-0 w-full p-4 z-40 flex justify-center items-center">
         <div class="relative w-full max-w-2xl">
             <div
@@ -163,16 +153,13 @@
             </div>
             
             <form id="gameForm" action="#" onsubmit="return false;" class="w-full">
-                <!-- 修正: type="search" に変更し、予測変換バーを抑制する -->
-                <!-- aria-autocomplete="none" も追加 -->
-                <input type="search" id="playerInput"
+                <input type="text" id="playerInput"
                     class="w-full bg-slate-800 text-cyan-400 text-2xl px-4 py-3 rounded border-2 border-slate-600 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 uppercase placeholder-slate-600 text-center"
                     placeholder="TYPE THE METEOR NAME..." 
-                    autocomplete="off" 
+                    autocomplete="one-time-code" 
                     autocorrect="off" 
                     autocapitalize="off"
-                    spellcheck="false"
-                    aria-autocomplete="none">
+                    spellcheck="false">
             </form>
         </div>
     </div>
@@ -285,7 +272,6 @@
         let meteors = [], particles = [], lasers = [], stars = [], buildings = [];
         let spawnRate = 120, difficultyMultiplier = 1.0;
         
-        // 画面リサイズ時のガタつき防止用キャッシュ
         let cachedHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
         class Meteor {
@@ -306,11 +292,19 @@
                     this.speed *= 0.7;
                 }
 
-                this.radius = 5; this.isHit = false; this.hitTimer = 0; this.trail = [];
+                this.radius = 5; 
+                this.isHit = false; 
+                this.hitTimer = 0; 
+                this.trail = [];
+                this.isDying = false; 
             }
 
             update() {
-                if (this.isHit) { this.hitTimer++; return; }
+                if (this.isDying) {
+                    return 'dying';
+                }
+
+                if (this.isHit) { this.hitTimer++; return 'active'; }
 
                 this.trail.push({ x: this.x, y: this.y, alpha: 1.0 });
                 if (this.trail.length > 160) this.trail.shift();
@@ -323,21 +317,25 @@
             }
 
             draw() {
+                let allTrailsGone = true;
+
                 for (let i = 0; i < this.trail.length; i++) {
                     const point = this.trail[i];
-                    // 修正: 早く消えるように減衰率を上げる
-                    point.alpha -= 0.015; 
-                    if (point.alpha <= 0) continue;
+                    point.alpha -= this.isDying ? 0.05 : 0.006; 
                     
-                    ctx.beginPath();
-                    // 修正: 先端に向かって細くなるように計算
-                    const trailSize = this.radius * (i / this.trail.length);
-                    ctx.arc(point.x, point.y, trailSize, 0, Math.PI * 2);
-                    
-                    // 透明度を適用
-                    ctx.fillStyle = `rgba(255, 100, 0, ${point.alpha})`;
-                    ctx.fill();
+                    if (point.alpha > 0) {
+                        allTrailsGone = false;
+                        ctx.beginPath();
+                        const trailSize = this.radius * (i / this.trail.length);
+                        ctx.arc(point.x, point.y, trailSize, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 100, 0, ${point.alpha})`;
+                        ctx.fill();
+                    }
                 }
+
+                this.allTrailsGone = allTrailsGone;
+
+                // 修正: ヒットしていなければ本体を描画
                 if (!this.isHit) {
                     ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                     let grad = ctx.createRadialGradient(this.x, this.y, 1, this.x, this.y, this.radius);
@@ -347,11 +345,15 @@
                     ctx.shadowColor = "black"; ctx.shadowBlur = 4;
                     ctx.fillText(this.word.toUpperCase(), this.x, this.y + 25);
                     ctx.shadowBlur = 0;
-                } else {
+                } 
+                // 修正: ヒットしていたら（消滅中でも）英語を描画
+                else {
                     const alpha = 1.0 - (this.hitTimer / 60);
-                    ctx.font = 'bold 28px "VT323"'; ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText(this.translation.toUpperCase(), this.x, this.y + 30);
+                    if (alpha > 0) {
+                        ctx.font = 'bold 28px "VT323"'; ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`;
+                        ctx.textAlign = 'center';
+                        ctx.fillText(this.translation.toUpperCase(), this.x, this.y + 30);
+                    }
                 }
             }
         }
@@ -414,7 +416,6 @@
                 color = health > 30 ? '#4ade80' : `rgba(239, 68, 68, ${0.5 + Math.sin(frameCount * 0.2) * 0.5})`;
             }
 
-            // ビルを暗くして、隕石を見やすくする (透明度0.5)
             ctx.globalAlpha = 0.5;
             
             ctx.fillStyle = color;
@@ -459,15 +460,14 @@
         function processInput() {
             const val = inputElement.value.toLowerCase().trim();
             if (!val) return;
-            const targets = meteors.filter(m => !m.isHit).sort((a, b) => b.y - a.y);
+            const targets = meteors.filter(m => !m.isHit && !m.isDying).sort((a, b) => b.y - a.y);
             const target = targets.find(m => m.word === val);
             if (target) {
                 sound.playLaser();
                 lasers.push(new Laser(target.x, target.y));
-                target.isHit = true;
                 
-                // 修正: 撃破時にテールを即削除（または非常に早く消える）
-                target.trail = []; 
+                target.isHit = true;
+                target.isDying = true;
 
                 createExplosion(target.x, target.y, '#4ade80');
 
@@ -518,8 +518,7 @@
             gameState = 'gameover';
 
             document.body.classList.remove('playing-mode');
-
-            // 修正: ゲームオーバー時にキーボードを閉じて、画面レイアウトを戻す
+            
             inputElement.blur();
 
             if (score > highScore) {
@@ -557,9 +556,14 @@
                 for (let i = meteors.length - 1; i >= 0; i--) {
                     const status = meteors[i].update();
                     meteors[i].draw();
-                    if (status === 'destroyed') meteors.splice(i, 1);
-                    else if (meteors[i].isHit && meteors[i].hitTimer > 60) {
+                    
+                    if (status === 'destroyed') {
                         meteors.splice(i, 1);
+                    }
+                    else if (status === 'dying') {
+                        if (meteors[i].allTrailsGone) {
+                            meteors.splice(i, 1);
+                        }
                     }
                 }
                 for (let i = lasers.length - 1; i >= 0; i--) {
@@ -584,8 +588,7 @@
                 const width = window.visualViewport ? window.visualViewport.width : window.innerWidth;
                 const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
-                // 修正: 小さな高さ変化（予測バーなどによる50px未満の変化）は無視して画面ガタつきを防止
-                if (Math.abs(height - cachedHeight) < 50 && gameState === 'playing') {
+                if (Math.abs(height - cachedHeight) < 100 && gameState === 'playing') {
                     return; 
                 }
                 cachedHeight = height;
@@ -634,7 +637,7 @@
             inputElement.addEventListener('input', () => {
                 if (gameState !== 'playing') return;
                 const val = inputElement.value.toLowerCase().trim();
-                if (meteors.find(m => !m.isHit && m.word === val)) processInput();
+                if (meteors.find(m => !m.isHit && !m.isDying && m.word === val)) processInput();
             });
             document.getElementById('startButton').addEventListener('click', startGame);
             document.getElementById('restartButton').addEventListener('click', startGame);
