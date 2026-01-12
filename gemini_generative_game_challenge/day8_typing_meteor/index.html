@@ -128,7 +128,7 @@
         <div class="flex flex-col">
             <!-- 修正: タイトルに hide-on-keyboard を追加 -->
             <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md hide-on-keyboard">FINNISH
-                DEFENSE v5.5</h1>
+                DEFENSE v5.6</h1>
 
             <div class="text-sm font-bold text-yellow-600">HI-SCORE: <span id="highScoreDisplay">0</span></div>
             <div class="text-xl mt-2">SCORE: <span id="scoreDisplay" class="text-cyan-400">0</span></div>
@@ -584,13 +584,45 @@
         }
 
         function init() {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            generateCity();
-            window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; generateCity(); });
+            // 修正: 初期化処理
+            const resizeGame = () => {
+                // visualViewportが使える場合はそちらを優先（iOS対策）
+                const width = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+                const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+
+                canvas.width = width;
+                canvas.height = height;
+
+                // スクロールを禁止するためにbodyの高さも強制的に合わせる
+                document.body.style.height = `${height}px`;
+                document.body.style.width = `${width}px`;
+
+                // 強制的に上端へスクロール（めくり上がり防止）
+                window.scrollTo(0, 0);
+
+                generateCity();
+            };
+
+            // 初回実行
+            resizeGame();
+
+            // リサイズ監視（visualViewport APIを優先）
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', resizeGame);
+                window.visualViewport.addEventListener('scroll', () => window.scrollTo(0, 0)); // ズレ防止
+            } else {
+                window.addEventListener('resize', resizeGame);
+            }
 
             // 修正: キャンバスのどこを触っても入力欄にフォーカスする（スマホ対策）
-            canvas.addEventListener('click', () => {
-                if (gameState === 'playing') inputElement.focus();
+            canvas.addEventListener('click', (e) => {
+                // ゲーム中でなければ無効
+                if (gameState !== 'playing') return;
+
+                inputElement.focus();
+
+                // タップした直後にもリサイズを念の為走らせる（キーボード起動ラグ対策）
+                setTimeout(resizeGame, 300);
             });
 
             // 修正: ゲームプレイ中のEnterとタイピング音はInputエリアで処理
