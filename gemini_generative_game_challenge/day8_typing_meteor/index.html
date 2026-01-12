@@ -108,7 +108,9 @@
     <canvas id="gameCanvas" class="absolute inset-0 z-0"></canvas>
 
     <!-- 修正: z-10 を z-[60] に変更して、Game Over画面(z-50)より手前にする -->
-    <div class="ui-layer top-0 left-0 w-full p-4 flex justify-between items-start z-[60]">
+    <!-- 修正2nd: pt-[...] を追加して、ノッチ（カメラ部分）と重ならないようにする -->
+    <div
+        class="ui-layer top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-[60]">
         <div class="flex flex-col">
             <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md">FINNISH DEFENSE v5.3</h1>
 
