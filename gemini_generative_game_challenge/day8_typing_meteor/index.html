@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finnish Defense: Meteor Typist v6.0</title>
+    <title>Finnish Defense v6.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -88,6 +88,10 @@
                 display: none !important;
             }
         }
+
+        #playerInput {
+            caret-color: #22d3ee;
+        }
     </style>
 </head>
 
@@ -95,15 +99,15 @@
     
     <div id="bgLayer" class="absolute inset-0 z-0"></div>
 
+    <!-- UI 左側 (z-10) -->
     <div class="absolute top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-10 ui-layer-left pointer-events-none">
         <div class="flex flex-col">
-            <h1 class="text-xl md:text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md hide-on-keyboard">
-                FINNISH DEFENSE v6.0
-            </h1>
-
-            <div class="text-sm font-bold text-yellow-600">HI-SCORE: <span id="highScoreDisplay">0</span></div>
-            <div class="text-xl mt-2">SCORE: <span id="scoreDisplay" class="text-cyan-400">0</span></div>
-            <div class="text-lg">CITY SHIELD: <span id="healthDisplay" class="text-green-400">100%</span></div>
+            <!-- 変更: ここにあったゲームタイトルを削除し、スコアのみにする -->
+            <!-- これでプレイ画面が非常にスッキリします -->
+            
+            <div class="text-sm font-bold text-yellow-600 mt-2">HI-SCORE: <span id="highScoreDisplay">0</span></div>
+            <div class="text-xl">SCORE: <span id="scoreDisplay" class="text-cyan-400">0</span></div>
+            <div class="text-lg">SISU SHIELD: <span id="healthDisplay" class="text-green-400">100%</span></div>
         </div>
     </div>
 
@@ -119,14 +123,20 @@
 
     <div id="startScreen"
         class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center pointer-events-auto">
-        <h1
-            class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 mb-8 neon-text text-center">
-            METEOR<br>TYPIST</h1>
-        <p class="text-xl mb-8 text-center px-4">Protect the city from Finnish meteors!<br>Type the words to shoot
-            lasers.</p>
+        <!-- 変更: メインタイトルを FINNISH DEFENSE に昇格 -->
+        <h1 class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 mb-4 neon-text text-center">
+            FINNISH<br>DEFENSE
+        </h1>
+        <!-- 変更: サブタイトルを追加 -->
+        <p class="text-xl md:text-2xl text-cyan-400 tracking-widest mb-8 font-bold">TYPE TO SURVIVE</p>
+        
+        <p class="text-lg mb-8 text-center px-4 text-slate-300">Protect the city from falling meteors.<br>Type the words to activate lasers.</p>
+        
         <button id="startButton"
             class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white text-2xl rounded border-b-4 border-cyan-800 active:border-0 active:translate-y-1 transition-all">START
             DEFENSE</button>
+
+        <div class="text-slate-500 text-sm mt-4 font-mono">v6.2</div>
     </div>
 
     <div id="gameOverScreen"
@@ -263,15 +273,15 @@
         const sound = new SoundManager();
 
         let gameState = 'start';
-        let animationFrameId; 
+        let animationFrameId;
         let score = 0, health = 100, frameCount = 0;
-        let cityShakeTimer = 0; 
+        let cityShakeTimer = 0;
         let highScore = localStorage.getItem('finnishMeteorHighScore') || 0;
         let wordCollection = JSON.parse(localStorage.getItem('finnishWordCollection')) || {};
 
         let meteors = [], particles = [], lasers = [], stars = [], buildings = [];
         let spawnRate = 120, difficultyMultiplier = 1.0;
-        
+
         let cachedHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
         class Meteor {
@@ -292,11 +302,11 @@
                     this.speed *= 0.7;
                 }
 
-                this.radius = 5; 
-                this.isHit = false; 
-                this.hitTimer = 0; 
+                this.radius = 5;
+                this.isHit = false;
+                this.hitTimer = 0;
                 this.trail = [];
-                this.isDying = false; 
+                this.isDying = false;
             }
 
             update() {
@@ -321,8 +331,8 @@
 
                 for (let i = 0; i < this.trail.length; i++) {
                     const point = this.trail[i];
-                    point.alpha -= this.isDying ? 0.05 : 0.006; 
-                    
+                    point.alpha -= this.isDying ? 0.05 : 0.006;
+
                     if (point.alpha > 0) {
                         allTrailsGone = false;
                         ctx.beginPath();
@@ -345,7 +355,7 @@
                     ctx.shadowColor = "black"; ctx.shadowBlur = 4;
                     ctx.fillText(this.word.toUpperCase(), this.x, this.y + 25);
                     ctx.shadowBlur = 0;
-                } 
+                }
                 // 修正: ヒットしていたら（消滅中でも）英語を描画
                 else {
                     const alpha = 1.0 - (this.hitTimer / 60);
@@ -417,7 +427,7 @@
             }
 
             ctx.globalAlpha = 0.5;
-            
+
             ctx.fillStyle = color;
             ctx.fillRect(0 + shakeX, canvas.height - 80 + shakeY, canvas.width, 80);
 
@@ -448,7 +458,7 @@
             logContainer.classList.remove('h-[60vh]');
 
             gameState = 'playing';
-            score = 0; health = 100; frameCount = 0; difficultyMultiplier = 1.0; 
+            score = 0; health = 100; frameCount = 0; difficultyMultiplier = 1.0;
             meteors = []; lasers = []; particles = [];
             defeatedList.innerHTML = ''; inputElement.value = ''; inputElement.focus();
 
@@ -460,12 +470,13 @@
         function processInput() {
             const val = inputElement.value.toLowerCase().trim();
             if (!val) return;
+            // 修正: 撃破済み(isDying)ではないメテオのみを対象にする
             const targets = meteors.filter(m => !m.isHit && !m.isDying).sort((a, b) => b.y - a.y);
             const target = targets.find(m => m.word === val);
             if (target) {
                 sound.playLaser();
                 lasers.push(new Laser(target.x, target.y));
-                
+
                 target.isHit = true;
                 target.isDying = true;
 
@@ -518,7 +529,7 @@
             gameState = 'gameover';
 
             document.body.classList.remove('playing-mode');
-            
+
             inputElement.blur();
 
             if (score > highScore) {
@@ -556,7 +567,7 @@
                 for (let i = meteors.length - 1; i >= 0; i--) {
                     const status = meteors[i].update();
                     meteors[i].draw();
-                    
+
                     if (status === 'destroyed') {
                         meteors.splice(i, 1);
                     }
@@ -577,7 +588,7 @@
             } else {
                 meteors.forEach(m => m.draw()); lasers.forEach(l => l.draw()); particles.forEach(p => p.draw());
             }
-            animationFrameId = requestAnimationFrame(gameLoop); 
+            animationFrameId = requestAnimationFrame(gameLoop);
         }
 
         function init() {
@@ -589,7 +600,7 @@
                 const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
                 if (Math.abs(height - cachedHeight) < 100 && gameState === 'playing') {
-                    return; 
+                    return;
                 }
                 cachedHeight = height;
 
@@ -608,14 +619,14 @@
 
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', resizeGame);
-                window.visualViewport.addEventListener('scroll', () => window.scrollTo(0, 0)); 
+                window.visualViewport.addEventListener('scroll', () => window.scrollTo(0, 0));
             } else {
                 window.addEventListener('resize', resizeGame);
             }
 
             window.addEventListener('click', (e) => {
                 if (e.target.closest('button') || e.target.closest('#inputArea')) return;
-                
+
                 if (gameState === 'playing') {
                     inputElement.focus();
                 }
