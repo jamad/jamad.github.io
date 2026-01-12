@@ -112,6 +112,13 @@
                 padding-top: 5px !important;
             }
         }
+
+        /* 追加: スマホ（幅が狭い）かつプレイ中の場合、リストを隠す */
+        @media (max-width: 768px) {
+            .playing-mode #logContainer {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -127,8 +134,8 @@
         class="ui-layer top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-[60] fixed">
         <div class="flex flex-col">
             <!-- 修正: タイトルに hide-on-keyboard を追加 -->
-            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md hide-on-keyboard">FINNISH
-                DEFENSE v5.6</h1>
+            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md hide-on-keyboard">
+                FINNISH DEFENSE v5.7</h1>
 
             <div class="text-sm font-bold text-yellow-600">HI-SCORE: <span id="highScoreDisplay">0</span></div>
             <div class="text-xl mt-2">SCORE: <span id="scoreDisplay" class="text-cyan-400">0</span></div>
@@ -178,9 +185,9 @@
                 class="absolute bottom-full left-1/2 -translate-x-1/2 w-16 h-8 bg-slate-700 rounded-t-lg border-t-2 border-x-2 border-slate-500 flex justify-center">
                 <div class="w-2 h-4 bg-cyan-500 rounded-full mt-1 animate-pulse"></div>
             </div>
-            <input type="text" id="playerInput"
+            <input type="text" id="playerInput" name="game-input-field"
                 class="w-full bg-slate-800 text-cyan-400 text-2xl px-4 py-3 rounded border-2 border-slate-600 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 uppercase placeholder-slate-600 text-center"
-                placeholder="TYPE THE METEOR NAME..." autocomplete="off" autocorrect="off" autocapitalize="off"
+                placeholder="TYPE THE METEOR NAME..." autocomplete="new-password" autocorrect="off" autocapitalize="off"
                 spellcheck="false">
         </div>
     </div>
@@ -319,14 +326,22 @@
 
                 this.radius = 5; this.isHit = false; this.hitTimer = 0; this.trail = [];
             }
+
             update() {
                 if (this.isHit) { this.hitTimer++; return; }
+
                 this.trail.push({ x: this.x, y: this.y, alpha: 1.0 });
                 if (this.trail.length > 160) this.trail.shift();
-                this.y += this.speed;
+
+                // 修正: 画面の高さに応じて速度を調整する（基準を高さ800pxとする）
+                // 画面が狭くなれば（キーボード表示など）、落下速度も遅くなる
+                const heightRatio = canvas.height / 800;
+                this.y += this.speed * heightRatio;
+
                 if (this.y > canvas.height - 100) { takeDamage(15); createExplosion(this.x, this.y, '#ef4444'); return 'destroyed'; }
                 return 'active';
             }
+
             draw() {
                 for (let i = 0; i < this.trail.length; i++) {
                     const point = this.trail[i];
@@ -440,6 +455,10 @@
             // 修正: 既に動いているループがあれば止める（倍速バグの防止）
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             sound.init();
+
+            // 追加: プレイ中クラスを追加（CSSでリストを隠すため）
+            document.body.classList.add('playing-mode');
+
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('gameOverScreen').classList.add('hidden');
             document.getElementById('restartContainer').classList.add('hidden');
@@ -521,6 +540,9 @@
 
         function endGame() {
             gameState = 'gameover';
+
+            // 追加: プレイ中クラスを削除（リストを再表示するため）
+            document.body.classList.remove('playing-mode');
 
             // 追加: ハイスコアの更新と保存処理
             if (score > highScore) {
