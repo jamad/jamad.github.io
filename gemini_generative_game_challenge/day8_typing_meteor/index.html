@@ -99,6 +99,19 @@
                 transform: translateY(0);
             }
         }
+
+        /* 追加: 画面の高さが500px以下（スマホ横持ちやキーボード表示時）の場合 */
+        @media (max-height: 500px) {
+            .hide-on-keyboard {
+                display: none !important;
+                /* 強制的に隠す */
+            }
+
+            /* スコアなどは少し小さくして表示場所を確保 */
+            .ui-layer {
+                padding-top: 5px !important;
+            }
+        }
     </style>
 </head>
 
@@ -109,22 +122,22 @@
 
     <!-- 修正: z-10 を z-[60] に変更して、Game Over画面(z-50)より手前にする -->
     <!-- 修正2nd: pt-[...] を追加して、ノッチ（カメラ部分）と重ならないようにする -->
+    <!-- 修正3rd: absolute -> fixed に変更 -->
     <div
-        class="ui-layer top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-[60]">
+        class="ui-layer top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-[60] fixed">
         <div class="flex flex-col">
-            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md">FINNISH DEFENSE v5.3</h1>
+            <!-- 修正: タイトルに hide-on-keyboard を追加 -->
+            <h1 class="text-3xl text-yellow-400 font-bold tracking-widest drop-shadow-md hide-on-keyboard">FINNISH
+                DEFENSE v5.5</h1>
 
-            <!-- 追加: メイン画面のハイスコア -->
             <div class="text-sm font-bold text-yellow-600">HI-SCORE: <span id="highScoreDisplay">0</span></div>
-
             <div class="text-xl mt-2">SCORE: <span id="scoreDisplay" class="text-cyan-400">0</span></div>
             <div class="text-lg">CITY SHIELD: <span id="healthDisplay" class="text-green-400">100%</span></div>
         </div>
 
-        <!-- 変更: z-[60] relative を追加して、Game Over画面より手前に表示させる -->
-        <!-- 修正: id="logContainer" を追加 -->
+        <!-- 修正: ログコンテナに hide-on-keyboard を追加 -->
         <div id="logContainer"
-            class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col z-[60] relative">
+            class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col z-[60] relative hide-on-keyboard">
             <div class="text-xs text-slate-400 border-b border-slate-600 mb-1 pb-1">DEFEATED WORDS LOG</div>
             <ul id="defeatedList" class="flex-1 overflow-y-auto text-sm space-y-1 font-mono text-green-400"></ul>
         </div>
