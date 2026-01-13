@@ -3,23 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WordGrower Browser v1.4</title>
+    <title>WordGrower Browser v1.5</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <!-- Babel (JSX変換用) -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
         body { touch-action: manipulation; }
-        /* スクロールバーのカスタマイズ */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-        
         .animate-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
@@ -31,8 +29,7 @@
 <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // --- Icons (SVG Components) ---
-    // Lucideアイコンを単独HTMLで動かすためにコンポーネント化しています
+    // --- Icons ---
     const IconWrapper = ({ children, className, ...props }) => (
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>{children}</svg>
     );
@@ -42,10 +39,10 @@
     const VolumeX = (p) => <IconWrapper {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></IconWrapper>;
     const Download = (p) => <IconWrapper {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></IconWrapper>;
     const RefreshCw = (p) => <IconWrapper {...p}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></IconWrapper>;
-    const Languages = (p) => <IconWrapper {...p}><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></IconWrapper>;
     const XIcon = (p) => <IconWrapper {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconWrapper>;
     const Check = (p) => <IconWrapper {...p}><polyline points="20 6 9 17 4 12"/></IconWrapper>;
     const XCircle = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></IconWrapper>;
+    const FileText = (p) => <IconWrapper {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></IconWrapper>;
 
     // --- Audio System ---
     const playSound = (type) => {
@@ -69,7 +66,6 @@
         } catch (e) { console.error(e); }
     };
 
-    // --- Color Helper ---
     const getWordColor = (count) => {
         const maxCount = 10;
         const startColor = { r: 239, g: 68, b: 68 };
@@ -83,9 +79,8 @@
         return `rgb(${r}, ${g}, ${b})`;
     };
 
-    const DEMO_TEXT = `Welcome to the WordGrower Browser. This is a prototype designed to help you learn new vocabulary. URLを入力して記事を読み込んでみてください。`;
+    const DEMO_TEXT = `Welcome to the WordGrower Browser. URLからの読み込みがブロックされる場合は、テキスト貼り付けアイコンをクリックして、記事の本文を直接貼り付けてください。`;
 
-    // --- Main Component ---
     function WordGrowerApp() {
         const [url, setUrl] = useState('');
         const [content, setContent] = useState([]);
@@ -93,39 +88,33 @@
         const [popup, setPopup] = useState({ visible: false, x: 0, y: 0, word: '' });
         const [isLoading, setIsLoading] = useState(false);
         const [soundEnabled, setSoundEnabled] = useState(true);
-        
-        // メニュー外クリック判定用の参照
-        const popupRef = useRef(null);
-        // 初回ロード完了フラグ（無限ループ防止）
         const [isLoaded, setIsLoaded] = useState(false);
+        
+        // テキスト手動入力用モーダル
+        const [inputModalVisible, setInputModalVisible] = useState(false);
+        const [manualText, setManualText] = useState("");
 
-        // --- 1. LocalStorage Loading (起動時1回のみ) ---
+        const popupRef = useRef(null);
+
+        // --- LocalStorage ---
         useEffect(() => {
             const savedData = localStorage.getItem('wordGrowerDictionary');
             if (savedData) {
-                try {
-                    setDictionary(JSON.parse(savedData));
-                } catch(e) { console.error("Load failed", e); }
+                try { setDictionary(JSON.parse(savedData)); } catch(e) {}
             } else {
-                // 初回のみデモデータをセット
-                setDictionary({ "WordGrower": 10, "Browser": 5 });
+                setDictionary({ "WordGrower": 10 });
             }
             processText(DEMO_TEXT);
             setIsLoaded(true);
         }, []);
 
-        // --- 2. LocalStorage Saving (辞書更新時毎回) ---
         useEffect(() => {
-            if (isLoaded) {
-                localStorage.setItem('wordGrowerDictionary', JSON.stringify(dictionary));
-            }
+            if (isLoaded) localStorage.setItem('wordGrowerDictionary', JSON.stringify(dictionary));
         }, [dictionary, isLoaded]);
 
         const processText = (text, lang = 'ja-JP') => {
             setIsLoading(true);
             let segments = [];
-            
-            // Intl.Segmenter対応チェック
             if (typeof Intl.Segmenter !== 'undefined') {
                 const segmenter = new Intl.Segmenter(lang, { granularity: 'word' });
                 segments = Array.from(segmenter.segment(text)).map(seg => ({
@@ -133,13 +122,11 @@
                     isWordLike: seg.isWordLike
                 }));
             } else {
-                // フォールバック（空白区切り）
                 segments = text.split(/(\s+)/).map(s => ({
                     text: s,
-                    isWordLike: /\S/.test(s) // 空白以外を単語とみなす
+                    isWordLike: /\S/.test(s)
                 }));
             }
-
             setTimeout(() => {
                 setContent(segments);
                 setIsLoading(false);
@@ -153,7 +140,6 @@
             setIsLoading(true);
 
             try {
-                // AllOrigins Proxyを使用
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
                 const response = await fetch(proxyUrl);
                 const data = await response.json();
@@ -161,12 +147,11 @@
                 if (data.contents) {
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(data.contents, 'text/html');
-                    
-                    // 不要タグ削除
-                    doc.querySelectorAll('script, style, noscript, iframe, nav, footer, header, svg').forEach(el => el.remove());
+                    doc.querySelectorAll('script, style, noscript, iframe, nav, footer, header, svg, link').forEach(el => el.remove());
                     
                     const text = doc.body.innerText || "";
-                    
+                    if (!text.trim()) throw new Error("Empty content");
+
                     let lang = 'en-US';
                     if (url.includes('.jp') || url.includes('jp')) lang = 'ja-JP';
                     else if (url.includes('.fi') || url.includes('fi')) lang = 'fi-FI';
@@ -177,9 +162,19 @@
                 }
             } catch (error) {
                 console.error("Fetch failed:", error);
-                alert("記事を取得できませんでした。セキュリティ制限の強いサイトの可能性があります。");
+                // エラー時の自動案内
+                alert("セキュリティ制限によりURLから記事を取得できませんでした。\n\nテキスト入力画面を開きますので、記事をコピーして貼り付けてください。");
                 setIsLoading(false);
+                setInputModalVisible(true); // 自動でモーダルを開く
             }
+        };
+
+        const handleManualSubmit = () => {
+            if (!manualText.trim()) return;
+            // 言語判定は簡易的に、フィンランド語っぽい文字があればfiにする等のロジックも可だが今回はデフォルト
+            processText(manualText, 'en-US'); // または自動判定ロジック
+            setInputModalVisible(false);
+            setManualText("");
         };
 
         const handleWordClick = (word) => {
@@ -189,8 +184,7 @@
                 if (currentCount >= 10) return prev;
                 const newCount = currentCount + 1;
                 if (soundEnabled) {
-                    if (newCount === 10) playSound('levelup');
-                    else playSound('tap');
+                    newCount === 10 ? playSound('levelup') : playSound('tap');
                 }
                 return { ...prev, [word]: newCount };
             });
@@ -202,7 +196,6 @@
             if (soundEnabled) playSound('levelup');
             setPopup({ ...popup, visible: false });
         };
-
         const handleReset = () => {
             if (!popup.word) return;
             setDictionary(prev => ({ ...prev, [popup.word]: 0 }));
@@ -212,66 +205,50 @@
 
         const exportDictionary = () => {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dictionary, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "my_word_dictionary.json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
+            const a = document.createElement('a');
+            a.href = dataStr;
+            a.download = "my_word_dictionary.json";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
         };
 
-        // --- Long Press Logic ---
+        // --- Touch/Click Logic ---
         const longPressTimer = useRef(null);
         const isLongPress = useRef(false);
 
         const startPress = (e, word) => {
             isLongPress.current = false;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
             longPressTimer.current = setTimeout(() => {
                 isLongPress.current = true;
                 if (navigator.vibrate) navigator.vibrate(50);
-
-                setPopup({
-                    visible: true,
-                    x: clientX,
-                    y: clientY,
-                    word: word
-                });
+                setPopup({ visible: true, x: cx, y: cy, word: word });
                 if (soundEnabled) playSound('menu');
             }, 600);
         };
-
         const endPress = (e, word) => {
             clearTimeout(longPressTimer.current);
-            if (!isLongPress.current) {
-                handleWordClick(word);
-            }
-            // 長押し判定済みの場合は何もしない
+            if (!isLongPress.current) handleWordClick(word);
         };
 
-        // --- Menu Outside Click (Fixed) ---
+        // Menu Outside Click
         useEffect(() => {
             const handleClickOutside = (event) => {
                 if (popup.visible && popupRef.current && !popupRef.current.contains(event.target)) {
                     setPopup(p => ({ ...p, visible: false }));
                 }
             };
-            
             if (popup.visible) {
-                // イベント登録を少し遅延させずとも、mousedown/touchstartで判定すれば
-                // 直前のタッチ終了イベントによる誤動作を防げることが多い
                 document.addEventListener('mousedown', handleClickOutside);
                 document.addEventListener('touchstart', handleClickOutside);
             }
-
             return () => {
                 document.removeEventListener('mousedown', handleClickOutside);
                 document.removeEventListener('touchstart', handleClickOutside);
             };
         }, [popup.visible]);
-
 
         return (
             <div className="flex flex-col h-screen bg-gray-50">
@@ -280,14 +257,21 @@
                     <div className="max-w-4xl mx-auto flex gap-2 items-center">
                         <div className="flex-1 flex items-center bg-gray-100 rounded-lg px-3 py-2">
                             <BookOpen className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0" />
-                            <input type="text" placeholder="URLを入力 (例: https://example.com)"
+                            <input type="text" placeholder="URL または テキスト貼り付け"
                                 className="bg-transparent border-none outline-none w-full text-sm" value={url} onChange={(e)=> setUrl(e.target.value)}
                             />
                         </div>
-                        <button onClick={handleExtract}
+                        <button onClick={handleExtract} title="URL読み込み"
                             className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 active:scale-95 transition flex-shrink-0">
                             <Search className="w-5 h-5" />
                         </button>
+                        
+                        {/* テキスト手動入力ボタン */}
+                        <button onClick={() => setInputModalVisible(true)} title="テキストを貼り付け"
+                            className="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 active:scale-95 transition flex-shrink-0">
+                            <FileText className="w-5 h-5" />
+                        </button>
+
                         <div className="w-px h-6 bg-gray-300 mx-1 flex-shrink-0"></div>
                         <button onClick={()=> setSoundEnabled(!soundEnabled)}
                             className={`p-2 rounded-lg transition flex-shrink-0 ${soundEnabled ? 'text-blue-600 bg-blue-50' : 'text-gray-400'}`}>
@@ -305,17 +289,15 @@
                         {isLoading && (
                             <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-10 rounded-xl">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                                <p className="text-gray-500 font-medium">Loading...</p>
+                                <p className="text-gray-500 font-medium">Processing...</p>
                             </div>
                         )}
                         <div className="text-justify break-words">
                             {content.length > 0 ? content.map((item, index) => {
                                 if (!item.isWordLike) return <span key={index}>{item.text}</span>;
-                                
                                 const count = dictionary[item.text] || 0;
                                 const color = getWordColor(count);
                                 const isMastered = count >= 10;
-
                                 return (
                                     <span key={index} className={`inline-block cursor-pointer select-none transition-colors duration-300 rounded px-0.5 mx-0.5 ${isMastered ? '' : 'font-medium'} active:bg-gray-100`}
                                         style={{ color: color }}
@@ -323,21 +305,52 @@
                                         onMouseUp={(e) => endPress(e, item.text)}
                                         onMouseLeave={() => clearTimeout(longPressTimer.current)}
                                         onTouchStart={(e) => startPress(e, item.text)}
-                                        onTouchEnd={(e) => {
-                                            if(isLongPress.current) e.preventDefault();
-                                            endPress(e, item.text);
-                                        }}
+                                        onTouchEnd={(e) => { if(isLongPress.current) e.preventDefault(); endPress(e, item.text); }}
                                         onContextMenu={(e) => e.preventDefault()}
                                     >{item.text}</span>
                                 );
                             }) : (
                                 <div className="text-center text-gray-400 mt-20">
-                                    <p>URLを入力してボタンを押してください。</p>
+                                    <p>URLを入力するか、右上の<FileText className="inline w-4 h-4"/>ボタンでテキストを貼り付けてください。</p>
                                 </div>
                             )}
                         </div>
                     </div>
                 </main>
+
+                {/* Text Input Modal */}
+                {inputModalVisible && (
+                    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-in">
+                        <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+                                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                                    <FileText className="w-5 h-5"/> テキストを貼り付け
+                                </h3>
+                                <button onClick={() => setInputModalVisible(false)} className="text-gray-400 hover:text-gray-600">
+                                    <XIcon className="w-6 h-6" />
+                                </button>
+                            </div>
+                            <div className="p-4 flex-1">
+                                <textarea 
+                                    className="w-full h-64 md:h-96 p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-base"
+                                    placeholder="ここに記事のテキストをペーストしてください..."
+                                    value={manualText}
+                                    onChange={(e) => setManualText(e.target.value)}
+                                ></textarea>
+                            </div>
+                            <div className="p-4 border-t bg-gray-50 flex justify-end gap-3">
+                                <button onClick={() => setInputModalVisible(false)} 
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition">
+                                    キャンセル
+                                </button>
+                                <button onClick={handleManualSubmit}
+                                    className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">
+                                    読み込む
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Popup Menu */}
                 {popup.visible && (
@@ -361,7 +374,6 @@
                                 className="w-full flex items-center justify-center gap-2 p-2 text-gray-500 hover:bg-gray-100 hover:text-red-600 rounded-md transition text-xs border border-transparent hover:border-red-100">
                                 <RefreshCw className="w-3 h-3" /> リセット
                             </button>
-                            {/* 明示的な閉じるボタン */}
                             <button onClick={() => setPopup(p => ({ ...p, visible: false }))}
                                 className="w-full flex items-center justify-center gap-2 p-2 mt-2 text-gray-500 hover:bg-gray-100 rounded-md transition text-xs border border-gray-200">
                                 <XCircle className="w-3 h-3" /> メニューを閉じる
