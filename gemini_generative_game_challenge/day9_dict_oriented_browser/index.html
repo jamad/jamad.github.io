@@ -363,4 +363,22 @@
                             </button>
                             {/* 明示的な閉じるボタン */}
                             <button onClick={() => setPopup(p => ({ ...p, visible: false }))}
-                                className="w-full flex items-center justify-center gap-2 p-2 mt-2 text-gray-500 hover:bg-gray-100 rounde
+                                className="w-full flex items-center justify-center gap-2 p-2 mt-2 text-gray-500 hover:bg-gray-100 rounded-md transition text-xs border border-gray-200">
+                                <XCircle className="w-3 h-3" /> メニューを閉じる
+                            </button>
+                        </div>
+                        <button onClick={()=> setPopup({ ...popup, visible: false })}
+                            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
+                            <XIcon className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<WordGrowerApp />);
+</script>
+</body>
+</html>
