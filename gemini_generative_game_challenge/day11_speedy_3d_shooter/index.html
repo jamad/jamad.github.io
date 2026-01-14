@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GEOMETRIC VORTEX - TYPE S (v20260114.11)</title>
+    <title>GEOMETRIC VORTEX - TYPE S (v20260114.13)</title>
     <style>
         body {
             margin: 0;
@@ -48,30 +48,28 @@
             padding: 5px;
         }
 
-        /* レティクル: 円形に変更 */
+        /* レティクル: 45px維持 */
         #reticle {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 90px;  /* 円形なので少し大きめに */
-            height: 90px;
-            border: 2px solid rgba(0, 255, 255, 0.6);
-            border-radius: 50%; /* 完全な円 */
+            width: 45px; 
+            height: 45px;
+            border: 2px solid rgba(0, 255, 255, 0.7);
+            border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
             pointer-events: none;
             transition: border-color 0.1s, box-shadow 0.1s, transform 0.1s;
         }
 
-        /* ロックオン時 */
         #reticle.locked {
             border-color: #ff0055;
-            border-width: 3px;
-            box-shadow: 0 0 25px #ff0055, inset 0 0 10px #ff0055;
-            transform: translate(-50%, -50%) scale(0.95);
+            border-width: 2px;
+            box-shadow: 0 0 15px #ff0055, inset 0 0 5px #ff0055;
+            transform: translate(-50%, -50%) scale(1.1);
         }
 
-        /* 中心点: 1ドット（視認性のため2px） */
         #reticle::after {
             content: '';
             position: absolute;
@@ -81,7 +79,6 @@
             height: 2px;
             background: #fff;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 2px #fff;
         }
 
         #start-screen,
@@ -192,11 +189,11 @@
 
     <div id="start-screen">
         <h1>GEOMETRIC<br>VORTEX</h1>
-        <p>TYPE-S: V2026.11</p>
+        <p>TYPE-S: V2026.13</p>
         <div class="instruction">
-            LOCK-ON SYSTEM<br>
-            円の中に敵を捉えてください<br>
-            有効距離に入ると自動射撃します
+            CLOSE RANGE COMBAT<br>
+            敵を引きつけてロックオン<br>
+            WAIT FOR CLOSE RANGE
         </div>
         <button id="start-btn">SYSTEM BOOT</button>
     </div>
@@ -217,9 +214,8 @@
          * CONFIGURATION
          */
         const CONFIG = {
-            // 【修正4】グリッド速度倍増
-            gridSpeed: 7.0,       
-            // 【修正5】発生量半減 (数字を大きくすると頻度が下がる)
+            // 【修正1】グリッド速度を1/4に (50.0 -> 12.5)
+            gridSpeed: 12.5,      
             spawnRate: 20,
             fireRate: 4,
             playerSensitivity: 1.8,
@@ -227,8 +223,12 @@
             ceilingY: 20,
             fogDensity: 0.0012,
             spawnZ: -900,
-            // 【修正2】オートエイム用の有効射程（これより遠い＝小さい敵は撃たない）
-            maxLockDistance: 500 
+            
+            // 【修正2】ロックオン距離を半分に短縮 (600 -> 300)
+            // 距離が半分になる＝見た目の大きさは2倍になるまで待つ必要がある
+            maxLockDistance: 300, 
+            
+            reticlePixelRadius: 22.5 
         };
 
         /**
@@ -248,14 +248,14 @@
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(1200, t);
-                osc.frequency.exponentialRampToValueAtTime(100, t + 0.08);
+                osc.frequency.setValueAtTime(1400, t);
+                osc.frequency.exponentialRampToValueAtTime(100, t + 0.06);
                 gain.gain.setValueAtTime(0.08, t);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
                 osc.connect(gain);
                 gain.connect(this.masterGain);
                 osc.start();
-                osc.stop(t + 0.08);
+                osc.stop(t + 0.06);
             }
 
             playExplosion() {
@@ -336,7 +336,7 @@
 
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1500);
             camera.position.set(0, 0, 0);
-
+            
             renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -390,7 +390,7 @@
 
         function initPools() {
             enemyPool = new SimplePool(() => {
-                const geo = new THREE.OctahedronGeometry(2.0); // 半径約2.0想定
+                const geo = new THREE.OctahedronGeometry(2.0); 
                 const mat = new THREE.MeshPhongMaterial({
                     color: 0xffaa00,
                     emissive: 0xff0000,
@@ -400,7 +400,6 @@
                 });
                 const mesh = new THREE.Mesh(geo, mat);
                 mesh.castShadow = true;
-                // 【修正4】敵の描画順を手前に
                 mesh.renderOrder = 1; 
                 scene.add(mesh);
                 mesh.visible = false;
@@ -439,7 +438,6 @@
             gridHelper1.position.y = CONFIG.groundY;
             gridHelper1.position.z = -200;
             gridHelper1.scale.z = 10;
-            // 【修正4】グリッドを奥に描画
             gridHelper1.renderOrder = 0; 
             scene.add(gridHelper1);
             gridBottom = gridHelper1;
@@ -555,7 +553,8 @@
             const sectorX = Math.floor(Math.random() * 3) - 1; 
             const sectorY = Math.floor(Math.random() * 3) - 1;
             
-            const startX = (Math.random() - 0.5) * 400;
+            // 【修正3】出現エリア（横幅）を8倍に (400 -> 3200)
+            const startX = (Math.random() - 0.5) * 3200;
             const startY = (Math.random() - 0.5) * 150;
             const startZ = CONFIG.spawnZ;
 
@@ -577,7 +576,6 @@
             enemyObj.state = 'alive';
             enemyObj.rotSpeed = { x: Math.random() * 0.05, y: Math.random() * 0.05 };
             
-            // バウンド判定用に半径を持たせる（ジオメトリから概算）
             enemyObj.radius = 2.5; 
         }
 
@@ -586,6 +584,7 @@
             sides.forEach(side => {
                 const beamObj = laserBeamPool.get();
                 const beam = beamObj.mesh;
+                
                 const origin = new THREE.Vector3(side * 6.0, -5.0, -2.0);
                 origin.applyMatrix4(camera.matrixWorld);
 
@@ -599,37 +598,34 @@
             });
         }
 
-        // 【修正2】オートエイムシステム（コーン判定）
         function updateWeapons() {
-            // 現在のレティクル方向のベクトル（カメラ原点からの向き）
-            const reticleVec = new THREE.Vector3(aimX * 0.8, aimY * 0.8, 0.5).unproject(camera).sub(camera.position).normalize();
-            
-            // 許容角度 (コーンの広さ) - 円の大きさに合わせて調整
-            const lockAngleThreshold = 0.08; 
+            const reticleScreenX = window.innerWidth * (0.5 + aimX * 0.4);
+            const reticleScreenY = window.innerHeight * (0.5 - aimY * 0.4);
 
             const activeEnemies = enemyPool.getActive().filter(e => e.state === 'alive');
             
             let lockedEnemy = null;
             let closestDist = Infinity;
 
+            const screenPos = new THREE.Vector3();
+
             for (let enemy of activeEnemies) {
-                // 敵へのベクトル
-                const toEnemy = enemy.mesh.position.clone().sub(camera.position);
-                const dist = toEnemy.length();
-                toEnemy.normalize();
+                const dist3D = enemy.mesh.position.distanceTo(camera.position);
+                // 【修正2】距離チェック (近づくまでロックしない)
+                if (dist3D > CONFIG.maxLockDistance) continue;
 
-                // 距離チェック（8ピクセル以上に見える＝ある程度近い）
-                if (dist > CONFIG.maxLockDistance) continue;
+                screenPos.copy(enemy.mesh.position).project(camera);
 
-                // 角度チェック
-                // dot積が1に近いほど向きが合っている
-                const dot = reticleVec.dot(toEnemy);
-                const angleDiff = 1.0 - dot;
+                const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-(screenPos.y) * 0.5 + 0.5) * window.innerHeight;
 
-                if (angleDiff < lockAngleThreshold) {
-                    // ロックオン候補。最も手前の敵を選ぶ
-                    if (dist < closestDist) {
-                        closestDist = dist;
+                const dx = x - reticleScreenX;
+                const dy = y - reticleScreenY;
+                const pixelDist = Math.sqrt(dx*dx + dy*dy);
+
+                if (pixelDist <= CONFIG.reticlePixelRadius) {
+                    if (dist3D < closestDist) {
+                        closestDist = dist3D;
                         lockedEnemy = enemy;
                     }
                 }
@@ -693,8 +689,7 @@
             requestAnimationFrame(animate);
 
             if (isPlaying) {
-                // スコアでさらに加速
-                const currentGridSpeed = CONFIG.gridSpeed * (1.0 + score * 0.0001);
+                const currentGridSpeed = CONFIG.gridSpeed; 
                 
                 gridTop.position.z += currentGridSpeed;
                 gridBottom.position.z += currentGridSpeed;
@@ -734,15 +729,12 @@
                     e.mesh.rotation.x += e.rotSpeed.x;
                     e.mesh.rotation.y += e.rotSpeed.y;
 
-                    // 【修正3】敵の大きさを考慮した反射
-                    // 床
-                    if (e.mesh.position.y - e.radius < CONFIG.groundY) {
-                        e.mesh.position.y = CONFIG.groundY + e.radius;
+                    if (e.mesh.position.y < CONFIG.groundY) {
+                        e.mesh.position.y = CONFIG.groundY;
                         e.velocity.y *= -1;
                     }
-                    // 天井
-                    if (e.mesh.position.y + e.radius > CONFIG.ceilingY) {
-                        e.mesh.position.y = CONFIG.ceilingY - e.radius;
+                    if (e.mesh.position.y > CONFIG.ceilingY) {
+                        e.mesh.position.y = CONFIG.ceilingY;
                         e.velocity.y *= -1;
                     }
 
