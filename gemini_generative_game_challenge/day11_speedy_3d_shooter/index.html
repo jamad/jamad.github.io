@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GEOMETRIC VORTEX - TYPE S (v20260114.13)</title>
+    <title>GEOMETRIC VORTEX - TYPE S (v20260114.14)</title>
     <style>
         body {
             margin: 0;
@@ -189,7 +189,7 @@
 
     <div id="start-screen">
         <h1>GEOMETRIC<br>VORTEX</h1>
-        <p>TYPE-S: V2026.13</p>
+        <p>TYPE-S: V2026.14</p>
         <div class="instruction">
             CLOSE RANGE COMBAT<br>
             敵を引きつけてロックオン<br>
@@ -214,7 +214,6 @@
          * CONFIGURATION
          */
         const CONFIG = {
-            // 【修正1】グリッド速度を1/4に (50.0 -> 12.5)
             gridSpeed: 12.5,      
             spawnRate: 20,
             fireRate: 4,
@@ -223,11 +222,7 @@
             ceilingY: 20,
             fogDensity: 0.0012,
             spawnZ: -900,
-            
-            // 【修正2】ロックオン距離を半分に短縮 (600 -> 300)
-            // 距離が半分になる＝見た目の大きさは2倍になるまで待つ必要がある
             maxLockDistance: 300, 
-            
             reticlePixelRadius: 22.5 
         };
 
@@ -354,8 +349,9 @@
 
             scene.add(new THREE.AmbientLight(0x404040, 0.4));
             
+            // 【修正点】光源を真上に配置
             const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
-            sunLight.position.set(60, 150, 60);
+            sunLight.position.set(0, 200, 0); // 真上 (Y軸のみ)
             sunLight.castShadow = true;
             sunLight.shadow.mapSize.width = 2048;
             sunLight.shadow.mapSize.height = 2048;
@@ -553,7 +549,6 @@
             const sectorX = Math.floor(Math.random() * 3) - 1; 
             const sectorY = Math.floor(Math.random() * 3) - 1;
             
-            // 【修正3】出現エリア（横幅）を8倍に (400 -> 3200)
             const startX = (Math.random() - 0.5) * 3200;
             const startY = (Math.random() - 0.5) * 150;
             const startZ = CONFIG.spawnZ;
@@ -611,7 +606,6 @@
 
             for (let enemy of activeEnemies) {
                 const dist3D = enemy.mesh.position.distanceTo(camera.position);
-                // 【修正2】距離チェック (近づくまでロックしない)
                 if (dist3D > CONFIG.maxLockDistance) continue;
 
                 screenPos.copy(enemy.mesh.position).project(camera);
