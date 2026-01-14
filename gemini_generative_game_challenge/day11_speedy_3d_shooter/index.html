@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GEOMETRIC VORTEX - TYPE S (v20260114.8)</title>
+    <title>GEOMETRIC VORTEX - TYPE S (v20260114.10)</title>
     <style>
         body {
             margin: 0;
@@ -48,27 +48,28 @@
             padding: 5px;
         }
 
-        /* レティクル修正: サイドのラインを削除しシンプルに */
+        /* レティクル: シンプルなボックス型 */
         #reticle {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 60px;
-            height: 60px;
-            border: 2px solid rgba(0, 255, 255, 0.8);
+            width: 70px; /* 狙いやすいように少し大きく */
+            height: 70px;
+            border: 2px solid rgba(0, 255, 255, 0.5);
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
             pointer-events: none;
-            transition: transform 0.1s;
+            transition: border-color 0.1s, box-shadow 0.1s, transform 0.1s;
         }
 
-        #reticle.firing {
-            border-color: #fff;
-            box-shadow: 0 0 20px #fff;
-            transform: translate(-50%, -50%) scale(1.1);
+        /* ロックオン時の演出 */
+        #reticle.locked {
+            border-color: #ff0055;
+            border-width: 3px;
+            box-shadow: 0 0 20px #ff0055, inset 0 0 10px #ff0055;
+            transform: translate(-50%, -50%) scale(0.95);
         }
 
-        /* 中心点 */
         #reticle::after {
             content: '';
             position: absolute;
@@ -79,8 +80,6 @@
             background: #fff;
             transform: translate(-50%, -50%);
         }
-
-        /* before擬似要素（横ライン）を削除しました */
 
         #start-screen,
         #game-over-screen {
@@ -190,11 +189,11 @@
 
     <div id="start-screen">
         <h1>GEOMETRIC<br>VORTEX</h1>
-        <p>TYPE-S: V2026.8</p>
+        <p>TYPE-S: REBOOT</p>
         <div class="instruction">
-            DRAG TO AIM<br>
-            INSTANT HIT LASER<br>
-            中央に来る敵を撃墜せよ
+            TARGET LOCK SYSTEM<br>
+            敵をレティクルに捉えると自動射撃<br>
+            CAPTURE ENEMY TO FIRE
         </div>
         <button id="start-btn">SYSTEM BOOT</button>
     </div>
@@ -215,12 +214,12 @@
          * CONFIGURATION
          */
         const CONFIG = {
-            gridSpeed: 3.5,       // 背景の高速感は維持
+            gridSpeed: 3.5,       // v8と同じ高速設定
             spawnRate: 10,
-            fireRate: 4,
+            fireRate: 4,          // 捕捉時の連射速度
             playerSensitivity: 1.8,
-            groundY: -20,         // 床の高さ
-            ceilingY: 20,         // 【追加】天井の高さ（反射用）
+            groundY: -20,
+            ceilingY: 20,         // 反射用天井
             fogDensity: 0.0012,
             spawnZ: -900
         };
@@ -241,15 +240,15 @@
                 const t = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                osc.type = 'sawtooth'; // レーザーらしい音に戻す
-                osc.frequency.setValueAtTime(800, t);
-                osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(1000, t);
+                osc.frequency.exponentialRampToValueAtTime(100, t + 0.08);
                 gain.gain.setValueAtTime(0.08, t);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
                 osc.connect(gain);
                 gain.connect(this.masterGain);
                 osc.start();
-                osc.stop(t + 0.1);
+                osc.stop(t + 0.08);
             }
 
             playExplosion() {
@@ -333,6 +332,8 @@
             camera.position.set(0, 0, 0);
             
             raycaster = new THREE.Raycaster();
+            // 判定を少し甘めにして「レティクル枠内」感覚に近づける
+            raycaster.params.Points.threshold = 1.0; 
 
             renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -343,6 +344,7 @@
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
             const renderScene = new RenderPass(scene, camera);
+            // Glow設定（控えめ）
             const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.15, 0.4, 0.2);
             
             composer = new EffectComposer(renderer);
@@ -402,26 +404,24 @@
                 return { mesh, velocity: new THREE.Vector3(), state: 'dead', type: 'normal' };
             }, 60);
 
-            // 【追加】レーザービーム表示用のプール
+            // ビジュアル用ビーム: 細く設定
             laserBeamPool = new SimplePool(() => {
-                // シリンダーを倒して先端を原点とは逆に伸ばすなどの工夫が必要だが
-                // ここでは長さ1のシリンダーを用意し、スケールで伸ばす手法をとる
-                // 原点は中心(0,0,0)なので、Y+0.5して原点を底面にする
-                const geo = new THREE.CylinderGeometry(0.3, 0.3, 1.0, 6);
-                geo.translate(0, 0.5, 0); // 原点を底面に
-                geo.rotateX(Math.PI / 2); // Z軸方向に向ける
+                // 半径0.08 (かなり細く)
+                const geo = new THREE.CylinderGeometry(0.08, 0.08, 1.0, 6);
+                geo.translate(0, 0.5, 0); 
+                geo.rotateX(Math.PI / 2); 
                 
                 const mat = new THREE.MeshBasicMaterial({ 
                     color: 0x00ffff, 
                     transparent: true, 
-                    opacity: 0.8,
+                    opacity: 0.9,
                     blending: THREE.AdditiveBlending 
                 });
                 const mesh = new THREE.Mesh(geo, mat);
                 scene.add(mesh);
                 mesh.visible = false;
                 return { mesh, life: 0 };
-            }, 20);
+            }, 30);
 
             particlePool = new SimplePool(() => {
                 const geo = new THREE.TetrahedronGeometry(1.5);
@@ -562,11 +562,11 @@
 
             enemyObj.isThreat = (sectorX === 0 && sectorY === 0);
             
+            // バグ修正箇所: directionを定義
             const direction = new THREE.Vector3(targetX - startX, targetY - startY, targetZ - startZ).normalize();
             
-            // 【修正2】敵の速度を減速（背景の疾走感はそのままに、敵だけ遅く）
-            // 2.0 -> 1.2 程度へ
-            const baseSpeed = 1.2 + (Math.random() * 0.8); 
+            // 速度調整: v8 (0.6) より少し遅くして狙いやすく、ただし疾走感は損なわない程度に
+            const baseSpeed = 0.45 + (Math.random() * 0.4); 
             const speedMultiplier = 1.0 + (score * 0.0003); 
             const speed = baseSpeed * speedMultiplier;
 
@@ -575,36 +575,31 @@
             enemyObj.rotSpeed = { x: Math.random() * 0.05, y: Math.random() * 0.05 };
         }
 
-        // ビジュアル用ビーム生成
+        // ビーム描画（銃口を画面外に）
         function createBeamVisual(targetPos) {
             const sides = [-1, 1];
             sides.forEach(side => {
                 const beamObj = laserBeamPool.get();
                 const beam = beamObj.mesh;
                 
-                // 銃口位置
-                const origin = new THREE.Vector3(side * 2.2, -1.3, -2.5);
+                // 画面外下・左右から発射
+                const origin = new THREE.Vector3(side * 6.0, -5.0, -2.0);
                 origin.applyMatrix4(camera.matrixWorld);
 
                 beam.position.copy(origin);
                 beam.lookAt(targetPos);
                 
-                // 距離を計算してスケールで長さを合わせる
                 const dist = origin.distanceTo(targetPos);
-                beam.scale.set(1, 1, dist); // Zスケールを距離に
+                beam.scale.set(1, 1, dist);
 
-                beamObj.life = 5; // 5フレームで消える（一瞬）
+                beamObj.life = 4;
             });
         }
 
-        function shootRay() {
-            uiReticle.classList.remove('firing');
-            void uiReticle.offsetWidth;
-            uiReticle.classList.add('firing');
-            
-            soundGen.playShot();
-
-            const ndcX = aimX * 0.8;
+        // スナイパーシステム: 捕捉時のみ発射
+        function updateWeapons() {
+            // NDC座標系 (-1.0 ~ 1.0)
+            const ndcX = aimX * 0.8; 
             const ndcY = aimY * 0.8;
             raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
 
@@ -613,30 +608,29 @@
             const intersects = raycaster.intersectObjects(meshes);
 
             if (intersects.length > 0) {
-                // ヒット
-                const hitObject = intersects[0].object;
-                const enemyData = activeEnemies.find(e => e.mesh === hitObject);
-                if (enemyData) {
-                    enemyData.state = 'crashing';
-                    enemyData.velocity.multiplyScalar(0.3);
-                    enemyData.velocity.y += 0.5;
-                    enemyData.rotSpeed = { x: Math.random()*0.5, y: Math.random()*0.5 };
-                    
-                    score += 100;
-                    updateUI();
-                    
-                    createGroundExplosion(hitObject.position, hitObject.material.color);
-                    
-                    // 【修正4】ヒット位置へビーム描画
-                    createBeamVisual(hitObject.position);
+                // ロックオン状態
+                uiReticle.classList.add('locked');
+
+                // 連射レートチェック
+                if (frameCount % CONFIG.fireRate === 0) {
+                    const hitObject = intersects[0].object;
+                    const enemyData = activeEnemies.find(e => e.mesh === hitObject);
+                    if (enemyData) {
+                        soundGen.playShot();
+                        createBeamVisual(hitObject.position);
+
+                        enemyData.state = 'crashing';
+                        enemyData.velocity.multiplyScalar(0.3);
+                        enemyData.velocity.y += 0.5;
+                        enemyData.rotSpeed = { x: Math.random()*0.5, y: Math.random()*0.5 };
+                        
+                        score += 100;
+                        updateUI();
+                        createGroundExplosion(hitObject.position, hitObject.material.color);
+                    }
                 }
             } else {
-                // ハズレ（遠くへビームを飛ばす）
-                // レティクル方向の遠点
-                raycaster.ray.at(500, new THREE.Vector3()); // Rayの500先を取得したいが、Raycaster.rayは便利
-                const targetPos = new THREE.Vector3();
-                raycaster.ray.at(600, targetPos); // 600先にターゲット設定
-                createBeamVisual(targetPos);
+                uiReticle.classList.remove('locked');
             }
         }
 
@@ -696,8 +690,8 @@
                 frameCount++;
                 if (frameCount % CONFIG.spawnRate === 0) spawnEnemy();
                 
-                // 即着弾ビーム発射
-                if (frameCount % CONFIG.fireRate === 0) shootRay();
+                // 武器システム更新
+                updateWeapons();
             }
 
             // Update Beams
@@ -705,8 +699,7 @@
             for (let i = activeBeams.length - 1; i >= 0; i--) {
                 const beamObj = activeBeams[i];
                 beamObj.life--;
-                // フェードアウト
-                beamObj.mesh.material.opacity = (beamObj.life / 5) * 0.8;
+                beamObj.mesh.material.opacity = (beamObj.life / 4) * 0.9;
                 if (beamObj.life <= 0) {
                     laserBeamPool.release(beamObj);
                 }
@@ -717,19 +710,18 @@
             for (let i = activeEnemies.length - 1; i >= 0; i--) {
                 const e = activeEnemies[i];
                 if (e.state === 'alive') {
-                    // 移動
                     e.mesh.position.add(e.velocity);
                     e.mesh.rotation.x += e.rotSpeed.x;
                     e.mesh.rotation.y += e.rotSpeed.y;
 
-                    // 【修正3】床・天井での反射ロジック
+                    // 床・天井反射 (v8には無かった機能、v9要望を追加)
                     if (e.mesh.position.y < CONFIG.groundY) {
                         e.mesh.position.y = CONFIG.groundY;
-                        e.velocity.y *= -1; // 反射
+                        e.velocity.y *= -1;
                     }
                     if (e.mesh.position.y > CONFIG.ceilingY) {
                         e.mesh.position.y = CONFIG.ceilingY;
-                        e.velocity.y *= -1; // 反射
+                        e.velocity.y *= -1;
                     }
 
                     if (e.mesh.position.z > 20) {
