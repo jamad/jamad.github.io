@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>GEOMETRIC VORTEX - TYPE S</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', Courier, monospace;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .hud-text {
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff;
+            font-size: 24px;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px;
+        }
+
+        #reticle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            border: 2px solid rgba(0, 255, 255, 0.7);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            pointer-events: none;
+        }
+
+        #reticle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #fff;
+        }
+
+        #reticle::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            width: 2px;
+            height: 10px;
+            background: rgba(0, 255, 255, 0.5);
+            transform: translateX(-50%);
+        }
+
+        #start-screen,
+        #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        h1 {
+            color: #f0f;
+            font-size: 40px;
+            text-shadow: 0 0 20px #f0f;
+            margin-bottom: 10px;
+            text-align: center;
+            letter-spacing: 5px;
+        }
+
+        p {
+            color: #fff;
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .instruction {
+            color: #0ff;
+            margin-bottom: 30px;
+            font-size: 14px;
+            border: 1px solid #0ff;
+            padding: 10px;
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        button {
+            background: transparent;
+            color: #0ff;
+            border: 2px solid #0ff;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 0 15px #0ff;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #0ff;
+            color: #000;
+            box-shadow: 0 0 30px #0ff;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #score-display {
+            text-align: right;
+        }
+
+        #damage-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: red;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+            transition: opacity 0.1s;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+
+    <div id="canvas-container"></div>
+    <div id="damage-overlay"></div>
+
+    <div id="ui-layer">
+        <div class="hud-text">SHIELD: <span id="health-val">100</span>%</div>
+        <div id="reticle"></div>
+        <div class="hud-text" id="score-display">SCORE: <span id="score-val">0</span></div>
+    </div>
+
+    <div id="start-screen">
+        <h1>GEOMETRIC<br>VORTEX</h1>
+        <p>TYPE-S: HIGH SPEED INTERCEPTOR</p>
+        <div class="instruction">
+            DRAG TO AIM (RELATIVE)<br>
+            ドラッグで照準移動<br>
+            敵を撃つと地面に墜落・爆発します
+        </div>
+        <button id="start-btn">SYSTEM BOOT</button>
+    </div>
+
+    <div id="game-over-screen" class="hidden">
+        <h1>SIGNAL LOST</h1>
+        <p>FINAL SCORE: <span id="final-score">0</span></p>
+        <button id="retry-btn">REBOOT SYSTEM</button>
+    </div>
+
+    <script>
+        /**
+         * AUDIO SYSTEM
+         */
+        class SoundGen {
+            constructor() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.value = 0.3;
+                this.masterGain.connect(this.ctx.destination);
+            }
+
+            resume() {
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playLaser() {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1500, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime); // 音量少し控えめ（2発出るため）
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+
+            playExplosion() {
+                const bufferSize = this.ctx.sampleRate * 0.8;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const noiseFilter = this.ctx.createBiquadFilter();
+                noiseFilter.type = 'lowpass';
+                noiseFilter.frequency.setValueAtTime(800, this.ctx.currentTime);
+                noiseFilter.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.8);
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.8);
+
+                noise.connect(noiseFilter);
+                noiseFilter.connect(gain);
+                gain.connect(this.masterGain);
+
+                noise.start();
+            }
+        }
+
+        /**
+         * GAME ENGINE
+         */
+        const CONFIG = {
+            gridSpeed: 3.0,
+            spawnRate: 15,
+            bulletSpeed: 30.0,   // レーザーさらに高速化
+            playerSensitivity: 1.5,
+            fieldDepth: 300,
+            fieldWidth: 100,
+            groundY: -15,
+            gravity: 0.8
+        };
+
+        let scene, camera, renderer;
+        let soundGen;
+        let isPlaying = false;
+        let score = 0;
+        let health = 100;
+        let frameCount = 0;
+
+        // Entities
+        const bullets = [];
+        const enemies = [];
+        const particles = [];
+        let gridTop, gridBottom;
+
+        // Input
+        let aimX = 0;
+        let aimY = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isTouching = false;
+
+        // DOM Elements
+        const uiReticle = document.getElementById('reticle');
+        const elScore = document.getElementById('score-val');
+        const elHealth = document.getElementById('health-val');
+        const elFinalScore = document.getElementById('final-score');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const damageOverlay = document.getElementById('damage-overlay');
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.003);
+
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, 0);
+
+            // シャドウマップ有効化
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Lights
+            scene.add(new THREE.AmbientLight(0x404040, 0.5)); // 環境光少し下げる
+
+            // メインの影用光源 (上空から)
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            sunLight.position.set(0, 100, 0); // 真上
+            sunLight.castShadow = true;
+
+            // 影の範囲設定
+            sunLight.shadow.mapSize.width = 1024;
+            sunLight.shadow.mapSize.height = 1024;
+            sunLight.shadow.camera.near = 0.5;
+            sunLight.shadow.camera.far = 500;
+            const d = 100;
+            sunLight.shadow.camera.left = -d;
+            sunLight.shadow.camera.right = d;
+            sunLight.shadow.camera.top = d;
+            sunLight.shadow.camera.bottom = -d;
+            scene.add(sunLight);
+
+            createEnvironment();
+
+            window.addEventListener('resize', onWindowResize, false);
+
+            // Input Handling
+            const container = document.getElementById('canvas-container');
+            container.addEventListener('mousedown', onTouchStart);
+            document.addEventListener('mousemove', onTouchMove);
+            document.addEventListener('mouseup', onTouchEnd);
+            container.addEventListener('touchstart', onTouchStart, { passive: false });
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+            document.addEventListener('touchend', onTouchEnd);
+
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('retry-btn').addEventListener('click', resetGame);
+
+            soundGen = new SoundGen();
+            animate();
+        }
+
+        function createEnvironment() {
+            // 地面グリッド
+            const gridHelper1 = new THREE.GridHelper(400, 40, 0xff00ff, 0x220022);
+            gridHelper1.position.y = CONFIG.groundY;
+            gridHelper1.position.z = -100;
+            gridHelper1.scale.z = 10;
+            scene.add(gridHelper1);
+            gridBottom = gridHelper1;
+
+            // 影を受けるための透明な床
+            const planeGeo = new THREE.PlaneGeometry(1000, 1000);
+            const planeMat = new THREE.ShadowMaterial({ opacity: 0.5, color: 0x000000 });
+            const shadowPlane = new THREE.Mesh(planeGeo, planeMat);
+            shadowPlane.rotation.x = -Math.PI / 2;
+            shadowPlane.position.y = CONFIG.groundY - 0.1; // グリッドの少し下
+            shadowPlane.receiveShadow = true;
+            scene.add(shadowPlane);
+
+            // 天井グリッド
+            const gridHelper2 = new THREE.GridHelper(400, 40, 0x00ffff, 0x002222);
+            gridHelper2.position.y = -CONFIG.groundY;
+            gridHelper2.position.z = -100;
+            gridHelper2.scale.z = 10;
+            scene.add(gridHelper2);
+            gridTop = gridHelper2;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- Input Logic ---
+        function onTouchStart(e) {
+            if (!isPlaying) return;
+            e.preventDefault();
+            isTouching = true;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            touchStartX = clientX;
+            touchStartY = clientY;
+        }
+
+        function onTouchMove(e) {
+            if (!isPlaying || !isTouching) return;
+            e.preventDefault();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const deltaX = (clientX - touchStartX) / window.innerWidth;
+            const deltaY = (clientY - touchStartY) / window.innerHeight;
+            aimX += deltaX * CONFIG.playerSensitivity * 2;
+            aimY -= deltaY * CONFIG.playerSensitivity * 2;
+            aimX = Math.max(-1.1, Math.min(1.1, aimX));
+            aimY = Math.max(-1.1, Math.min(1.1, aimY));
+            touchStartX = clientX;
+            touchStartY = clientY;
+            updateReticlePosition();
+        }
+
+        function onTouchEnd(e) {
+            isTouching = false;
+        }
+
+        function updateReticlePosition() {
+            const xPercent = 50 + (aimX * 45);
+            const yPercent = 50 - (aimY * 45);
+            uiReticle.style.left = `${xPercent}%`;
+            uiReticle.style.top = `${yPercent}%`;
+            uiReticle.style.transform = `translate(-50%, -50%)`;
+        }
+
+        function startGame() {
+            soundGen.resume();
+            startScreen.classList.add('hidden');
+            isPlaying = true;
+            score = 0;
+            health = 100;
+            aimX = 0;
+            aimY = 0;
+            updateReticlePosition();
+            updateUI();
+        }
+
+        function resetGame() {
+            enemies.forEach(e => scene.remove(e.mesh));
+            enemies.length = 0;
+            bullets.forEach(b => scene.remove(b.mesh));
+            bullets.length = 0;
+            particles.forEach(p => scene.remove(p.mesh));
+            particles.length = 0;
+            gameOverScreen.classList.add('hidden');
+            startGame();
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            soundGen.playExplosion();
+            elFinalScore.innerText = score;
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        // --- Game Logic ---
+
+        function spawnEnemy() {
+            const isDodeca = Math.random() > 0.5;
+            let geometry = isDodeca ? new THREE.DodecahedronGeometry(2.0) : new THREE.OctahedronGeometry(1.5);
+            let color = isDodeca ? 0xff3333 : 0xffaa00;
+
+            const material = new THREE.MeshPhongMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.5,
+                wireframe: true // ワイヤーフレームだが影を落とすためにDepthWriteが必要かも
+            });
+            // ワイヤーフレームだと影が落ちにくいので、内部に透明なメッシュを入れるか、
+            // シンプルに「ワイヤーフレーム風だが中身がある」マテリアルにする
+            const solidMaterial = new THREE.MeshPhongMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.2,
+                flatShading: true,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const enemy = new THREE.Mesh(geometry, solidMaterial);
+            enemy.castShadow = true; // 影を落とす
+
+            // 出現ロジック
+            const side = Math.random() > 0.5 ? 1 : -1;
+            const startX = side * (60 + Math.random() * 40);
+            const startY = (Math.random() - 0.5) * 30;
+            const startZ = -200 - Math.random() * 50;
+
+            enemy.position.set(startX, startY, startZ);
+            scene.add(enemy);
+
+            const targetX = -startX * 1.5;
+            const targetZ = 50;
+
+            const direction = new THREE.Vector3(targetX - startX, 0, targetZ - startZ).normalize();
+            // 速度を半分にする
+            const speed = (1.0 + Math.random() * 0.5 + (score * 0.002)) * 0.5;
+
+            enemies.push({
+                mesh: enemy,
+                velocity: direction.multiplyScalar(speed),
+                hp: 1,
+                state: 'alive',
+                rotSpeed: new THREE.Vector3(Math.random() * 0.1, Math.random() * 0.1, Math.random() * 0.1)
+            });
+        }
+
+        function fireLaser() {
+            // 左右2本のレーザーを発射
+            const sides = [-1, 1]; // 左, 右
+
+            sides.forEach(side => {
+                const geometry = new THREE.CylinderGeometry(0.1, 0.1, 15, 4);
+                geometry.rotateX(-Math.PI / 2);
+                const material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+                const laser = new THREE.Mesh(geometry, material);
+
+                // 発射位置: 画面の左右下 (カメラ相対)
+                // カメラ座標系で少し横(-4, 4)・下(-3)にずらす
+                const offset = new THREE.Vector3(side * 4, -3, 2);
+                const startPos = offset.applyMatrix4(camera.matrixWorld);
+                laser.position.copy(startPos);
+
+                // ターゲット計算
+                const vector = new THREE.Vector3(aimX * 0.95, aimY * 0.95, 0.5);
+                vector.unproject(camera);
+                // 発射位置からターゲットへのベクトル
+                const dir = vector.sub(startPos).normalize();
+
+                laser.lookAt(startPos.clone().add(dir));
+
+                scene.add(laser);
+
+                bullets.push({
+                    mesh: laser,
+                    velocity: dir.multiplyScalar(CONFIG.bulletSpeed),
+                    life: 20
+                });
+            });
+
+            soundGen.playLaser();
+        }
+
+        function triggerDamage() {
+            health -= 10;
+            soundGen.playExplosion();
+            damageOverlay.style.opacity = 0.5;
+            setTimeout(() => { damageOverlay.style.opacity = 0; }, 100);
+            updateUI();
+            if (health <= 0) gameOver();
+        }
+
+        function createGroundExplosion(pos, color) {
+            soundGen.playExplosion();
+
+            // 破片
+            for (let i = 0; i < 15; i++) {
+                const geo = new THREE.TetrahedronGeometry(Math.random() * 1.5);
+                const mat = new THREE.MeshBasicMaterial({ color: color });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.copy(pos);
+                const vel = new THREE.Vector3(
+                    (Math.random() - 0.5) * 3,
+                    Math.random() * 4,
+                    (Math.random() - 0.5) * 3
+                );
+                scene.add(mesh);
+                particles.push({ mesh, velocity: vel, life: 1.0, gravity: true });
+            }
+
+            // 爆風リング
+            const ringGeo = new THREE.RingGeometry(0.1, 0.5, 16);
+            ringGeo.rotateX(-Math.PI / 2);
+            const ringMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, side: THREE.DoubleSide });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.copy(pos);
+            ring.position.y += 0.5;
+            scene.add(ring);
+            particles.push({ mesh: ring, type: 'ring', life: 1.0, scaleSpeed: 2.0 });
+        }
+
+        function updateUI() {
+            elScore.innerText = Math.floor(score);
+            elHealth.innerText = health;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (isPlaying) {
+                gridTop.position.z += CONFIG.gridSpeed;
+                gridBottom.position.z += CONFIG.gridSpeed;
+                if (gridTop.position.z > 0) gridTop.position.z = -100;
+                if (gridBottom.position.z > 0) gridBottom.position.z = -100;
+
+                camera.rotation.z = -aimX * 0.1;
+                camera.rotation.x = aimY * 0.1;
+                camera.position.x = aimX * 5;
+                camera.position.y = aimY * 3;
+
+                frameCount++;
+                if (frameCount % CONFIG.spawnRate === 0) {
+                    spawnEnemy();
+                }
+
+                if (frameCount % 4 === 0) {
+                    fireLaser();
+                }
+            }
+
+            // Bullets update
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.mesh.position.add(b.velocity);
+                b.life--;
+
+                if (b.life <= 0) {
+                    scene.remove(b.mesh);
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                // Collision Check
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    const e = enemies[j];
+                    if (e.state !== 'alive') continue;
+
+                    const dist = b.mesh.position.distanceTo(e.mesh.position);
+
+                    // ヒット判定
+                    if (dist < 8.0) {
+                        scene.remove(b.mesh);
+                        bullets.splice(i, 1);
+
+                        e.state = 'crashing';
+                        // 撃墜時の初速ベクトル調整
+                        e.velocity.multiplyScalar(0.2); // 横方向の速度を大きく殺す（真下に落ちるように）
+                        e.crashRot = new THREE.Vector3(Math.random(), Math.random(), Math.random());
+
+                        score += 100;
+                        updateUI();
+                        break;
+                    }
+                }
+            }
+
+            // Enemies update
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const e = enemies[i];
+
+                if (e.state === 'alive') {
+                    e.mesh.position.add(e.velocity);
+                    e.mesh.rotation.x += e.rotSpeed.x;
+                    e.mesh.rotation.y += e.rotSpeed.y;
+
+                    if (e.mesh.position.z > 0) {
+                        triggerDamage();
+                        scene.remove(e.mesh);
+                        enemies.splice(i, 1);
+                    }
+                } else if (e.state === 'crashing') {
+                    // 墜落中
+                    // 重力加速度を8倍 (0.1 -> 0.8) に変更
+                    e.velocity.y -= 0.8;
+
+                    e.mesh.position.add(e.velocity);
+                    e.mesh.rotation.x += 0.4;
+                    e.mesh.rotation.y += 0.4;
+
+                    // 地面激突
+                    if (e.mesh.position.y < CONFIG.groundY) {
+                        createGroundExplosion(e.mesh.position, e.mesh.material.color);
+                        scene.remove(e.mesh);
+                        enemies.splice(i, 1);
+                    }
+                }
+            }
+
+            // Particles update
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.life -= 0.03;
+
+                if (p.type === 'ring') {
+                    p.mesh.scale.multiplyScalar(1.1);
+                    p.mesh.material.opacity = p.life;
+                } else {
+                    if (p.gravity) p.velocity.y -= 0.1;
+                    p.mesh.position.add(p.velocity);
+                    p.mesh.rotation.x += 0.1;
+                }
+
+                if (p.life <= 0 || p.mesh.position.y < CONFIG.groundY - 5) {
+                    scene.remove(p.mesh);
+                    particles.splice(i, 1);
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+
+    </script>
+</body>
+
+</html>
