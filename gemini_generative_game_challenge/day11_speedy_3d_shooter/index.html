@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GEOMETRIC VORTEX - TYPE S (REVISED)</title>
+    <title>GEOMETRIC VORTEX - TYPE S (v20260114.8)</title>
     <style>
         body {
             margin: 0;
@@ -48,7 +48,7 @@
             padding: 5px;
         }
 
-        /* レティクルのデザインを少しシャープに変更 */
+        /* レティクル修正: サイドのラインを削除しシンプルに */
         #reticle {
             position: absolute;
             top: 50%;
@@ -59,32 +59,29 @@
             transform: translate(-50%, -50%);
             box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
             pointer-events: none;
+            transition: transform 0.1s;
         }
 
+        #reticle.firing {
+            border-color: #fff;
+            box-shadow: 0 0 20px #fff;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        /* 中心点 */
         #reticle::after {
             content: '';
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 6px;
-            height: 6px;
+            width: 4px;
+            height: 4px;
             background: #fff;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px #fff;
         }
 
-        /* 十字線を追加 */
-        #reticle::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: rgba(0, 255, 255, 0.5);
-            transform: translateY(-50%);
-        }
-        
+        /* before擬似要素（横ライン）を削除しました */
+
         #start-screen,
         #game-over-screen {
             position: absolute;
@@ -148,10 +145,6 @@
             box-shadow: 0 0 30px #0ff;
         }
 
-        button:active {
-            transform: scale(0.95);
-        }
-
         .hidden {
             display: none !important;
         }
@@ -173,7 +166,15 @@
             transition: opacity 0.05s;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- ES Modules -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.136.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.136.0/examples/jsm/"
+            }
+        }
+    </script>
 </head>
 
 <body>
@@ -189,11 +190,11 @@
 
     <div id="start-screen">
         <h1>GEOMETRIC<br>VORTEX</h1>
-        <p>TYPE-S: HIGH SPEED INTERCEPTOR</p>
+        <p>TYPE-S: V2026.8</p>
         <div class="instruction">
             DRAG TO AIM<br>
-            ドラッグで照準移動<br>
-            接近する敵を撃墜してください
+            INSTANT HIT LASER<br>
+            中央に来る敵を撃墜せよ
         </div>
         <button id="start-btn">SYSTEM BOOT</button>
     </div>
@@ -204,19 +205,24 @@
         <button id="retry-btn">REBOOT SYSTEM</button>
     </div>
 
-    <script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
         /**
          * CONFIGURATION
          */
         const CONFIG = {
-            gridSpeed: 3.0,
-            spawnRate: 10,       // 敵の出現頻度（小さいほど多い）
-            bulletSpeed: 50.0,   // レーザー速度向上
-            fireRate: 3,         // 連射速度（小さいほど速い）
+            gridSpeed: 3.5,       // 背景の高速感は維持
+            spawnRate: 10,
+            fireRate: 4,
             playerSensitivity: 1.8,
-            groundY: -20,
-            fogDensity: 0.0015,  // 遠くを見通せるように調整
-            spawnZ: -800         // 出現位置をはるか遠くに
+            groundY: -20,         // 床の高さ
+            ceilingY: 20,         // 【追加】天井の高さ（反射用）
+            fogDensity: 0.0012,
+            spawnZ: -900
         };
 
         /**
@@ -229,84 +235,88 @@
                 this.masterGain.gain.value = 0.25;
                 this.masterGain.connect(this.ctx.destination);
             }
+            resume() { if (this.ctx.state === 'suspended') this.ctx.resume(); }
 
-            resume() {
-                if (this.ctx.state === 'suspended') {
-                    this.ctx.resume();
-                }
-            }
-
-            playLaser() {
+            playShot() {
+                const t = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-
-                osc.type = 'sawtooth'; // より鋭い音に
-                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.1);
-
-                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
-
+                osc.type = 'sawtooth'; // レーザーらしい音に戻す
+                osc.frequency.setValueAtTime(800, t);
+                osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
+                gain.gain.setValueAtTime(0.08, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
                 osc.connect(gain);
                 gain.connect(this.masterGain);
-
                 osc.start();
-                osc.stop(this.ctx.currentTime + 0.1);
+                osc.stop(t + 0.1);
             }
 
             playExplosion() {
-                const bufferSize = this.ctx.sampleRate * 0.5;
+                const t = this.ctx.currentTime;
+                const bufferSize = this.ctx.sampleRate * 0.4;
                 const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 const data = buffer.getChannelData(0);
-
-                for (let i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 2 - 1;
-                }
-
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
                 const noise = this.ctx.createBufferSource();
                 noise.buffer = buffer;
-
-                const noiseFilter = this.ctx.createBiquadFilter();
-                noiseFilter.type = 'lowpass';
-                noiseFilter.frequency.setValueAtTime(1000, this.ctx.currentTime);
-                noiseFilter.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.5);
-
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1000, t);
+                filter.frequency.linearRampToValueAtTime(100, t + 0.3);
                 const gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(1, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
-
-                noise.connect(noiseFilter);
-                noiseFilter.connect(gain);
+                gain.gain.setValueAtTime(0.8, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+                noise.connect(filter);
+                filter.connect(gain);
                 gain.connect(this.masterGain);
-
                 noise.start();
             }
         }
 
         /**
-         * GAME ENGINE
+         * OBJECT POOLING SYSTEM
          */
-        let scene, camera, renderer;
+        class SimplePool {
+            constructor(createFn, initialSize = 50) {
+                this.createFn = createFn;
+                this.pool = [];
+                this.active = [];
+                for (let i = 0; i < initialSize; i++) this.pool.push(this.createFn());
+            }
+            get() {
+                let obj = (this.pool.length > 0) ? this.pool.pop() : this.createFn();
+                obj.mesh.visible = true;
+                this.active.push(obj);
+                return obj;
+            }
+            release(obj) {
+                obj.mesh.visible = false;
+                const index = this.active.indexOf(obj);
+                if (index > -1) this.active.splice(index, 1);
+                this.pool.push(obj);
+            }
+            releaseAll() { while(this.active.length > 0) this.release(this.active[0]); }
+            getActive() { return this.active; }
+        }
+
+        let scene, camera, renderer, composer;
         let soundGen;
         let isPlaying = false;
         let score = 0;
         let health = 100;
         let frameCount = 0;
 
-        // Entities
-        const bullets = [];
-        const enemies = [];
-        const particles = [];
+        let enemyPool, particlePool, laserBeamPool;
         let gridTop, gridBottom;
+        let raycaster;
 
-        // Input
         let aimX = 0;
         let aimY = 0;
         let touchStartX = 0;
         let touchStartY = 0;
         let isTouching = false;
 
-        // DOM Elements
         const uiReticle = document.getElementById('reticle');
         const elScore = document.getElementById('score-val');
         const elHealth = document.getElementById('health-val');
@@ -317,44 +327,49 @@
 
         function init() {
             scene = new THREE.Scene();
-            // Fogを調整して遠くから出現するようにする
             scene.fog = new THREE.FogExp2(0x000000, CONFIG.fogDensity);
 
-            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1500);
             camera.position.set(0, 0, 0);
+            
+            raycaster = new THREE.Raycaster();
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true; 
+            renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ReinhardToneMapping;
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-            // Lights
-            scene.add(new THREE.AmbientLight(0x404040, 0.6)); 
-
-            // 影用のライト
-            const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
-            sunLight.position.set(20, 100, 20); // 少し斜めから当てて立体感を出す
-            sunLight.castShadow = true;
+            const renderScene = new RenderPass(scene, camera);
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.15, 0.4, 0.2);
             
-            // シャドウマップの範囲調整
+            composer = new EffectComposer(renderer);
+            composer.addPass(renderScene);
+            composer.addPass(bloomPass);
+
+            scene.add(new THREE.AmbientLight(0x404040, 0.4));
+            
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
+            sunLight.position.set(60, 150, 60);
+            sunLight.castShadow = true;
             sunLight.shadow.mapSize.width = 2048;
             sunLight.shadow.mapSize.height = 2048;
             sunLight.shadow.camera.near = 0.5;
-            sunLight.shadow.camera.far = 1000; // 遠くの敵も影を落とす
-            const d = 300;
+            sunLight.shadow.camera.far = 1500;
+            const d = 500;
             sunLight.shadow.camera.left = -d;
             sunLight.shadow.camera.right = d;
             sunLight.shadow.camera.top = d;
             sunLight.shadow.camera.bottom = -d;
+            sunLight.shadow.bias = -0.0005;
             scene.add(sunLight);
 
             createEnvironment();
+            initPools();
 
             window.addEventListener('resize', onWindowResize, false);
-
-            // Input Handling
             const container = document.getElementById('canvas-container');
             container.addEventListener('mousedown', onTouchStart);
             document.addEventListener('mousemove', onTouchMove);
@@ -370,33 +385,77 @@
             animate();
         }
 
+        function initPools() {
+            enemyPool = new SimplePool(() => {
+                const geo = new THREE.OctahedronGeometry(2.0);
+                const mat = new THREE.MeshPhongMaterial({
+                    color: 0xffaa00,
+                    emissive: 0xff0000,
+                    emissiveIntensity: 0.5,
+                    shininess: 80,
+                    flatShading: true
+                });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.castShadow = true;
+                scene.add(mesh);
+                mesh.visible = false;
+                return { mesh, velocity: new THREE.Vector3(), state: 'dead', type: 'normal' };
+            }, 60);
+
+            // 【追加】レーザービーム表示用のプール
+            laserBeamPool = new SimplePool(() => {
+                // シリンダーを倒して先端を原点とは逆に伸ばすなどの工夫が必要だが
+                // ここでは長さ1のシリンダーを用意し、スケールで伸ばす手法をとる
+                // 原点は中心(0,0,0)なので、Y+0.5して原点を底面にする
+                const geo = new THREE.CylinderGeometry(0.3, 0.3, 1.0, 6);
+                geo.translate(0, 0.5, 0); // 原点を底面に
+                geo.rotateX(Math.PI / 2); // Z軸方向に向ける
+                
+                const mat = new THREE.MeshBasicMaterial({ 
+                    color: 0x00ffff, 
+                    transparent: true, 
+                    opacity: 0.8,
+                    blending: THREE.AdditiveBlending 
+                });
+                const mesh = new THREE.Mesh(geo, mat);
+                scene.add(mesh);
+                mesh.visible = false;
+                return { mesh, life: 0 };
+            }, 20);
+
+            particlePool = new SimplePool(() => {
+                const geo = new THREE.TetrahedronGeometry(1.5);
+                const mat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+                const mesh = new THREE.Mesh(geo, mat);
+                scene.add(mesh);
+                mesh.visible = false;
+                return { mesh, velocity: new THREE.Vector3(), life: 0, gravity: true, type: 'shard' };
+            }, 150);
+        }
+
         function createEnvironment() {
-            // 地面グリッド
-            const gridHelper1 = new THREE.GridHelper(600, 60, 0xff00ff, 0x220022);
+            const gridHelper1 = new THREE.GridHelper(800, 40, 0xff00ff, 0x220033);
             gridHelper1.position.y = CONFIG.groundY;
-            gridHelper1.position.z = -150;
+            gridHelper1.position.z = -200;
             gridHelper1.scale.z = 10;
             scene.add(gridHelper1);
             gridBottom = gridHelper1;
 
-            // 【改善点2】影を視認させるための「床」
-            // 背景が黒だと影が見えないため、ごく暗いグレーの床を敷く
-            const planeGeo = new THREE.PlaneGeometry(2000, 2000);
-            // ShadowMaterialではなく、StandardMaterialで色をつける
+            const planeGeo = new THREE.PlaneGeometry(3000, 3000);
             const planeMat = new THREE.MeshStandardMaterial({ 
-                color: 0x080810, // ほぼ黒に近いダークブルーグレー
-                roughness: 0.8 
+                color: 0x202050, 
+                roughness: 0.5,
+                metalness: 0.1
             });
             const floor = new THREE.Mesh(planeGeo, planeMat);
             floor.rotation.x = -Math.PI / 2;
-            floor.position.y = CONFIG.groundY - 0.5; // グリッドのわずかに下
+            floor.position.y = CONFIG.groundY - 0.5;
             floor.receiveShadow = true;
             scene.add(floor);
 
-            // 天井グリッド
-            const gridHelper2 = new THREE.GridHelper(600, 60, 0x00ffff, 0x002222);
-            gridHelper2.position.y = -CONFIG.groundY + 20; // 少し高く
-            gridHelper2.position.z = -150;
+            const gridHelper2 = new THREE.GridHelper(800, 40, 0x00ffff, 0x002222);
+            gridHelper2.position.y = -CONFIG.groundY + 40;
+            gridHelper2.position.z = -200;
             gridHelper2.scale.z = 10;
             scene.add(gridHelper2);
             gridTop = gridHelper2;
@@ -406,9 +465,9 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        // --- Input Logic ---
         function onTouchStart(e) {
             if (!isPlaying) return;
             e.preventDefault();
@@ -426,22 +485,20 @@
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             const deltaX = (clientX - touchStartX) / window.innerWidth;
             const deltaY = (clientY - touchStartY) / window.innerHeight;
-            aimX += deltaX * CONFIG.playerSensitivity * 2;
-            aimY -= deltaY * CONFIG.playerSensitivity * 2;
-            aimX = Math.max(-1.1, Math.min(1.1, aimX));
-            aimY = Math.max(-1.1, Math.min(1.1, aimY));
+            aimX += deltaX * CONFIG.playerSensitivity * 2.5;
+            aimY -= deltaY * CONFIG.playerSensitivity * 2.5;
+            aimX = Math.max(-1.3, Math.min(1.3, aimX));
+            aimY = Math.max(-1.2, Math.min(1.2, aimY));
             touchStartX = clientX;
             touchStartY = clientY;
             updateReticlePosition();
         }
 
-        function onTouchEnd(e) {
-            isTouching = false;
-        }
+        function onTouchEnd(e) { isTouching = false; }
 
         function updateReticlePosition() {
-            const xPercent = 50 + (aimX * 45);
-            const yPercent = 50 - (aimY * 45);
+            const xPercent = 50 + (aimX * 40);
+            const yPercent = 50 - (aimY * 40);
             uiReticle.style.left = `${xPercent}%`;
             uiReticle.style.top = `${yPercent}%`;
             uiReticle.style.transform = `translate(-50%, -50%)`;
@@ -455,17 +512,15 @@
             health = 100;
             aimX = 0;
             aimY = 0;
+            frameCount = 0;
             updateReticlePosition();
             updateUI();
         }
 
         function resetGame() {
-            enemies.forEach(e => scene.remove(e.mesh));
-            enemies.length = 0;
-            bullets.forEach(b => scene.remove(b.mesh));
-            bullets.length = 0;
-            particles.forEach(p => scene.remove(p.mesh));
-            particles.length = 0;
+            enemyPool.releaseAll();
+            particlePool.releaseAll();
+            laserBeamPool.releaseAll();
             gameOverScreen.classList.add('hidden');
             startGame();
         }
@@ -477,142 +532,140 @@
             gameOverScreen.classList.remove('hidden');
         }
 
-        // --- Game Logic ---
-
         function spawnEnemy() {
-            // 【改善点3】出現位置を遠く、範囲を広く
-            const isDodeca = Math.random() > 0.5;
-            let geometry = isDodeca ? new THREE.DodecahedronGeometry(2.5) : new THREE.OctahedronGeometry(2.0);
-            let color = isDodeca ? 0xff3333 : 0xffaa00;
+            const enemyObj = enemyPool.get();
+            const enemy = enemyObj.mesh;
 
-            const material = new THREE.MeshPhongMaterial({
-                color: color,
-                emissive: color,
-                emissiveIntensity: 0.5,
-                shininess: 100
-            });
+            const isDodeca = Math.random() > 0.6;
+            if (isDodeca && enemy.geometry.type !== 'DodecahedronGeometry') {
+                enemy.geometry = new THREE.DodecahedronGeometry(2.5);
+                enemy.material.color.setHex(0xff3333);
+            } else if (!isDodeca && enemy.geometry.type !== 'OctahedronGeometry') {
+                enemy.geometry = new THREE.OctahedronGeometry(2.0);
+                enemy.material.color.setHex(0xffaa00);
+            }
 
-            const enemy = new THREE.Mesh(geometry, material);
-            enemy.castShadow = true;
-
-            // 【改善点5】上下左右のスポーン範囲を拡大
-            const startX = (Math.random() - 0.5) * 300; // 横幅広く
-            const startY = (Math.random() - 0.5) * 120; // 縦幅も広く
-            const startZ = CONFIG.spawnZ; // 遠くから出現
+            const gridWidth = 50; 
+            const gridHeight = 30;
+            const sectorX = Math.floor(Math.random() * 3) - 1; 
+            const sectorY = Math.floor(Math.random() * 3) - 1;
+            
+            const startX = (Math.random() - 0.5) * 400;
+            const startY = (Math.random() - 0.5) * 150;
+            const startZ = CONFIG.spawnZ;
 
             enemy.position.set(startX, startY, startZ);
-            scene.add(enemy);
 
-            // プレイヤー（カメラ）に向かってくるベクトル計算
-            // 完全に中央ではなく、少しばらつきを持たせる
-            const targetX = aimX * 10 + (Math.random() - 0.5) * 20;
-            const targetY = aimY * 10 + (Math.random() - 0.5) * 20;
-            const targetZ = 50; // カメラの後ろへ抜ける
+            const targetX = sectorX * gridWidth + (Math.random()-0.5) * 20;
+            const targetY = sectorY * gridHeight + (Math.random()-0.5) * 15;
+            const targetZ = 100;
 
+            enemyObj.isThreat = (sectorX === 0 && sectorY === 0);
+            
             const direction = new THREE.Vector3(targetX - startX, targetY - startY, targetZ - startZ).normalize();
             
-            // 速度計算 (スコアが上がると速くなる)
-            const baseSpeed = 2.0 + (Math.random() * 1.5);
-            const speedMultiplier = 1.0 + (score * 0.0005);
+            // 【修正2】敵の速度を減速（背景の疾走感はそのままに、敵だけ遅く）
+            // 2.0 -> 1.2 程度へ
+            const baseSpeed = 1.2 + (Math.random() * 0.8); 
+            const speedMultiplier = 1.0 + (score * 0.0003); 
             const speed = baseSpeed * speedMultiplier;
 
-            enemies.push({
-                mesh: enemy,
-                velocity: direction.multiplyScalar(speed),
-                state: 'alive',
-                rotSpeed: new THREE.Vector3(Math.random() * 0.1, Math.random() * 0.1, Math.random() * 0.1)
+            enemyObj.velocity = direction.multiplyScalar(speed);
+            enemyObj.state = 'alive';
+            enemyObj.rotSpeed = { x: Math.random() * 0.05, y: Math.random() * 0.05 };
+        }
+
+        // ビジュアル用ビーム生成
+        function createBeamVisual(targetPos) {
+            const sides = [-1, 1];
+            sides.forEach(side => {
+                const beamObj = laserBeamPool.get();
+                const beam = beamObj.mesh;
+                
+                // 銃口位置
+                const origin = new THREE.Vector3(side * 2.2, -1.3, -2.5);
+                origin.applyMatrix4(camera.matrixWorld);
+
+                beam.position.copy(origin);
+                beam.lookAt(targetPos);
+                
+                // 距離を計算してスケールで長さを合わせる
+                const dist = origin.distanceTo(targetPos);
+                beam.scale.set(1, 1, dist); // Zスケールを距離に
+
+                beamObj.life = 5; // 5フレームで消える（一瞬）
             });
         }
 
-        function fireLaser() {
-            // 【改善点1】左右の画面端（手前）からレティクルへ向けて発射
-            // Starblade風にするため、発射位置を固定の「砲台位置」にする
-            const sides = [-1, 1]; // 左, 右
-
-            // レティクルのワールド座標を取得（レイキャストの逆）
-            const vector = new THREE.Vector3(aimX * 0.95, aimY * 0.95, 0.5);
-            vector.unproject(camera);
+        function shootRay() {
+            uiReticle.classList.remove('firing');
+            void uiReticle.offsetWidth;
+            uiReticle.classList.add('firing');
             
-            // ターゲット方向（遠くの点）
-            const targetDir = vector.sub(camera.position).normalize();
-            // レーザーが到達する「焦点距離」を仮定（敵のいる距離あたり）
-            const focalDistance = 200; 
-            const targetPoint = camera.position.clone().add(targetDir.multiplyScalar(focalDistance));
+            soundGen.playShot();
 
-            sides.forEach(side => {
-                // ビーム形状（長く、細く）
-                const geometry = new THREE.CylinderGeometry(0.15, 0.15, 30, 4);
-                geometry.rotateX(-Math.PI / 2); // Z軸に向ける
-                const material = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.8 });
-                const laser = new THREE.Mesh(geometry, material);
+            const ndcX = aimX * 0.8;
+            const ndcY = aimY * 0.8;
+            raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
 
-                // 発射位置: カメラの左右下
-                // カメラ座標系で指定してからワールド座標に変換
-                const offset = new THREE.Vector3(side * 8, -6, -2);
-                offset.applyMatrix4(camera.matrixWorld);
-                laser.position.copy(offset);
+            const activeEnemies = enemyPool.getActive().filter(e => e.state === 'alive');
+            const meshes = activeEnemies.map(e => e.mesh);
+            const intersects = raycaster.intersectObjects(meshes);
 
-                laser.lookAt(targetPoint);
-
-                scene.add(laser);
-
-                // 弾の進行方向
-                const velocity = new THREE.Vector3().subVectors(targetPoint, offset).normalize().multiplyScalar(CONFIG.bulletSpeed);
-
-                bullets.push({
-                    mesh: laser,
-                    velocity: velocity,
-                    life: 40 // 寿命
-                });
-            });
-
-            soundGen.playLaser();
+            if (intersects.length > 0) {
+                // ヒット
+                const hitObject = intersects[0].object;
+                const enemyData = activeEnemies.find(e => e.mesh === hitObject);
+                if (enemyData) {
+                    enemyData.state = 'crashing';
+                    enemyData.velocity.multiplyScalar(0.3);
+                    enemyData.velocity.y += 0.5;
+                    enemyData.rotSpeed = { x: Math.random()*0.5, y: Math.random()*0.5 };
+                    
+                    score += 100;
+                    updateUI();
+                    
+                    createGroundExplosion(hitObject.position, hitObject.material.color);
+                    
+                    // 【修正4】ヒット位置へビーム描画
+                    createBeamVisual(hitObject.position);
+                }
+            } else {
+                // ハズレ（遠くへビームを飛ばす）
+                // レティクル方向の遠点
+                raycaster.ray.at(500, new THREE.Vector3()); // Rayの500先を取得したいが、Raycaster.rayは便利
+                const targetPos = new THREE.Vector3();
+                raycaster.ray.at(600, targetPos); // 600先にターゲット設定
+                createBeamVisual(targetPos);
+            }
         }
 
         function triggerDamage() {
             health -= 10;
             soundGen.playExplosion();
-            
-            // 赤いフラッシュを強く
-            damageOverlay.style.opacity = 0.6;
-            setTimeout(() => { damageOverlay.style.opacity = 0; }, 150);
-            
-            // 画面揺れ演出（簡易）
-            const shake = 2;
+            damageOverlay.style.opacity = 0.7;
+            setTimeout(() => { damageOverlay.style.opacity = 0; }, 100);
+            const shake = 2.5;
             camera.position.x += (Math.random()-0.5) * shake;
             camera.position.y += (Math.random()-0.5) * shake;
-
             updateUI();
             if (health <= 0) gameOver();
         }
 
         function createGroundExplosion(pos, color) {
             soundGen.playExplosion();
-
-            // 破片
-            for (let i = 0; i < 15; i++) {
-                const geo = new THREE.TetrahedronGeometry(Math.random() * 2.0);
-                const mat = new THREE.MeshBasicMaterial({ color: color });
-                const mesh = new THREE.Mesh(geo, mat);
+            for (let i = 0; i < 12; i++) {
+                const pObj = particlePool.get();
+                const mesh = pObj.mesh;
+                mesh.geometry = new THREE.TetrahedronGeometry(Math.random() * 2 + 1);
+                mesh.material.color.set(color);
                 mesh.position.copy(pos);
-                const vel = new THREE.Vector3(
-                    (Math.random() - 0.5) * 5,
-                    Math.random() * 6,
-                    (Math.random() - 0.5) * 5
-                );
-                scene.add(mesh);
-                particles.push({ mesh, velocity: vel, life: 1.0, gravity: true });
+                const vel = new THREE.Vector3((Math.random()-0.5)*6, Math.random()*8+2, (Math.random()-0.5)*6);
+                pObj.velocity = vel;
+                pObj.life = 1.0;
+                pObj.gravity = true;
+                pObj.type = 'shard';
             }
-
-            // 爆風リング
-            const ringGeo = new THREE.RingGeometry(0.5, 3.0, 16);
-            ringGeo.rotateX(-Math.PI / 2);
-            const ringMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, side: THREE.DoubleSide });
-            const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.copy(pos);
-            ring.position.y += 0.5;
-            scene.add(ring);
-            particles.push({ mesh: ring, type: 'ring', life: 1.0, scaleSpeed: 1.5 });
         }
 
         function updateUI() {
@@ -624,134 +677,94 @@
             requestAnimationFrame(animate);
 
             if (isPlaying) {
-                // グリッド移動
-                gridTop.position.z += CONFIG.gridSpeed;
-                gridBottom.position.z += CONFIG.gridSpeed;
-                if (gridTop.position.z > -50) gridTop.position.z = -150;
-                if (gridBottom.position.z > -50) gridBottom.position.z = -150;
+                const currentGridSpeed = CONFIG.gridSpeed * (1.0 + score * 0.0002);
+                
+                gridTop.position.z += currentGridSpeed;
+                gridBottom.position.z += currentGridSpeed;
+                if (gridTop.position.z > -50) gridTop.position.z = -200;
+                if (gridBottom.position.z > -50) gridBottom.position.z = -200;
 
-                // カメラの傾き（バンク）
-                camera.rotation.z = -aimX * 0.15;
-                camera.rotation.x = aimY * 0.15;
-                // 位置も少し動かす
-                camera.position.x += (aimX * 5 - camera.position.x) * 0.1;
-                camera.position.y += (aimY * 5 - camera.position.y) * 0.1;
-                // ベースポジションへ戻る力
-                camera.position.x *= 0.95;
-                camera.position.y *= 0.95;
+                const targetRotZ = -aimX * 0.2;
+                const targetRotX = aimY * 0.2;
+                camera.rotation.z += (targetRotZ - camera.rotation.z) * 0.1;
+                camera.rotation.x += (targetRotX - camera.rotation.x) * 0.1;
+                const targetPosX = aimX * 8;
+                const targetPosY = aimY * 6;
+                camera.position.x += (targetPosX - camera.position.x) * 0.08;
+                camera.position.y += (targetPosY - camera.position.y) * 0.08;
 
                 frameCount++;
-                if (frameCount % CONFIG.spawnRate === 0) {
-                    spawnEnemy();
-                }
+                if (frameCount % CONFIG.spawnRate === 0) spawnEnemy();
+                
+                // 即着弾ビーム発射
+                if (frameCount % CONFIG.fireRate === 0) shootRay();
+            }
 
-                // 【改善点1】連射速度アップ
-                if (frameCount % CONFIG.fireRate === 0) {
-                    fireLaser();
+            // Update Beams
+            const activeBeams = laserBeamPool.getActive();
+            for (let i = activeBeams.length - 1; i >= 0; i--) {
+                const beamObj = activeBeams[i];
+                beamObj.life--;
+                // フェードアウト
+                beamObj.mesh.material.opacity = (beamObj.life / 5) * 0.8;
+                if (beamObj.life <= 0) {
+                    laserBeamPool.release(beamObj);
                 }
             }
 
-            // Bullets update
-            for (let i = bullets.length - 1; i >= 0; i--) {
-                const b = bullets[i];
-                b.mesh.position.add(b.velocity);
-                b.life--;
-
-                if (b.life <= 0) {
-                    scene.remove(b.mesh);
-                    bullets.splice(i, 1);
-                    continue;
-                }
-
-                // Collision Check
-                for (let j = enemies.length - 1; j >= 0; j--) {
-                    const e = enemies[j];
-                    if (e.state !== 'alive') continue;
-
-                    // 敵が大きいので当たり判定も大きく
-                    const hitRadius = 8.0; 
-                    const dist = b.mesh.position.distanceTo(e.mesh.position);
-
-                    // ヒット判定
-                    if (dist < hitRadius) {
-                        scene.remove(b.mesh);
-                        bullets.splice(i, 1);
-
-                        e.state = 'crashing';
-                        // 撃墜時の挙動
-                        e.velocity.multiplyScalar(0.4); 
-                        e.velocity.y += 1.0; // 少し跳ね上がる
-                        e.crashRot = new THREE.Vector3(Math.random(), Math.random(), Math.random());
-                        
-                        // 空中で小爆発エフェクト
-                        // createAirExplosion(e.mesh.position); // (今回は省略、実装可能)
-
-                        score += 100;
-                        updateUI();
-                        break;
-                    }
-                }
-            }
-
-            // Enemies update
-            for (let i = enemies.length - 1; i >= 0; i--) {
-                const e = enemies[i];
-
+            // Enemies
+            const activeEnemies = enemyPool.getActive();
+            for (let i = activeEnemies.length - 1; i >= 0; i--) {
+                const e = activeEnemies[i];
                 if (e.state === 'alive') {
+                    // 移動
                     e.mesh.position.add(e.velocity);
                     e.mesh.rotation.x += e.rotSpeed.x;
                     e.mesh.rotation.y += e.rotSpeed.y;
 
-                    // 【改善点4】プレイヤーダメージ判定
-                    // Z > -5 (カメラの少し手前) に来たら衝突とみなす
-                    if (e.mesh.position.z > -5) {
-                        triggerDamage();
-                        scene.remove(e.mesh);
-                        enemies.splice(i, 1);
+                    // 【修正3】床・天井での反射ロジック
+                    if (e.mesh.position.y < CONFIG.groundY) {
+                        e.mesh.position.y = CONFIG.groundY;
+                        e.velocity.y *= -1; // 反射
+                    }
+                    if (e.mesh.position.y > CONFIG.ceilingY) {
+                        e.mesh.position.y = CONFIG.ceilingY;
+                        e.velocity.y *= -1; // 反射
+                    }
+
+                    if (e.mesh.position.z > 20) {
+                        if (e.isThreat && Math.abs(e.mesh.position.x - camera.position.x) < 20) {
+                            triggerDamage();
+                        }
+                        enemyPool.release(e);
                     }
                 } else if (e.state === 'crashing') {
-                    // 墜落中
-                    e.velocity.y -= 0.5; // 重力
-
+                    e.velocity.y -= 0.6;
                     e.mesh.position.add(e.velocity);
-                    e.mesh.rotation.x += 0.2;
-                    e.mesh.rotation.y += 0.2;
-
-                    // 地面激突
+                    e.mesh.rotation.x += e.rotSpeed.x;
+                    e.mesh.rotation.y += e.rotSpeed.y;
                     if (e.mesh.position.y < CONFIG.groundY) {
                         createGroundExplosion(e.mesh.position, e.mesh.material.color);
-                        scene.remove(e.mesh);
-                        enemies.splice(i, 1);
+                        enemyPool.release(e);
                     }
                 }
             }
 
-            // Particles update
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
+            const activeParticles = particlePool.getActive();
+            for (let i = activeParticles.length - 1; i >= 0; i--) {
+                const p = activeParticles[i];
                 p.life -= 0.02;
-
-                if (p.type === 'ring') {
-                    p.mesh.scale.multiplyScalar(1.05);
-                    p.mesh.material.opacity = p.life;
-                } else {
-                    if (p.gravity) p.velocity.y -= 0.15;
-                    p.mesh.position.add(p.velocity);
-                    p.mesh.rotation.x += 0.1;
-                }
-
-                if (p.life <= 0 || p.mesh.position.y < CONFIG.groundY - 10) {
-                    scene.remove(p.mesh);
-                    particles.splice(i, 1);
-                }
+                if (p.gravity) p.velocity.y -= 0.2;
+                p.mesh.position.add(p.velocity);
+                p.mesh.rotation.x += 0.2;
+                p.mesh.scale.multiplyScalar(0.95);
+                if (p.life <= 0 || p.mesh.position.y < CONFIG.groundY - 10) particlePool.release(p);
             }
 
-            renderer.render(scene, camera);
+            composer.render();
         }
 
         init();
-
     </script>
 </body>
-
 </html>
