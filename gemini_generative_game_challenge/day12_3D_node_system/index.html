@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D Mind Map v20260115.7</title>
+    <title>3D Mind Map v20260115.8</title>
     <style>
         body {
             margin: 0;
@@ -215,8 +215,6 @@
         </div>
         <div class="config-item">
             <button class="config-action-btn secondary" onclick="resetCameraToRoot()">🎯 ルートを中心にリセット</button>
-            <button class="config-action-btn" onclick="saveToBrowser()">💾 ブラウザに保存</button>
-            <button class="config-action-btn" onclick="loadFromBrowser()">📂 ブラウザから復元</button>
             <hr style="border:0; border-top:1px solid #555; margin:10px 0;">
             <button class="config-action-btn" onclick="exportJSON()">⬇️ ファイルに保存 (.json)</button>
             <button class="config-action-btn" onclick="document.getElementById('file-input').click()">⬆️ ファイルから読込 (.json)</button>
@@ -226,16 +224,16 @@
 
     <!-- Hidden Inputs -->
     <input type="file" id="file-input" style="display:none" accept=".json" onchange="importJSON(this)">
-    <input type="color" id="color-input" style="display:none" onchange="applyColor(this.value)">
+    <input type="color" id="color-input" style="display:none" oninput="applyColor(this.value)">
 
     <!-- Context Menu -->
     <div id="context-menu">
         <div class="menu-header" id="menu-title">Node Name</div>
         <button class="menu-item" onclick="handleMenu('rename')">✏️ 名前を変更</button>
-        <button class="menu-item" onclick="handleMenu('color')">🎨 色を変更</button>
         <button class="menu-item" onclick="handleMenu('add')">🌱 子ノードを作成</button>
         <button class="menu-item delete" id="btn-delete" onclick="handleMenu('delete_confirm')">🗑️ ノードを削除</button>
         <button class="menu-item" onclick="handleMenu('url')">🔗 URLを開く</button>
+        <button class="menu-item" onclick="handleMenu('color')">🎨 色を変更</button>
         <button class="menu-item cancel" onclick="handleMenu('cancel')">キャンセル</button>
     </div>
 
@@ -332,24 +330,39 @@
         controls.enableDamping = true; controls.dampingFactor = 0.05; controls.minDistance = 0.5; controls.maxDistance = 250;
         controls.minPolarAngle = 0; controls.maxPolarAngle = Math.PI;
 
-        // --- Starfield (Fix: fog=false) ---
+        // --- Starfield (Multi-layer for variation) ---
         function createStarField() {
-            const geometry = new THREE.BufferGeometry();
-            const count = 2000;
-            const positions = new Float32Array(count * 3);
-            for (let i = 0; i < count; i++) {
-                // Keep stars far away to avoid appearing in front of camera
-                const r = 600 + Math.random() * 400; 
+            // Layer 1: Small distant stars
+            const geo1 = new THREE.BufferGeometry();
+            const count1 = 1500;
+            const pos1 = new Float32Array(count1 * 3);
+            for (let i = 0; i < count1; i++) {
+                const r = 800 + Math.random() * 400; 
                 const theta = Math.random() * Math.PI * 2;
                 const phi = Math.acos(2 * Math.random() - 1);
-                positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-                positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-                positions[i * 3 + 2] = r * Math.cos(phi);
+                pos1[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                pos1[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                pos1[i * 3 + 2] = r * Math.cos(phi);
             }
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            // IMPORTANT: fog: false to make them visible at distance
-            const material = new THREE.PointsMaterial({ size: 2.0, color: 0xffffff, transparent: true, opacity: 0.8, fog: false });
-            scene.add(new THREE.Points(geometry, material));
+            geo1.setAttribute('position', new THREE.BufferAttribute(pos1, 3));
+            const mat1 = new THREE.PointsMaterial({ size: 1.2, color: 0xaaaaaa, transparent: true, opacity: 0.6, fog: false });
+            scene.add(new THREE.Points(geo1, mat1));
+
+            // Layer 2: Bigger, brighter stars
+            const geo2 = new THREE.BufferGeometry();
+            const count2 = 400;
+            const pos2 = new Float32Array(count2 * 3);
+            for (let i = 0; i < count2; i++) {
+                const r = 700 + Math.random() * 500; 
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                pos2[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                pos2[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                pos2[i * 3 + 2] = r * Math.cos(phi);
+            }
+            geo2.setAttribute('position', new THREE.BufferAttribute(pos2, 3));
+            const mat2 = new THREE.PointsMaterial({ size: 2.5, color: 0xffffff, transparent: true, opacity: 0.9, fog: false });
+            scene.add(new THREE.Points(geo2, mat2));
         }
         createStarField();
 
@@ -416,24 +429,28 @@
             updateOutliner(); return node;
         }
 
-        // --- Search ---
+        // --- Search (Visual Fix) ---
         function handleSearch(val) {
             val = val.toLowerCase();
             const items = document.querySelectorAll('.outliner-item');
-            let firstFound = null;
-            nodes.forEach((n, i) => {
-                const match = n.text.toLowerCase().includes(val);
-                if (items[i]) {
-                    items[i].style.display = match ? 'block' : 'none';
-                    if (match && !firstFound) firstFound = n;
-                }
+            // Filter DOM elements directly based on their text content
+            items.forEach(item => {
+                const match = item.textContent.toLowerCase().includes(val);
+                item.style.display = match ? 'block' : 'none';
             });
         }
 
         function jumpToFirstMatch() {
             const val = document.getElementById('search-input').value.toLowerCase();
-            const found = nodes.find(n => n.text.toLowerCase().includes(val));
-            if (found) { focusOnNodeWithTrace(found); playSound('click'); }
+            const items = document.querySelectorAll('.outliner-item');
+            for (let item of items) {
+                if (item.style.display !== 'none' && item.textContent.toLowerCase().includes(val)) {
+                    // Trigger click on the DOM element to ensure correct mapping
+                    item.click();
+                    playSound('click');
+                    break;
+                }
+            }
         }
 
         // --- Deletion Logic ---
@@ -550,12 +567,11 @@
         function resetCameraToRoot(){ if(nodes[0])focusOnNodeWithTrace(nodes[0]); }
         
         function getSaveData() { return JSON.stringify({nodes:nodes.map(n=>({id:n.id,text:n.text,parentId:n.parent?n.parent.id:null,pos:n.mesh.position,color:n.color})),springLength:springLength}); }
-        function saveToBrowser(){ localStorage.setItem('mindmap_v7_data', getSaveData()); playSound('add'); showToast('ブラウザに保存しました'); }
         function exportJSON(){
             const blob = new Blob([getSaveData()], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href=url; a.download='mindmap.json'; a.click();
-            playSound('add'); showToast('ファイルをダウンロードしました');
+            playSound('add'); showToast('ファイルは「ダウンロード」フォルダに保存されます');
         }
 
         function loadData(jsonStr) {
@@ -573,7 +589,6 @@
                 playSound('add'); showToast('データを復元しました');
             } catch(e) { showToast('データの読み込みに失敗しました','error'); }
         }
-        function loadFromBrowser() { const j=localStorage.getItem('mindmap_v7_data'); if(j) { loadData(j); toggleConfig(); } else showToast('保存データがありません','error'); }
         function importJSON(input) {
             const file = input.files[0];
             if(!file) return;
@@ -598,7 +613,7 @@
             if(!selectedNode)return; menu.style.display='none';
             if(act==='rename'){nameInput.value=selectedNode.text; renameModal.style.display='flex';}
             else if(act==='color'){document.getElementById('color-input').click();}
-            else if(act==='add')createNode('New Node ' + nextId, selectedNode); // Unique Name
+            else if(act==='add')createNode('New Node ' + nextId, selectedNode); 
             else if(act==='delete_confirm') deleteModal.style.display='flex';
             else if(act==='url'){playSound('whoosh'); window.open(selectedNode.url,'_blank');}
             else playSound('cancel');
@@ -615,7 +630,7 @@
             if(selectedNode) {
                 selectedNode.color = hex;
                 selectedNode.mesh.material.map = createNodeTexture(selectedNode.text, hex);
-                playSound('click');
+                // No playSound here to avoid spamming while dragging
             }
         }
 
