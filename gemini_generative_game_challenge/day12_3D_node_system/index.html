@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D Mind Map v20260115.2</title>
+    <title>3D Mind Map v20260115.3</title>
     <style>
         body {
             margin: 0;
@@ -146,7 +146,6 @@
             margin-bottom: 5px;
         }
 
-        /* Value display style */
         .value-display {
             float: right;
             color: #4a90e2;
@@ -343,9 +342,7 @@
     </div>
 
     <!-- Outliner -->
-    <div id="outliner">
-        <!-- List items injected by JS -->
-    </div>
+    <div id="outliner"></div>
 
     <!-- Config Button -->
     <div id="config-btn" onclick="toggleConfig()">⚙️</div>
@@ -357,7 +354,6 @@
                 ノード間の距離
                 <span class="value-display" id="dist-val">8.0</span>
             </label>
-            <!-- Modified Min value to 0.1 -->
             <input type="range" id="dist-slider" min="0.1" max="20" step="0.1" value="8"
                 oninput="updateSpringLength(this.value)">
         </div>
@@ -399,15 +395,12 @@
     <script>
         // --- Sound System ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            osc.connect(gain); gain.connect(audioCtx.destination);
             const now = audioCtx.currentTime;
-
             if (type === 'pop') {
                 osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
                 gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
@@ -449,31 +442,29 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
-        // Lights
         scene.add(new THREE.AmbientLight(0xffffff, 0.6));
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
         dirLight.position.set(10, 20, 10);
         scene.add(dirLight);
 
-        // Controls
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.minDistance = 0.5; // Allow getting closer for small dists
+        controls.minDistance = 0.5;
         controls.maxDistance = 150;
+        // Relax constraints to avoid gimbal lock feel near poles
+        controls.minPolarAngle = 0; 
+        controls.maxPolarAngle = Math.PI;
 
-        // --- Starfield Background ---
+        // --- Starfield ---
         function createStarField() {
             const geometry = new THREE.BufferGeometry();
             const count = 1500;
             const positions = new Float32Array(count * 3);
-            for (let i = 0; i < count * 3; i++) {
-                positions[i] = (Math.random() - 0.5) * 400; // Large spread
-            }
+            for (let i = 0; i < count * 3; i++) positions[i] = (Math.random() - 0.5) * 400;
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             const material = new THREE.PointsMaterial({ size: 0.5, color: 0xffffff, transparent: true, opacity: 0.8 });
-            const stars = new THREE.Points(geometry, material);
-            scene.add(stars);
+            scene.add(new THREE.Points(geometry, material));
         }
         createStarField();
 
@@ -481,115 +472,132 @@
         let nodes = [];
         let connections = [];
         let nextId = 1;
-        let selectedNode = null; // For context menu
-        let activeNode = null;   // For navigation focus
+        let selectedNode = null; 
+        let activeNode = null;   
 
-        // --- Visual Helpers ---
+        // --- Indicator System (WASD Triangles) ---
+        const indicatorGroup = new THREE.Group();
+        scene.add(indicatorGroup);
+        const indicators = { w: null, a: null, s: null, d: null };
+
+        function createTri(color, zRot, offset) {
+            const shape = new THREE.Shape();
+            shape.moveTo(0, 0.5); shape.lineTo(0.4, -0.3); shape.lineTo(-0.4, -0.3);
+            const geo = new THREE.ShapeGeometry(shape);
+            const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.rotation.z = zRot;
+            mesh.position.y = offset.y;
+            mesh.position.x = offset.x;
+            mesh.scale.set(1.5, 1.5, 1.5);
+            return mesh;
+        }
+
+        indicators.w = createTri(0x00ffff, 0, {x:0, y:2.5}); // Cyan (Parent)
+        indicators.s = createTri(0x00ff00, Math.PI, {x:0, y:-2.5}); // Green (Child)
+        indicators.a = createTri(0xffaa00, Math.PI/2, {x:-3.5, y:0}); // Orange (Prev)
+        indicators.d = createTri(0xffaa00, -Math.PI/2, {x:3.5, y:0}); // Orange (Next)
+        
+        Object.values(indicators).forEach(mesh => indicatorGroup.add(mesh));
+
+        function updateIndicators() {
+            if (!activeNode) {
+                indicatorGroup.visible = false;
+                return;
+            }
+            indicatorGroup.visible = true;
+            indicatorGroup.position.copy(activeNode.mesh.position);
+            // Billboard the indicators to face camera
+            indicatorGroup.quaternion.copy(camera.quaternion);
+
+            // W: Parent
+            indicators.w.visible = !!activeNode.parent;
+
+            // S: Child
+            const hasChild = nodes.some(n => n.parent === activeNode);
+            indicators.s.visible = hasChild;
+
+            // A/D: Siblings
+            if (activeNode.parent) {
+                const siblings = nodes.filter(n => n.parent === activeNode.parent).sort((a,b) => a.id - b.id);
+                const idx = siblings.indexOf(activeNode);
+                indicators.a.visible = (idx > 0);
+                indicators.d.visible = (idx < siblings.length - 1);
+            } else {
+                indicators.a.visible = false;
+                indicators.d.visible = false;
+            }
+        }
+
+        // --- Node Creation ---
         function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-            let line = '';
-            let lineCount = 0;
+            let line = '', lineCount = 0;
             for (let i = 0; i < text.length; i++) {
                 const testLine = line + text[i];
                 if (ctx.measureText(testLine).width > maxWidth && i > 0) {
-                    ctx.fillText(line, x, y);
-                    line = text[i];
-                    y += lineHeight;
-                    lineCount++;
+                    ctx.fillText(line, x, y); line = text[i]; y += lineHeight; lineCount++;
                     if (lineCount >= 4) { line = line.slice(0, -1) + '...'; break; }
-                } else { line = testLine; }
+                } else line = testLine;
             }
             ctx.fillText(line, x, y);
         }
 
         function createNodeTexture(text) {
-            const size = 512;
             const canvas = document.createElement('canvas');
-            canvas.width = size; canvas.height = size / 1.6;
+            canvas.width = 512; canvas.height = 320;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.lineWidth = 15; ctx.strokeStyle = '#4a90e2'; ctx.strokeRect(0, 0, canvas.width, canvas.height);
             
-            // Fake QR
             ctx.fillStyle = '#000';
             ctx.fillRect(30, 90, 40, 40); ctx.fillRect(170, 90, 40, 40); ctx.fillRect(30, 230, 40, 40);
             for(let i=0; i<80; i++) ctx.fillRect(30+Math.random()*180, 90+Math.random()*180, 12, 12);
 
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 48px Arial';
-            ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+            ctx.fillStyle = '#333'; ctx.font = 'bold 48px Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
             wrapText(ctx, text, 240, 60, 240, 58);
-            
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.minFilter = THREE.LinearFilter;
-            return tex;
+            return new THREE.CanvasTexture(canvas);
         }
 
-        // --- Node Logic ---
         function createNode(text, parentNode = null, savedPosition = null) {
-            const geometry = new THREE.PlaneGeometry(4, 2.5);
-            const material = new THREE.MeshBasicMaterial({ map: createNodeTexture(text), side: THREE.DoubleSide });
-            const mesh = new THREE.Mesh(geometry, material);
-
+            const mesh = new THREE.Mesh(new THREE.PlaneGeometry(4, 2.5), new THREE.MeshBasicMaterial({ map: createNodeTexture(text), side: THREE.DoubleSide }));
             if (savedPosition) mesh.position.copy(savedPosition);
             else if (parentNode) {
                 const angle = Math.random() * Math.PI * 2;
-                const dist = 5 + Math.random() * 3;
-                mesh.position.set(parentNode.mesh.position.x + Math.cos(angle) * dist, parentNode.mesh.position.y + (Math.random()-0.5)*5, parentNode.mesh.position.z + Math.sin(angle) * dist);
+                const dist = springLength; // Use current spring length for initial pos
+                mesh.position.set(
+                    parentNode.mesh.position.x + Math.cos(angle) * dist,
+                    parentNode.mesh.position.y + (Math.random()-0.5)*dist,
+                    parentNode.mesh.position.z + Math.sin(angle) * dist
+                );
             }
-
             scene.add(mesh);
-
-            const nodeData = {
-                id: nextId++,
-                mesh: mesh,
-                text: text,
-                url: 'https://www.google.com/search?q=' + encodeURIComponent(text),
-                velocity: new THREE.Vector3(),
-                force: new THREE.Vector3(),
-                parent: parentNode
-            };
-
+            const nodeData = { id: nextId++, mesh: mesh, text: text, url: 'https://www.google.com/search?q=' + encodeURIComponent(text), velocity: new THREE.Vector3(), force: new THREE.Vector3(), parent: parentNode };
             nodes.push(nodeData);
 
             if (parentNode) {
-                const lMat = new THREE.LineBasicMaterial({ color: 0x4a90e2, transparent: true, opacity: 0.6 });
-                const lGeo = new THREE.BufferGeometry().setFromPoints([parentNode.mesh.position, mesh.position]);
-                const line = new THREE.Line(lGeo, lMat);
+                const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([parentNode.mesh.position, mesh.position]), new THREE.LineBasicMaterial({ color: 0x4a90e2, transparent: true, opacity: 0.6 }));
                 scene.add(line);
                 connections.push({ line: line, from: parentNode, to: nodeData });
             }
-
-            // If first node, make it active
             if (nodes.length === 1) activeNode = nodeData;
-
             updateOutliner();
             return nodeData;
         }
 
         // --- Outliner ---
         const outliner = document.getElementById('outliner');
-
         function updateOutliner() {
             outliner.innerHTML = '';
-            
             function buildList(node, depth) {
                 const div = document.createElement('div');
                 div.className = 'outliner-item';
                 if (activeNode && activeNode.id === node.id) div.classList.add('active');
-                
                 div.style.paddingLeft = (12 + depth * 15) + 'px'; 
                 div.textContent = node.text;
-                
-                div.onclick = (e) => {
-                    e.stopPropagation();
-                    focusOnNodeWithTrace(node);
-                };
-                
+                div.onclick = (e) => { e.stopPropagation(); focusOnNodeWithTrace(node); };
                 outliner.appendChild(div);
-                const children = nodes.filter(n => n.parent === node);
-                children.forEach(child => buildList(child, depth + 1));
+                nodes.filter(n => n.parent === node).forEach(child => buildList(child, depth + 1));
             }
-
             const roots = nodes.filter(n => !n.parent);
             if(roots.length === 0 && nodes.length > 0) nodes.forEach(n => buildList(n, 0));
             else roots.forEach(r => buildList(r, 0));
@@ -598,20 +606,14 @@
         // --- Interaction ---
         const raycaster = new THREE.Raycaster();
         const pointer = new THREE.Vector2();
-        let isLongPress = false;
-        let pressTimer;
-        let startPointer = { x: 0, y: 0 };
-        const LONG_PRESS_DURATION = 600;
+        let isLongPress = false, pressTimer, startPointer = { x: 0, y: 0 };
 
         function checkIntersection(x, y) {
-            pointer.x = (x / window.innerWidth) * 2 - 1;
-            pointer.y = -(y / window.innerHeight) * 2 + 1;
+            pointer.x = (x / window.innerWidth) * 2 - 1; pointer.y = -(y / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(pointer, camera);
             const intersects = raycaster.intersectObjects(nodes.map(n => n.mesh));
             if (intersects.length > 0) {
-                const targetMesh = intersects[0].object;
-                selectedNode = nodes.find(n => n.mesh === targetMesh);
-                // Just selecting for menu, not moving camera yet
+                selectedNode = nodes.find(n => n.mesh === intersects[0].object);
                 return true;
             }
             return false;
@@ -619,108 +621,77 @@
 
         window.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            if (checkIntersection(e.clientX, e.clientY)) {
-                playSound('pop');
-                showContextMenu(e.clientX, e.clientY, selectedNode);
-            }
+            if (checkIntersection(e.clientX, e.clientY)) { playSound('pop'); showContextMenu(e.clientX, e.clientY, selectedNode); }
         });
 
         function onDown(e) {
             if (e.type === 'mousedown' && e.button !== 0) return;
             isLongPress = false;
-            const cx = e.touches ? e.touches[0].clientX : e.clientX;
-            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            const cx = e.touches ? e.touches[0].clientX : e.clientX; const cy = e.touches ? e.touches[0].clientY : e.clientY;
             startPointer = { x: cx, y: cy };
             pressTimer = setTimeout(() => {
                 isLongPress = true;
                 if (checkIntersection(cx, cy)) { playSound('pop'); showContextMenu(cx, cy, selectedNode); }
-            }, LONG_PRESS_DURATION);
+            }, 600);
         }
         function onMove(e) {
-            const cx = e.touches ? e.touches[0].clientX : e.clientX;
-            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            const cx = e.touches ? e.touches[0].clientX : e.clientX; const cy = e.touches ? e.touches[0].clientY : e.clientY;
             if (Math.hypot(cx - startPointer.x, cy - startPointer.y) > 20) clearTimeout(pressTimer);
         }
         function onUp() { clearTimeout(pressTimer); }
+        window.addEventListener('mousedown', onDown); window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
+        window.addEventListener('touchstart', onDown, { passive: false }); window.addEventListener('touchmove', onMove, { passive: false }); window.addEventListener('touchend', onUp);
 
-        window.addEventListener('mousedown', onDown);
-        window.addEventListener('mousemove', onMove);
-        window.addEventListener('mouseup', onUp);
-        window.addEventListener('touchstart', onDown, { passive: false });
-        window.addEventListener('touchmove', onMove, { passive: false });
-        window.addEventListener('touchend', onUp);
-
-        // --- WASD Navigation ---
+        // --- WASD ---
         window.addEventListener('keydown', (e) => {
             if (document.getElementById('input-modal').style.display === 'flex') return;
-            
-            if (!activeNode && nodes.length > 0) {
-                focusOnNodeWithTrace(nodes[0]);
-                return;
-            }
+            if (!activeNode && nodes.length > 0) { focusOnNodeWithTrace(nodes[0]); return; }
             if (!activeNode) return;
 
             let target = null;
             const key = e.key.toLowerCase();
-
-            if (key === 'w') {
-                if (activeNode.parent) target = activeNode.parent;
-            } else if (key === 's') {
-                const children = nodes.filter(n => n.parent === activeNode);
-                if (children.length > 0) target = children[0];
-            } else if (key === 'a' || key === 'd') {
-                const siblings = nodes.filter(n => n.parent === activeNode.parent).sort((a,b) => a.id - b.id);
-                const idx = siblings.indexOf(activeNode);
+            if (key === 'w' && activeNode.parent) target = activeNode.parent;
+            else if (key === 's') { const c = nodes.filter(n => n.parent === activeNode); if(c.length) target = c[0]; }
+            else if (key === 'a' || key === 'd') {
+                const s = nodes.filter(n => n.parent === activeNode.parent).sort((a,b) => a.id - b.id);
+                const idx = s.indexOf(activeNode);
                 if (idx !== -1) {
-                    if (key === 'a' && idx > 0) target = siblings[idx - 1];
-                    if (key === 'd' && idx < siblings.length - 1) target = siblings[idx + 1];
+                    if (key === 'a' && idx > 0) target = s[idx - 1];
+                    if (key === 'd' && idx < s.length - 1) target = s[idx + 1];
                 }
             }
-
-            if (target) {
-                // UNIFIED: Use trace for WASD too
-                focusOnNodeWithTrace(target);
-            }
+            if (target) focusOnNodeWithTrace(target);
         });
 
-        // --- Camera Animation ---
+        // --- Camera & Animation ---
         let isAnimatingCamera = false;
         let animationQueue = [];
-
-        function focusOnNode(node) {
-            // Instant tracking setup
-            activeNode = node;
-            updateOutliner();
-            isAnimatingCamera = false; // Stop physics overriding controls immediately? No, let animate loop handle it
-        }
+        const startQuat = new THREE.Quaternion();
+        const endQuat = new THREE.Quaternion();
+        let animAlpha = 0; // 0 to 1 for lerp/slerp
 
         function focusOnNodeWithTrace(targetNode) {
-            if (!activeNode) { focusOnNode(targetNode); return; }
-            if (activeNode === targetNode) return;
+            if (!activeNode) activeNode = targetNode;
+            if (activeNode === targetNode) {
+                // Just recenter if same
+                activeNode = targetNode;
+                updateOutliner();
+                return; 
+            }
 
-            let currPath = [];
-            let temp = activeNode;
+            // Path finding (LCA)
+            let currPath = []; let temp = activeNode;
             while(temp) { currPath.push(temp); temp = temp.parent; }
-            
-            let targPath = [];
-            temp = targetNode;
+            let targPath = []; temp = targetNode;
             while(temp) { targPath.push(temp); temp = temp.parent; }
-
             let lca = null;
             for(let n of currPath) { if(targPath.includes(n)) { lca = n; break; } }
 
             animationQueue = [];
-            for(let i=0; i<currPath.length; i++) {
-                if(currPath[i] === lca) break;
-                animationQueue.push(currPath[i]);
-            }
+            for(let i=0; i<currPath.length; i++) { if(currPath[i]===lca) break; animationQueue.push(currPath[i]); }
             if(lca) animationQueue.push(lca);
-            
             let downPath = [];
-            for(let i=0; i<targPath.length; i++) {
-                if(targPath[i] === lca) break;
-                downPath.push(targPath[i]);
-            }
+            for(let i=0; i<targPath.length; i++) { if(targPath[i]===lca) break; downPath.push(targPath[i]); }
             downPath.reverse().forEach(n => animationQueue.push(n));
             
             if (animationQueue.length > 0 && animationQueue[0] === activeNode) animationQueue.shift();
@@ -731,96 +702,115 @@
             if (animationQueue.length > 0) {
                 isAnimatingCamera = true;
                 playSound('whoosh');
+                startNextWaypoint();
             }
         }
 
+        let currentWaypoint = null;
+        function startNextWaypoint() {
+            if (animationQueue.length === 0) {
+                // Final approach to activeNode
+                currentWaypoint = activeNode;
+                animAlpha = 0;
+                startQuat.copy(camera.quaternion);
+                controls.target.copy(activeNode.mesh.position); // Ensure controls are ready
+                return;
+            }
+            currentWaypoint = animationQueue.shift();
+            animAlpha = 0;
+            startQuat.copy(camera.quaternion);
+        }
+
         function updateCamera() {
-            // Physics makes nodes move. If we are NOT animating a transition,
-            // we must ensure OrbitControls is looking at the Active Node.
-            // This fixes the "rotation feels weird" issue.
-            if (!isAnimatingCamera && activeNode) {
-                 controls.target.lerp(activeNode.mesh.position, 0.1);
-                 return;
+            // Update Indicators Position
+            updateIndicators();
+
+            if (!isAnimatingCamera) {
+                if (activeNode) {
+                    // Smoothly follow active node if physics moves it
+                    controls.target.lerp(activeNode.mesh.position, 0.1);
+                }
+                return;
             }
 
-            if (isAnimatingCamera) {
-                let targetLoc;
-                if (animationQueue.length > 0) {
-                    const nextNode = animationQueue[0];
-                    const offset = new THREE.Vector3(0, 5, 15);
-                    targetLoc = nextNode.mesh.position.clone().add(offset);
-                    
-                    controls.target.lerp(nextNode.mesh.position, 0.1);
-                    camera.position.lerp(targetLoc, 0.15);
+            // Animation Logic
+            if (currentWaypoint) {
+                animAlpha += 0.05; // Speed
 
-                    if (camera.position.distanceTo(targetLoc) < 8) {
-                        animationQueue.shift();
-                    }
-                } else {
-                    // Final approach
-                    if (!activeNode) return;
-                    targetLoc = activeNode.mesh.position.clone().add(new THREE.Vector3(0, 5, 15));
-                    
-                    controls.target.lerp(activeNode.mesh.position, 0.1);
-                    camera.position.lerp(targetLoc, 0.1);
-                    
-                    if (camera.position.distanceTo(targetLoc) < 0.1) {
+                // Position Target
+                const offset = new THREE.Vector3(0, 5, 15);
+                const targetPos = currentWaypoint.mesh.position.clone().add(offset);
+                
+                // Position Lerp
+                camera.position.lerp(targetPos, 0.15);
+                
+                // LookAt Logic with Slerp for smooth rotation
+                const dummy = new THREE.Object3D();
+                dummy.position.copy(camera.position);
+                dummy.lookAt(currentWaypoint.mesh.position);
+                endQuat.copy(dummy.quaternion);
+                
+                camera.quaternion.slerp(endQuat, 0.1);
+                
+                // Update controls center
+                controls.target.lerp(currentWaypoint.mesh.position, 0.15);
+
+                if (camera.position.distanceTo(targetPos) < 2) {
+                     if (currentWaypoint === activeNode && animationQueue.length === 0) {
                         isAnimatingCamera = false;
-                        // Snap final position to prevent drift
-                        controls.target.copy(activeNode.mesh.position);
-                    }
+                     } else {
+                        startNextWaypoint();
+                     }
                 }
             }
         }
 
-        // --- Config ---
+        // --- Config & Physics Constants ---
         let springLength = 8;
+        let repulsionStrength = 20; // Lower default repulsion
+
         const configPanel = document.getElementById('config-panel');
         const distValDisplay = document.getElementById('dist-val');
 
         function toggleConfig() {
-            const disp = configPanel.style.display;
-            configPanel.style.display = (disp === 'block') ? 'none' : 'block';
+            configPanel.style.display = (configPanel.style.display === 'block') ? 'none' : 'block';
             if(configPanel.style.display === 'block') playSound('click');
         }
+
         function updateSpringLength(val) { 
             springLength = parseFloat(val); 
-            distValDisplay.textContent = parseFloat(val).toFixed(1);
+            distValDisplay.textContent = springLength.toFixed(1);
+            
+            // Dynamic Repulsion: Weak at short distances, strong at long distances
+            // Base 20 roughly good for dist 8.
+            // If dist 0.1, we want repulsion very low (e.g. 0.5)
+            repulsionStrength = springLength * 2.5; 
         }
+
         function resetCameraToRoot() { if(nodes[0]) focusOnNodeWithTrace(nodes[0]); }
-        
         function saveStructure() {
-            localStorage.setItem('mindmap_v21_data', JSON.stringify({
+            localStorage.setItem('mindmap_v23_data', JSON.stringify({
                 nodes: nodes.map(n => ({ id: n.id, text: n.text, parentId: n.parent ? n.parent.id : null, pos: n.mesh.position })),
                 springLength: springLength
             }));
             alert('保存しました'); playSound('add');
         }
         function loadStructure() {
-            const json = localStorage.getItem('mindmap_v21_data');
+            const json = localStorage.getItem('mindmap_v23_data');
             if(!json) return alert('データがありません');
             const data = JSON.parse(json);
-            
-            nodes.forEach(n => scene.remove(n.mesh));
-            connections.forEach(c => scene.remove(c.line));
-            nodes = []; connections = []; nextId = 1; activeNode = null;
-
+            nodes.forEach(n => scene.remove(n.mesh)); connections.forEach(c => scene.remove(c.line));
+            nodes = []; connections = []; nextId = 1; activeNode = null; indicatorGroup.visible = false;
             const map = {};
-            data.nodes.forEach(d => {
-                map[d.id] = { ...d, real: null };
-                nextId = Math.max(nextId, d.id + 1);
-            });
-
+            data.nodes.forEach(d => { map[d.id] = { ...d, real: null }; nextId = Math.max(nextId, d.id + 1); });
             data.nodes.sort((a,b) => a.id - b.id).forEach(d => {
                 const p = d.parentId ? map[d.parentId].real : null;
                 const n = createNode(d.text, p, new THREE.Vector3(d.pos.x, d.pos.y, d.pos.z));
-                n.id = d.id;
-                map[d.id].real = n;
+                n.id = d.id; map[d.id].real = n;
             });
             if(data.springLength) { 
-                springLength = data.springLength; 
-                document.getElementById('dist-slider').value = springLength;
-                distValDisplay.textContent = springLength.toFixed(1);
+                updateSpringLength(data.springLength);
+                document.getElementById('dist-slider').value = data.springLength;
             }
             alert('復元しました'); playSound('add'); toggleConfig();
         }
@@ -829,7 +819,6 @@
         const menu = document.getElementById('context-menu');
         const modal = document.getElementById('input-modal');
         const nameInput = document.getElementById('node-name-input');
-
         function showContextMenu(x, y, node) {
             document.getElementById('menu-title').innerText = node.text;
             menu.style.left = Math.min(x, window.innerWidth - 210) + 'px';
@@ -856,22 +845,30 @@
         }
 
         // --- Physics ---
-        const REPULSION = 80, ATTRACTION = 0.01, DAMPING = 0.9;
+        const ATTRACTION = 0.05; // Stronger attraction to keep nodes tight when spring is short
+        const DAMPING = 0.9;
+        
         function updateLayout() {
+            // Reset Forces
             nodes.forEach(n => {
                 n.force.set(0,0,0);
                 if(n.id === 1) n.force.sub(n.mesh.position).multiplyScalar(0.05);
             });
             
+            // Repulsion (Dynamic Strength)
             for(let i=0; i<nodes.length; i++) {
                 for(let j=i+1; j<nodes.length; j++) {
                     const d = new THREE.Vector3().subVectors(nodes[i].mesh.position, nodes[j].mesh.position);
                     let dist = d.length(); if(dist===0) dist=0.01;
-                    d.normalize().multiplyScalar(REPULSION / (dist*dist));
+                    
+                    // Repulsion formula: k / dist^2
+                    // We use the dynamic repulsionStrength calculated from slider
+                    d.normalize().multiplyScalar(repulsionStrength / (dist*dist));
                     nodes[i].force.add(d); nodes[j].force.sub(d);
                 }
             }
             
+            // Attraction (Springs)
             connections.forEach(c => {
                 const d = new THREE.Vector3().subVectors(c.to.mesh.position, c.from.mesh.position);
                 const len = d.length();
@@ -879,14 +876,16 @@
                 c.to.force.sub(d); c.from.force.add(d);
             });
 
+            // Apply
             nodes.forEach(n => {
                 if(n.id !== 1) {
                     n.velocity.add(n.force).multiplyScalar(DAMPING);
                     n.mesh.position.add(n.velocity);
                 }
-                n.mesh.quaternion.copy(camera.quaternion);
+                n.mesh.quaternion.copy(camera.quaternion); // Billboarding
             });
 
+            // Update Lines
             connections.forEach(c => {
                 const p = c.line.geometry.attributes.position.array;
                 p[0]=c.from.mesh.position.x; p[1]=c.from.mesh.position.y; p[2]=c.from.mesh.position.z;
