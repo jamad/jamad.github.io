@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D Mind Map Prototype v2</title>
+    <title>3D Mind Map Prototype v2.1</title>
     <style>
         body {
             margin: 0;
@@ -42,18 +42,19 @@
             font-size: 0.9rem;
         }
 
-        /* Outliner (Right Panel) */
+        /* Outliner (Right Panel) - Modified */
         #outliner {
             position: absolute;
             top: 80px;
             right: 20px;
-            width: 200px;
+            width: 300px; /* 幅を150%程度に拡大 (元200px) */
             max-height: 60vh;
             background: rgba(20, 20, 40, 0.85);
             backdrop-filter: blur(8px);
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             overflow-y: auto;
+            overflow-x: auto; /* 水平スクロール追加 */
             padding: 10px;
             color: white;
             scrollbar-width: thin;
@@ -63,6 +64,7 @@
 
         #outliner::-webkit-scrollbar {
             width: 6px;
+            height: 6px;
         }
 
         #outliner::-webkit-scrollbar-thumb {
@@ -71,16 +73,15 @@
         }
 
         .outliner-item {
-            padding: 8px 12px;
-            margin-bottom: 4px;
+            padding: 6px 12px; /* 少しコンパクトに */
+            margin-bottom: 2px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: nowrap; /* 折り返さない */
             transition: background 0.2s;
             border-left: 3px solid transparent;
+            display: block;
         }
 
         .outliner-item:hover {
@@ -330,7 +331,8 @@
     <!-- Info Overlay -->
     <div id="ui-layer">
         <h1>3D Mind Map</h1>
-        <p>左クリック: 回転 / 右クリック(長押し): メニュー</p>
+        <p>左クリック: 回転 / 右クリック: メニュー</p>
+        <p>移動: W(親) S(子) A(前) D(次)</p>
     </div>
 
     <!-- Outliner -->
@@ -345,7 +347,8 @@
     <div id="config-panel">
         <div class="config-item">
             <label class="config-label">ノード間の距離</label>
-            <input type="range" id="dist-slider" min="5" max="20" step="1" value="8"
+            <!-- Modified Min value to 1 (20% of 5) -->
+            <input type="range" id="dist-slider" min="1" max="20" step="0.5" value="8"
                 oninput="updateSpringLength(this.value)">
         </div>
 
@@ -382,70 +385,44 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- OrbitControls -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <!-- Tween.js for smooth animation is not included, using custom lerp logic -->
 
     <script>
-        // --- Sound System (Web Audio API) ---
+        // --- Sound System ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-
             const now = audioCtx.currentTime;
 
             if (type === 'pop') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(400, now);
-                osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
-                gain.gain.setValueAtTime(0.5, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                osc.start(now);
-                osc.stop(now + 0.2);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
             } else if (type === 'add') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(300, now);
-                osc.frequency.linearRampToValueAtTime(600, now + 0.1);
-                osc.frequency.linearRampToValueAtTime(1200, now + 0.3);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-                osc.start(now);
-                osc.stop(now + 0.4);
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(600, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
             } else if (type === 'click') {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(800, now);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                osc.start(now);
-                osc.stop(now + 0.05);
-            } else if (type === 'cancel') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(300, now);
-                osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                osc.start(now);
-                osc.stop(now + 0.2);
+                osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
             } else if (type === 'whoosh') {
-                const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.5, audioCtx.sampleRate);
-                const output = noiseBuffer.getChannelData(0);
-                for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
                 const noise = audioCtx.createBufferSource();
-                noise.buffer = noiseBuffer;
-                const noiseFilter = audioCtx.createBiquadFilter();
-                noiseFilter.type = 'lowpass';
-                noiseFilter.frequency.setValueAtTime(200, now);
-                noiseFilter.frequency.linearRampToValueAtTime(2000, now + 0.3);
-                noise.connect(noiseFilter);
-                noiseFilter.connect(gain);
-                gain.gain.setValueAtTime(0.5, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-                noise.start(now);
-                noise.stop(now + 0.5);
+                const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.5, audioCtx.sampleRate);
+                const d = buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+                noise.buffer = buf;
+                const f = audioCtx.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(200,now); f.frequency.linearRampToValueAtTime(2000,now+0.3);
+                noise.connect(f); f.connect(gain);
+                gain.gain.setValueAtTime(0.5,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.5);
+                noise.start(now); noise.stop(now+0.5);
+            } else if (type === 'cancel') {
+                osc.type='sine'; osc.frequency.setValueAtTime(300,now); osc.frequency.exponentialRampToValueAtTime(100,now+0.15);
+                gain.gain.setValueAtTime(0.3,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.2);
+                osc.start(now); osc.stop(now+0.2);
             }
         }
 
@@ -462,127 +439,92 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
+        // Lights
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
         dirLight.position.set(10, 20, 10);
         scene.add(dirLight);
 
+        // Controls
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.minDistance = 5;
+        controls.minDistance = 2; // Closer min dist
         controls.maxDistance = 150;
 
-        // --- Data Structure ---
+        // --- ADDED: Starfield Background ---
+        function createStarField() {
+            const geometry = new THREE.BufferGeometry();
+            const count = 1500;
+            const positions = new Float32Array(count * 3);
+            for (let i = 0; i < count * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 400; // Large spread
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const material = new THREE.PointsMaterial({ size: 0.5, color: 0xffffff, transparent: true, opacity: 0.8 });
+            const stars = new THREE.Points(geometry, material);
+            scene.add(stars);
+        }
+        createStarField();
+
+        // --- Data ---
         let nodes = [];
         let connections = [];
         let nextId = 1;
+        let selectedNode = null; // For context menu
+        let activeNode = null;   // For navigation focus
 
-        // --- Canvas Helper: Text Wrapping ---
+        // --- Visual Helpers ---
         function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
             let line = '';
             let lineCount = 0;
-            const maxLines = 4; // Max lines before cutting off completely
-
-            // Simple character-based wrapping for Japanese/English mix
             for (let i = 0; i < text.length; i++) {
                 const testLine = line + text[i];
-                const metrics = ctx.measureText(testLine);
-                consttestWidth = metrics.width;
-
-                if (metrics.width > maxWidth && i > 0) {
+                if (ctx.measureText(testLine).width > maxWidth && i > 0) {
                     ctx.fillText(line, x, y);
                     line = text[i];
                     y += lineHeight;
                     lineCount++;
-                    if (lineCount >= maxLines) {
-                        line = line.substring(0, line.length - 1) + '...';
-                        break;
-                    }
-                } else {
-                    line = testLine;
-                }
+                    if (lineCount >= 4) { line = line.slice(0, -1) + '...'; break; }
+                } else { line = testLine; }
             }
             ctx.fillText(line, x, y);
         }
 
-        // --- Visualization Helper: Texture Generation ---
         function createNodeTexture(text) {
             const size = 512;
             const canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size / 1.6; // Aspect ratio
+            canvas.width = size; canvas.height = size / 1.6;
             const ctx = canvas.getContext('2d');
-
-            // Background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Border
-            ctx.lineWidth = 15;
-            ctx.strokeStyle = '#4a90e2';
-            ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-            // Fake QR Code (Left side)
-            const qrSize = 180;
-            const qrX = 30;
-            const qrY = (canvas.height - qrSize) / 2;
-
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 15; ctx.strokeStyle = '#4a90e2'; ctx.strokeRect(0, 0, canvas.width, canvas.height);
+            
+            // Fake QR
             ctx.fillStyle = '#000';
-            // Draw positioning squares
-            ctx.fillRect(qrX, qrY, 40, 40);
-            ctx.fillRect(qrX + 140, qrY, 40, 40);
-            ctx.fillRect(qrX, qrY + 140, 40, 40);
-            // Random noise
-            for (let i = 0; i < 80; i++) {
-                ctx.fillRect(
-                    qrX + Math.random() * qrSize,
-                    qrY + Math.random() * qrSize,
-                    12, 12
-                );
-            }
+            ctx.fillRect(30, 90, 40, 40); ctx.fillRect(170, 90, 40, 40); ctx.fillRect(30, 230, 40, 40);
+            for(let i=0; i<80; i++) ctx.fillRect(30+Math.random()*180, 90+Math.random()*180, 12, 12);
 
-            // Text (Right side)
             ctx.fillStyle = '#333';
-            const fontSize = 48;
-            ctx.font = `bold ${fontSize}px Arial`;
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'top'; // Changed to top for multiline
-
-            const textX = qrX + qrSize + 30;
-            const textY = 60; // Padding top
-            const maxTextWidth = canvas.width - textX - 30;
-
-            wrapText(ctx, text, textX, textY, maxTextWidth, fontSize * 1.2);
-
-            const texture = new THREE.CanvasTexture(canvas);
-            // Improve text quality
-            texture.minFilter = THREE.LinearFilter;
-            return texture;
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+            wrapText(ctx, text, 240, 60, 240, 58);
+            
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.minFilter = THREE.LinearFilter;
+            return tex;
         }
 
-        // --- Node Management ---
+        // --- Node Logic ---
         function createNode(text, parentNode = null, savedPosition = null) {
             const geometry = new THREE.PlaneGeometry(4, 2.5);
-            const material = new THREE.MeshBasicMaterial({
-                map: createNodeTexture(text),
-                side: THREE.DoubleSide
-            });
+            const material = new THREE.MeshBasicMaterial({ map: createNodeTexture(text), side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geometry, material);
 
-            if (savedPosition) {
-                mesh.position.copy(savedPosition);
-            } else if (parentNode) {
+            if (savedPosition) mesh.position.copy(savedPosition);
+            else if (parentNode) {
                 const angle = Math.random() * Math.PI * 2;
                 const dist = 5 + Math.random() * 3;
-                mesh.position.set(
-                    parentNode.mesh.position.x + Math.cos(angle) * dist,
-                    parentNode.mesh.position.y + (Math.random() - 0.5) * 5,
-                    parentNode.mesh.position.z + Math.sin(angle) * dist
-                );
-            } else {
-                mesh.position.set(0, 0, 0);
+                mesh.position.set(parentNode.mesh.position.x + Math.cos(angle) * dist, parentNode.mesh.position.y + (Math.random()-0.5)*5, parentNode.mesh.position.z + Math.sin(angle) * dist);
             }
 
             scene.add(mesh);
@@ -600,356 +542,376 @@
             nodes.push(nodeData);
 
             if (parentNode) {
-                const material = new THREE.LineBasicMaterial({ color: 0x4a90e2, transparent: true, opacity: 0.6 });
-                const geometry = new THREE.BufferGeometry().setFromPoints([parentNode.mesh.position, mesh.position]);
-                const line = new THREE.Line(geometry, material);
+                const lMat = new THREE.LineBasicMaterial({ color: 0x4a90e2, transparent: true, opacity: 0.6 });
+                const lGeo = new THREE.BufferGeometry().setFromPoints([parentNode.mesh.position, mesh.position]);
+                const line = new THREE.Line(lGeo, lMat);
                 scene.add(line);
                 connections.push({ line: line, from: parentNode, to: nodeData });
             }
+
+            // If first node, make it active
+            if (nodes.length === 1) activeNode = nodeData;
 
             updateOutliner();
             return nodeData;
         }
 
-        // --- Interaction Logic ---
+        // --- Updated Outliner: Recursive & Indented ---
+        const outliner = document.getElementById('outliner');
+
+        function updateOutliner() {
+            outliner.innerHTML = '';
+            
+            // Recursive builder
+            function buildList(node, depth) {
+                const div = document.createElement('div');
+                div.className = 'outliner-item';
+                if (activeNode && activeNode.id === node.id) div.classList.add('active');
+                
+                // Indent
+                div.style.paddingLeft = (12 + depth * 15) + 'px'; 
+                div.textContent = node.text;
+                
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    focusOnNodeWithTrace(node);
+                };
+                
+                outliner.appendChild(div);
+
+                // Find children
+                const children = nodes.filter(n => n.parent === node);
+                children.forEach(child => buildList(child, depth + 1));
+            }
+
+            // Start with root(s)
+            const roots = nodes.filter(n => !n.parent);
+            if(roots.length === 0 && nodes.length > 0) {
+                // Fallback if circular or weird
+                nodes.forEach(n => buildList(n, 0));
+            } else {
+                roots.forEach(r => buildList(r, 0));
+            }
+        }
+
+        // --- Interaction ---
         const raycaster = new THREE.Raycaster();
         const pointer = new THREE.Vector2();
         let isLongPress = false;
         let pressTimer;
         let startPointer = { x: 0, y: 0 };
         const LONG_PRESS_DURATION = 600;
-        const DRAG_THRESHOLD = 20;
 
-        let selectedNode = null;
-
-        function checkIntersection(screenX, screenY) {
-            pointer.x = (screenX / window.innerWidth) * 2 - 1;
-            pointer.y = -(screenY / window.innerHeight) * 2 + 1;
+        function checkIntersection(x, y) {
+            pointer.x = (x / window.innerWidth) * 2 - 1;
+            pointer.y = -(y / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(pointer, camera);
             const intersects = raycaster.intersectObjects(nodes.map(n => n.mesh));
             if (intersects.length > 0) {
                 const targetMesh = intersects[0].object;
                 selectedNode = nodes.find(n => n.mesh === targetMesh);
+                activeNode = selectedNode;
+                updateOutliner();
                 return true;
             }
             return false;
         }
 
-        // Right Click (PC)
-        window.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            if (checkIntersection(event.clientX, event.clientY)) {
+        window.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (checkIntersection(e.clientX, e.clientY)) {
                 playSound('pop');
-                showContextMenu(event.clientX, event.clientY, selectedNode);
+                showContextMenu(e.clientX, e.clientY, selectedNode);
             }
         });
 
-        // Touch/Mouse Hold
-        function onPointerDown(event) {
-            if (event.type === 'mousedown' && event.button !== 0) return;
+        // Mouse/Touch logic
+        function onDown(e) {
+            if (e.type === 'mousedown' && e.button !== 0) return;
             isLongPress = false;
-            const x = event.touches ? event.touches[0].clientX : event.clientX;
-            const y = event.touches ? event.touches[0].clientY : event.clientY;
-            startPointer.x = x;
-            startPointer.y = y;
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            startPointer = { x: cx, y: cy };
             pressTimer = setTimeout(() => {
                 isLongPress = true;
-                handleLongPress(x, y);
+                if (checkIntersection(cx, cy)) { playSound('pop'); showContextMenu(cx, cy, selectedNode); }
             }, LONG_PRESS_DURATION);
         }
-
-        function onPointerMove(event) {
-            const x = event.touches ? event.touches[0].clientX : event.clientX;
-            const y = event.touches ? event.touches[0].clientY : event.clientY;
-            const dx = x - startPointer.x;
-            const dy = y - startPointer.y;
-            if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
-                clearTimeout(pressTimer);
-            }
+        function onMove(e) {
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            if (Math.hypot(cx - startPointer.x, cy - startPointer.y) > 20) clearTimeout(pressTimer);
         }
+        function onUp() { clearTimeout(pressTimer); }
 
-        function onPointerUp(event) {
-            clearTimeout(pressTimer);
-        }
+        window.addEventListener('mousedown', onDown);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+        window.addEventListener('touchstart', onDown, { passive: false });
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onUp);
 
-        function handleLongPress(screenX, screenY) {
-            if (checkIntersection(screenX, screenY)) {
-                playSound('pop');
-                showContextMenu(screenX, screenY, selectedNode);
-            }
-        }
-
-        window.addEventListener('mousedown', onPointerDown);
-        window.addEventListener('mousemove', onPointerMove);
-        window.addEventListener('mouseup', onPointerUp);
-        window.addEventListener('touchstart', onPointerDown, { passive: false });
-        window.addEventListener('touchmove', onPointerMove, { passive: false });
-        window.addEventListener('touchend', onPointerUp);
-
-        // --- Outliner Logic ---
-        const outliner = document.getElementById('outliner');
-
-        function updateOutliner() {
-            outliner.innerHTML = '';
-            nodes.forEach(node => {
-                const div = document.createElement('div');
-                div.className = 'outliner-item';
-                div.textContent = node.text;
-                div.onclick = () => focusOnNode(node);
-                outliner.appendChild(div);
-            });
-        }
-
-        // Camera Animation Variables
-        let isAnimatingCamera = false;
-        let cameraTargetPos = new THREE.Vector3();
-        let cameraTargetLook = new THREE.Vector3();
-
-        function focusOnNode(node) {
-            // Target position: offset from the node to see it
-            const offset = new THREE.Vector3(0, 0, 15);
-            // Apply current camera rotation to offset to maintain viewing angle or just fixed z?
-            // Let's just zoom in to Z offset for simplicity
-            cameraTargetPos.copy(node.mesh.position).add(new THREE.Vector3(0, 5, 15));
-            controls.target.copy(node.mesh.position); // This is immediate for OrbitControls target
-
-            // We want to smoothly move the camera *position*
-            isAnimatingCamera = true;
-            playSound('click');
-        }
-
-        function resetCameraToRoot() {
-            if (nodes.length > 0) focusOnNode(nodes[0]);
-        }
-
-        // --- Config Logic ---
-        let springLength = 8;
-        const configPanel = document.getElementById('config-panel');
-
-        function toggleConfig() {
-            if (configPanel.style.display === 'block') {
-                configPanel.style.display = 'none';
-            } else {
-                configPanel.style.display = 'block';
-                playSound('click');
-            }
-        }
-
-        function updateSpringLength(val) {
-            springLength = parseFloat(val);
-        }
-
-        function saveStructure() {
-            const data = {
-                nodes: nodes.map(n => ({
-                    id: n.id,
-                    text: n.text,
-                    parentId: n.parent ? n.parent.id : null,
-                    position: n.mesh.position // Save pos to prevent explosion on reload
-                })),
-                springLength: springLength
-            };
-            localStorage.setItem('mindmap_data', JSON.stringify(data));
-            alert('保存しました / Saved');
-            playSound('add');
-        }
-
-        function loadStructure() {
-            const json = localStorage.getItem('mindmap_data');
-            if (!json) {
-                alert('保存データがありません / No saved data');
+        // --- WASD Navigation ---
+        window.addEventListener('keydown', (e) => {
+            // Ignore if modal is open
+            if (document.getElementById('input-modal').style.display === 'flex') return;
+            
+            if (!activeNode && nodes.length > 0) {
+                activeNode = nodes[0];
+                focusOnNodeWithTrace(activeNode);
                 return;
             }
-            const data = JSON.parse(json);
+            if (!activeNode) return;
 
-            // Clear Scene
-            nodes.forEach(n => scene.remove(n.mesh));
-            connections.forEach(c => scene.remove(c.line));
-            nodes = [];
-            connections = [];
-            nextId = 1;
+            let target = null;
+            const key = e.key.toLowerCase();
 
-            // Rebuild
-            const idMap = {}; // old ID -> new Node Obj
-
-            // 1. Create Nodes
-            data.nodes.forEach(nData => {
-                // Ensure IDs don't clash if we add more later, though we reset nextId based on data
-                nextId = Math.max(nextId, nData.id + 1);
-
-                // Temp parent handling
-                const tempNode = {
-                    id: nData.id,
-                    text: nData.text,
-                    savedPos: new THREE.Vector3(nData.position.x, nData.position.y, nData.position.z),
-                    parentId: nData.parentId
-                };
-                idMap[nData.id] = tempNode;
-            });
-
-            // 2. Instantiate in order (Root first usually, but let's handle via map)
-            // Ideally sort by ID or just link parents after creation
-            data.nodes.sort((a, b) => a.id - b.id).forEach(nData => {
-                const parentNode = nData.parentId ? idMap[nData.parentId].realNode : null;
-                const newNode = createNode(nData.text, parentNode, idMap[nData.id].savedPos);
-                // Override the auto-generated ID to match saved one to keep relationships
-                newNode.id = nData.id;
-                idMap[nData.id].realNode = newNode;
-            });
-
-            if (data.springLength) {
-                springLength = data.springLength;
-                document.getElementById('dist-slider').value = springLength;
+            if (key === 'w') {
+                // Parent
+                if (activeNode.parent) target = activeNode.parent;
+            } else if (key === 's') {
+                // First Child (Using S instead of duplicate D)
+                const children = nodes.filter(n => n.parent === activeNode);
+                if (children.length > 0) target = children[0];
+            } else if (key === 'a' || key === 'd') {
+                // Siblings
+                const siblings = nodes.filter(n => n.parent === activeNode.parent).sort((a,b) => a.id - b.id);
+                const idx = siblings.indexOf(activeNode);
+                if (idx !== -1) {
+                    if (key === 'a' && idx > 0) target = siblings[idx - 1]; // Prev
+                    if (key === 'd' && idx < siblings.length - 1) target = siblings[idx + 1]; // Next
+                }
             }
 
-            playSound('add');
-            alert('復元しました / Loaded');
-            toggleConfig();
+            if (target) {
+                activeNode = target;
+                updateOutliner();
+                focusOnNode(target); // Direct focus for keys, trace is for big jumps
+            }
+        });
+
+        // --- Camera Animation System ---
+        let isAnimatingCamera = false;
+        let cameraTargetPos = new THREE.Vector3();
+        let animationQueue = []; // For path tracing
+
+        function focusOnNode(node) {
+            // Clear queue, just go there
+            animationQueue = [];
+            cameraTargetPos.copy(node.mesh.position).add(new THREE.Vector3(0, 5, 15));
+            controls.target.copy(node.mesh.position);
+            isAnimatingCamera = true;
+            activeNode = node;
+            updateOutliner();
         }
 
-        // --- Context Menu & UI Logic ---
+        // Fast path tracing animation
+        function focusOnNodeWithTrace(targetNode) {
+            if (!activeNode) { focusOnNode(targetNode); return; }
+            if (activeNode === targetNode) return;
+
+            // Simple Path finding: Current -> LCA -> Target
+            // 1. Get ancestors of current
+            let currPath = [];
+            let temp = activeNode;
+            while(temp) { currPath.push(temp); temp = temp.parent; }
+            
+            // 2. Get ancestors of target
+            let targPath = [];
+            temp = targetNode;
+            while(temp) { targPath.push(temp); temp = temp.parent; }
+
+            // 3. Find LCA
+            let lca = null;
+            for(let n of currPath) {
+                if(targPath.includes(n)) { lca = n; break; }
+            }
+
+            // 4. Build sequence
+            animationQueue = [];
+            // Up to LCA
+            for(let i=0; i<currPath.length; i++) {
+                if(currPath[i] === lca) break;
+                animationQueue.push(currPath[i]); // Actually we want the parent, but let's visit nodes
+            }
+            if(lca) animationQueue.push(lca);
+            // Down to Target (reverse part of targPath)
+            let downPath = [];
+            for(let i=0; i<targPath.length; i++) {
+                if(targPath[i] === lca) break;
+                downPath.push(targPath[i]);
+            }
+            downPath.reverse().forEach(n => animationQueue.push(n));
+            
+            // Remove current node from start if present
+            if (animationQueue.length > 0 && animationQueue[0] === activeNode) animationQueue.shift();
+
+            // Set final active
+            activeNode = targetNode;
+            updateOutliner();
+            
+            // Start animation
+            if (animationQueue.length > 0) {
+                isAnimatingCamera = true;
+                playSound('whoosh');
+            } else {
+                focusOnNode(targetNode);
+            }
+        }
+
+        function updateCamera() {
+            if (isAnimatingCamera) {
+                let targetLoc;
+                
+                // If we have a queue, our target is the first item in queue
+                if (animationQueue.length > 0) {
+                    const nextNode = animationQueue[0];
+                    // Target position is offset from node
+                    const offset = new THREE.Vector3(0, 5, 15);
+                    targetLoc = nextNode.mesh.position.clone().add(offset);
+                    
+                    // Look at node
+                    controls.target.lerp(nextNode.mesh.position, 0.1);
+                    
+                    // Move camera fast
+                    camera.position.lerp(targetLoc, 0.15);
+
+                    // Check if close enough to switch to next waypoint
+                    if (camera.position.distanceTo(targetLoc) < 8) {
+                        animationQueue.shift();
+                    }
+                } else {
+                    // Final approach to activeNode
+                    if (!activeNode) return;
+                    targetLoc = activeNode.mesh.position.clone().add(new THREE.Vector3(0, 5, 15));
+                    controls.target.lerp(activeNode.mesh.position, 0.1);
+                    camera.position.lerp(targetLoc, 0.1);
+                    
+                    if (camera.position.distanceTo(targetLoc) < 0.1) {
+                        isAnimatingCamera = false;
+                    }
+                }
+            }
+        }
+
+        // --- Config ---
+        let springLength = 8;
+        const configPanel = document.getElementById('config-panel');
+        function toggleConfig() {
+            const disp = configPanel.style.display;
+            configPanel.style.display = (disp === 'block') ? 'none' : 'block';
+            if(configPanel.style.display === 'block') playSound('click');
+        }
+        function updateSpringLength(val) { springLength = parseFloat(val); }
+        function resetCameraToRoot() { if(nodes[0]) focusOnNodeWithTrace(nodes[0]); }
+        
+        function saveStructure() {
+            localStorage.setItem('mindmap_v2_data', JSON.stringify({
+                nodes: nodes.map(n => ({ id: n.id, text: n.text, parentId: n.parent ? n.parent.id : null, pos: n.mesh.position })),
+                springLength: springLength
+            }));
+            alert('保存しました'); playSound('add');
+        }
+        function loadStructure() {
+            const json = localStorage.getItem('mindmap_v2_data');
+            if(!json) return alert('データがありません');
+            const data = JSON.parse(json);
+            
+            nodes.forEach(n => scene.remove(n.mesh));
+            connections.forEach(c => scene.remove(c.line));
+            nodes = []; connections = []; nextId = 1; activeNode = null;
+
+            const map = {};
+            data.nodes.forEach(d => {
+                map[d.id] = { ...d, real: null };
+                nextId = Math.max(nextId, d.id + 1);
+            });
+
+            data.nodes.sort((a,b) => a.id - b.id).forEach(d => {
+                const p = d.parentId ? map[d.parentId].real : null;
+                const n = createNode(d.text, p, new THREE.Vector3(d.pos.x, d.pos.y, d.pos.z));
+                n.id = d.id;
+                map[d.id].real = n;
+            });
+            if(data.springLength) { springLength = data.springLength; document.getElementById('dist-slider').value = springLength; }
+            alert('復元しました'); playSound('add'); toggleConfig();
+        }
+
+        // --- Context Menu & Logic ---
         const menu = document.getElementById('context-menu');
-        const menuTitle = document.getElementById('menu-title');
         const modal = document.getElementById('input-modal');
         const nameInput = document.getElementById('node-name-input');
 
         function showContextMenu(x, y, node) {
-            menuTitle.innerText = node.text;
-            let posX = x;
-            let posY = y;
-            if (posX + 200 > window.innerWidth) posX = window.innerWidth - 210;
-            if (posY + 200 > window.innerHeight) posY = window.innerHeight - 210;
-            menu.style.left = posX + 'px';
-            menu.style.top = posY + 'px';
+            document.getElementById('menu-title').innerText = node.text;
+            menu.style.left = Math.min(x, window.innerWidth - 210) + 'px';
+            menu.style.top = Math.min(y, window.innerHeight - 210) + 'px';
             menu.style.display = 'block';
         }
-
-        function hideMenu() {
-            menu.style.display = 'none';
-        }
-
         function handleMenu(action) {
-            if (!selectedNode) return;
-            hideMenu();
-            switch (action) {
-                case 'rename':
-                    nameInput.value = selectedNode.text;
-                    modal.style.display = 'flex';
-                    break;
-                case 'add':
-                    createNode('New Child', selectedNode);
-                    break;
-                case 'url':
-                    playSound('whoosh');
-                    window.open(selectedNode.url, '_blank');
-                    break;
-                case 'cancel':
-                    playSound('cancel');
-                    break;
-            }
+            if(!selectedNode) return;
+            menu.style.display = 'none';
+            if(action === 'rename') { nameInput.value = selectedNode.text; modal.style.display = 'flex'; }
+            else if(action === 'add') createNode('New Node', selectedNode);
+            else if(action === 'url') { playSound('whoosh'); window.open(selectedNode.url, '_blank'); }
+            else playSound('cancel');
         }
-
-        function closeModal() {
-            modal.style.display = 'none';
-            playSound('cancel');
-        }
-
+        function closeModal() { modal.style.display = 'none'; playSound('cancel'); }
         function confirmRename() {
-            if (selectedNode && nameInput.value) {
+            if(selectedNode && nameInput.value) {
                 selectedNode.text = nameInput.value;
-                selectedNode.url = 'https://www.google.com/search?q=' + encodeURIComponent(nameInput.value);
+                selectedNode.url = 'https://www.google.com/search?q='+encodeURIComponent(nameInput.value);
                 selectedNode.mesh.material.map = createNodeTexture(selectedNode.text);
-                selectedNode.mesh.material.needsUpdate = true;
-                playSound('click');
-                updateOutliner();
+                updateOutliner(); playSound('click');
             }
             modal.style.display = 'none';
         }
 
-        // --- Force-Directed Graph Logic ---
-        const REPULSION = 80;
-        const ATTRACTION = 0.01;
-        const DAMPING = 0.9;
-
+        // --- Physics ---
+        const REPULSION = 80, ATTRACTION = 0.01, DAMPING = 0.9;
         function updateLayout() {
-            // Forces
-            nodes.forEach(node => {
-                node.force.set(0, 0, 0);
-                if (node.id === 1) { // Root logic
-                    node.force.sub(node.mesh.position).multiplyScalar(0.05); // Centering force
-                }
+            nodes.forEach(n => {
+                n.force.set(0,0,0);
+                if(n.id === 1) n.force.sub(n.mesh.position).multiplyScalar(0.05); // Root center
             });
-
+            
             // Repulsion
-            for (let i = 0; i < nodes.length; i++) {
-                for (let j = i + 1; j < nodes.length; j++) {
-                    const n1 = nodes[i];
-                    const n2 = nodes[j];
-                    const diff = new THREE.Vector3().subVectors(n1.mesh.position, n2.mesh.position);
-                    let dist = diff.length();
-                    if (dist === 0) dist = 0.01;
-                    const f = REPULSION / (dist * dist);
-                    diff.normalize().multiplyScalar(f);
-                    n1.force.add(diff);
-                    n2.force.sub(diff);
+            for(let i=0; i<nodes.length; i++) {
+                for(let j=i+1; j<nodes.length; j++) {
+                    const d = new THREE.Vector3().subVectors(nodes[i].mesh.position, nodes[j].mesh.position);
+                    let dist = d.length(); if(dist===0) dist=0.01;
+                    d.normalize().multiplyScalar(REPULSION / (dist*dist));
+                    nodes[i].force.add(d); nodes[j].force.sub(d);
                 }
             }
-
+            
             // Attraction
-            connections.forEach(conn => {
-                const diff = new THREE.Vector3().subVectors(conn.to.mesh.position, conn.from.mesh.position);
-                const dist = diff.length();
-                const displacement = dist - springLength;
-                diff.normalize().multiplyScalar(displacement * ATTRACTION);
-                conn.to.force.sub(diff);
-                conn.from.force.add(diff);
+            connections.forEach(c => {
+                const d = new THREE.Vector3().subVectors(c.to.mesh.position, c.from.mesh.position);
+                const len = d.length();
+                d.normalize().multiplyScalar((len - springLength) * ATTRACTION);
+                c.to.force.sub(d); c.from.force.add(d);
             });
 
-            // Apply Velocity & Position
-            nodes.forEach(node => {
-                // Skip velocity update for root to keep it stable, but allow small movement
-                if (node.id !== 1) {
-                    node.velocity.add(node.force);
-                    node.velocity.multiplyScalar(DAMPING);
-                    node.mesh.position.add(node.velocity);
-                } else {
-                    node.velocity.set(0, 0, 0); // Root stays put
-                    // Optionally root force can slightly nudge it, but 0,0,0 is safer
+            // Integrate
+            nodes.forEach(n => {
+                if(n.id !== 1) {
+                    n.velocity.add(n.force).multiplyScalar(DAMPING);
+                    n.mesh.position.add(n.velocity);
                 }
-
-                // Billboard: Face Camera
-                // FIX: This is now OUTSIDE the if(node.id !== 1) block so Root also updates
-                node.mesh.quaternion.copy(camera.quaternion);
+                n.mesh.quaternion.copy(camera.quaternion); // Billboard
             });
 
-            // Update Lines
-            connections.forEach(conn => {
-                const positions = conn.line.geometry.attributes.position.array;
-                positions[0] = conn.from.mesh.position.x;
-                positions[1] = conn.from.mesh.position.y;
-                positions[2] = conn.from.mesh.position.z;
-                positions[3] = conn.to.mesh.position.x;
-                positions[4] = conn.to.mesh.position.y;
-                positions[5] = conn.to.mesh.position.z;
-                conn.line.geometry.attributes.position.needsUpdate = true;
+            connections.forEach(c => {
+                const p = c.line.geometry.attributes.position.array;
+                p[0]=c.from.mesh.position.x; p[1]=c.from.mesh.position.y; p[2]=c.from.mesh.position.z;
+                p[3]=c.to.mesh.position.x; p[4]=c.to.mesh.position.y; p[5]=c.to.mesh.position.z;
+                c.line.geometry.attributes.position.needsUpdate = true;
             });
         }
 
-        // --- Camera Animation Logic ---
-        function updateCamera() {
-            if (isAnimatingCamera) {
-                // Simple lerp
-                camera.position.lerp(cameraTargetPos, 0.05);
-
-                if (camera.position.distanceTo(cameraTargetPos) < 0.1) {
-                    isAnimatingCamera = false;
-                }
-            }
-        }
-
-        // --- Main Loop ---
-        const rootNode = createNode("ROOT");
-
+        // --- Loop ---
+        const root = createNode("ROOT");
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
@@ -957,16 +919,13 @@
             updateCamera();
             renderer.render(scene, camera);
         }
-
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.aspect = window.innerWidth/window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
         animate();
 
     </script>
 </body>
-
 </html>
