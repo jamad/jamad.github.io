@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D Mind Map Prototype v2.1</title>
+    <title>3D Mind Map v20260115.2</title>
     <style>
         body {
             margin: 0;
@@ -42,19 +42,19 @@
             font-size: 0.9rem;
         }
 
-        /* Outliner (Right Panel) - Modified */
+        /* Outliner (Right Panel) */
         #outliner {
             position: absolute;
             top: 80px;
             right: 20px;
-            width: 300px; /* 幅を150%程度に拡大 (元200px) */
+            width: 300px;
             max-height: 60vh;
             background: rgba(20, 20, 40, 0.85);
             backdrop-filter: blur(8px);
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             overflow-y: auto;
-            overflow-x: auto; /* 水平スクロール追加 */
+            overflow-x: auto;
             padding: 10px;
             color: white;
             scrollbar-width: thin;
@@ -73,12 +73,12 @@
         }
 
         .outliner-item {
-            padding: 6px 12px; /* 少しコンパクトに */
+            padding: 6px 12px;
             margin-bottom: 2px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.9rem;
-            white-space: nowrap; /* 折り返さない */
+            white-space: nowrap;
             transition: background 0.2s;
             border-left: 3px solid transparent;
             display: block;
@@ -144,6 +144,13 @@
             font-size: 0.85rem;
             color: #aaa;
             margin-bottom: 5px;
+        }
+
+        /* Value display style */
+        .value-display {
+            float: right;
+            color: #4a90e2;
+            font-weight: bold;
         }
 
         .config-row {
@@ -346,9 +353,12 @@
     <!-- Config Panel -->
     <div id="config-panel">
         <div class="config-item">
-            <label class="config-label">ノード間の距離</label>
-            <!-- Modified Min value to 1 (20% of 5) -->
-            <input type="range" id="dist-slider" min="1" max="20" step="0.5" value="8"
+            <label class="config-label">
+                ノード間の距離
+                <span class="value-display" id="dist-val">8.0</span>
+            </label>
+            <!-- Modified Min value to 0.1 -->
+            <input type="range" id="dist-slider" min="0.1" max="20" step="0.1" value="8"
                 oninput="updateSpringLength(this.value)">
         </div>
 
@@ -449,10 +459,10 @@
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.minDistance = 2; // Closer min dist
+        controls.minDistance = 0.5; // Allow getting closer for small dists
         controls.maxDistance = 150;
 
-        // --- ADDED: Starfield Background ---
+        // --- Starfield Background ---
         function createStarField() {
             const geometry = new THREE.BufferGeometry();
             const count = 1500;
@@ -556,19 +566,17 @@
             return nodeData;
         }
 
-        // --- Updated Outliner: Recursive & Indented ---
+        // --- Outliner ---
         const outliner = document.getElementById('outliner');
 
         function updateOutliner() {
             outliner.innerHTML = '';
             
-            // Recursive builder
             function buildList(node, depth) {
                 const div = document.createElement('div');
                 div.className = 'outliner-item';
                 if (activeNode && activeNode.id === node.id) div.classList.add('active');
                 
-                // Indent
                 div.style.paddingLeft = (12 + depth * 15) + 'px'; 
                 div.textContent = node.text;
                 
@@ -578,20 +586,13 @@
                 };
                 
                 outliner.appendChild(div);
-
-                // Find children
                 const children = nodes.filter(n => n.parent === node);
                 children.forEach(child => buildList(child, depth + 1));
             }
 
-            // Start with root(s)
             const roots = nodes.filter(n => !n.parent);
-            if(roots.length === 0 && nodes.length > 0) {
-                // Fallback if circular or weird
-                nodes.forEach(n => buildList(n, 0));
-            } else {
-                roots.forEach(r => buildList(r, 0));
-            }
+            if(roots.length === 0 && nodes.length > 0) nodes.forEach(n => buildList(n, 0));
+            else roots.forEach(r => buildList(r, 0));
         }
 
         // --- Interaction ---
@@ -610,8 +611,7 @@
             if (intersects.length > 0) {
                 const targetMesh = intersects[0].object;
                 selectedNode = nodes.find(n => n.mesh === targetMesh);
-                activeNode = selectedNode;
-                updateOutliner();
+                // Just selecting for menu, not moving camera yet
                 return true;
             }
             return false;
@@ -625,7 +625,6 @@
             }
         });
 
-        // Mouse/Touch logic
         function onDown(e) {
             if (e.type === 'mousedown' && e.button !== 0) return;
             isLongPress = false;
@@ -653,12 +652,10 @@
 
         // --- WASD Navigation ---
         window.addEventListener('keydown', (e) => {
-            // Ignore if modal is open
             if (document.getElementById('input-modal').style.display === 'flex') return;
             
             if (!activeNode && nodes.length > 0) {
-                activeNode = nodes[0];
-                focusOnNodeWithTrace(activeNode);
+                focusOnNodeWithTrace(nodes[0]);
                 return;
             }
             if (!activeNode) return;
@@ -667,75 +664,58 @@
             const key = e.key.toLowerCase();
 
             if (key === 'w') {
-                // Parent
                 if (activeNode.parent) target = activeNode.parent;
             } else if (key === 's') {
-                // First Child (Using S instead of duplicate D)
                 const children = nodes.filter(n => n.parent === activeNode);
                 if (children.length > 0) target = children[0];
             } else if (key === 'a' || key === 'd') {
-                // Siblings
                 const siblings = nodes.filter(n => n.parent === activeNode.parent).sort((a,b) => a.id - b.id);
                 const idx = siblings.indexOf(activeNode);
                 if (idx !== -1) {
-                    if (key === 'a' && idx > 0) target = siblings[idx - 1]; // Prev
-                    if (key === 'd' && idx < siblings.length - 1) target = siblings[idx + 1]; // Next
+                    if (key === 'a' && idx > 0) target = siblings[idx - 1];
+                    if (key === 'd' && idx < siblings.length - 1) target = siblings[idx + 1];
                 }
             }
 
             if (target) {
-                activeNode = target;
-                updateOutliner();
-                focusOnNode(target); // Direct focus for keys, trace is for big jumps
+                // UNIFIED: Use trace for WASD too
+                focusOnNodeWithTrace(target);
             }
         });
 
-        // --- Camera Animation System ---
+        // --- Camera Animation ---
         let isAnimatingCamera = false;
-        let cameraTargetPos = new THREE.Vector3();
-        let animationQueue = []; // For path tracing
+        let animationQueue = [];
 
         function focusOnNode(node) {
-            // Clear queue, just go there
-            animationQueue = [];
-            cameraTargetPos.copy(node.mesh.position).add(new THREE.Vector3(0, 5, 15));
-            controls.target.copy(node.mesh.position);
-            isAnimatingCamera = true;
+            // Instant tracking setup
             activeNode = node;
             updateOutliner();
+            isAnimatingCamera = false; // Stop physics overriding controls immediately? No, let animate loop handle it
         }
 
-        // Fast path tracing animation
         function focusOnNodeWithTrace(targetNode) {
             if (!activeNode) { focusOnNode(targetNode); return; }
             if (activeNode === targetNode) return;
 
-            // Simple Path finding: Current -> LCA -> Target
-            // 1. Get ancestors of current
             let currPath = [];
             let temp = activeNode;
             while(temp) { currPath.push(temp); temp = temp.parent; }
             
-            // 2. Get ancestors of target
             let targPath = [];
             temp = targetNode;
             while(temp) { targPath.push(temp); temp = temp.parent; }
 
-            // 3. Find LCA
             let lca = null;
-            for(let n of currPath) {
-                if(targPath.includes(n)) { lca = n; break; }
-            }
+            for(let n of currPath) { if(targPath.includes(n)) { lca = n; break; } }
 
-            // 4. Build sequence
             animationQueue = [];
-            // Up to LCA
             for(let i=0; i<currPath.length; i++) {
                 if(currPath[i] === lca) break;
-                animationQueue.push(currPath[i]); // Actually we want the parent, but let's visit nodes
+                animationQueue.push(currPath[i]);
             }
             if(lca) animationQueue.push(lca);
-            // Down to Target (reverse part of targPath)
+            
             let downPath = [];
             for(let i=0; i<targPath.length; i++) {
                 if(targPath[i] === lca) break;
@@ -743,52 +723,51 @@
             }
             downPath.reverse().forEach(n => animationQueue.push(n));
             
-            // Remove current node from start if present
             if (animationQueue.length > 0 && animationQueue[0] === activeNode) animationQueue.shift();
 
-            // Set final active
             activeNode = targetNode;
             updateOutliner();
             
-            // Start animation
             if (animationQueue.length > 0) {
                 isAnimatingCamera = true;
                 playSound('whoosh');
-            } else {
-                focusOnNode(targetNode);
             }
         }
 
         function updateCamera() {
+            // Physics makes nodes move. If we are NOT animating a transition,
+            // we must ensure OrbitControls is looking at the Active Node.
+            // This fixes the "rotation feels weird" issue.
+            if (!isAnimatingCamera && activeNode) {
+                 controls.target.lerp(activeNode.mesh.position, 0.1);
+                 return;
+            }
+
             if (isAnimatingCamera) {
                 let targetLoc;
-                
-                // If we have a queue, our target is the first item in queue
                 if (animationQueue.length > 0) {
                     const nextNode = animationQueue[0];
-                    // Target position is offset from node
                     const offset = new THREE.Vector3(0, 5, 15);
                     targetLoc = nextNode.mesh.position.clone().add(offset);
                     
-                    // Look at node
                     controls.target.lerp(nextNode.mesh.position, 0.1);
-                    
-                    // Move camera fast
                     camera.position.lerp(targetLoc, 0.15);
 
-                    // Check if close enough to switch to next waypoint
                     if (camera.position.distanceTo(targetLoc) < 8) {
                         animationQueue.shift();
                     }
                 } else {
-                    // Final approach to activeNode
+                    // Final approach
                     if (!activeNode) return;
                     targetLoc = activeNode.mesh.position.clone().add(new THREE.Vector3(0, 5, 15));
+                    
                     controls.target.lerp(activeNode.mesh.position, 0.1);
                     camera.position.lerp(targetLoc, 0.1);
                     
                     if (camera.position.distanceTo(targetLoc) < 0.1) {
                         isAnimatingCamera = false;
+                        // Snap final position to prevent drift
+                        controls.target.copy(activeNode.mesh.position);
                     }
                 }
             }
@@ -797,23 +776,28 @@
         // --- Config ---
         let springLength = 8;
         const configPanel = document.getElementById('config-panel');
+        const distValDisplay = document.getElementById('dist-val');
+
         function toggleConfig() {
             const disp = configPanel.style.display;
             configPanel.style.display = (disp === 'block') ? 'none' : 'block';
             if(configPanel.style.display === 'block') playSound('click');
         }
-        function updateSpringLength(val) { springLength = parseFloat(val); }
+        function updateSpringLength(val) { 
+            springLength = parseFloat(val); 
+            distValDisplay.textContent = parseFloat(val).toFixed(1);
+        }
         function resetCameraToRoot() { if(nodes[0]) focusOnNodeWithTrace(nodes[0]); }
         
         function saveStructure() {
-            localStorage.setItem('mindmap_v2_data', JSON.stringify({
+            localStorage.setItem('mindmap_v21_data', JSON.stringify({
                 nodes: nodes.map(n => ({ id: n.id, text: n.text, parentId: n.parent ? n.parent.id : null, pos: n.mesh.position })),
                 springLength: springLength
             }));
             alert('保存しました'); playSound('add');
         }
         function loadStructure() {
-            const json = localStorage.getItem('mindmap_v2_data');
+            const json = localStorage.getItem('mindmap_v21_data');
             if(!json) return alert('データがありません');
             const data = JSON.parse(json);
             
@@ -833,11 +817,15 @@
                 n.id = d.id;
                 map[d.id].real = n;
             });
-            if(data.springLength) { springLength = data.springLength; document.getElementById('dist-slider').value = springLength; }
+            if(data.springLength) { 
+                springLength = data.springLength; 
+                document.getElementById('dist-slider').value = springLength;
+                distValDisplay.textContent = springLength.toFixed(1);
+            }
             alert('復元しました'); playSound('add'); toggleConfig();
         }
 
-        // --- Context Menu & Logic ---
+        // --- Context Menu ---
         const menu = document.getElementById('context-menu');
         const modal = document.getElementById('input-modal');
         const nameInput = document.getElementById('node-name-input');
@@ -872,10 +860,9 @@
         function updateLayout() {
             nodes.forEach(n => {
                 n.force.set(0,0,0);
-                if(n.id === 1) n.force.sub(n.mesh.position).multiplyScalar(0.05); // Root center
+                if(n.id === 1) n.force.sub(n.mesh.position).multiplyScalar(0.05);
             });
             
-            // Repulsion
             for(let i=0; i<nodes.length; i++) {
                 for(let j=i+1; j<nodes.length; j++) {
                     const d = new THREE.Vector3().subVectors(nodes[i].mesh.position, nodes[j].mesh.position);
@@ -885,7 +872,6 @@
                 }
             }
             
-            // Attraction
             connections.forEach(c => {
                 const d = new THREE.Vector3().subVectors(c.to.mesh.position, c.from.mesh.position);
                 const len = d.length();
@@ -893,13 +879,12 @@
                 c.to.force.sub(d); c.from.force.add(d);
             });
 
-            // Integrate
             nodes.forEach(n => {
                 if(n.id !== 1) {
                     n.velocity.add(n.force).multiplyScalar(DAMPING);
                     n.mesh.position.add(n.velocity);
                 }
-                n.mesh.quaternion.copy(camera.quaternion); // Billboard
+                n.mesh.quaternion.copy(camera.quaternion);
             });
 
             connections.forEach(c => {
