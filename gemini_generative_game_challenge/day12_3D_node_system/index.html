@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D Mind Map v20260115.3</title>
+    <title>3D Mind Map v20260115.4</title>
     <style>
         body {
             margin: 0;
@@ -249,8 +249,12 @@
             background-color: #f0f0f0;
         }
 
-        .menu-item.cancel {
+        .menu-item.delete {
             color: #ff4757;
+        }
+
+        .menu-item.cancel {
+            color: #666;
             border-top: 1px solid #eee;
             margin-top: 4px;
         }
@@ -371,6 +375,7 @@
         <div class="menu-header" id="menu-title">Node Name</div>
         <button class="menu-item" onclick="handleMenu('rename')">✏️ 名前を変更</button>
         <button class="menu-item" onclick="handleMenu('add')">🌱 子ノードを作成</button>
+        <button class="menu-item delete" id="btn-delete" onclick="handleMenu('delete')">🗑️ ノードを削除</button>
         <button class="menu-item" onclick="handleMenu('url')">🔗 URLを開く</button>
         <button class="menu-item cancel" onclick="handleMenu('cancel')">キャンセル</button>
     </div>
@@ -391,6 +396,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- OrbitControls -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- QR Code Library (QRious) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
         // --- Sound System ---
@@ -413,6 +420,10 @@
                 osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
                 gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
                 osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'delete') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(50, now + 0.3);
+                gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
             } else if (type === 'whoosh') {
                 const noise = audioCtx.createBufferSource();
                 const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.5, audioCtx.sampleRate);
@@ -434,7 +445,7 @@
         const scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0x1a1a2e, 0.005);
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
         camera.position.set(0, 20, 30);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -451,19 +462,28 @@
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         controls.minDistance = 0.5;
-        controls.maxDistance = 150;
-        // Relax constraints to avoid gimbal lock feel near poles
+        controls.maxDistance = 250;
+        // Relax constraints for smoother free-look
         controls.minPolarAngle = 0; 
         controls.maxPolarAngle = Math.PI;
 
-        // --- Starfield ---
+        // --- Starfield (Shell Distribution) ---
         function createStarField() {
             const geometry = new THREE.BufferGeometry();
-            const count = 1500;
+            const count = 2000;
             const positions = new Float32Array(count * 3);
-            for (let i = 0; i < count * 3; i++) positions[i] = (Math.random() - 0.5) * 400;
+            for (let i = 0; i < count; i++) {
+                // Spherical shell distribution: Radius between 600 and 1000
+                const r = 600 + Math.random() * 400;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                
+                positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                positions[i * 3 + 2] = r * Math.cos(phi);
+            }
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            const material = new THREE.PointsMaterial({ size: 0.5, color: 0xffffff, transparent: true, opacity: 0.8 });
+            const material = new THREE.PointsMaterial({ size: 1.0, color: 0xffffff, transparent: true, opacity: 0.8 });
             scene.add(new THREE.Points(geometry, material));
         }
         createStarField();
@@ -487,16 +507,18 @@
             const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
             const mesh = new THREE.Mesh(geo, mat);
             mesh.rotation.z = zRot;
-            mesh.position.y = offset.y;
-            mesh.position.x = offset.x;
-            mesh.scale.set(1.5, 1.5, 1.5);
+            mesh.position.set(offset.x, offset.y, 0);
+            mesh.scale.set(0.75, 0.75, 0.75); // Half size of v3
             return mesh;
         }
 
-        indicators.w = createTri(0x00ffff, 0, {x:0, y:2.5}); // Cyan (Parent)
-        indicators.s = createTri(0x00ff00, Math.PI, {x:0, y:-2.5}); // Green (Child)
-        indicators.a = createTri(0xffaa00, Math.PI/2, {x:-3.5, y:0}); // Orange (Prev)
-        indicators.d = createTri(0xffaa00, -Math.PI/2, {x:3.5, y:0}); // Orange (Next)
+        // Tighter offsets (Node is 4x2.5, Half: 2x1.25)
+        // Previous Gap was large. Now we want ~1/4 of that gap.
+        // Approx close to edge + small buffer
+        indicators.w = createTri(0x00ffff, 0, {x:0, y:1.7}); // Top
+        indicators.s = createTri(0x00ff00, Math.PI, {x:0, y:-1.7}); // Bottom
+        indicators.a = createTri(0xffaa00, Math.PI/2, {x:-2.4, y:0}); // Left
+        indicators.d = createTri(0xffaa00, -Math.PI/2, {x:2.4, y:0}); // Right
         
         Object.values(indicators).forEach(mesh => indicatorGroup.add(mesh));
 
@@ -507,17 +529,10 @@
             }
             indicatorGroup.visible = true;
             indicatorGroup.position.copy(activeNode.mesh.position);
-            // Billboard the indicators to face camera
             indicatorGroup.quaternion.copy(camera.quaternion);
 
-            // W: Parent
             indicators.w.visible = !!activeNode.parent;
-
-            // S: Child
-            const hasChild = nodes.some(n => n.parent === activeNode);
-            indicators.s.visible = hasChild;
-
-            // A/D: Siblings
+            indicators.s.visible = nodes.some(n => n.parent === activeNode);
             if (activeNode.parent) {
                 const siblings = nodes.filter(n => n.parent === activeNode.parent).sort((a,b) => a.id - b.id);
                 const idx = siblings.indexOf(activeNode);
@@ -529,7 +544,7 @@
             }
         }
 
-        // --- Node Creation ---
+        // --- Node Creation with Real QR ---
         function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
             let line = '', lineCount = 0;
             for (let i = 0; i < text.length; i++) {
@@ -546,15 +561,27 @@
             const canvas = document.createElement('canvas');
             canvas.width = 512; canvas.height = 320;
             const ctx = canvas.getContext('2d');
+            
+            // BG
             ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.lineWidth = 15; ctx.strokeStyle = '#4a90e2'; ctx.strokeRect(0, 0, canvas.width, canvas.height);
             
-            ctx.fillStyle = '#000';
-            ctx.fillRect(30, 90, 40, 40); ctx.fillRect(170, 90, 40, 40); ctx.fillRect(30, 230, 40, 40);
-            for(let i=0; i<80; i++) ctx.fillRect(30+Math.random()*180, 90+Math.random()*180, 12, 12);
+            // Real QR Code using QRious
+            // Use current page URL as default content
+            const qrSize = 180;
+            const qr = new QRious({
+                value: window.location.href, // Current Relative/Absolute Path
+                size: qrSize,
+                level: 'L'
+            });
+            
+            // Draw QR onto texture canvas (Left side)
+            ctx.drawImage(qr.canvas, 30, (canvas.height - qrSize) / 2);
 
+            // Text (Right side)
             ctx.fillStyle = '#333'; ctx.font = 'bold 48px Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
             wrapText(ctx, text, 240, 60, 240, 58);
+            
             return new THREE.CanvasTexture(canvas);
         }
 
@@ -563,7 +590,7 @@
             if (savedPosition) mesh.position.copy(savedPosition);
             else if (parentNode) {
                 const angle = Math.random() * Math.PI * 2;
-                const dist = springLength; // Use current spring length for initial pos
+                const dist = springLength; 
                 mesh.position.set(
                     parentNode.mesh.position.x + Math.cos(angle) * dist,
                     parentNode.mesh.position.y + (Math.random()-0.5)*dist,
@@ -582,6 +609,45 @@
             if (nodes.length === 1) activeNode = nodeData;
             updateOutliner();
             return nodeData;
+        }
+
+        // --- Recursive Deletion ---
+        function deleteNode(targetNode) {
+            if (!targetNode || !targetNode.parent) return; // Protect Root
+
+            const parent = targetNode.parent;
+
+            // 1. Identify all descendants recursively
+            const toDelete = new Set();
+            function collect(n) {
+                toDelete.add(n);
+                nodes.filter(child => child.parent === n).forEach(collect);
+            }
+            collect(targetNode);
+
+            // 2. Remove Meshes & Lines
+            toDelete.forEach(n => {
+                scene.remove(n.mesh);
+                n.mesh.geometry.dispose();
+                n.mesh.material.dispose();
+            });
+
+            // Remove connections involving deleted nodes
+            const linesToRemove = connections.filter(c => toDelete.has(c.from) || toDelete.has(c.to));
+            linesToRemove.forEach(c => {
+                scene.remove(c.line);
+                c.line.geometry.dispose();
+            });
+            connections = connections.filter(c => !toDelete.has(c.from) && !toDelete.has(c.to));
+
+            // 3. Update nodes array
+            nodes = nodes.filter(n => !toDelete.has(n));
+
+            // 4. Update UI & Focus
+            activeNode = parent;
+            focusOnNodeWithTrace(parent);
+            updateOutliner();
+            playSound('delete');
         }
 
         // --- Outliner ---
@@ -663,23 +729,16 @@
             if (target) focusOnNodeWithTrace(target);
         });
 
-        // --- Camera & Animation ---
+        // --- Camera & Animation (Reverted to v2 Smooth Logic) ---
         let isAnimatingCamera = false;
         let animationQueue = [];
-        const startQuat = new THREE.Quaternion();
-        const endQuat = new THREE.Quaternion();
-        let animAlpha = 0; // 0 to 1 for lerp/slerp
+        let currentWaypoint = null;
 
         function focusOnNodeWithTrace(targetNode) {
             if (!activeNode) activeNode = targetNode;
-            if (activeNode === targetNode) {
-                // Just recenter if same
-                activeNode = targetNode;
-                updateOutliner();
-                return; 
-            }
+            if (activeNode === targetNode) { activeNode = targetNode; updateOutliner(); return; }
 
-            // Path finding (LCA)
+            // LCA Logic
             let currPath = []; let temp = activeNode;
             while(temp) { currPath.push(temp); temp = temp.parent; }
             let targPath = []; temp = targetNode;
@@ -702,72 +761,51 @@
             if (animationQueue.length > 0) {
                 isAnimatingCamera = true;
                 playSound('whoosh');
-                startNextWaypoint();
             }
-        }
-
-        let currentWaypoint = null;
-        function startNextWaypoint() {
-            if (animationQueue.length === 0) {
-                // Final approach to activeNode
-                currentWaypoint = activeNode;
-                animAlpha = 0;
-                startQuat.copy(camera.quaternion);
-                controls.target.copy(activeNode.mesh.position); // Ensure controls are ready
-                return;
-            }
-            currentWaypoint = animationQueue.shift();
-            animAlpha = 0;
-            startQuat.copy(camera.quaternion);
         }
 
         function updateCamera() {
-            // Update Indicators Position
             updateIndicators();
 
-            if (!isAnimatingCamera) {
-                if (activeNode) {
-                    // Smoothly follow active node if physics moves it
+            if (isAnimatingCamera) {
+                // If we have waypoints
+                if (animationQueue.length > 0) {
+                    const nextNode = animationQueue[0];
+                    const offset = new THREE.Vector3(0, 5, 15);
+                    const targetLoc = nextNode.mesh.position.clone().add(offset);
+                    
+                    // Smooth Lerp (No Slerp)
+                    controls.target.lerp(nextNode.mesh.position, 0.1);
+                    camera.position.lerp(targetLoc, 0.15);
+
+                    if (camera.position.distanceTo(targetLoc) < 8) {
+                        animationQueue.shift();
+                    }
+                } else {
+                    // Final approach to activeNode
+                    if (!activeNode) return;
+                    const targetLoc = activeNode.mesh.position.clone().add(new THREE.Vector3(0, 5, 15));
+                    
                     controls.target.lerp(activeNode.mesh.position, 0.1);
-                }
-                return;
-            }
-
-            // Animation Logic
-            if (currentWaypoint) {
-                animAlpha += 0.05; // Speed
-
-                // Position Target
-                const offset = new THREE.Vector3(0, 5, 15);
-                const targetPos = currentWaypoint.mesh.position.clone().add(offset);
-                
-                // Position Lerp
-                camera.position.lerp(targetPos, 0.15);
-                
-                // LookAt Logic with Slerp for smooth rotation
-                const dummy = new THREE.Object3D();
-                dummy.position.copy(camera.position);
-                dummy.lookAt(currentWaypoint.mesh.position);
-                endQuat.copy(dummy.quaternion);
-                
-                camera.quaternion.slerp(endQuat, 0.1);
-                
-                // Update controls center
-                controls.target.lerp(currentWaypoint.mesh.position, 0.15);
-
-                if (camera.position.distanceTo(targetPos) < 2) {
-                     if (currentWaypoint === activeNode && animationQueue.length === 0) {
+                    camera.position.lerp(targetLoc, 0.1);
+                    
+                    if (camera.position.distanceTo(targetLoc) < 0.1) {
                         isAnimatingCamera = false;
-                     } else {
-                        startNextWaypoint();
-                     }
+                        controls.target.copy(activeNode.mesh.position); // Snap to prevent drift
+                    }
+                }
+            } else {
+                // When not animating, OrbitControls handles rotation.
+                // We just gently keep target focused if node moves by physics.
+                if (activeNode) {
+                    controls.target.lerp(activeNode.mesh.position, 0.1);
                 }
             }
         }
 
-        // --- Config & Physics Constants ---
+        // --- Config & Physics ---
         let springLength = 8;
-        let repulsionStrength = 20; // Lower default repulsion
+        let repulsionStrength = 20; 
 
         const configPanel = document.getElementById('config-panel');
         const distValDisplay = document.getElementById('dist-val');
@@ -780,23 +818,19 @@
         function updateSpringLength(val) { 
             springLength = parseFloat(val); 
             distValDisplay.textContent = springLength.toFixed(1);
-            
-            // Dynamic Repulsion: Weak at short distances, strong at long distances
-            // Base 20 roughly good for dist 8.
-            // If dist 0.1, we want repulsion very low (e.g. 0.5)
             repulsionStrength = springLength * 2.5; 
         }
 
         function resetCameraToRoot() { if(nodes[0]) focusOnNodeWithTrace(nodes[0]); }
         function saveStructure() {
-            localStorage.setItem('mindmap_v23_data', JSON.stringify({
+            localStorage.setItem('mindmap_v24_data', JSON.stringify({
                 nodes: nodes.map(n => ({ id: n.id, text: n.text, parentId: n.parent ? n.parent.id : null, pos: n.mesh.position })),
                 springLength: springLength
             }));
             alert('保存しました'); playSound('add');
         }
         function loadStructure() {
-            const json = localStorage.getItem('mindmap_v23_data');
+            const json = localStorage.getItem('mindmap_v24_data');
             if(!json) return alert('データがありません');
             const data = JSON.parse(json);
             nodes.forEach(n => scene.remove(n.mesh)); connections.forEach(c => scene.remove(c.line));
@@ -815,12 +849,19 @@
             alert('復元しました'); playSound('add'); toggleConfig();
         }
 
-        // --- Context Menu ---
+        // --- Context Menu Logic ---
         const menu = document.getElementById('context-menu');
         const modal = document.getElementById('input-modal');
         const nameInput = document.getElementById('node-name-input');
+        const btnDelete = document.getElementById('btn-delete');
+
         function showContextMenu(x, y, node) {
             document.getElementById('menu-title').innerText = node.text;
+            
+            // Toggle Delete Button Visibility
+            if (!node.parent) btnDelete.style.display = 'none';
+            else btnDelete.style.display = 'block';
+
             menu.style.left = Math.min(x, window.innerWidth - 210) + 'px';
             menu.style.top = Math.min(y, window.innerHeight - 210) + 'px';
             menu.style.display = 'block';
@@ -830,6 +871,7 @@
             menu.style.display = 'none';
             if(action === 'rename') { nameInput.value = selectedNode.text; modal.style.display = 'flex'; }
             else if(action === 'add') createNode('New Node', selectedNode);
+            else if(action === 'delete') deleteNode(selectedNode);
             else if(action === 'url') { playSound('whoosh'); window.open(selectedNode.url, '_blank'); }
             else playSound('cancel');
         }
@@ -845,30 +887,24 @@
         }
 
         // --- Physics ---
-        const ATTRACTION = 0.05; // Stronger attraction to keep nodes tight when spring is short
+        const ATTRACTION = 0.05; 
         const DAMPING = 0.9;
         
         function updateLayout() {
-            // Reset Forces
             nodes.forEach(n => {
                 n.force.set(0,0,0);
                 if(n.id === 1) n.force.sub(n.mesh.position).multiplyScalar(0.05);
             });
             
-            // Repulsion (Dynamic Strength)
             for(let i=0; i<nodes.length; i++) {
                 for(let j=i+1; j<nodes.length; j++) {
                     const d = new THREE.Vector3().subVectors(nodes[i].mesh.position, nodes[j].mesh.position);
                     let dist = d.length(); if(dist===0) dist=0.01;
-                    
-                    // Repulsion formula: k / dist^2
-                    // We use the dynamic repulsionStrength calculated from slider
                     d.normalize().multiplyScalar(repulsionStrength / (dist*dist));
                     nodes[i].force.add(d); nodes[j].force.sub(d);
                 }
             }
             
-            // Attraction (Springs)
             connections.forEach(c => {
                 const d = new THREE.Vector3().subVectors(c.to.mesh.position, c.from.mesh.position);
                 const len = d.length();
@@ -876,16 +912,14 @@
                 c.to.force.sub(d); c.from.force.add(d);
             });
 
-            // Apply
             nodes.forEach(n => {
                 if(n.id !== 1) {
                     n.velocity.add(n.force).multiplyScalar(DAMPING);
                     n.mesh.position.add(n.velocity);
                 }
-                n.mesh.quaternion.copy(camera.quaternion); // Billboarding
+                n.mesh.quaternion.copy(camera.quaternion); 
             });
 
-            // Update Lines
             connections.forEach(c => {
                 const p = c.line.geometry.attributes.position.array;
                 p[0]=c.from.mesh.position.x; p[1]=c.from.mesh.position.y; p[2]=c.from.mesh.position.z;
