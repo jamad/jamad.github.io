@@ -1,0 +1,162 @@
+[
+    {
+        "fi": "koti",
+        "en": "home"
+    },
+    {
+        "fi": "kodin",
+        "en": "home's"
+    },
+    {
+        "fi": "kotia",
+        "en": "home (part)"
+    },
+    {
+        "fi": "kodissa",
+        "en": "in home"
+    },
+    {
+        "fi": "kodilla",
+        "en": "at home"
+    },
+    {
+        "fi": "vesi",
+        "en": "water"
+    },
+    {
+        "fi": "veden",
+        "en": "water's"
+    },
+    {
+        "fi": "vettä",
+        "en": "water (part)"
+    },
+    {
+        "fi": "vedessä",
+        "en": "in water"
+    },
+    {
+        "fi": "vedellä",
+        "en": "at water"
+    },
+    {
+        "fi": "yö",
+        "en": "night"
+    },
+    {
+        "fi": "yön",
+        "en": "night's"
+    },
+    {
+        "fi": "yötä",
+        "en": "night (part)"
+    },
+    {
+        "fi": "yössä",
+        "en": "in night"
+    },
+    {
+        "fi": "yöllä",
+        "en": "at night"
+    },
+    {
+        "fi": "kirja",
+        "en": "book"
+    },
+    {
+        "fi": "kirjan",
+        "en": "book's"
+    },
+    {
+        "fi": "kirjaa",
+        "en": "book (part)"
+    },
+    {
+        "fi": "kirjassa",
+        "en": "in book"
+    },
+    {
+        "fi": "kirjalla",
+        "en": "at book"
+    },
+    {
+        "fi": "kissa",
+        "en": "cat"
+    },
+    {
+        "fi": "kissan",
+        "en": "cat's"
+    },
+    {
+        "fi": "kissaa",
+        "en": "cat (part)"
+    },
+    {
+        "fi": "kissassa",
+        "en": "in cat"
+    },
+    {
+        "fi": "kissalla",
+        "en": "at cat"
+    },
+    {
+        "fi": "kauppa",
+        "en": "shop"
+    },
+    {
+        "fi": "kaupan",
+        "en": "shop's"
+    },
+    {
+        "fi": "kauppaa",
+        "en": "shop (part)"
+    },
+    {
+        "fi": "kaupassa",
+        "en": "in shop"
+    },
+    {
+        "fi": "kaupalla",
+        "en": "at shop"
+    },
+    {
+        "fi": "järvi",
+        "en": "lake"
+    },
+    {
+        "fi": "järven",
+        "en": "lake's"
+    },
+    {
+        "fi": "järveä",
+        "en": "lake (part)"
+    },
+    {
+        "fi": "järvessä",
+        "en": "in lake"
+    },
+    {
+        "fi": "järvellä",
+        "en": "at lake"
+    },
+    {
+        "fi": "tuli",
+        "en": "fire"
+    },
+    {
+        "fi": "tulen",
+        "en": "fire's"
+    },
+    {
+        "fi": "tulta",
+        "en": "fire (part)"
+    },
+    {
+        "fi": "tulessa",
+        "en": "in fire"
+    },
+    {
+        "fi": "tulella",
+        "en": "at fire"
+    }
+]

@@ -50,13 +50,33 @@
         }
 
         @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
         }
 
         .shake {
@@ -70,14 +90,22 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-height: 500px) {
             .hide-on-keyboard {
                 display: none !important;
             }
+
             .ui-layer-left {
                 padding-top: 5px !important;
             }
@@ -96,15 +124,16 @@
 </head>
 
 <body class="text-white h-[100dvh] w-screen flex flex-col relative overflow-hidden">
-    
+
     <div id="bgLayer" class="absolute inset-0 z-0"></div>
 
     <!-- UI 左側 (z-10) -->
-    <div class="absolute top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-10 ui-layer-left pointer-events-none">
+    <div
+        class="absolute top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-10 ui-layer-left pointer-events-none">
         <div class="flex flex-col">
             <!-- 変更: ここにあったゲームタイトルを削除し、スコアのみにする -->
             <!-- これでプレイ画面が非常にスッキリします -->
-            
+
             <div class="text-sm font-bold text-yellow-600 mt-2">HI-SCORE: <span id="highScoreDisplay">0</span></div>
             <div class="text-xl">SCORE: <span id="scoreDisplay" class="text-cyan-400">0</span></div>
             <div class="text-lg">SISU SHIELD: <span id="healthDisplay" class="text-green-400">100%</span></div>
@@ -124,14 +153,16 @@
     <div id="startScreen"
         class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center pointer-events-auto">
         <!-- 変更: メインタイトルを FINNISH DEFENSE に昇格 -->
-        <h1 class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 mb-4 neon-text text-center">
+        <h1
+            class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 mb-4 neon-text text-center">
             FINNISH<br>DEFENSE
         </h1>
         <!-- 変更: サブタイトルを追加 -->
         <p class="text-xl md:text-2xl text-cyan-400 tracking-widest mb-8 font-bold">TYPE TO SURVIVE</p>
-        
-        <p class="text-lg mb-8 text-center px-4 text-slate-300">Protect the city from falling meteors.<br>Type the words to activate lasers.</p>
-        
+
+        <p class="text-lg mb-8 text-center px-4 text-slate-300">Protect the city from falling meteors.<br>Type the words
+            to activate lasers.</p>
+
         <button id="startButton"
             class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white text-2xl rounded border-b-4 border-cyan-800 active:border-0 active:translate-y-1 transition-all">START
             DEFENSE</button>
@@ -147,12 +178,24 @@
 
         <div class="text-xl text-yellow-400 mb-8 font-bold">High Score: <span id="finalHighScore">0</span></div>
 
-        <div id="restartContainer" class="hidden">
+        <div id="restartContainer" class="hidden flex flex-col items-center gap-4">
+            <!-- 既存の TRY AGAIN ボタン -->
             <button id="restartButton"
-                class="px-8 py-4 bg-white text-red-900 text-2xl rounded font-bold hover:bg-gray-200 shadow-lg">
+                class="px-8 py-4 bg-white text-red-900 text-2xl rounded font-bold hover:bg-gray-200 shadow-lg transition-transform active:scale-95">
                 TRY AGAIN <span class="text-sm font-normal block text-center text-gray-500">(PRESS ENTER)</span>
             </button>
+
+            <!-- 追加: X (Twitter) シェアボタン -->
+            <button id="shareButton"
+                class="px-6 py-2 bg-black text-white border border-slate-600 rounded hover:bg-slate-800 transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path
+                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+                POST SCORE
+            </button>
         </div>
+
     </div>
 
     <div id="inputArea" class="absolute bottom-0 w-full p-4 z-40 flex justify-center items-center">
@@ -161,15 +204,12 @@
                 class="absolute bottom-full left-1/2 -translate-x-1/2 w-16 h-8 bg-slate-700 rounded-t-lg border-t-2 border-x-2 border-slate-500 flex justify-center">
                 <div class="w-2 h-4 bg-cyan-500 rounded-full mt-1 animate-pulse"></div>
             </div>
-            
+
             <form id="gameForm" action="#" onsubmit="return false;" class="w-full">
                 <input type="text" id="playerInput"
                     class="w-full bg-slate-800 text-cyan-400 text-2xl px-4 py-3 rounded border-2 border-slate-600 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 uppercase placeholder-slate-600 text-center"
-                    placeholder="TYPE THE METEOR NAME..." 
-                    autocomplete="one-time-code" 
-                    autocorrect="off" 
-                    autocapitalize="off"
-                    spellcheck="false">
+                    placeholder="TYPE THE METEOR NAME..." autocomplete="one-time-code" autocorrect="off"
+                    autocapitalize="off" spellcheck="false">
             </form>
         </div>
     </div>
@@ -652,6 +692,24 @@
             });
             document.getElementById('startButton').addEventListener('click', startGame);
             document.getElementById('restartButton').addEventListener('click', startGame);
+
+            // 追加: シェアボタンのクリックイベント
+            document.getElementById('shareButton').addEventListener('click', () => {
+                // シェアする文面を作成
+                const text = `FINNISH DEFENSE\nSCORE: ${score}\nHIGH SCORE: ${highScore}\n\nCan you save the city with SISU? 🇫🇮☄️\n`;
+
+                // ゲームのURL (あなたの公開URL)
+                const url = "https://junichiyamada.gitlab.io/finnish-defense/";
+
+                // ハッシュタグ
+                const hashtags = "FinnishDefense,TypingGame,IndieDev";
+
+                // X (Twitter) の投稿画面を開くURLを作成
+                const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}&hashtags=${hashtags}`;
+
+                // 別タブで開く
+                window.open(shareUrl, '_blank');
+            });
         }
         init();
     </script>
