@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D Mind Map v20260115.4</title>
+    <title>3D Mind Map v20260115.7</title>
     <style>
         body {
             margin: 0;
@@ -31,24 +31,42 @@
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
         }
 
-        h1 {
-            margin: 0;
-            font-size: 1.4rem;
-            letter-spacing: 1px;
-        }
+        h1 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; }
+        p { margin: 5px 0; font-size: 0.9rem; }
 
-        p {
-            margin: 5px 0;
-            font-size: 0.9rem;
-        }
-
-        /* Outliner (Right Panel) */
-        #outliner {
+        /* Search Bar */
+        #search-container {
             position: absolute;
             top: 80px;
             right: 20px;
             width: 300px;
-            max-height: 60vh;
+            height: 40px;
+            z-index: 10;
+        }
+
+        #search-input {
+            width: 100%;
+            height: 100%;
+            background: rgba(20, 20, 40, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 0 12px;
+            color: white;
+            font-size: 14px;
+            backdrop-filter: blur(8px);
+            outline: none;
+            box-sizing: border-box;
+        }
+        #search-input::placeholder { color: #aaa; }
+        #search-input:focus { border-color: #4a90e2; background: rgba(30, 30, 60, 0.9); }
+
+        /* Outliner */
+        #outliner {
+            position: absolute;
+            top: 130px;
+            right: 20px;
+            width: 300px;
+            max-height: calc(100vh - 150px);
             background: rgba(20, 20, 40, 0.85);
             backdrop-filter: blur(8px);
             border-radius: 12px;
@@ -59,299 +77,133 @@
             color: white;
             scrollbar-width: thin;
             scrollbar-color: #4a90e2 transparent;
-            transition: transform 0.3s ease;
         }
 
-        #outliner::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        #outliner::-webkit-scrollbar-thumb {
-            background-color: #4a90e2;
-            border-radius: 3px;
-        }
+        #outliner::-webkit-scrollbar { width: 6px; height: 6px; }
+        #outliner::-webkit-scrollbar-thumb { background-color: #4a90e2; border-radius: 3px; }
 
         .outliner-item {
-            padding: 6px 12px;
-            margin-bottom: 2px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            transition: background 0.2s;
-            border-left: 3px solid transparent;
-            display: block;
+            padding: 6px 12px; margin-bottom: 2px; border-radius: 6px;
+            cursor: pointer; font-size: 0.9rem; white-space: nowrap;
+            transition: background 0.2s; border-left: 3px solid transparent; display: block;
         }
-
-        .outliner-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .outliner-item.active {
-            background: rgba(74, 144, 226, 0.3);
-            border-left-color: #4a90e2;
-        }
+        .outliner-item:hover { background: rgba(255, 255, 255, 0.1); }
+        .outliner-item.active { background: rgba(74, 144, 226, 0.3); border-left-color: #4a90e2; }
 
         /* Config Button */
         #config-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            font-size: 20px;
-            color: white;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: background 0.2s;
-            z-index: 150;
+            position: absolute; top: 20px; right: 20px; width: 40px; height: 40px;
+            background: rgba(255, 255, 255, 0.1); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; font-size: 20px; color: white;
+            backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background 0.2s; z-index: 150;
         }
-
-        #config-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        #config-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
         /* Config Panel */
         #config-panel {
-            display: none;
-            position: absolute;
-            top: 70px;
-            right: 20px;
-            width: 240px;
-            background: rgba(30, 30, 50, 0.95);
-            backdrop-filter: blur(12px);
-            border-radius: 12px;
-            padding: 15px;
-            color: white;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            z-index: 150;
+            display: none; position: absolute; top: 70px; right: 20px; width: 240px;
+            background: rgba(30, 30, 50, 0.95); backdrop-filter: blur(12px);
+            border-radius: 12px; padding: 15px; color: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); z-index: 150;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .config-item {
-            margin-bottom: 15px;
-        }
-
-        .config-label {
-            display: block;
-            font-size: 0.85rem;
-            color: #aaa;
-            margin-bottom: 5px;
-        }
-
-        .value-display {
-            float: right;
-            color: #4a90e2;
-            font-weight: bold;
-        }
-
-        .config-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            cursor: pointer;
-        }
+        .config-item { margin-bottom: 15px; }
+        .config-label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 5px; }
+        .value-display { float: right; color: #4a90e2; font-weight: bold; }
+        input[type="range"] { width: 100%; cursor: pointer; }
 
         .config-action-btn {
-            display: block;
-            width: 100%;
-            padding: 8px;
-            margin-top: 8px;
-            background: #4a90e2;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background 0.2s;
+            display: block; width: 100%; padding: 8px; margin-top: 8px;
+            background: #4a90e2; color: white; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 0.9rem; transition: background 0.2s;
         }
-
-        .config-action-btn:hover {
-            background: #357abd;
-        }
-
-        .config-action-btn.secondary {
-            background: #333;
-            border: 1px solid #555;
-        }
-
-        .config-action-btn.secondary:hover {
-            background: #444;
-        }
+        .config-action-btn:hover { background: #357abd; }
+        .config-action-btn.secondary { background: #333; border: 1px solid #555; }
+        .config-action-btn.secondary:hover { background: #444; }
 
         /* Context Menu */
         #context-menu {
-            display: none;
-            position: absolute;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            width: 200px;
-            z-index: 100;
-            transform-origin: top left;
-            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: none; position: absolute; background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px); border-radius: 12px; padding: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); width: 200px; z-index: 100;
         }
-
-        @keyframes popIn {
-            from {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
         .menu-header {
-            font-weight: bold;
-            padding: 8px 12px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 4px;
-            color: #333;
-            text-align: center;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-weight: bold; padding: 8px 12px; border-bottom: 1px solid #eee;
+            margin-bottom: 4px; color: #333; text-align: center; font-size: 0.9rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-
         .menu-item {
-            display: block;
-            width: 100%;
-            padding: 10px 12px;
-            margin: 2px 0;
-            background: none;
-            border: none;
-            text-align: left;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 6px;
-            color: #333;
-            transition: background 0.1s;
+            display: block; width: 100%; padding: 10px 12px; margin: 2px 0;
+            background: none; border: none; text-align: left; font-size: 14px;
+            cursor: pointer; border-radius: 6px; color: #333;
         }
+        .menu-item:hover { background-color: #f0f0f0; }
+        .menu-item.delete { color: #ff4757; }
+        .menu-item.cancel { color: #666; border-top: 1px solid #eee; margin-top: 4px; }
 
-        .menu-item:hover {
-            background-color: #f0f0f0;
+        /* Modals */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); z-index: 200; justify-content: center; align-items: center;
         }
-
-        .menu-item.delete {
-            color: #ff4757;
-        }
-
-        .menu-item.cancel {
-            color: #666;
-            border-top: 1px solid #eee;
-            margin-top: 4px;
-        }
-
-        /* Input Modal */
-        #input-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 200;
-            justify-content: center;
-            align-items: center;
-        }
-
         .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            width: 85%;
-            max-width: 320px;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            background: white; padding: 25px; border-radius: 12px; width: 85%; max-width: 320px;
+            text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
         }
-
-        .modal-title {
-            margin: 0 0 15px 0;
-            color: #333;
-            font-size: 1.1rem;
-        }
-
+        .modal-title { margin: 0 0 15px 0; color: #333; font-size: 1.1rem; }
+        .modal-desc { font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5; }
+        
         input[type="text"] {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 12px;
-            margin-bottom: 20px;
-            font-size: 16px;
-            border: 2px solid #eee;
-            border-radius: 8px;
-            outline: none;
-            transition: border-color 0.2s;
+            width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 20px;
+            font-size: 16px; border: 2px solid #eee; border-radius: 8px; outline: none;
         }
+        input[type="text"]:focus { border-color: #4a90e2; }
 
-        input[type="text"]:focus {
-            border-color: #4a90e2;
-        }
+        .modal-buttons { display: flex; justify-content: space-between; gap: 10px; }
+        .modal-buttons-stack { display: flex; flex-direction: column; gap: 10px; }
+        .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; }
+        
+        .btn-confirm { background: #4a90e2; color: white; }
+        .btn-danger { background: #ff4757; color: white; }
+        .btn-warning { background: #ffaa00; color: white; }
+        .btn-cancel { background: #f0f2f5; color: #666; }
 
-        .modal-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
+        /* Toast */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
+            text-align: center; border-radius: 8px; padding: 12px; position: fixed;
+            z-index: 300; left: 50%; bottom: 30px; transform: translateX(-50%);
+            font-size: 15px; opacity: 0; transition: opacity 0.3s, bottom 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        #toast.success { background-color: #2ecc71; }
+        #toast.error { background-color: #e74c3c; }
 
-        .modal-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .btn-confirm {
-            background: #4a90e2;
-            color: white;
-        }
-
-        .btn-cancel {
-            background: #f0f2f5;
-            color: #666;
-        }
     </style>
 </head>
 
 <body>
 
-    <!-- 3D Canvas -->
     <div id="canvas-container"></div>
 
-    <!-- Info Overlay -->
     <div id="ui-layer">
         <h1>3D Mind Map</h1>
         <p>左クリック: 回転 / 右クリック: メニュー</p>
         <p>移動: W(親) S(子) A(前) D(次)</p>
     </div>
 
-    <!-- Outliner -->
-    <div id="outliner"></div>
+    <!-- Search -->
+    <div id="search-container">
+        <input type="search" id="search-input" placeholder="🔍 ノードを検索 (Enterで移動)..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter') jumpToFirstMatch()">
+    </div>
 
-    <!-- Config Button -->
+    <div id="outliner"></div>
     <div id="config-btn" onclick="toggleConfig()">⚙️</div>
 
-    <!-- Config Panel -->
     <div id="config-panel">
         <div class="config-item">
             <label class="config-label">
@@ -361,589 +213,437 @@
             <input type="range" id="dist-slider" min="0.1" max="20" step="0.1" value="8"
                 oninput="updateSpringLength(this.value)">
         </div>
-
         <div class="config-item">
             <button class="config-action-btn secondary" onclick="resetCameraToRoot()">🎯 ルートを中心にリセット</button>
-            <button class="config-action-btn" onclick="saveStructure()">💾 保存 (Save)</button>
-            <button class="config-action-btn" onclick="loadStructure()">📂 復元 (Load)</button>
+            <button class="config-action-btn" onclick="saveToBrowser()">💾 ブラウザに保存</button>
+            <button class="config-action-btn" onclick="loadFromBrowser()">📂 ブラウザから復元</button>
+            <hr style="border:0; border-top:1px solid #555; margin:10px 0;">
+            <button class="config-action-btn" onclick="exportJSON()">⬇️ ファイルに保存 (.json)</button>
+            <button class="config-action-btn" onclick="document.getElementById('file-input').click()">⬆️ ファイルから読込 (.json)</button>
             <button class="config-action-btn secondary" onclick="toggleConfig()" style="margin-top: 15px;">閉じる</button>
         </div>
     </div>
+
+    <!-- Hidden Inputs -->
+    <input type="file" id="file-input" style="display:none" accept=".json" onchange="importJSON(this)">
+    <input type="color" id="color-input" style="display:none" onchange="applyColor(this.value)">
 
     <!-- Context Menu -->
     <div id="context-menu">
         <div class="menu-header" id="menu-title">Node Name</div>
         <button class="menu-item" onclick="handleMenu('rename')">✏️ 名前を変更</button>
+        <button class="menu-item" onclick="handleMenu('color')">🎨 色を変更</button>
         <button class="menu-item" onclick="handleMenu('add')">🌱 子ノードを作成</button>
-        <button class="menu-item delete" id="btn-delete" onclick="handleMenu('delete')">🗑️ ノードを削除</button>
+        <button class="menu-item delete" id="btn-delete" onclick="handleMenu('delete_confirm')">🗑️ ノードを削除</button>
         <button class="menu-item" onclick="handleMenu('url')">🔗 URLを開く</button>
         <button class="menu-item cancel" onclick="handleMenu('cancel')">キャンセル</button>
     </div>
 
-    <!-- Rename Modal -->
-    <div id="input-modal">
+    <!-- Modals -->
+    <div id="rename-modal" class="modal-overlay">
         <div class="modal-content">
             <h3 class="modal-title">ノード名を変更</h3>
             <input type="text" id="node-name-input" placeholder="新しい名前">
             <div class="modal-buttons">
-                <button class="modal-btn btn-cancel" onclick="closeModal()">キャンセル</button>
+                <button class="modal-btn btn-cancel" onclick="closeModal('rename-modal')">キャンセル</button>
                 <button class="modal-btn btn-confirm" onclick="confirmRename()">OK</button>
             </div>
         </div>
     </div>
 
-    <!-- Three.js from CDN -->
+    <div id="delete-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title">削除の確認</h3>
+            <p class="modal-desc">ノードを削除します。<br>子ノードの扱いを選択してください。</p>
+            <div class="modal-buttons-stack">
+                <button class="modal-btn btn-danger" onclick="executeDelete('all')">🗑️ 子孫を全削除</button>
+                <button class="modal-btn btn-warning" onclick="executeDelete('reparent')">🔗 子を親に接続 (継承)</button>
+                <button class="modal-btn btn-cancel" onclick="closeModal('delete-modal')">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">Message</div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- OrbitControls -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <!-- QR Code Library (QRious) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        // --- Sound System ---
+        // --- Utils ---
+        const toastEl = document.getElementById('toast');
+        function showToast(msg, type='success') {
+            toastEl.textContent = msg;
+            toastEl.className = type === 'success' ? 'show success' : 'show error';
+            setTimeout(() => { toastEl.className = toastEl.className.replace('show', ''); }, 3000);
+        }
+
+        // --- Sound ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             const now = audioCtx.currentTime;
             if (type === 'pop') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
-                gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                osc.start(now); osc.stop(now + 0.2);
+                osc.type='sine';osc.frequency.setValueAtTime(400,now);osc.frequency.exponentialRampToValueAtTime(800,now+0.1);
+                gain.gain.setValueAtTime(0.5,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.2);
+                osc.start(now);osc.stop(now+0.2);
             } else if (type === 'add') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(600, now + 0.1);
-                gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-                osc.start(now); osc.stop(now + 0.4);
+                osc.type='triangle';osc.frequency.setValueAtTime(300,now);osc.frequency.linearRampToValueAtTime(600,now+0.1);
+                gain.gain.setValueAtTime(0.3,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.4);
+                osc.start(now);osc.stop(now+0.4);
             } else if (type === 'click') {
-                osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                osc.start(now); osc.stop(now + 0.05);
+                osc.type='square';osc.frequency.setValueAtTime(800,now);
+                gain.gain.setValueAtTime(0.1,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.05);
+                osc.start(now);osc.stop(now+0.05);
             } else if (type === 'delete') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(50, now + 0.3);
-                gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
+                osc.type='sawtooth';osc.frequency.setValueAtTime(150,now);osc.frequency.linearRampToValueAtTime(50,now+0.3);
+                gain.gain.setValueAtTime(0.3,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.3);
+                osc.start(now);osc.stop(now+0.3);
             } else if (type === 'whoosh') {
-                const noise = audioCtx.createBufferSource();
-                const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.5, audioCtx.sampleRate);
-                const d = buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
-                noise.buffer = buf;
-                const f = audioCtx.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(200,now); f.frequency.linearRampToValueAtTime(2000,now+0.3);
-                noise.connect(f); f.connect(gain);
-                gain.gain.setValueAtTime(0.5,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.5);
-                noise.start(now); noise.stop(now+0.5);
+                const n=audioCtx.createBufferSource(); const b=audioCtx.createBuffer(1,audioCtx.sampleRate*0.5,audioCtx.sampleRate);
+                const d=b.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+                n.buffer=b; const f=audioCtx.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(200,now); f.frequency.linearRampToValueAtTime(2000,now+0.3);
+                n.connect(f); f.connect(gain); gain.gain.setValueAtTime(0.5,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.5);
+                n.start(now); n.stop(now+0.5);
             } else if (type === 'cancel') {
-                osc.type='sine'; osc.frequency.setValueAtTime(300,now); osc.frequency.exponentialRampToValueAtTime(100,now+0.15);
-                gain.gain.setValueAtTime(0.3,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.2);
-                osc.start(now); osc.stop(now+0.2);
+                osc.type='sine';osc.frequency.setValueAtTime(300,now);osc.frequency.exponentialRampToValueAtTime(100,now+0.15);
+                gain.gain.setValueAtTime(0.3,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.2);
+                osc.start(now);osc.stop(now+0.2);
             }
         }
 
-        // --- 3D Scene Setup ---
+        // --- 3D Scene ---
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0x1a1a2e, 0.005);
-
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
         camera.position.set(0, 20, 30);
-
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
-
         scene.add(new THREE.AmbientLight(0xffffff, 0.6));
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
         dirLight.position.set(10, 20, 10);
         scene.add(dirLight);
-
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.minDistance = 0.5;
-        controls.maxDistance = 250;
-        // Relax constraints for smoother free-look
-        controls.minPolarAngle = 0; 
-        controls.maxPolarAngle = Math.PI;
+        controls.enableDamping = true; controls.dampingFactor = 0.05; controls.minDistance = 0.5; controls.maxDistance = 250;
+        controls.minPolarAngle = 0; controls.maxPolarAngle = Math.PI;
 
-        // --- Starfield (Shell Distribution) ---
+        // --- Starfield (Fix: fog=false) ---
         function createStarField() {
             const geometry = new THREE.BufferGeometry();
             const count = 2000;
             const positions = new Float32Array(count * 3);
             for (let i = 0; i < count; i++) {
-                // Spherical shell distribution: Radius between 600 and 1000
-                const r = 600 + Math.random() * 400;
+                // Keep stars far away to avoid appearing in front of camera
+                const r = 600 + Math.random() * 400; 
                 const theta = Math.random() * Math.PI * 2;
                 const phi = Math.acos(2 * Math.random() - 1);
-                
                 positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
                 positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
                 positions[i * 3 + 2] = r * Math.cos(phi);
             }
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            const material = new THREE.PointsMaterial({ size: 1.0, color: 0xffffff, transparent: true, opacity: 0.8 });
+            // IMPORTANT: fog: false to make them visible at distance
+            const material = new THREE.PointsMaterial({ size: 2.0, color: 0xffffff, transparent: true, opacity: 0.8, fog: false });
             scene.add(new THREE.Points(geometry, material));
         }
         createStarField();
 
-        // --- Data ---
-        let nodes = [];
-        let connections = [];
-        let nextId = 1;
-        let selectedNode = null; 
-        let activeNode = null;   
-
-        // --- Indicator System (WASD Triangles) ---
-        const indicatorGroup = new THREE.Group();
-        scene.add(indicatorGroup);
+        let nodes = []; let connections = []; let nextId = 1; let selectedNode = null; let activeNode = null;
+        const indicatorGroup = new THREE.Group(); scene.add(indicatorGroup);
         const indicators = { w: null, a: null, s: null, d: null };
 
         function createTri(color, zRot, offset) {
-            const shape = new THREE.Shape();
-            shape.moveTo(0, 0.5); shape.lineTo(0.4, -0.3); shape.lineTo(-0.4, -0.3);
-            const geo = new THREE.ShapeGeometry(shape);
-            const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.rotation.z = zRot;
-            mesh.position.set(offset.x, offset.y, 0);
-            mesh.scale.set(0.75, 0.75, 0.75); // Half size of v3
-            return mesh;
+            const s = new THREE.Shape(); s.moveTo(0,0.5); s.lineTo(0.4,-0.3); s.lineTo(-0.4,-0.3);
+            const m = new THREE.Mesh(new THREE.ShapeGeometry(s), new THREE.MeshBasicMaterial({color:color,side:THREE.DoubleSide,transparent:true,opacity:0.8}));
+            m.rotation.z = zRot; m.position.set(offset.x, offset.y, 0); m.scale.set(0.75, 0.75, 0.75);
+            return m;
         }
-
-        // Tighter offsets (Node is 4x2.5, Half: 2x1.25)
-        // Previous Gap was large. Now we want ~1/4 of that gap.
-        // Approx close to edge + small buffer
-        indicators.w = createTri(0x00ffff, 0, {x:0, y:1.7}); // Top
-        indicators.s = createTri(0x00ff00, Math.PI, {x:0, y:-1.7}); // Bottom
-        indicators.a = createTri(0xffaa00, Math.PI/2, {x:-2.4, y:0}); // Left
-        indicators.d = createTri(0xffaa00, -Math.PI/2, {x:2.4, y:0}); // Right
-        
-        Object.values(indicators).forEach(mesh => indicatorGroup.add(mesh));
+        indicators.w = createTri(0x00ffff, 0, {x:0, y:1.7}); indicators.s = createTri(0x00ff00, Math.PI, {x:0, y:-1.7});
+        indicators.a = createTri(0xffaa00, Math.PI/2, {x:-2.4, y:0}); indicators.d = createTri(0xffaa00, -Math.PI/2, {x:2.4, y:0});
+        Object.values(indicators).forEach(m => indicatorGroup.add(m));
 
         function updateIndicators() {
-            if (!activeNode) {
-                indicatorGroup.visible = false;
-                return;
-            }
+            if (!activeNode) { indicatorGroup.visible = false; return; }
             indicatorGroup.visible = true;
             indicatorGroup.position.copy(activeNode.mesh.position);
             indicatorGroup.quaternion.copy(camera.quaternion);
-
             indicators.w.visible = !!activeNode.parent;
             indicators.s.visible = nodes.some(n => n.parent === activeNode);
             if (activeNode.parent) {
-                const siblings = nodes.filter(n => n.parent === activeNode.parent).sort((a,b) => a.id - b.id);
-                const idx = siblings.indexOf(activeNode);
-                indicators.a.visible = (idx > 0);
-                indicators.d.visible = (idx < siblings.length - 1);
-            } else {
-                indicators.a.visible = false;
-                indicators.d.visible = false;
-            }
+                const s = nodes.filter(n => n.parent === activeNode.parent).sort((a,b)=>a.id-b.id);
+                const i = s.indexOf(activeNode);
+                indicators.a.visible = (i > 0); indicators.d.visible = (i < s.length - 1);
+            } else { indicators.a.visible = false; indicators.d.visible = false; }
         }
 
-        // --- Node Creation with Real QR ---
-        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-            let line = '', lineCount = 0;
-            for (let i = 0; i < text.length; i++) {
-                const testLine = line + text[i];
-                if (ctx.measureText(testLine).width > maxWidth && i > 0) {
-                    ctx.fillText(line, x, y); line = text[i]; y += lineHeight; lineCount++;
-                    if (lineCount >= 4) { line = line.slice(0, -1) + '...'; break; }
-                } else line = testLine;
-            }
-            ctx.fillText(line, x, y);
-        }
-
-        function createNodeTexture(text) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512; canvas.height = 320;
+        function createNodeTexture(text, color = '#ffffff') {
+            const canvas = document.createElement('canvas'); canvas.width=512; canvas.height=320;
             const ctx = canvas.getContext('2d');
-            
-            // BG
-            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.lineWidth = 15; ctx.strokeStyle = '#4a90e2'; ctx.strokeRect(0, 0, canvas.width, canvas.height);
-            
-            // Real QR Code using QRious
-            // Use current page URL as default content
-            const qrSize = 180;
-            const qr = new QRious({
-                value: window.location.href, // Current Relative/Absolute Path
-                size: qrSize,
-                level: 'L'
-            });
-            
-            // Draw QR onto texture canvas (Left side)
-            ctx.drawImage(qr.canvas, 30, (canvas.height - qrSize) / 2);
-
-            // Text (Right side)
-            ctx.fillStyle = '#333'; ctx.font = 'bold 48px Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-            wrapText(ctx, text, 240, 60, 240, 58);
-            
+            ctx.fillStyle = color; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.lineWidth=15; ctx.strokeStyle='#4a90e2'; ctx.strokeRect(0,0,canvas.width,canvas.height);
+            const qr = new QRious({ value: window.location.href, size: 180, level: 'L' });
+            ctx.drawImage(qr.canvas, 30, (canvas.height-180)/2);
+            ctx.fillStyle='#333'; ctx.font='bold 48px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+            let line='', lc=0, y=60;
+            for(let i=0;i<text.length;i++){
+                if(ctx.measureText(line+text[i]).width>240 && i>0){ ctx.fillText(line,240,y); line=text[i]; y+=58; lc++; if(lc>=4){line=line.slice(0,-1)+'...';break;} }
+                else line+=text[i];
+            }
+            ctx.fillText(line,240,y);
             return new THREE.CanvasTexture(canvas);
         }
 
-        function createNode(text, parentNode = null, savedPosition = null) {
-            const mesh = new THREE.Mesh(new THREE.PlaneGeometry(4, 2.5), new THREE.MeshBasicMaterial({ map: createNodeTexture(text), side: THREE.DoubleSide }));
+        function createNode(text, parentNode = null, savedPosition = null, color = '#ffffff') {
+            const mesh = new THREE.Mesh(new THREE.PlaneGeometry(4, 2.5), new THREE.MeshBasicMaterial({ map: createNodeTexture(text, color), side: THREE.DoubleSide }));
             if (savedPosition) mesh.position.copy(savedPosition);
             else if (parentNode) {
-                const angle = Math.random() * Math.PI * 2;
-                const dist = springLength; 
-                mesh.position.set(
-                    parentNode.mesh.position.x + Math.cos(angle) * dist,
-                    parentNode.mesh.position.y + (Math.random()-0.5)*dist,
-                    parentNode.mesh.position.z + Math.sin(angle) * dist
-                );
+                const a = Math.random()*Math.PI*2, d = springLength;
+                mesh.position.set(parentNode.mesh.position.x+Math.cos(a)*d, parentNode.mesh.position.y+(Math.random()-0.5)*d, parentNode.mesh.position.z+Math.sin(a)*d);
             }
             scene.add(mesh);
-            const nodeData = { id: nextId++, mesh: mesh, text: text, url: 'https://www.google.com/search?q=' + encodeURIComponent(text), velocity: new THREE.Vector3(), force: new THREE.Vector3(), parent: parentNode };
-            nodes.push(nodeData);
-
+            const node = { id: nextId++, mesh: mesh, text: text, color: color, url: 'https://www.google.com/search?q='+encodeURIComponent(text), velocity: new THREE.Vector3(), force: new THREE.Vector3(), parent: parentNode };
+            nodes.push(node);
             if (parentNode) {
-                const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([parentNode.mesh.position, mesh.position]), new THREE.LineBasicMaterial({ color: 0x4a90e2, transparent: true, opacity: 0.6 }));
-                scene.add(line);
-                connections.push({ line: line, from: parentNode, to: nodeData });
+                const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([parentNode.mesh.position, mesh.position]), new THREE.LineBasicMaterial({color:0x4a90e2,transparent:true,opacity:0.6}));
+                scene.add(line); connections.push({line:line, from:parentNode, to:node});
             }
-            if (nodes.length === 1) activeNode = nodeData;
-            updateOutliner();
-            return nodeData;
+            if (nodes.length === 1) activeNode = node;
+            updateOutliner(); return node;
         }
 
-        // --- Recursive Deletion ---
-        function deleteNode(targetNode) {
-            if (!targetNode || !targetNode.parent) return; // Protect Root
+        // --- Search ---
+        function handleSearch(val) {
+            val = val.toLowerCase();
+            const items = document.querySelectorAll('.outliner-item');
+            let firstFound = null;
+            nodes.forEach((n, i) => {
+                const match = n.text.toLowerCase().includes(val);
+                if (items[i]) {
+                    items[i].style.display = match ? 'block' : 'none';
+                    if (match && !firstFound) firstFound = n;
+                }
+            });
+        }
 
-            const parent = targetNode.parent;
+        function jumpToFirstMatch() {
+            const val = document.getElementById('search-input').value.toLowerCase();
+            const found = nodes.find(n => n.text.toLowerCase().includes(val));
+            if (found) { focusOnNodeWithTrace(found); playSound('click'); }
+        }
 
-            // 1. Identify all descendants recursively
-            const toDelete = new Set();
-            function collect(n) {
-                toDelete.add(n);
-                nodes.filter(child => child.parent === n).forEach(collect);
+        // --- Deletion Logic ---
+        function executeDelete(mode) {
+            if (!selectedNode || !selectedNode.parent) return; 
+            const target = selectedNode;
+            const parent = target.parent;
+            closeModal('delete-modal');
+            const nodesToRemove = new Set();
+
+            if (mode === 'all') {
+                function collect(n) { nodesToRemove.add(n); nodes.filter(c => c.parent === n).forEach(collect); }
+                collect(target);
+            } else if (mode === 'reparent') {
+                nodesToRemove.add(target);
+                const children = nodes.filter(n => n.parent === target);
+                children.forEach(child => {
+                    child.parent = parent; 
+                    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([parent.mesh.position, child.mesh.position]), new THREE.LineBasicMaterial({color:0x4a90e2,transparent:true,opacity:0.6}));
+                    scene.add(line); connections.push({line:line, from:parent, to:child});
+                });
             }
-            collect(targetNode);
 
-            // 2. Remove Meshes & Lines
-            toDelete.forEach(n => {
-                scene.remove(n.mesh);
-                n.mesh.geometry.dispose();
-                n.mesh.material.dispose();
-            });
+            nodesToRemove.forEach(n => { scene.remove(n.mesh); n.mesh.geometry.dispose(); n.mesh.material.dispose(); });
+            const deadLines = connections.filter(c => nodesToRemove.has(c.from) || nodesToRemove.has(c.to));
+            deadLines.forEach(c => { scene.remove(c.line); c.line.geometry.dispose(); });
+            connections = connections.filter(c => !nodesToRemove.has(c.from) && !nodesToRemove.has(c.to));
+            nodes = nodes.filter(n => !nodesToRemove.has(n));
 
-            // Remove connections involving deleted nodes
-            const linesToRemove = connections.filter(c => toDelete.has(c.from) || toDelete.has(c.to));
-            linesToRemove.forEach(c => {
-                scene.remove(c.line);
-                c.line.geometry.dispose();
-            });
-            connections = connections.filter(c => !toDelete.has(c.from) && !toDelete.has(c.to));
-
-            // 3. Update nodes array
-            nodes = nodes.filter(n => !toDelete.has(n));
-
-            // 4. Update UI & Focus
-            activeNode = parent;
-            focusOnNodeWithTrace(parent);
-            updateOutliner();
-            playSound('delete');
+            activeNode = parent; focusOnNodeWithTrace(parent); updateOutliner(); playSound('delete'); showToast('削除しました');
         }
 
         // --- Outliner ---
         const outliner = document.getElementById('outliner');
         function updateOutliner() {
+            const filterVal = document.getElementById('search-input').value.toLowerCase();
             outliner.innerHTML = '';
-            function buildList(node, depth) {
-                const div = document.createElement('div');
-                div.className = 'outliner-item';
-                if (activeNode && activeNode.id === node.id) div.classList.add('active');
-                div.style.paddingLeft = (12 + depth * 15) + 'px'; 
-                div.textContent = node.text;
-                div.onclick = (e) => { e.stopPropagation(); focusOnNodeWithTrace(node); };
-                outliner.appendChild(div);
-                nodes.filter(n => n.parent === node).forEach(child => buildList(child, depth + 1));
+            function build(node, depth) {
+                const d = document.createElement('div'); d.className='outliner-item'; 
+                if(activeNode&&activeNode.id===node.id)d.classList.add('active');
+                d.style.paddingLeft=(12+depth*15)+'px'; d.textContent=node.text;
+                d.onclick=(e)=>{e.stopPropagation(); focusOnNodeWithTrace(node);};
+                if (!node.text.toLowerCase().includes(filterVal)) d.style.display = 'none';
+                outliner.appendChild(d);
+                nodes.filter(n=>n.parent===node).forEach(c=>build(c,depth+1));
             }
-            const roots = nodes.filter(n => !n.parent);
-            if(roots.length === 0 && nodes.length > 0) nodes.forEach(n => buildList(n, 0));
-            else roots.forEach(r => buildList(r, 0));
+            const r=nodes.filter(n=>!n.parent); if(r.length===0&&nodes.length>0)nodes.forEach(n=>build(n,0)); else r.forEach(n=>build(n,0));
         }
 
         // --- Interaction ---
-        const raycaster = new THREE.Raycaster();
-        const pointer = new THREE.Vector2();
-        let isLongPress = false, pressTimer, startPointer = { x: 0, y: 0 };
-
-        function checkIntersection(x, y) {
-            pointer.x = (x / window.innerWidth) * 2 - 1; pointer.y = -(y / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(pointer, camera);
-            const intersects = raycaster.intersectObjects(nodes.map(n => n.mesh));
-            if (intersects.length > 0) {
-                selectedNode = nodes.find(n => n.mesh === intersects[0].object);
-                return true;
-            }
-            return false;
+        const raycaster = new THREE.Raycaster(); const pointer = new THREE.Vector2();
+        let isLongPress=false, pressTimer, startP={x:0,y:0};
+        function checkIntersection(x,y) {
+            pointer.x=(x/window.innerWidth)*2-1; pointer.y=-(y/window.innerHeight)*2+1;
+            raycaster.setFromCamera(pointer,camera);
+            const ints=raycaster.intersectObjects(nodes.map(n=>n.mesh));
+            if(ints.length>0){ selectedNode=nodes.find(n=>n.mesh===ints[0].object); return true; } return false;
         }
-
-        window.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            if (checkIntersection(e.clientX, e.clientY)) { playSound('pop'); showContextMenu(e.clientX, e.clientY, selectedNode); }
+        window.addEventListener('contextmenu',(e)=>{ e.preventDefault(); if(checkIntersection(e.clientX,e.clientY)){playSound('pop');showContextMenu(e.clientX,e.clientY,selectedNode);} });
+        function onDown(e){ if(e.type==='mousedown'&&e.button!==0)return; isLongPress=false; const x=e.touches?e.touches[0].clientX:e.clientX, y=e.touches?e.touches[0].clientY:e.clientY; startP={x:x,y:y}; pressTimer=setTimeout(()=>{isLongPress=true;if(checkIntersection(x,y)){playSound('pop');showContextMenu(x,y,selectedNode);}},600); }
+        function onMove(e){ const x=e.touches?e.touches[0].clientX:e.clientX, y=e.touches?e.touches[0].clientY:e.clientY; if(Math.hypot(x-startP.x,y-startP.y)>20)clearTimeout(pressTimer); }
+        function onUp(){ clearTimeout(pressTimer); }
+        window.addEventListener('mousedown',onDown); window.addEventListener('mousemove',onMove); window.addEventListener('mouseup',onUp);
+        window.addEventListener('touchstart',onDown,{passive:false}); window.addEventListener('touchmove',onMove,{passive:false}); window.addEventListener('touchend',onUp);
+        
+        window.addEventListener('keydown',(e)=>{
+            if(document.querySelector('.modal-overlay[style*="flex"]')) return;
+            if(e.target.id === 'search-input') return; 
+            if(!activeNode&&nodes.length>0){focusOnNodeWithTrace(nodes[0]);return;}
+            if(!activeNode)return;
+            let t=null, k=e.key.toLowerCase();
+            if(k==='w'&&activeNode.parent)t=activeNode.parent;
+            else if(k==='s'){const c=nodes.filter(n=>n.parent===activeNode);if(c.length)t=c[0];}
+            else if(k==='a'||k==='d'){const s=nodes.filter(n=>n.parent===activeNode.parent).sort((a,b)=>a.id-b.id); const i=s.indexOf(activeNode); if(i!==-1){if(k==='a'&&i>0)t=s[i-1];if(k==='d'&&i<s.length-1)t=s[i+1];}}
+            if(t)focusOnNodeWithTrace(t);
         });
 
-        function onDown(e) {
-            if (e.type === 'mousedown' && e.button !== 0) return;
-            isLongPress = false;
-            const cx = e.touches ? e.touches[0].clientX : e.clientX; const cy = e.touches ? e.touches[0].clientY : e.clientY;
-            startPointer = { x: cx, y: cy };
-            pressTimer = setTimeout(() => {
-                isLongPress = true;
-                if (checkIntersection(cx, cy)) { playSound('pop'); showContextMenu(cx, cy, selectedNode); }
-            }, 600);
+        // --- Camera Anim ---
+        let isAnimatingCamera=false, animationQueue=[];
+        function focusOnNodeWithTrace(t) {
+            if(!activeNode) activeNode=t; if(activeNode===t){activeNode=t;updateOutliner();return;}
+            let cp=[], tmp=activeNode; while(tmp){cp.push(tmp);tmp=tmp.parent;}
+            let tp=[], tmp2=t; while(tmp2){tp.push(tmp2);tmp2=tmp2.parent;}
+            let lca=null; for(let n of cp){if(tp.includes(n)){lca=n;break;}}
+            animationQueue=[];
+            for(let i=0;i<cp.length;i++){if(cp[i]===lca)break;animationQueue.push(cp[i]);}
+            if(lca)animationQueue.push(lca);
+            let dp=[]; for(let i=0;i<tp.length;i++){if(tp[i]===lca)break;dp.push(tp[i]);}
+            dp.reverse().forEach(n=>animationQueue.push(n));
+            if(animationQueue.length>0&&animationQueue[0]===activeNode)animationQueue.shift();
+            activeNode=t; updateOutliner();
+            if(animationQueue.length>0){isAnimatingCamera=true;playSound('whoosh');}
         }
-        function onMove(e) {
-            const cx = e.touches ? e.touches[0].clientX : e.clientX; const cy = e.touches ? e.touches[0].clientY : e.clientY;
-            if (Math.hypot(cx - startPointer.x, cy - startPointer.y) > 20) clearTimeout(pressTimer);
-        }
-        function onUp() { clearTimeout(pressTimer); }
-        window.addEventListener('mousedown', onDown); window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
-        window.addEventListener('touchstart', onDown, { passive: false }); window.addEventListener('touchmove', onMove, { passive: false }); window.addEventListener('touchend', onUp);
-
-        // --- WASD ---
-        window.addEventListener('keydown', (e) => {
-            if (document.getElementById('input-modal').style.display === 'flex') return;
-            if (!activeNode && nodes.length > 0) { focusOnNodeWithTrace(nodes[0]); return; }
-            if (!activeNode) return;
-
-            let target = null;
-            const key = e.key.toLowerCase();
-            if (key === 'w' && activeNode.parent) target = activeNode.parent;
-            else if (key === 's') { const c = nodes.filter(n => n.parent === activeNode); if(c.length) target = c[0]; }
-            else if (key === 'a' || key === 'd') {
-                const s = nodes.filter(n => n.parent === activeNode.parent).sort((a,b) => a.id - b.id);
-                const idx = s.indexOf(activeNode);
-                if (idx !== -1) {
-                    if (key === 'a' && idx > 0) target = s[idx - 1];
-                    if (key === 'd' && idx < s.length - 1) target = s[idx + 1];
-                }
-            }
-            if (target) focusOnNodeWithTrace(target);
-        });
-
-        // --- Camera & Animation (Reverted to v2 Smooth Logic) ---
-        let isAnimatingCamera = false;
-        let animationQueue = [];
-        let currentWaypoint = null;
-
-        function focusOnNodeWithTrace(targetNode) {
-            if (!activeNode) activeNode = targetNode;
-            if (activeNode === targetNode) { activeNode = targetNode; updateOutliner(); return; }
-
-            // LCA Logic
-            let currPath = []; let temp = activeNode;
-            while(temp) { currPath.push(temp); temp = temp.parent; }
-            let targPath = []; temp = targetNode;
-            while(temp) { targPath.push(temp); temp = temp.parent; }
-            let lca = null;
-            for(let n of currPath) { if(targPath.includes(n)) { lca = n; break; } }
-
-            animationQueue = [];
-            for(let i=0; i<currPath.length; i++) { if(currPath[i]===lca) break; animationQueue.push(currPath[i]); }
-            if(lca) animationQueue.push(lca);
-            let downPath = [];
-            for(let i=0; i<targPath.length; i++) { if(targPath[i]===lca) break; downPath.push(targPath[i]); }
-            downPath.reverse().forEach(n => animationQueue.push(n));
-            
-            if (animationQueue.length > 0 && animationQueue[0] === activeNode) animationQueue.shift();
-
-            activeNode = targetNode;
-            updateOutliner();
-            
-            if (animationQueue.length > 0) {
-                isAnimatingCamera = true;
-                playSound('whoosh');
-            }
-        }
-
-        function updateCamera() {
+        function updateCamera(){
             updateIndicators();
-
-            if (isAnimatingCamera) {
-                // If we have waypoints
-                if (animationQueue.length > 0) {
-                    const nextNode = animationQueue[0];
-                    const offset = new THREE.Vector3(0, 5, 15);
-                    const targetLoc = nextNode.mesh.position.clone().add(offset);
-                    
-                    // Smooth Lerp (No Slerp)
-                    controls.target.lerp(nextNode.mesh.position, 0.1);
-                    camera.position.lerp(targetLoc, 0.15);
-
-                    if (camera.position.distanceTo(targetLoc) < 8) {
-                        animationQueue.shift();
-                    }
+            if(isAnimatingCamera){
+                if(animationQueue.length>0){
+                    const n=animationQueue[0], off=new THREE.Vector3(0,5,15), tl=n.mesh.position.clone().add(off);
+                    controls.target.lerp(n.mesh.position,0.1); camera.position.lerp(tl,0.15);
+                    if(camera.position.distanceTo(tl)<8)animationQueue.shift();
                 } else {
-                    // Final approach to activeNode
-                    if (!activeNode) return;
-                    const targetLoc = activeNode.mesh.position.clone().add(new THREE.Vector3(0, 5, 15));
-                    
-                    controls.target.lerp(activeNode.mesh.position, 0.1);
-                    camera.position.lerp(targetLoc, 0.1);
-                    
-                    if (camera.position.distanceTo(targetLoc) < 0.1) {
-                        isAnimatingCamera = false;
-                        controls.target.copy(activeNode.mesh.position); // Snap to prevent drift
-                    }
+                    if(!activeNode)return; const tl=activeNode.mesh.position.clone().add(new THREE.Vector3(0,5,15));
+                    controls.target.lerp(activeNode.mesh.position,0.1); camera.position.lerp(tl,0.1);
+                    if(camera.position.distanceTo(tl)<0.1){isAnimatingCamera=false;controls.target.copy(activeNode.mesh.position);}
                 }
-            } else {
-                // When not animating, OrbitControls handles rotation.
-                // We just gently keep target focused if node moves by physics.
-                if (activeNode) {
-                    controls.target.lerp(activeNode.mesh.position, 0.1);
-                }
-            }
+            } else if(activeNode) controls.target.lerp(activeNode.mesh.position,0.1);
         }
 
-        // --- Config & Physics ---
-        let springLength = 8;
-        let repulsionStrength = 20; 
-
-        const configPanel = document.getElementById('config-panel');
-        const distValDisplay = document.getElementById('dist-val');
-
-        function toggleConfig() {
-            configPanel.style.display = (configPanel.style.display === 'block') ? 'none' : 'block';
-            if(configPanel.style.display === 'block') playSound('click');
+        // --- Config & I/O ---
+        let springLength=8, repulsionStrength=20;
+        const conf=document.getElementById('config-panel');
+        function toggleConfig(){ const s=conf.style.display==='block'; conf.style.display=s?'none':'block'; if(!s)playSound('click'); }
+        function updateSpringLength(v){ springLength=parseFloat(v); document.getElementById('dist-val').innerText=springLength.toFixed(1); repulsionStrength=springLength*2.5; }
+        function resetCameraToRoot(){ if(nodes[0])focusOnNodeWithTrace(nodes[0]); }
+        
+        function getSaveData() { return JSON.stringify({nodes:nodes.map(n=>({id:n.id,text:n.text,parentId:n.parent?n.parent.id:null,pos:n.mesh.position,color:n.color})),springLength:springLength}); }
+        function saveToBrowser(){ localStorage.setItem('mindmap_v7_data', getSaveData()); playSound('add'); showToast('ブラウザに保存しました'); }
+        function exportJSON(){
+            const blob = new Blob([getSaveData()], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href=url; a.download='mindmap.json'; a.click();
+            playSound('add'); showToast('ファイルをダウンロードしました');
         }
 
-        function updateSpringLength(val) { 
-            springLength = parseFloat(val); 
-            distValDisplay.textContent = springLength.toFixed(1);
-            repulsionStrength = springLength * 2.5; 
+        function loadData(jsonStr) {
+            try {
+                const d=JSON.parse(jsonStr);
+                nodes.forEach(n=>scene.remove(n.mesh)); connections.forEach(c=>scene.remove(c.line));
+                nodes=[]; connections=[]; nextId=1; activeNode=null; indicatorGroup.visible=false;
+                const m={}; d.nodes.forEach(x=>{m[x.id]={...x,real:null}; nextId=Math.max(nextId,x.id+1);});
+                d.nodes.sort((a,b)=>a.id-b.id).forEach(x=>{
+                    const p=x.parentId?m[x.parentId].real:null;
+                    const n=createNode(x.text,p,new THREE.Vector3(x.pos.x,x.pos.y,x.pos.z), x.color || '#ffffff');
+                    n.id=x.id; m[x.id].real=n;
+                });
+                if(d.springLength){updateSpringLength(d.springLength); document.getElementById('dist-slider').value=d.springLength;}
+                playSound('add'); showToast('データを復元しました');
+            } catch(e) { showToast('データの読み込みに失敗しました','error'); }
+        }
+        function loadFromBrowser() { const j=localStorage.getItem('mindmap_v7_data'); if(j) { loadData(j); toggleConfig(); } else showToast('保存データがありません','error'); }
+        function importJSON(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { loadData(e.target.result); toggleConfig(); input.value = ''; };
+            reader.readAsText(file);
         }
 
-        function resetCameraToRoot() { if(nodes[0]) focusOnNodeWithTrace(nodes[0]); }
-        function saveStructure() {
-            localStorage.setItem('mindmap_v24_data', JSON.stringify({
-                nodes: nodes.map(n => ({ id: n.id, text: n.text, parentId: n.parent ? n.parent.id : null, pos: n.mesh.position })),
-                springLength: springLength
-            }));
-            alert('保存しました'); playSound('add');
+        // --- Context & Modals ---
+        const menu=document.getElementById('context-menu');
+        const renameModal=document.getElementById('rename-modal');
+        const deleteModal=document.getElementById('delete-modal');
+        const nameInput=document.getElementById('node-name-input');
+        
+        function showContextMenu(x,y,node){
+            document.getElementById('menu-title').innerText=node.text;
+            document.getElementById('btn-delete').style.display=node.parent?'block':'none';
+            menu.style.left=Math.min(x,window.innerWidth-210)+'px'; menu.style.top=Math.min(y,window.innerHeight-210)+'px';
+            menu.style.display='block';
         }
-        function loadStructure() {
-            const json = localStorage.getItem('mindmap_v24_data');
-            if(!json) return alert('データがありません');
-            const data = JSON.parse(json);
-            nodes.forEach(n => scene.remove(n.mesh)); connections.forEach(c => scene.remove(c.line));
-            nodes = []; connections = []; nextId = 1; activeNode = null; indicatorGroup.visible = false;
-            const map = {};
-            data.nodes.forEach(d => { map[d.id] = { ...d, real: null }; nextId = Math.max(nextId, d.id + 1); });
-            data.nodes.sort((a,b) => a.id - b.id).forEach(d => {
-                const p = d.parentId ? map[d.parentId].real : null;
-                const n = createNode(d.text, p, new THREE.Vector3(d.pos.x, d.pos.y, d.pos.z));
-                n.id = d.id; map[d.id].real = n;
-            });
-            if(data.springLength) { 
-                updateSpringLength(data.springLength);
-                document.getElementById('dist-slider').value = data.springLength;
-            }
-            alert('復元しました'); playSound('add'); toggleConfig();
-        }
-
-        // --- Context Menu Logic ---
-        const menu = document.getElementById('context-menu');
-        const modal = document.getElementById('input-modal');
-        const nameInput = document.getElementById('node-name-input');
-        const btnDelete = document.getElementById('btn-delete');
-
-        function showContextMenu(x, y, node) {
-            document.getElementById('menu-title').innerText = node.text;
-            
-            // Toggle Delete Button Visibility
-            if (!node.parent) btnDelete.style.display = 'none';
-            else btnDelete.style.display = 'block';
-
-            menu.style.left = Math.min(x, window.innerWidth - 210) + 'px';
-            menu.style.top = Math.min(y, window.innerHeight - 210) + 'px';
-            menu.style.display = 'block';
-        }
-        function handleMenu(action) {
-            if(!selectedNode) return;
-            menu.style.display = 'none';
-            if(action === 'rename') { nameInput.value = selectedNode.text; modal.style.display = 'flex'; }
-            else if(action === 'add') createNode('New Node', selectedNode);
-            else if(action === 'delete') deleteNode(selectedNode);
-            else if(action === 'url') { playSound('whoosh'); window.open(selectedNode.url, '_blank'); }
+        function handleMenu(act){
+            if(!selectedNode)return; menu.style.display='none';
+            if(act==='rename'){nameInput.value=selectedNode.text; renameModal.style.display='flex';}
+            else if(act==='color'){document.getElementById('color-input').click();}
+            else if(act==='add')createNode('New Node ' + nextId, selectedNode); // Unique Name
+            else if(act==='delete_confirm') deleteModal.style.display='flex';
+            else if(act==='url'){playSound('whoosh'); window.open(selectedNode.url,'_blank');}
             else playSound('cancel');
         }
-        function closeModal() { modal.style.display = 'none'; playSound('cancel'); }
-        function confirmRename() {
-            if(selectedNode && nameInput.value) {
-                selectedNode.text = nameInput.value;
-                selectedNode.url = 'https://www.google.com/search?q='+encodeURIComponent(nameInput.value);
-                selectedNode.mesh.material.map = createNodeTexture(selectedNode.text);
-                updateOutliner(); playSound('click');
+        function closeModal(id){ document.getElementById(id).style.display='none'; playSound('cancel'); }
+        function confirmRename(){
+            if(selectedNode&&nameInput.value){
+                selectedNode.text=nameInput.value; selectedNode.url='https://www.google.com/search?q='+encodeURIComponent(nameInput.value);
+                selectedNode.mesh.material.map=createNodeTexture(selectedNode.text, selectedNode.color); updateOutliner(); playSound('click');
             }
-            modal.style.display = 'none';
+            closeModal('rename-modal');
+        }
+        function applyColor(hex) {
+            if(selectedNode) {
+                selectedNode.color = hex;
+                selectedNode.mesh.material.map = createNodeTexture(selectedNode.text, hex);
+                playSound('click');
+            }
         }
 
         // --- Physics ---
-        const ATTRACTION = 0.05; 
-        const DAMPING = 0.9;
-        
-        function updateLayout() {
-            nodes.forEach(n => {
-                n.force.set(0,0,0);
-                if(n.id === 1) n.force.sub(n.mesh.position).multiplyScalar(0.05);
-            });
-            
-            for(let i=0; i<nodes.length; i++) {
-                for(let j=i+1; j<nodes.length; j++) {
-                    const d = new THREE.Vector3().subVectors(nodes[i].mesh.position, nodes[j].mesh.position);
-                    let dist = d.length(); if(dist===0) dist=0.01;
-                    d.normalize().multiplyScalar(repulsionStrength / (dist*dist));
-                    nodes[i].force.add(d); nodes[j].force.sub(d);
-                }
+        function updateLayout(){
+            nodes.forEach(n=>{ n.force.set(0,0,0); if(n.id===1)n.force.sub(n.mesh.position).multiplyScalar(0.05); });
+            for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+                const d=new THREE.Vector3().subVectors(nodes[i].mesh.position,nodes[j].mesh.position);
+                let l=d.length(); if(l===0)l=0.01; d.normalize().multiplyScalar(repulsionStrength/(l*l));
+                nodes[i].force.add(d); nodes[j].force.sub(d);
             }
-            
-            connections.forEach(c => {
-                const d = new THREE.Vector3().subVectors(c.to.mesh.position, c.from.mesh.position);
-                const len = d.length();
-                d.normalize().multiplyScalar((len - springLength) * ATTRACTION);
+            connections.forEach(c=>{
+                const d=new THREE.Vector3().subVectors(c.to.mesh.position,c.from.mesh.position);
+                const l=d.length(); d.normalize().multiplyScalar((l-springLength)*0.05);
                 c.to.force.sub(d); c.from.force.add(d);
             });
-
-            nodes.forEach(n => {
-                if(n.id !== 1) {
-                    n.velocity.add(n.force).multiplyScalar(DAMPING);
-                    n.mesh.position.add(n.velocity);
-                }
-                n.mesh.quaternion.copy(camera.quaternion); 
-            });
-
-            connections.forEach(c => {
-                const p = c.line.geometry.attributes.position.array;
+            nodes.forEach(n=>{ if(n.id!==1){n.velocity.add(n.force).multiplyScalar(0.9); n.mesh.position.add(n.velocity);} n.mesh.quaternion.copy(camera.quaternion); });
+            connections.forEach(c=>{
+                const p=c.line.geometry.attributes.position.array;
                 p[0]=c.from.mesh.position.x; p[1]=c.from.mesh.position.y; p[2]=c.from.mesh.position.z;
                 p[3]=c.to.mesh.position.x; p[4]=c.to.mesh.position.y; p[5]=c.to.mesh.position.z;
-                c.line.geometry.attributes.position.needsUpdate = true;
+                c.line.geometry.attributes.position.needsUpdate=true;
             });
         }
-
-        // --- Loop ---
         const root = createNode("ROOT");
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            updateLayout();
-            updateCamera();
-            renderer.render(scene, camera);
-        }
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth/window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        function animate(){ requestAnimationFrame(animate); controls.update(); updateLayout(); updateCamera(); renderer.render(scene,camera); }
+        window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight);});
         animate();
-
     </script>
 </body>
 </html>
