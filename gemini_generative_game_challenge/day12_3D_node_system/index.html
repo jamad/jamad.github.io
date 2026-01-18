@@ -4,9 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Constellio v20260118.2</title>
+    <title>Constellio v20260118.3</title>
     <style>
+        /* Block default touch actions to allow custom 3D controls */
         body { margin: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+        
+        /* touch-action: none is CRITICAL for iOS custom gestures */
         #canvas-container { width: 100vw; height: 100vh; touch-action: none; cursor: default; }
         
         #ui-layer { position: absolute; top: 20px; left: 20px; color: rgba(255, 255, 255, 0.8); pointer-events: none; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8); z-index: 10; }
@@ -22,21 +25,21 @@
             white-space: pre-wrap; line-height: 1.3; border: 1px solid #0f0;
         }
 
-        #search-container { position: absolute; top: 130px; right: 20px; width: 33vw; min-width: 300px; height: 40px; z-index: 10; pointer-events: auto; }
+        #search-container { position: absolute; top: 130px; right: 20px; width: 33vw; min-width: 300px; height: 40px; z-index: 10; }
         #search-input { width: 100%; height: 100%; background: rgba(20, 20, 40, 0.85); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0 12px; color: white; font-size: 14px; backdrop-filter: blur(8px); outline: none; box-sizing: border-box; }
         #search-input:focus { border-color: #4a90e2; background: rgba(30, 30, 60, 0.9); }
 
-        #outliner { position: absolute; top: 180px; right: 20px; width: 300px; max-height: calc(100vh - 230px); background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: auto; padding: 8px; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; pointer-events: auto; }
+        #outliner { position: absolute; top: 180px; right: 20px; width: 300px; max-height: calc(100vh - 230px); background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: auto; padding: 8px; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; }
         #outliner::-webkit-scrollbar { width: 6px; height: 6px; }
         #outliner::-webkit-scrollbar-thumb { background-color: #4a90e2; border-radius: 3px; }
         .outliner-item { padding: 1px 4px; margin-bottom: 1px; border-radius: 2px; cursor: pointer; font-size: 0.85rem; line-height: 1.2; white-space: pre; overflow: visible; transition: background 0.1s; display: block; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; color: rgba(255,255,255,0.5); width: auto; min-width: 100%; box-sizing: border-box; }
         .outliner-item:hover { background: rgba(255, 255, 255, 0.1); color: #fff !important; }
         .outliner-item.active { background: rgba(74, 144, 226, 0.2); color: #fff !important; font-weight: bold; border-left: 2px solid #4a90e2; }
 
-        #config-btn { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 20px; color: white; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2); transition: background 0.2s; z-index: 150; pointer-events: auto; }
+        #config-btn { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 20px; color: white; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2); transition: background 0.2s; z-index: 150; }
         #config-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
-        #config-panel { display: none; position: absolute; top: 70px; right: 20px; width: 240px; background: rgba(30, 30, 50, 0.95); backdrop-filter: blur(12px); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); z-index: 150; border: 1px solid rgba(255, 255, 255, 0.1); pointer-events: auto; }
+        #config-panel { display: none; position: absolute; top: 70px; right: 20px; width: 240px; background: rgba(30, 30, 50, 0.95); backdrop-filter: blur(12px); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); z-index: 150; border: 1px solid rgba(255, 255, 255, 0.1); }
         .config-item { margin-bottom: 15px; }
         .config-label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 5px; }
         .value-display { float: right; color: #4a90e2; font-weight: bold; }
@@ -48,14 +51,14 @@
         .config-action-btn.secondary { background: #333; border: 1px solid #555; }
         .config-action-btn.secondary:hover { background: #444; }
 
-        #context-menu { display: none; position: absolute; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; padding: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); width: 220px; z-index: 100; pointer-events: auto; }
+        #context-menu { display: none; position: absolute; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; padding: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); width: 220px; z-index: 100; }
         .menu-header { font-weight: bold; padding: 8px 12px; border-bottom: 1px solid #eee; margin-bottom: 4px; color: #333; text-align: center; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .menu-item { display: block; width: 100%; padding: 10px 12px; margin: 2px 0; background: none; border: none; text-align: left; font-size: 14px; cursor: pointer; border-radius: 6px; color: #333; }
         .menu-item:hover { background-color: #f0f0f0; }
         .menu-item.delete { color: #ff4757; }
         .menu-item.cancel { color: #666; border-top: 1px solid #eee; margin-top: 4px; }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 200; justify-content: center; align-items: center; pointer-events: auto; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 200; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); }
         .modal-title { margin: 0 0 15px 0; color: #333; font-size: 1.1rem; }
         .modal-desc { font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5; }
@@ -76,7 +79,7 @@
         #toast.success { background-color: #2ecc71; }
         #toast.error { background-color: #e74c3c; }
 
-        #footer { position: absolute; bottom: 10px; width: 100%; padding: 0 20px; box-sizing: border-box; color: rgba(255,255,255,0.4); font-size: 0.8rem; pointer-events: none; z-index: 10; display: flex; justify-content: space-between; }
+        #footer { position: absolute; bottom: 10px; width: 100%; padding: 0 20px; box-sizing: border-box; color: rgba(255,255,255,0.4); font-size: 0.8rem; pointer-events: auto; z-index: 10; display: flex; justify-content: space-between; }
         #footer-left, #footer-right { pointer-events: auto; }
         #footer a { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s; }
         #footer a:hover { color: #fff; text-decoration: underline; }
@@ -218,7 +221,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260118.2";
+        const APP_VERSION = "v20260118.3";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
@@ -515,7 +518,7 @@ Nodes: ${nodes.length}`;
 
             pressTimer = setTimeout(()=>{
                 // Re-check distance to ensure it's still a hold, not a drag
-                if(Math.hypot(pointer.x - startP.x, pointer.y - startP.y) < 10) {
+                if(Math.hypot(pointer.x - startP.x, pointer.y - startP.y) < 15) {
                     isLongPress = true;
                     const n = getInt(e.clientX, e.clientY);
                     if(n){setActiveNode(n); playSound('pop'); showContextMenu(e.clientX,e.clientY,n);}
