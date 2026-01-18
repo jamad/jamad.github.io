@@ -1,112 +1,42 @@
-<!--  https://aistudio.google.com/prompts/10FQ5JcrTLYQj0h7DhTfHjWFpAR9D5twS -->
-
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Deca-Search System v3</title>
+    <title>Deca-Search v20260118.1</title>
 
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Google Fonts -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap"
-        rel="stylesheet">
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QEJBQQMWT9"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-QEJBQQMWT9');
+    </script>
 
     <style>
-        /* Base Settings - Original Dark Theme */
-        body {
-            font-family: 'Inter', 'Noto Sans JP', sans-serif;
-            background-color: #020617;
-            color: #e2e8f0;
-            overflow: hidden;
-            touch-action: none;
+        body { font-family: 'Inter', 'Noto Sans JP', sans-serif; background-color: #020617; color: #e2e8f0; overflow: hidden; touch-action: none; }
+        .mono-font { font-family: 'Share Tech Mono', monospace; }
+        .scanline { background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2) 100%); background-size: 100% 4px; pointer-events: none; }
+        .grid-cell { transition: all 0.2s ease-out; border: 1px solid #1e293b; }
+        .grid-cell:hover { background-color: #0f172a; border-color: #06b6d4; transform: translateY(-2px); z-index: 20; }
+        .btn-active { background-color: rgba(6, 182, 212, 0.2); border-color: #06b6d4; color: #22d3ee; box-shadow: 0 0 15px rgba(6, 182, 212, 0.3); }
+        .search-input:focus { outline: none; border-color: #06b6d4; box-shadow: 0 0 10px rgba(6, 182, 212, 0.2); }
+        
+        /* Progress Bar Animation */
+        @keyframes pulse-bar {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
-
-        .mono-font {
-            font-family: 'Share Tech Mono', monospace;
-        }
-
-        /* --- Range Slider Customization (Original) --- */
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-            cursor: pointer;
-            outline: none;
-        }
-
-        /* Webkit Thumb */
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 100%;
-            width: 48px;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(34, 211, 238, 0.5);
-            box-shadow: 0 0 10px rgba(6, 182, 212, 0.1);
-            cursor: ew-resize;
-            border-radius: 2px;
-            z-index: 10;
-            position: relative;
-            transition: background 0.2s, border-color 0.2s;
-        }
-
-        input[type=range]:active::-webkit-slider-thumb {
-            background: rgba(8, 145, 178, 0.3);
-            border-color: rgba(34, 211, 238, 0.9);
-        }
-
-        /* Firefox Thumb */
-        input[type=range]::-moz-range-thumb {
-            height: 100%;
-            width: 48px;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(34, 211, 238, 0.5);
-            border-radius: 2px;
-            cursor: ew-resize;
-        }
-
-        /* Track */
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-            background: transparent;
-        }
-
-        /* --- Effects --- */
-        .scanline {
-            background: linear-gradient(to bottom,
-                    rgba(0, 0, 0, 0) 0%,
-                    rgba(0, 0, 0, 0) 50%,
-                    rgba(0, 0, 0, 0.2) 50%,
-                    rgba(0, 0, 0, 0.2) 100%);
-            background-size: 100% 4px;
-            pointer-events: none;
-        }
-
-        .grid-cell {
-            transition: all 0.2s ease-out;
-            border: 1px solid #1e293b;
-        }
-
-        .grid-cell:hover {
-            background-color: #0f172a;
-            border-color: #06b6d4;
-            transform: translateY(-2px);
-            z-index: 20;
-        }
+        .loading-bar { animation: pulse-bar 1.5s infinite ease-in-out; }
     </style>
 </head>
 
@@ -114,244 +44,397 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
-        // --- Configuration (RESTORED ORIGINAL) ---
         const BASE = 10;
-        const STEPS = 100; // 0-99 Steps Restored
+        const STEPS = 100;
+        const APP_VERSION = "v20260118.1";
 
-        // Data Hierarchy Definition (RESTORED ORIGINAL)
-        // Levels match the original powers
-        const LEVELS = [
-            { id: 0, name: "COSMIC", pow: 9, color: "from-slate-900 to-indigo-950", freq: 40 },  // 10^9
-            { id: 1, name: "GRAND", pow: 7, color: "from-indigo-950 to-blue-900", freq: 60 },    // 10^7
-            { id: 2, name: "MAJOR", pow: 5, color: "from-blue-900 to-cyan-900", freq: 100 },     // 10^5 (Dictionary fits here)
-            { id: 3, name: "MINOR", pow: 3, color: "from-cyan-900 to-teal-900", freq: 200 },     // 10^3
-            { id: 4, name: "PATCH", pow: 1, color: "from-teal-900 to-emerald-900", freq: 400 },  // 10^1
+        const SECTORS = [
+            { id: 0, label: "GEN", full: "GENERAL", desc: "Standard English" },
+            { id: 1, label: "MED", full: "MEDICAL", desc: "Diseases & Anatomy" },
+            { id: 2, label: "BIO", full: "BIOLOGY", desc: "Taxonomy & Species" },
+            { id: 3, label: "CHEM", full: "CHEMICAL", desc: "Elements & Compounds" },
         ];
 
-        const MULTIPLIERS = LEVELS.map(l => Math.pow(BASE, l.pow));
+        const SLIDERS = [
+            { idx: 1, name: "GRAND", pow: 7, color: "from-indigo-950 to-blue-900", freq: 60 },
+            { idx: 2, name: "MAJOR", pow: 5, color: "from-blue-900 to-cyan-900", freq: 100 },
+            { idx: 3, name: "MINOR", pow: 3, color: "from-cyan-900 to-teal-900", freq: 200 },
+            { idx: 4, name: "PATCH", pow: 1, color: "from-teal-900 to-emerald-900", freq: 400 },
+        ];
 
-        // --- Audio Engine ---
+        const MULTIPLIERS = [1000000000, 10000000, 100000, 1000, 10];
+
         const AudioEngine = {
             ctx: null,
-            init: () => {
-                if (!AudioEngine.ctx) {
-                    AudioEngine.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (AudioEngine.ctx.state === 'suspended') {
-                    AudioEngine.ctx.resume();
-                }
-            },
-            playTick: (levelIdx) => {
+            init: () => { if (!AudioEngine.ctx) AudioEngine.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (AudioEngine.ctx.state === 'suspended') AudioEngine.ctx.resume(); },
+            playTick: (freq) => {
                 if (!AudioEngine.ctx) return;
                 const t = AudioEngine.ctx.currentTime;
                 const osc = AudioEngine.ctx.createOscillator();
                 const gain = AudioEngine.ctx.createGain();
-                const baseFreq = LEVELS[levelIdx].freq;
-                osc.type = levelIdx < 2 ? 'triangle' : 'sine';
-                osc.frequency.setValueAtTime(baseFreq, t);
-                osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, t + 0.1);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, t);
+                osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.1);
                 gain.gain.setValueAtTime(0, t);
                 gain.gain.linearRampToValueAtTime(0.05, t + 0.01);
                 gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
                 osc.connect(gain);
                 gain.connect(AudioEngine.ctx.destination);
-                osc.start(t);
-                osc.stop(t + 0.15);
+                osc.start(t); osc.stop(t + 0.15);
+            },
+            playFound: () => {
+                if (!AudioEngine.ctx) return;
+                const t = AudioEngine.ctx.currentTime;
+                const osc = AudioEngine.ctx.createOscillator();
+                const gain = AudioEngine.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, t);
+                osc.frequency.linearRampToValueAtTime(880, t + 0.1);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(0.1, t + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+                osc.connect(gain);
+                gain.connect(AudioEngine.ctx.destination);
+                osc.start(t); osc.stop(t + 0.3);
             }
+        };
+
+        const hasDataInRange = (sortedIds, min, max) => {
+            let left = 0;
+            let right = sortedIds.length - 1;
+            while (left <= right) {
+                const mid = Math.floor((left + right) / 2);
+                if (sortedIds[mid] >= min && sortedIds[mid] < max) return true;
+                if (sortedIds[mid] < min) left = mid + 1;
+                else right = mid - 1;
+            }
+            return false;
         };
 
         const App = () => {
             const [positions, setPositions] = useState([0, 0, 0, 0, 0]);
             const [dataMap, setDataMap] = useState({});
+            const [sortedIds, setSortedIds] = useState([]);
             const [audioReady, setAudioReady] = useState(false);
             const [activeRow, setActiveRow] = useState(null);
-            const [loadState, setLoadState] = useState("INITIALIZING"); // LOADING, READY, ERROR
+            
+            const [loadState, setLoadState] = useState("INITIALIZING");
+            const [loadProgress, setLoadProgress] = useState(0); // 0 to 100
+            const [totalCount, setTotalCount] = useState(0);
+            
+            const [searchQuery, setSearchQuery] = useState("");
+            const [isAutoPiloting, setIsAutoPiloting] = useState(false);
 
-            // --- Load Data ONCE (Fastest) ---
+            // --- Enhanced Data Loading with Progress ---
             useEffect(() => {
                 const loadData = async () => {
                     try {
-                        setLoadState("LOADING DATABASE...");
-                        // 100k data is ~8MB. It loads in < 100ms locally.
+                        setLoadState("CONNECTING...");
                         const response = await fetch('data.json');
-                        if (response.ok) {
-                            const json = await response.json();
-                            if (json && json.items) {
-                                setDataMap(json.items);
-                                //setLoadState("SYSTEM ONLINE");
-                                const count = Object.keys(json.items).length;
-                                setLoadState(`SYSTEM ONLINE // ${count.toLocaleString()} RECORDS`);
+                        
+                        if (!response.ok) throw new Error("Network response was not ok");
+
+                        // Get Content-Length for progress bar
+                        const contentLength = response.headers.get('Content-Length');
+                        const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+                        
+                        const reader = response.body.getReader();
+                        let receivedLength = 0;
+                        const chunks = [];
+
+                        while(true) {
+                            const {done, value} = await reader.read();
+                            if (done) break;
+
+                            chunks.push(value);
+                            receivedLength += value.length;
+
+                            if (totalBytes > 0) {
+                                const percent = Math.round((receivedLength / totalBytes) * 100);
+                                setLoadProgress(percent);
+                                setLoadState(`DOWNLOADING DATA... ${percent}%`);
+                            } else {
+                                // Fallback if no content-length
+                                setLoadState(`DOWNLOADING... ${(receivedLength / 1024 / 1024).toFixed(1)}MB`);
+                                setLoadProgress(50); // Indeterminate
                             }
-                        } else {
-                            setLoadState("DB CONNECTION FAILED");
                         }
-                    } catch (err) {
-                        console.warn("Could not load external data.json", err);
-                        setLoadState("OFFLINE MODE");
+
+                        setLoadState("PARSING DATA...");
+                        setLoadProgress(90);
+
+                        // Combine chunks
+                        const chunksAll = new Uint8Array(receivedLength);
+                        let position = 0;
+                        for(let chunk of chunks) {
+                            chunksAll.set(chunk, position);
+                            position += chunk.length;
+                        }
+
+                        // Decode and Parse
+                        const text = new TextDecoder("utf-8").decode(chunksAll);
+                        const json = JSON.parse(text);
+
+                        if (json && json.items) {
+                            setDataMap(json.items);
+                            const keys = Object.keys(json.items).map(Number).sort((a, b) => a - b);
+                            setSortedIds(keys);
+                            setTotalCount(keys.length);
+                            setLoadProgress(100);
+                            setLoadState("SYSTEM ONLINE");
+                        } else {
+                            throw new Error("Invalid JSON structure");
+                        }
+
+                    } catch (err) { 
+                        console.error(err);
+                        setLoadState("OFFLINE / ERROR"); 
+                        setLoadProgress(0);
                     }
                 };
                 loadData();
             }, []);
 
-            const enableAudio = () => {
-                if (!audioReady) {
-                    AudioEngine.init();
-                    setAudioReady(true);
+            const enableAudio = () => { if (!audioReady) { AudioEngine.init(); setAudioReady(true); } };
+
+            const globalIndex = useMemo(() => {
+                return positions.reduce((acc, pos, idx) => acc + (pos * MULTIPLIERS[idx]), 0);
+            }, [positions]);
+
+            const getHeatmap = (levelIdx) => {
+                if (sortedIds.length === 0) return [];
+                let base = 0;
+                for (let i = 0; i < levelIdx; i++) {
+                    base += positions[i] * MULTIPLIERS[i];
+                }
+                const multiplier = MULTIPLIERS[levelIdx];
+                const map = [];
+                for (let step = 0; step < STEPS; step++) {
+                    const min = base + (step * multiplier);
+                    const max = base + ((step + 1) * multiplier);
+                    if (hasDataInRange(sortedIds, min, max)) map.push(true);
+                    else map.push(false);
+                }
+                return map;
+            };
+
+            const handleSectorClick = (sectorId) => {
+                enableAudio();
+                setPositions([sectorId, 0, 0, 0, 0]);
+                AudioEngine.playTick(40);
+                if (typeof gtag === 'function') {
+                    gtag('event', 'select_content', { content_type: 'sector', item_id: SECTORS[sectorId].full });
                 }
             };
 
-            const globalIndex = useMemo(() => {
-                return positions.reduce((acc, pos, idx) => {
-                    return acc + (pos * MULTIPLIERS[idx]);
-                }, 0);
-            }, [positions]);
-
-            const handleSlide = (idx, val) => {
+            const handlePointerDown = (e, arrIdx) => {
+                e.preventDefault();
                 enableAudio();
-                const numVal = parseInt(val, 10);
+                e.currentTarget.setPointerCapture(e.pointerId);
+                setActiveRow(arrIdx);
+                updateSliderFromPointer(e, arrIdx);
+            };
 
-                if (positions[idx] !== numVal) {
+            const handlePointerMove = (e, arrIdx) => {
+                if (activeRow === arrIdx) updateSliderFromPointer(e, arrIdx);
+            };
+
+            const handlePointerUp = (e) => {
+                 e.currentTarget.releasePointerCapture(e.pointerId);
+                 setActiveRow(null);
+            };
+
+            const updateSliderFromPointer = (e, arrIdx) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                let percent = x / rect.width;
+                percent = Math.max(0, Math.min(1, percent));
+                const newVal = Math.floor(percent * (STEPS - 1));
+                
+                if (positions[arrIdx] !== newVal) {
                     const newPos = [...positions];
-                    newPos[idx] = numVal;
+                    newPos[arrIdx] = newVal;
                     setPositions(newPos);
-
-                    setActiveRow(idx);
-                    AudioEngine.playTick(idx);
-
-                    setTimeout(() => setActiveRow(null), 200);
+                    const freq = SLIDERS.find(s => s.idx === arrIdx)?.freq || 100;
+                    AudioEngine.playTick(freq);
                 }
+            };
+
+            const performSearch = (e) => {
+                e.preventDefault();
+                if (!searchQuery) return;
+                enableAudio();
+                const q = searchQuery.toLowerCase().trim();
+                if (typeof gtag === 'function') {
+                    gtag('event', 'search', { search_term: q });
+                }
+                const foundId = Object.keys(dataMap).find(key => {
+                    const item = dataMap[key];
+                    return item.en && item.en.toLowerCase() === q;
+                });
+                if (foundId) startAutoPilot(Number(foundId));
+                else alert("NOT FOUND");
+            };
+
+            const startAutoPilot = (targetId) => {
+                setIsAutoPiloting(true);
+                AudioEngine.playFound();
+                let remain = targetId;
+                const newPos = [0,0,0,0,0];
+                newPos[0] = Math.floor(remain / MULTIPLIERS[0]); remain %= MULTIPLIERS[0];
+                newPos[1] = Math.floor(remain / MULTIPLIERS[1]); remain %= MULTIPLIERS[1];
+                newPos[2] = Math.floor(remain / MULTIPLIERS[2]); remain %= MULTIPLIERS[2];
+                newPos[3] = Math.floor(remain / MULTIPLIERS[3]); remain %= MULTIPLIERS[3];
+                newPos[4] = Math.floor(remain / MULTIPLIERS[4]);
+                setPositions(newPos);
+                setTimeout(() => setIsAutoPiloting(false), 500);
             };
 
             const getDisplayData = (offset) => {
                 const targetIdx = globalIndex + offset;
                 const key = targetIdx.toString();
-
-                // 1. Try to find in loaded JSON (Dictionary Data)
                 if (dataMap[key]) {
-                    return {
-                        value: dataMap[key],
-                        type: 'ARCHIVE_DATA', // Found in JSON
-                        highlight: true,
-                        isDict: true
-                    };
+                    return { value: dataMap[key], type: dataMap[key].sector || 'DATA', highlight: true, isDict: true };
                 }
-
-                // 2. Fallback (The "Cosmic" procedural generation)
-                // This preserves the feel that the system is bigger than the dictionary
-                return {
-                    value: `SEC::${(targetIdx * 12345).toString(16).toUpperCase().slice(0, 8)}`,
-                    type: 'AUTO_GEN',
-                    highlight: false,
-                    isDict: false
-                };
+                return { value: `SEC::${(targetIdx * 12345).toString(16).toUpperCase().slice(0,8)}`, type: 'VOID', highlight: false, isDict: false };
             };
 
-            return (
-                <div
-                    className="flex flex-col h-screen w-screen bg-slate-950 text-slate-300 relative"
-                    onClick={enableAudio}
-                >
-                    {/* Background Texture */}
-                    <div className="absolute inset-0 z-0 opacity-5 pointer-events-none"
-                        style={{
-                            backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)',
-                            backgroundSize: '20px 20px'
-                        }}>
-                    </div>
+            const currentSector = SECTORS.find(s => s.id === positions[0]) || SECTORS[0];
 
-                    {/* --- HEADER --- */}
-                    <header className="flex-none h-12 border-b border-slate-800 flex items-center justify-between px-4 z-20 bg-slate-950">
-                        <div className="flex items-center gap-2">
+            return (
+                <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-300 relative" onClick={enableAudio}>
+                    {/* Header */}
+                    <header className="flex-none h-14 border-b border-slate-800 flex items-center justify-between px-4 z-20 bg-slate-950/90 backdrop-blur gap-4">
+                        <div className="flex items-center gap-2 flex-none">
                             <div className={`w-2 h-2 rounded-full ${audioReady ? 'bg-cyan-500 shadow-[0_0_10px_cyan]' : 'bg-slate-600 animate-pulse'}`}></div>
-                            <h1 className="mono-font text-sm md:text-base font-bold text-cyan-500 tracking-wider">DECA-SEARCH v3</h1>
+                            <h1 className="mono-font text-base md:text-lg font-bold text-cyan-500 tracking-wider hidden md:block">DECA-SEARCH {APP_VERSION}</h1>
+                            <h1 className="mono-font text-base font-bold text-cyan-500 tracking-wider md:hidden">DS-v2026</h1>
                         </div>
-                        <div className="text-[10px] md:text-xs text-slate-500 mono-font">
-                            CAPACITY: 10^11 // {loadState}
+
+                        {/* Search Bar */}
+                        <form onSubmit={performSearch} className="flex-1 max-w-md flex relative">
+                            <input 
+                                type="text" 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="SEARCH KEYWORD..."
+                                className="w-full bg-slate-900 border border-slate-700 rounded-l px-3 py-1 text-sm text-cyan-300 mono-font focus:outline-none focus:border-cyan-500 placeholder-slate-600 search-input"
+                            />
+                            <button type="submit" className="bg-slate-800 border-y border-r border-slate-700 px-3 text-cyan-500 hover:bg-slate-700 rounded-r">
+                                <span className="mono-font text-xs font-bold">GO</span>
+                            </button>
+                        </form>
+
+                        <div className="text-right flex-none hidden md:block">
+                            <div className="text-xs text-cyan-400 mono-font font-bold">{currentSector.full}</div>
+                            <div className="text-[10px] text-slate-500 mono-font">{totalCount > 0 ? `${totalCount.toLocaleString()} RECS` : loadState}</div>
                         </div>
                     </header>
 
-                    {/* --- CONTROLS AREA (Original Layout) --- */}
-                    <section className="flex-1 flex flex-col relative z-10 min-h-0 border-b border-slate-800 shadow-xl shadow-black/50">
-                        {LEVELS.map((lvl, i) => (
-                            <div key={lvl.id} className="flex-1 relative border-b border-slate-800/50 last:border-0 group">
-                                {/* Row Background Gradient */}
-                                <div className={`absolute inset-0 bg-gradient-to-r ${lvl.color} opacity-20 transition-opacity duration-300 ${activeRow === i ? 'opacity-40' : ''}`}></div>
+                    {/* --- CONTROL AREA --- */}
+                    <section className="flex-1 flex flex-col relative z-10 min-h-0 border-b border-slate-800 shadow-xl">
+                        
+                        {/* 1. SECTOR SELECTOR */}
+                        <div className="h-16 flex border-b border-slate-800/50 bg-slate-900/50">
+                            {SECTORS.map((s) => {
+                                const isActive = positions[0] === s.id;
+                                return (
+                                    <button
+                                        key={s.id}
+                                        onClick={() => handleSectorClick(s.id)}
+                                        className={`flex-1 flex flex-col items-center justify-center border-r border-slate-800/50 transition-all duration-200 group
+                                            ${isActive ? 'btn-active z-10' : 'hover:bg-slate-800/50 text-slate-500'}
+                                        `}
+                                    >
+                                        <span className={`text-xs md:text-sm font-bold tracking-widest ${isActive ? 'text-cyan-300' : 'text-slate-400'}`}>{s.label}</span>
+                                        <span className="text-[8px] md:text-[9px] opacity-70 mono-font mt-1">{s.desc}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
 
-                                {/* Info Labels */}
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-20 flex flex-col justify-center">
-                                    <span className="text-[10px] font-bold text-cyan-700 tracking-widest">L{i + 1}</span>
-                                    <span className="text-xs md:text-sm font-semibold text-slate-400 group-hover:text-slate-200 transition-colors">{lvl.name}</span>
-                                </div>
+                        {/* 2. SLIDERS (v2026 Fixes: Alignment) */}
+                        {SLIDERS.map((lvl) => {
+                            const val = positions[lvl.idx];
+                            const heatmap = useMemo(() => getHeatmap(lvl.idx), [positions.slice(0, lvl.idx), sortedIds]);
+                            
+                            // Percentage for positioning (0.0 to 1.0)
+                            const p = val / (STEPS - 1);
+                            
+                            return (
+                                <div key={lvl.idx} className="flex-1 relative border-b border-slate-800/50 last:border-0 group">
+                                    <div className={`absolute inset-0 bg-gradient-to-r ${lvl.color} opacity-10 transition-opacity duration-300 ${activeRow === lvl.idx ? 'opacity-30' : ''}`}></div>
 
-                                {/* Current Value Display */}
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-20 text-right">
-                                    <div className="mono-font text-xl md:text-2xl font-bold text-slate-600 group-hover:text-cyan-400 transition-colors">
-                                        {String(positions[i]).padStart(2, '0')}
+                                    {/* Left Label */}
+                                    <div className="absolute left-0 top-0 bottom-0 w-24 bg-slate-950/30 border-r border-slate-800/30 flex flex-col justify-center px-3 z-10 pointer-events-none">
+                                        <span className="text-[10px] font-bold text-cyan-700 tracking-widest leading-none">L{lvl.idx}</span>
+                                        <span className="text-xs md:text-sm font-semibold text-slate-400 group-hover:text-slate-200 transition-colors mt-1">{lvl.name}</span>
+                                        <span className="text-[9px] text-slate-600 mono-font mt-0.5">x10^{lvl.pow}</span>
                                     </div>
-                                    <div className="text-[9px] text-slate-700">x{BASE}^{lvl.pow}</div>
-                                </div>
 
-                                {/* Slider Input (0-99 Steps Restored) */}
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max={STEPS - 1}
-                                    value={positions[i]}
-                                    onChange={(e) => handleSlide(i, e.target.value)}
-                                    className="relative w-full h-full z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                                />
-
-                                {/* Visual Guides */}
-                                <div className="absolute inset-x-0 h-[1px] bg-slate-700/30 top-1/2 -translate-y-1/2 pointer-events-none"></div>
-                                {/* Ghost Thumb */}
-                                <div
-                                    className="absolute top-0 bottom-0 w-1 bg-cyan-600/50 pointer-events-none transition-all duration-100"
-                                    style={{
-                                        left: `${(positions[i] / (STEPS - 1)) * 100}%`,
-                                        transform: 'translateX(-50%)',
-                                        width: activeRow === i ? '48px' : '2px',
-                                        backgroundColor: activeRow === i ? 'rgba(6, 182, 212, 0.2)' : 'rgba(6, 182, 212, 0.4)'
-                                    }}
-                                >
-                                    {activeRow === i && (
-                                        <div className="w-full h-full flex justify-center items-center gap-1 opacity-50">
-                                            <div className="w-[1px] h-4 bg-cyan-400"></div>
-                                            <div className="w-[1px] h-6 bg-cyan-400"></div>
-                                            <div className="w-[1px] h-4 bg-cyan-400"></div>
+                                    {/* Slider Touch Area */}
+                                    <div 
+                                        className="absolute left-24 right-0 top-0 bottom-0 px-8 cursor-ew-resize"
+                                        style={{ touchAction: 'none' }} 
+                                        onPointerDown={(e) => handlePointerDown(e, lvl.idx)}
+                                        onPointerMove={(e) => handlePointerMove(e, lvl.idx)}
+                                        onPointerUp={handlePointerUp}
+                                        onPointerLeave={handlePointerUp}
+                                    >
+                                        {/* Heatmap Layer */}
+                                        <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 h-1 flex pointer-events-none opacity-50">
+                                            {heatmap.map((hasData, i) => (
+                                                <div key={i} className={`flex-1 h-full mx-[1px] rounded-sm ${hasData ? 'bg-cyan-500 shadow-[0_0_4px_cyan]' : 'bg-slate-800'}`}></div>
+                                            ))}
                                         </div>
-                                    )}
+
+                                        {/* Visual Track Line */}
+                                        <div className="absolute inset-x-8 h-[1px] bg-slate-700/30 top-1/2 -translate-y-1/2 pointer-events-none"></div>
+
+                                        {/* Custom Thumb & Floating Value (Dynamic Transform) */}
+                                        <div
+                                            className="absolute top-0 bottom-0 pointer-events-none transition-all duration-75 ease-out"
+                                            style={{
+                                                left: `${p * 100}%`,
+                                                transform: `translateX(-${p * 100}%)`,
+                                                width: '60px'
+                                            }}
+                                        >
+                                            {/* Thumb Bar */}
+                                            <div className={`h-full w-1 mx-auto transition-colors ${activeRow === lvl.idx ? 'bg-cyan-400' : 'bg-cyan-600/50 group-hover:bg-cyan-500/80'}`}></div>
+                                            
+                                            {/* Value Label */}
+                                            <div className={`
+                                                absolute -top-3 left-1/2 -translate-x-1/2 
+                                                bg-slate-900 border border-cyan-800 text-cyan-400 
+                                                text-xl md:text-2xl font-bold 
+                                                px-3 py-1 rounded shadow-[0_0_15px_rgba(0,0,0,0.8)] mono-font z-40
+                                                transition-all
+                                                ${activeRow === lvl.idx || isAutoPiloting ? 'scale-110 border-cyan-500 text-cyan-200' : ''}
+                                            `}>
+                                                {String(val).padStart(2, '0')}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </section>
 
-                    {/* --- DATA GRID AREA --- */}
-                    <section className="h-[40vh] bg-slate-950 relative z-10 p-2 border-t border-cyan-900/30">
-                        {/* 2 Rows x 5 Cols Grid */}
+                    {/* --- GRID (Bottom) --- */}
+                    <section className="h-[35vh] bg-slate-950 relative z-10 p-2 border-t border-cyan-900/30">
                         <div className="h-full w-full grid grid-cols-5 grid-rows-2 gap-2">
                             {Array.from({ length: 10 }).map((_, offset) => {
                                 const data = getDisplayData(offset);
-                                const idx = globalIndex + offset;
-                                const isTarget = data.highlight;
                                 const isDict = data.isDict;
-
                                 return (
-                                    <div
-                                        key={offset}
-                                        className={`
-                                            grid-cell relative rounded p-2 flex flex-col justify-between overflow-hidden
-                                            ${isTarget ? 'bg-cyan-950/30 border-cyan-700' : 'bg-slate-900/50'}
-                                        `}
-                                    >
-                                        {/* Cell Header */}
+                                    <div key={offset} className={`grid-cell relative rounded p-2 flex flex-col justify-between overflow-hidden ${data.highlight ? 'bg-cyan-950/30 border-cyan-700' : 'bg-slate-900/50'} ${isAutoPiloting && data.highlight ? 'animate-pulse' : ''}`}>
                                         <div className="flex justify-between items-start text-[8px] md:text-[10px] text-slate-500">
                                             <span className="mono-font text-slate-400">+{offset}</span>
                                             <span className="mono-font opacity-50">{data.type}</span>
                                         </div>
-
-                                        {/* Main Value Area */}
                                         <div className="flex-1 flex flex-col items-center justify-center text-center overflow-hidden w-full">
                                             {isDict ? (
                                                 <div className="w-full animate-in fade-in duration-75">
@@ -365,37 +448,56 @@
                                                 </div>
                                             )}
                                         </div>
-
-                                        {/* Cell Footer */}
-                                        <div className="text-[8px] text-slate-700 text-center truncate">
-                                            ID: {idx.toString().slice(-6)}
-                                        </div>
-
-                                        {/* Active Highlight Corner */}
-                                        {isTarget && (
-                                            <div className="absolute top-0 right-0 w-2 h-2 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]"></div>
-                                        )}
+                                        <div className="text-[8px] text-slate-700 text-center truncate">ID: {(globalIndex + offset).toString()}</div>
+                                        {data.highlight && <div className="absolute top-0 right-0 w-2 h-2 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]"></div>}
                                     </div>
                                 );
                             })}
                         </div>
                     </section>
 
-                    {/* Safety Curtain (Scanlines) - Low Opacity */}
+                    {/* --- DEDICATED FOOTER AREA --- */}
+                    <footer className="h-6 bg-slate-950 border-t border-slate-900 flex items-center justify-end px-4 z-20">
+                         <div className="text-[9px] md:text-[10px] text-slate-600 mono-font">
+                            <span className="opacity-50">SYSTEM:</span> <a href="https://gitlab.com/junichiyamada/junichiyamada.gitlab.io" target="_blank" className="text-cyan-800 hover:text-cyan-500 transition-colors">JAMAD aka junichi.yamada</a>
+                            <span className="mx-1 opacity-20">|</span>
+                            <span className="opacity-50">DATA:</span> <a href="https://github.com/dwyl/english-words" target="_blank" className="text-slate-600 hover:text-slate-400">Open Source Dictionaries</a>
+                            <span className="ml-2 opacity-30">| Built with React & Tailwind</span>
+                        </div>
+                    </footer>
+                    
                     <div className="absolute inset-0 pointer-events-none z-30 scanline opacity-20"></div>
 
-                    {/* Initial Overlay */}
+                    {/* --- SPLASH / LOADING SCREEN (Updated with Progress Bar) --- */}
                     {!audioReady && (
                         <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
-                            <div className="border border-cyan-900 bg-slate-900/90 p-6 max-w-sm text-center shadow-2xl rounded-sm">
-                                <h2 className="text-cyan-500 text-xl font-bold mb-2 mono-font tracking-widest">DECA-SEARCH v3</h2>
-                                <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-                                    Capacity: 100,000,000,000<br />
-                                    Loaded Records: 100,000
-                                </p>
-                                <button className="px-6 py-2 bg-cyan-900/50 hover:bg-cyan-800 text-cyan-200 text-sm font-bold border border-cyan-700 tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                                    [ INITIALIZE SYSTEM ]
-                                </button>
+                            <div className="border border-cyan-900 bg-slate-900/90 p-8 max-w-sm text-center shadow-2xl rounded-sm w-full mx-4">
+                                <h2 className="text-cyan-500 text-xl font-bold mb-2 mono-font tracking-widest">DECA-SEARCH {APP_VERSION}</h2>
+                                
+                                <div className="text-slate-400 text-sm mb-6 leading-relaxed mono-font">
+                                    {loadState}
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="w-full h-1 bg-slate-800 mb-6 relative overflow-hidden">
+                                    <div 
+                                        className="h-full bg-cyan-500 shadow-[0_0_10px_cyan] transition-all duration-300 ease-out loading-bar"
+                                        style={{ width: `${loadProgress}%` }}
+                                    ></div>
+                                </div>
+
+                                {loadProgress < 100 ? (
+                                    <div className="text-xs text-slate-600 mono-font animate-pulse">
+                                        INITIALIZING DATA STREAM...
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={() => { AudioEngine.init(); setAudioReady(true); }}
+                                        className="px-6 py-2 bg-cyan-900/50 hover:bg-cyan-800 text-cyan-200 text-sm font-bold border border-cyan-700 tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] w-full"
+                                    >
+                                        [ ACTIVATE SYSTEM ]
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}
@@ -407,5 +509,4 @@
         root.render(<App />);
     </script>
 </body>
-
 </html>
