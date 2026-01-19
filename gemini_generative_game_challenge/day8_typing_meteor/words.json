@@ -25307,5 +25307,34 @@
     ],
     "count": 2,
     "validated": true
+  },
+  "9358f4b2-714c-412e-ad0d-c640c4a3413e": {
+    "id": "9358f4b2-714c-412e-ad0d-c640c4a3413e",
+    "lemma": "onnetar",
+    "pos": "noun",
+    "count": 1,
+    "en": "goddess of fortune",
+    "ja": "幸運の女神 (Kōun no megami)",
+    "forms": [
+      "onnetar"
+    ],
+    "validated": true,
+    "visual_keyword": "goddess_luck",
+    "image_status": "pending"
+  },
+  "4358f4b2-814c-512e-bd0d-c640c4a3413f": {
+    "id": "4358f4b2-814c-512e-bd0d-c640c4a3413f",
+    "lemma": "kokata",
+    "pos": "verb",
+    "count": 1,
+    "en": "to cook",
+    "ja": "料理する (Ryōri suru)",
+    "forms": [
+      "kokkaamaan",
+      "kokata"
+    ],
+    "validated": true,
+    "visual_keyword": "cooking",
+    "image_status": "pending"
   }
 }
