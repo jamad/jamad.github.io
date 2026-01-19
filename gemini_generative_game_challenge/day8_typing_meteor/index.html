@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Dark Readerなどの拡張機能による色変換をブロック -->
     <meta name="darkreader-lock">
     <title>Finnish Defense</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,10 +29,12 @@
             background-color: #0f172a;
         }
 
+        /* 通常のネオンテキスト */
         .neon-text {
             text-shadow: 0 0 2px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 0, 222, 0.4);
         }
 
+        /* タイトル専用スタイル */
         .title-style {
             -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
             filter: drop-shadow(0 0 5px rgba(255, 0, 222, 0.5)) drop-shadow(0 0 10px rgba(255, 0, 222, 0.3));
@@ -99,6 +102,7 @@
             caret-color: #22d3ee;
         }
 
+        /* フッターリンクのスタイル */
         #globalFooter a {
             text-decoration: none;
             transition: color 0.2s;
@@ -107,13 +111,34 @@
             color: #22d3ee;
             text-decoration: underline;
         }
+
+        /* 復活: デバッグ情報用のスタイル */
+        #debugInfo {
+            position: fixed;
+            top: 60px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00ff00;
+            padding: 5px 10px;
+            font-family: monospace;
+            font-size: 12px;
+            border-radius: 4px;
+            z-index: 100;
+            display: none; /* デフォルトは非表示 */
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body class="text-white h-[100dvh] w-screen flex flex-col relative overflow-hidden">
     
+    <!-- 背景 (z-0) -->
     <div id="bgLayer" class="absolute inset-0 z-0"></div>
 
+    <!-- 復活: デバッグ用コンテナ -->
+    <div id="debugInfo">FPS: 0</div>
+
+    <!-- UI 左側 (z-10) -->
     <div class="absolute top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-10 ui-layer-left pointer-events-none">
         <div class="flex flex-col">
             <div class="text-sm font-bold text-yellow-600 mt-2">HI-SCORE: <span id="highScoreDisplay">0</span></div>
@@ -122,8 +147,10 @@
         </div>
     </div>
 
+    <!-- キャンバス (z-20) -->
     <canvas id="gameCanvas" class="absolute inset-0 z-20"></canvas>
 
+    <!-- UI 右側 (リスト) (z-60) -->
     <div class="absolute top-0 right-0 p-4 pt-[max(1rem,env(safe-area-inset-top))] z-[60] pointer-events-none">
         <div id="logContainer"
             class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col relative hide-on-keyboard transition-all duration-500 pointer-events-auto">
@@ -132,6 +159,7 @@
         </div>
     </div>
 
+    <!-- スタート画面 (z-50) -->
     <div id="startScreen"
         class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center pointer-events-auto">
         <h1 class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 mb-4 text-center title-style">
@@ -148,6 +176,7 @@
         </button>
     </div>
 
+    <!-- ゲームオーバー画面 (z-50) -->
     <div id="gameOverScreen"
         class="hidden absolute inset-0 z-50 bg-red-900/90 flex flex-col items-center justify-center pointer-events-auto">
         <h1 class="text-6xl font-bold text-white mb-4">GAME OVER</h1>
@@ -268,30 +297,15 @@
             }
         }
 
-        // 修正: 辞書データは外部JSONから読み込むように変更。
-        // ここには「words.json」が読み込めなかった場合のフォールバック（緊急用）データを置いておく
         const FALLBACK_WORDS = {
-            "6aaef8c3-sample1": {
-                "lemma": "huomenta",
-                "en": "Good morning",
-                "forms": ["huomenta"]
-            },
-            "09f2bd8b-sample2": {
-                "lemma": "kirja",
-                "en": "book",
-                "forms": ["kirjan", "kirja"]
-            },
-            "db9e7f8d-sample3": {
-                "lemma": "henkilö",
-                "en": "person",
-                "forms": ["henkilöt", "henkilökohtaisesti"]
-            },
+            "6aaef8c3-sample1": { "lemma": "huomenta", "en": "Good morning", "forms": ["huomenta"] },
+            "09f2bd8b-sample2": { "lemma": "kirja", "en": "book", "forms": ["kirjan", "kirja"] },
+            "db9e7f8d-sample3": { "lemma": "henkilö", "en": "person", "forms": ["henkilöt", "henkilökohtaisesti"] },
             "simple-koti": { "lemma": "koti", "en": "home", "forms": ["koti"] },
             "simple-koulu": { "lemma": "koulu", "en": "school", "forms": ["koulu"] },
             "simple-aurinko": { "lemma": "aurinko", "en": "sun", "forms": ["aurinko"] }
         };
 
-        // グローバル変数として保持（初期は空）
         let WORD_LIST = []; 
 
         const canvas = document.getElementById('gameCanvas');
@@ -300,9 +314,10 @@
         const healthDisplay = document.getElementById('healthDisplay');
         const defeatedList = document.getElementById('defeatedList');
         const inputElement = document.getElementById('playerInput');
+        const debugInfo = document.getElementById('debugInfo');
         const sound = new SoundManager();
 
-        const GAME_VERSION = "v20260119.2";
+        const GAME_VERSION = "v20260119.3";
 
         let gameState = 'start';
         let animationFrameId; 
@@ -316,9 +331,13 @@
         
         let cachedHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
+        // デバッグ用
+        let lastTime = 0;
+        let showDebug = false;
+        let lastDebugUpdateTime = 0;
+
         class Meteor {
             constructor() {
-                // WORD_LIST からランダムに選択
                 const wordObj = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
                 this.word = wordObj.fi;
                 this.translation = wordObj.en;
@@ -360,7 +379,6 @@
                 const trailAlpha = this.isDying ? Math.max(0, 1.0 - (this.hitTimer / 20)) : 1.0;
                 
                 if (trailAlpha > 0) {
-                    // 修正: テールの長さを半減 (200 -> 100)
                     const tailLength = 100; 
                     const grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y - tailLength);
                     grad.addColorStop(0, `rgba(255, 100, 0, ${trailAlpha})`); 
@@ -659,11 +677,23 @@
             }, 1000);
         }
 
-        function gameLoop() {
+        function gameLoop(timestamp) {
             if (gameState === 'start') return;
+            
+            if (!lastTime) lastTime = timestamp;
+            
+            // Debug Update (0.5s interval)
+            if (showDebug && timestamp - lastDebugUpdateTime > 500) {
+                const currentFPS = Math.round(1000 / (timestamp - lastTime + 0.001));
+                debugInfo.innerHTML = `FPS: ${currentFPS}<br>Meteors: ${meteors.length}<br>Particles: ${particles.length}`;
+                lastDebugUpdateTime = timestamp;
+            }
+            lastTime = timestamp;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             frameCount++;
             drawCity();
+            
             if (gameState === 'playing') {
                 if (frameCount > 0 && frameCount % 600 === 0) difficultyMultiplier += 0.12;
                 let curRate = Math.max(25, Math.floor(spawnRate / difficultyMultiplier));
@@ -696,18 +726,14 @@
             animationFrameId = requestAnimationFrame(gameLoop); 
         }
 
-        // 辞書データ(JSON)をオブジェクトからゲーム用の配列形式に変換する関数
         function parseWordData(data) {
             const list = [];
             Object.values(data).forEach(entry => {
-                // Lemma (基本形) を追加
                 if (entry.lemma && entry.en) {
                     list.push({ fi: entry.lemma, en: entry.en });
                 }
-                // Forms (変化形) も追加。訳語は基本形の英語を使う
                 if (entry.forms && Array.isArray(entry.forms)) {
                     entry.forms.forEach(form => {
-                        // 基本形と重複しないようにチェックしてもいいが、出現頻度を上げる意味で重複も許容する
                         list.push({ fi: form, en: entry.en });
                     });
                 }
@@ -733,13 +759,10 @@
                 </a>
             `;
 
-            // 辞書データの読み込み処理
             const loadingText = document.getElementById('loadingText');
             const startText = document.getElementById('startText');
-            const startButton = document.getElementById('startButton');
 
             try {
-                // 外部JSONファイルを読みに行く
                 const response = await fetch('words.json');
                 if (!response.ok) throw new Error("words.json not found");
                 const jsonData = await response.json();
@@ -750,11 +773,9 @@
                 WORD_LIST = parseWordData(FALLBACK_WORDS);
             }
 
-            // 読み込み完了したらボタンのテキストを更新
             loadingText.classList.add('hidden');
             startText.classList.remove('hidden');
             
-            // もしデータが空ならエラー回避のため最低限のデータを入れる
             if (WORD_LIST.length === 0) {
                 WORD_LIST = [{fi: "koti", en: "home"}, {fi: "sisu", en: "guts"}];
             }
@@ -799,6 +820,29 @@
                 }
             });
 
+            // 修正: Alt+D イベントを window に移動
+            window.addEventListener('keydown', (e) => {
+                // Debug Toggle
+                if (e.altKey && e.key.toLowerCase() === 'd') {
+                    e.preventDefault(); // アドレスバーへのフォーカスを阻止
+                    showDebug = !showDebug;
+                    debugInfo.style.display = showDebug ? 'block' : 'none';
+                    return;
+                }
+
+                if (e.key === 'Process' || e.isComposing) {
+                    // showWarning("⚠️ TURN OFF JAPANESE IME..."); 
+                    // ※ showWarning関数は下で定義されているため、ここでは省略するか移動が必要
+                    // 簡略化のためコンソールログのみ
+                    console.log("IME Detected");
+                    return;
+                }
+
+                if (e.key === 'Enter' && gameState === 'waiting_restart') {
+                    startGame();
+                }
+            });
+
             const warningBox = document.createElement('div');
             warningBox.className = "fixed top-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded shadow-lg z-[70] hidden font-mono text-center";
             document.body.appendChild(warningBox);
@@ -814,11 +858,6 @@
             }
 
             inputElement.addEventListener('keydown', (e) => {
-                if (e.key === 'Process' || e.isComposing) {
-                    showWarning("⚠️ TURN OFF JAPANESE IME (入力モードを半角にしてください)");
-                    return;
-                }
-
                 if (gameState === 'playing') {
                     if (e.key === 'Enter') processInput();
                     sound.playType();
@@ -836,20 +875,12 @@
                 showWarning("⚠️ TURN OFF IME");
             });
 
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && gameState === 'waiting_restart') {
-                    startGame();
-                }
-            });
-
             inputElement.addEventListener('input', () => {
                 if (gameState !== 'playing') return;
                 const val = inputElement.value.toLowerCase().trim();
                 if (meteors.find(m => !m.isHit && !m.isDying && m.word === val)) processInput();
             });
             
-            // Loadingが終わっていないと押せないようにする制御を入れても良いが
-            // 今回はテキストの切り替えだけで簡易的に対応
             document.getElementById('startButton').addEventListener('click', startGame);
             document.getElementById('restartButton').addEventListener('click', startGame);
 
