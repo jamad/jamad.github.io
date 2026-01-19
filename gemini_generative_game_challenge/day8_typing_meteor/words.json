@@ -312,7 +312,7 @@
     "en": "investor",
     "ja": "投資家",
     "forms": [
-      "investor"
+      "sijoittaja"
     ],
     "validated": true,
     "visual_keyword": "moneybag",
@@ -889,8 +889,8 @@
     "lemma": "kaksi",
     "pos": "number",
     "count": 2,
-    "en": "twelve",
-    "ja": "12",
+    "en": "two",
+    "ja": "二",
     "forms": [
       "12"
     ],
@@ -918,8 +918,8 @@
     "lemma": "etusi",
     "pos": "noun",
     "count": 1,
-    "en": "your front",
-    "ja": "あなたの正面",
+    "en": "your benefit",
+    "ja": "あなたの利益",
     "forms": [
       "etusi"
     ],
@@ -936,8 +936,7 @@
     "ja": "バター",
     "forms": [
       "voi",
-      "voita",
-      "voitatko"
+      "voita"
     ],
     "validated": true,
     "visual_keyword": "butter_block",
@@ -1552,20 +1551,6 @@
     ],
     "validated": true,
     "visual_keyword": "✉️",
-    "image_status": "pending"
-  },
-  "2a0042a4-548d-46cd-9b14-9a18c75cdb08": {
-    "id": "2a0042a4-548d-46cd-9b14-9a18c75cdb08",
-    "lemma": "pedro",
-    "pos": "noun",
-    "count": 0,
-    "en": "Peter",
-    "ja": "ピーター",
-    "forms": [
-      "pedro"
-    ],
-    "validated": true,
-    "visual_keyword": "👨‍🦰",
     "image_status": "pending"
   },
   "57d0eec2-edcb-4792-8568-aa0e4efecec9": {
@@ -2397,7 +2382,7 @@
     "en": "misfortune",
     "ja": "災難 (sailan)",
     "forms": [
-      "onnetar"
+      "onnettomuus"
     ],
     "validated": true,
     "visual_keyword": "ticket",
@@ -2425,7 +2410,6 @@
     "en": "kitchen",
     "ja": "キッチン",
     "forms": [
-      "kokkaamaan",
       "kokka"
     ],
     "validated": true,
@@ -2849,10 +2833,10 @@
   "5eb190d9-55fd-4baf-a539-e1d6dbb9423f": {
     "id": "5eb190d9-55fd-4baf-a539-e1d6dbb9423f",
     "lemma": "luottaa",
-    "pos": "adjective",
+    "pos": "verb",
     "count": 1,
-    "en": "confidential",
-    "ja": "機密の",
+    "en": "to trust",
+    "ja": "信頼する",
     "forms": [
       "luottamuksellinen"
     ],
@@ -4978,8 +4962,8 @@
     "id": "8479b929-6264-493f-85f6-0d07bfbe31ea",
     "lemma": "venäläinen",
     "pos": "adjective",
-    "en": "Finnish",
-    "ja": "フィンランド語",
+    "en": "Russian",
+    "ja": "ロシアの",
     "visual_keyword": "flag_finland",
     "image_status": "pending",
     "forms": [
@@ -5011,7 +4995,7 @@
     "visual_keyword": "microphone",
     "image_status": "pending",
     "forms": [
-      "laulaja"
+      "laula"
     ],
     "count": 1,
     "validated": true
@@ -23092,9 +23076,9 @@
     "id": "da1240ae-b323-4d1d-9baa-cd35ac8711a0",
     "lemma": "mekko",
     "pos": "noun",
-    "en": "mug",
-    "ja": "マグカップ",
-    "visual_keyword": "mug",
+    "en": "dress",
+    "ja": "ドレス",
+    "visual_keyword": "dress",
     "image_status": "pending",
     "forms": [
       "mekko"
@@ -23176,9 +23160,9 @@
     "id": "c4b739a8-97d5-478f-8fde-f7326c27d840",
     "lemma": "takki",
     "pos": "noun",
-    "en": "trousers",
-    "ja": "パンツ",
-    "visual_keyword": "pants",
+    "en": "jacket",
+    "ja": "ジャケット",
+    "visual_keyword": "jacket",
     "image_status": "pending",
     "forms": [
       "takki"
@@ -24332,9 +24316,9 @@
     "id": "d540587c-b379-49c0-994c-d8878ef57ab6",
     "lemma": "arjessa",
     "pos": "adverb",
-    "en": "in foresight",
-    "ja": "予見して",
-    "visual_keyword": "forecast",
+    "en": "in everyday life",
+    "ja": "日常生活で",
+    "visual_keyword": "everyday life",
     "image_status": "pending",
     "forms": [
       "arjessa"
@@ -24663,9 +24647,9 @@
     "id": "8f7dc3a4-b094-415c-b0c5-7937feed5bef",
     "lemma": "pyyhe",
     "pos": "noun",
-    "en": "heap",
-    "ja": "積み重ね",
-    "visual_keyword": "pile_of_something",
+    "en": "towel",
+    "ja": "タオル",
+    "visual_keyword": "towel",
     "image_status": "pending",
     "forms": [
       "pyyhe"
@@ -24677,9 +24661,9 @@
     "id": "263c0a25-4187-49b6-a931-5f884ccb68e3",
     "lemma": "neuloa",
     "pos": "noun",
-    "en": "anger",
-    "ja": "怒り",
-    "visual_keyword": "fury",
+    "en": "to knit",
+    "ja": "編む",
+    "visual_keyword": "knit",
     "image_status": "pending",
     "forms": [
       "neuloa"
@@ -24691,9 +24675,9 @@
     "id": "f7232100-367a-43c9-add4-83e565762bb0",
     "lemma": "hihtoa",
     "pos": "noun",
-    "en": "annoyance",
-    "ja": "不快感",
-    "visual_keyword": "irritation",
+    "en": "to ski",
+    "ja": "スキーをする",
+    "visual_keyword": "ski",
     "image_status": "pending",
     "forms": [
       "hihtoa"
