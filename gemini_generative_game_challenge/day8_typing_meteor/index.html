@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Dark Readerなどの拡張機能による色変換をブロック -->
     <meta name="darkreader-lock">
     <title>Finnish Defense</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -29,12 +28,10 @@
             background-color: #0f172a;
         }
 
-        /* 通常のネオンテキスト */
         .neon-text {
             text-shadow: 0 0 2px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 0, 222, 0.4);
         }
 
-        /* タイトル専用スタイル */
         .title-style {
             -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
             filter: drop-shadow(0 0 5px rgba(255, 0, 222, 0.5)) drop-shadow(0 0 10px rgba(255, 0, 222, 0.3));
@@ -101,15 +98,22 @@
         #playerInput {
             caret-color: #22d3ee;
         }
+
+        #globalFooter a {
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        #globalFooter a:hover {
+            color: #22d3ee;
+            text-decoration: underline;
+        }
     </style>
 </head>
 
 <body class="text-white h-[100dvh] w-screen flex flex-col relative overflow-hidden">
     
-    <!-- 背景 (z-0) -->
     <div id="bgLayer" class="absolute inset-0 z-0"></div>
 
-    <!-- UI 左側 (z-10) -->
     <div class="absolute top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-10 ui-layer-left pointer-events-none">
         <div class="flex flex-col">
             <div class="text-sm font-bold text-yellow-600 mt-2">HI-SCORE: <span id="highScoreDisplay">0</span></div>
@@ -118,10 +122,8 @@
         </div>
     </div>
 
-    <!-- キャンバス (z-20) -->
     <canvas id="gameCanvas" class="absolute inset-0 z-20"></canvas>
 
-    <!-- UI 右側 (リスト) (z-60) -->
     <div class="absolute top-0 right-0 p-4 pt-[max(1rem,env(safe-area-inset-top))] z-[60] pointer-events-none">
         <div id="logContainer"
             class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col relative hide-on-keyboard transition-all duration-500 pointer-events-auto">
@@ -130,7 +132,6 @@
         </div>
     </div>
 
-    <!-- スタート画面 (z-50) -->
     <div id="startScreen"
         class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center pointer-events-auto">
         <h1 class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 mb-4 text-center title-style">
@@ -141,13 +142,12 @@
         <p class="text-lg mb-8 text-center px-4 text-slate-300">Protect the city from falling meteors.<br>Type the words to activate lasers.</p>
         
         <button id="startButton"
-            class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white text-2xl rounded border-b-4 border-cyan-800 active:border-0 active:translate-y-1 transition-all">START
-            DEFENSE</button>
-
-        <div id="versionDisplay" class="text-slate-500 text-sm mt-4 font-mono"></div>
+            class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white text-2xl rounded border-b-4 border-cyan-800 active:border-0 active:translate-y-1 transition-all">
+            <span id="loadingText">LOADING...</span>
+            <span id="startText" class="hidden">START DEFENSE</span>
+        </button>
     </div>
 
-    <!-- ゲームオーバー画面 (z-50) -->
     <div id="gameOverScreen"
         class="hidden absolute inset-0 z-50 bg-red-900/90 flex flex-col items-center justify-center pointer-events-auto">
         <h1 class="text-6xl font-bold text-white mb-4">GAME OVER</h1>
@@ -180,7 +180,7 @@
         </div>
     </div>
 
-    <div id="inputArea" class="absolute bottom-0 w-full p-4 z-40 flex justify-center items-center">
+    <div id="inputArea" class="absolute bottom-6 w-full p-4 z-40 flex justify-center items-center border-none" style="background: rgba(15, 23, 42, 0.95); border-top: 2px solid #334155;">
         <div class="relative w-full max-w-2xl">
             <div
                 class="absolute bottom-full left-1/2 -translate-x-1/2 w-16 h-8 bg-slate-700 rounded-t-lg border-t-2 border-x-2 border-slate-500 flex justify-center">
@@ -198,6 +198,8 @@
             </form>
         </div>
     </div>
+
+    <div id="globalFooter" class="fixed bottom-0 left-0 w-full text-center text-xs text-slate-500 py-1 z-[100] font-mono pointer-events-auto bg-slate-900/90 backdrop-blur-sm border-t border-slate-800"></div>
 
     <script>
         class SoundManager {
@@ -266,28 +268,31 @@
             }
         }
 
-        const WORD_LIST = [
-            // Basics
-            { fi: "koti", en: "home" }, { fi: "koulu", en: "school" }, { fi: "aurinko", en: "sun" }, { fi: "ruoka", en: "food" }, { fi: "kiitos", en: "thank you" }, { fi: "ystävä", en: "friend" }, { fi: "kissa", en: "cat" }, { fi: "koira", en: "dog" }, { fi: "vesi", en: "water" }, { fi: "metsä", en: "forest" }, { fi: "järvi", en: "lake" }, { fi: "yö", en: "night" }, { fi: "päivä", en: "day" }, { fi: "kuu", en: "moon" }, { fi: "tuli", en: "fire" }, { fi: "ilma", en: "air" }, { fi: "maa", en: "earth" }, { fi: "kirja", en: "book" }, { fi: "ovi", en: "door" }, { fi: "ikkuna", en: "window" },
-            // Family & People
-            { fi: "isä", en: "father" }, { fi: "äiti", en: "mother" }, { fi: "veli", en: "brother" }, { fi: "sisko", en: "sister" }, { fi: "poika", en: "boy" }, { fi: "tyttö", en: "girl" }, { fi: "mies", en: "man" }, { fi: "nainen", en: "woman" }, { fi: "lapsi", en: "child" }, { fi: "perhe", en: "family" }, { fi: "nimi", en: "name" }, { fi: "ihminen", en: "human" }, { fi: "mummo", en: "grandma" }, { fi: "vaari", en: "grandpa" }, { fi: "serkku", en: "cousin" }, { fi: "vauva", en: "baby" },
-            // Time & Seasons
-            { fi: "aamu", en: "morning" }, { fi: "ilta", en: "evening" }, { fi: "tänään", en: "today" }, { fi: "huomenna", en: "tomorrow" }, { fi: "eilen", en: "yesterday" }, { fi: "kevät", en: "spring" }, { fi: "kesä", en: "summer" }, { fi: "syksy", en: "autumn" }, { fi: "talvi", en: "winter" }, { fi: "viikko", en: "week" }, { fi: "vuosi", en: "year" }, { fi: "kello", en: "clock" }, { fi: "aika", en: "time" }, { fi: "hetki", en: "moment" }, { fi: "loma", en: "holiday" },
-            // Nature & Animals
-            { fi: "joki", en: "river" }, { fi: "meri", en: "sea" }, { fi: "vuori", en: "mountain" }, { fi: "saari", en: "island" }, { fi: "puu", en: "tree" }, { fi: "kukka", en: "flower" }, { fi: "lintu", en: "bird" }, { fi: "kala", en: "fish" }, { fi: "karhu", en: "bear" }, { fi: "hirvi", en: "moose" }, { fi: "lumi", en: "snow" }, { fi: "sade", en: "rain" }, { fi: "pilvi", en: "cloud" }, { fi: "tähti", en: "star" }, { fi: "taivas", en: "sky" }, { fi: "ruoho", en: "grass" }, { fi: "kivi", en: "stone" }, { fi: "hiekka", en: "sand" }, { fi: "kettu", en: "fox" }, { fi: "susi", en: "wolf" }, { fi: "pupu", en: "bunny" }, { fi: "hevonen", en: "horse" }, { fi: "lehmä", en: "cow" }, { fi: "lammas", en: "sheep" },
-            // Body & Clothes
-            { fi: "pää", en: "head" }, { fi: "silmä", en: "eye" }, { fi: "käsi", en: "hand" }, { fi: "jalka", en: "foot" }, { fi: "suu", en: "mouth" }, { fi: "korva", en: "ear" }, { fi: "nenä", en: "nose" }, { fi: "vatsa", en: "stomach" }, { fi: "paita", en: "shirt" }, { fi: "housut", en: "pants" }, { fi: "kengät", en: "shoes" }, { fi: "takki", en: "coat" }, { fi: "hattu", en: "hat" }, { fi: "mekko", en: "dress" }, { fi: "sormus", en: "ring" },
-            // Food & Drink
-            { fi: "leipä", en: "bread" }, { fi: "voi", en: "butter" }, { fi: "maito", en: "milk" }, { fi: "kahvi", en: "coffee" }, { fi: "tee", en: "tea" }, { fi: "omena", en: "apple" }, { fi: "marja", en: "berry" }, { fi: "liha", en: "meat" }, { fi: "juusto", en: "cheese" }, { fi: "muna", en: "egg" }, { fi: "peruna", en: "potato" }, { fi: "pulla", en: "bun" }, { fi: "kakku", en: "cake" }, { fi: "mehu", en: "juice" }, { fi: "olut", en: "beer" }, { fi: "viini", en: "wine" },
-            // Adjectives
-            { fi: "iso", en: "big" }, { fi: "pieni", en: "small" }, { fi: "hyvä", en: "good" }, { fi: "paha", en: "bad" }, { fi: "kaunis", en: "beautiful" }, { fi: "uusi", en: "new" }, { fi: "vanha", en: "old" }, { fi: "kuuma", en: "hot" }, { fi: "kylmä", en: "cold" }, { fi: "pitkä", en: "long" }, { fi: "lyhyt", en: "short" }, { fi: "rikas", en: "rich" }, { fi: "köyhä", en: "poor" }, { fi: "iloinen", en: "happy" }, { fi: "surullinen", en: "sad" }, { fi: "vihainen", en: "angry" }, { fi: "nopea", en: "fast" }, { fi: "hidas", en: "slow" },
-            // Verbs
-            { fi: "olla", en: "to be" }, { fi: "tulla", en: "to come" }, { fi: "mennä", en: "to go" }, { fi: "syödä", en: "to eat" }, { fi: "juoda", en: "to drink" }, { fi: "nukkua", en: "to sleep" }, { fi: "puhua", en: "to speak" }, { fi: "lukea", en: "to read" }, { fi: "ostaa", en: "to buy" }, { fi: "antaa", en: "to give" }, { fi: "tehdä", en: "to do" }, { fi: "nähdä", en: "to see" }, { fi: "kuulla", en: "to hear" }, { fi: "ajaa", en: "to drive" }, { fi: "uida", en: "to swim" }, { fi: "laulaa", en: "to sing" }, { fi: "nauraa", en: "to laugh" }, { fi: "itkeä", en: "to cry" }, { fi: "juosta", en: "to run" }, { fi: "seisoa", en: "to stand" }, { fi: "istua", en: "to sit" },
-            // Places & Objects
-            { fi: "talo", en: "house" }, { fi: "pöytä", en: "table" }, { fi: "tuoli", en: "chair" }, { fi: "kynä", en: "pen" }, { fi: "paperi", en: "paper" }, { fi: "raha", en: "money" }, { fi: "avain", en: "key" }, { fi: "laukku", en: "bag" }, { fi: "tori", en: "market" }, { fi: "kauppa", en: "shop" }, { fi: "puisto", en: "park" }, { fi: "koulu", en: "school" }, { fi: "kirkko", en: "church" }, { fi: "silta", en: "bridge" }, { fi: "sauna", en: "sauna" }, { fi: "vene", en: "boat" }, { fi: "mökki", en: "cottage" },
-            // Questions & Other
-            { fi: "kyllä", en: "yes" }, { fi: "ei", en: "no" }, { fi: "hei", en: "hello" }, { fi: "kiitos", en: "thanks" }, { fi: "miksi", en: "why" }, { fi: "mitä", en: "what" }, { fi: "kuka", en: "who" }, { fi: "missä", en: "where" }, { fi: "koska", en: "when" }, { fi: "miten", en: "how" }, { fi: "paljon", en: "much" }, { fi: "vähän", en: "little" }, { fi: "ehkä", en: "maybe" }
-        ];
+        // 修正: 辞書データは外部JSONから読み込むように変更。
+        // ここには「words.json」が読み込めなかった場合のフォールバック（緊急用）データを置いておく
+        const FALLBACK_WORDS = {
+            "6aaef8c3-sample1": {
+                "lemma": "huomenta",
+                "en": "Good morning",
+                "forms": ["huomenta"]
+            },
+            "09f2bd8b-sample2": {
+                "lemma": "kirja",
+                "en": "book",
+                "forms": ["kirjan", "kirja"]
+            },
+            "db9e7f8d-sample3": {
+                "lemma": "henkilö",
+                "en": "person",
+                "forms": ["henkilöt", "henkilökohtaisesti"]
+            },
+            "simple-koti": { "lemma": "koti", "en": "home", "forms": ["koti"] },
+            "simple-koulu": { "lemma": "koulu", "en": "school", "forms": ["koulu"] },
+            "simple-aurinko": { "lemma": "aurinko", "en": "sun", "forms": ["aurinko"] }
+        };
+
+        // グローバル変数として保持（初期は空）
+        let WORD_LIST = []; 
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -297,8 +302,7 @@
         const inputElement = document.getElementById('playerInput');
         const sound = new SoundManager();
 
-        // バージョン更新
-        const GAME_VERSION = "v20260112.13";
+        const GAME_VERSION = "v20260119.2";
 
         let gameState = 'start';
         let animationFrameId; 
@@ -314,6 +318,7 @@
 
         class Meteor {
             constructor() {
+                // WORD_LIST からランダムに選択
                 const wordObj = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
                 this.word = wordObj.fi;
                 this.translation = wordObj.en;
@@ -333,7 +338,6 @@
                 this.radius = 5; 
                 this.isHit = false; 
                 this.hitTimer = 0; 
-                this.trail = [];
                 this.isDying = false; 
             }
 
@@ -345,9 +349,6 @@
 
                 if (this.isHit) { this.hitTimer++; return 'active'; }
 
-                this.trail.push({ x: this.x, y: this.y, alpha: 1.0 });
-                if (this.trail.length > 160) this.trail.shift();
-
                 const heightRatio = canvas.height / 800;
                 this.y += this.speed * heightRatio;
 
@@ -356,23 +357,22 @@
             }
 
             draw() {
-                let allTrailsGone = true;
-
-                for (let i = 0; i < this.trail.length; i++) {
-                    const point = this.trail[i];
-                    point.alpha -= this.isDying ? 0.05 : 0.006; 
+                const trailAlpha = this.isDying ? Math.max(0, 1.0 - (this.hitTimer / 20)) : 1.0;
+                
+                if (trailAlpha > 0) {
+                    // 修正: テールの長さを半減 (200 -> 100)
+                    const tailLength = 100; 
+                    const grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y - tailLength);
+                    grad.addColorStop(0, `rgba(255, 100, 0, ${trailAlpha})`); 
+                    grad.addColorStop(1, `rgba(255, 100, 0, 0)`);           
                     
-                    if (point.alpha > 0) {
-                        allTrailsGone = false;
-                        ctx.beginPath();
-                        const trailSize = this.radius * (i / this.trail.length);
-                        ctx.arc(point.x, point.y, trailSize, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(255, 100, 0, ${point.alpha})`;
-                        ctx.fill();
-                    }
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(this.x, this.y - tailLength);
+                    ctx.strokeStyle = grad;
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
                 }
-
-                this.allTrailsGone = allTrailsGone;
 
                 if (!this.isHit) {
                     ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -408,8 +408,8 @@
 
                     if (matchLength > 0) {
                         if (isMismatch) {
-                            ctx.fillStyle = '#6b7280'; // 修正: 赤からダークグレーに変更
-                            ctx.shadowBlur = 0; // 発光なし
+                            ctx.fillStyle = '#6b7280'; 
+                            ctx.shadowBlur = 0; 
                         } else {
                             ctx.fillStyle = '#22d3ee'; 
                             ctx.shadowColor = '#22d3ee';
@@ -431,9 +431,18 @@
                 else {
                     const alpha = 1.0 - (this.hitTimer / 180);
                     if (alpha > 0) {
-                        ctx.font = 'bold 28px "VT323"'; ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`;
+                        const scale = 1.0 + (this.hitTimer / 180) * 0.5; 
+                        
+                        ctx.save();
+                        ctx.translate(this.x, this.y + 30);
+                        ctx.scale(scale, scale);
+                        
+                        ctx.font = 'bold 28px "VT323"'; 
+                        ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`;
                         ctx.textAlign = 'center'; 
-                        ctx.fillText(this.translation.toUpperCase(), this.x, this.y + 30);
+                        ctx.fillText(this.translation.toUpperCase(), 0, 0); 
+                        
+                        ctx.restore();
                     }
                 }
             }
@@ -668,7 +677,7 @@
                         meteors.splice(i, 1);
                     }
                     else if (status === 'dying') {
-                        if (meteors[i].hitTimer > 180 && meteors[i].allTrailsGone) {
+                        if (meteors[i].hitTimer > 180) {
                             meteors.splice(i, 1);
                         }
                     }
@@ -687,21 +696,68 @@
             animationFrameId = requestAnimationFrame(gameLoop); 
         }
 
-        function init() {
+        // 辞書データ(JSON)をオブジェクトからゲーム用の配列形式に変換する関数
+        function parseWordData(data) {
+            const list = [];
+            Object.values(data).forEach(entry => {
+                // Lemma (基本形) を追加
+                if (entry.lemma && entry.en) {
+                    list.push({ fi: entry.lemma, en: entry.en });
+                }
+                // Forms (変化形) も追加。訳語は基本形の英語を使う
+                if (entry.forms && Array.isArray(entry.forms)) {
+                    entry.forms.forEach(form => {
+                        // 基本形と重複しないようにチェックしてもいいが、出現頻度を上げる意味で重複も許容する
+                        list.push({ fi: form, en: entry.en });
+                    });
+                }
+            });
+            return list;
+        }
+
+        async function init() {
             document.title = `Finnish Defense ${GAME_VERSION}`;
             
             const repoUrl = "https://gitlab.com/junichiyamada/finnish-defense"; 
             const issueTitle = encodeURIComponent(`Bug Report ${GAME_VERSION}`);
             const issueUrl = `${repoUrl}/-/issues/new?issue[title]=${issueTitle}`;
 
-            const versionContainer = document.getElementById('versionDisplay');
-            versionContainer.innerHTML = `
+            const footer = document.getElementById('globalFooter');
+            footer.innerHTML = `
+                <a href="https://junichiyamada.gitlab.io/" class="hover:text-cyan-400">HOME</a>
+                <span class="mx-1">|</span>
                 ${GAME_VERSION} 
-                <span class="mx-2 text-slate-700">|</span> 
-                <a href="${issueUrl}" target="_blank" class="hover:text-cyan-400 hover:underline transition-colors" title="Report a bug via GitLab">
+                <span class="mx-1">|</span> 
+                <a href="${issueUrl}" target="_blank" class="hover:text-cyan-400" title="Report a bug via GitLab">
                     Report Bug
                 </a>
             `;
+
+            // 辞書データの読み込み処理
+            const loadingText = document.getElementById('loadingText');
+            const startText = document.getElementById('startText');
+            const startButton = document.getElementById('startButton');
+
+            try {
+                // 外部JSONファイルを読みに行く
+                const response = await fetch('words.json');
+                if (!response.ok) throw new Error("words.json not found");
+                const jsonData = await response.json();
+                WORD_LIST = parseWordData(jsonData);
+                console.log(`Loaded ${WORD_LIST.length} words from words.json`);
+            } catch (error) {
+                console.warn("Failed to load words.json, using fallback data.", error);
+                WORD_LIST = parseWordData(FALLBACK_WORDS);
+            }
+
+            // 読み込み完了したらボタンのテキストを更新
+            loadingText.classList.add('hidden');
+            startText.classList.remove('hidden');
+            
+            // もしデータが空ならエラー回避のため最低限のデータを入れる
+            if (WORD_LIST.length === 0) {
+                WORD_LIST = [{fi: "koti", en: "home"}, {fi: "sisu", en: "guts"}];
+            }
 
             const randomName = 'input_' + Math.random().toString(36).substring(2, 15);
             inputElement.setAttribute('name', randomName);
@@ -736,7 +792,7 @@
             }
 
             window.addEventListener('click', (e) => {
-                if (e.target.closest('button') || e.target.closest('#inputArea') || e.target.closest('#versionDisplay')) return;
+                if (e.target.closest('button') || e.target.closest('#inputArea') || e.target.closest('#globalFooter')) return;
                 
                 if (gameState === 'playing') {
                     inputElement.focus();
@@ -791,6 +847,9 @@
                 const val = inputElement.value.toLowerCase().trim();
                 if (meteors.find(m => !m.isHit && !m.isDying && m.word === val)) processInput();
             });
+            
+            // Loadingが終わっていないと押せないようにする制御を入れても良いが
+            // 今回はテキストの切り替えだけで簡易的に対応
             document.getElementById('startButton').addEventListener('click', startGame);
             document.getElementById('restartButton').addEventListener('click', startGame);
 
@@ -826,6 +885,8 @@
                 location.reload();
             });
         }
+        
+        // initを呼び出す
         init();
     </script>
 </body>
