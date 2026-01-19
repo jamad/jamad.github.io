@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finnish Defense v6.2</title>
+    <!-- Dark Readerなどの拡張機能による色変換をブロック -->
+    <meta name="darkreader-lock">
+    <title>Finnish Defense</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -27,8 +29,15 @@
             background-color: #0f172a;
         }
 
+        /* 通常のネオンテキスト */
         .neon-text {
             text-shadow: 0 0 2px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 0, 222, 0.4);
+        }
+
+        /* タイトル専用スタイル（二重表示防止のため drop-shadow を使用） */
+        .title-style {
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+            filter: drop-shadow(0 0 5px rgba(255, 0, 222, 0.5)) drop-shadow(0 0 10px rgba(255, 0, 222, 0.3));
         }
 
         #defeatedList::-webkit-scrollbar {
@@ -50,33 +59,13 @@
         }
 
         @keyframes shake {
-            0% {
-                transform: translate(1px, 1px) rotate(0deg);
-            }
-
-            10% {
-                transform: translate(-1px, -2px) rotate(-1deg);
-            }
-
-            20% {
-                transform: translate(-3px, 0px) rotate(1deg);
-            }
-
-            30% {
-                transform: translate(3px, 2px) rotate(0deg);
-            }
-
-            40% {
-                transform: translate(1px, -1px) rotate(1deg);
-            }
-
-            50% {
-                transform: translate(-1px, 2px) rotate(-1deg);
-            }
-
-            100% {
-                transform: translate(1px, -2px) rotate(-1deg);
-            }
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
 
         .shake {
@@ -90,22 +79,14 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-height: 500px) {
             .hide-on-keyboard {
                 display: none !important;
             }
-
             .ui-layer-left {
                 padding-top: 5px !important;
             }
@@ -117,6 +98,7 @@
             }
         }
 
+        /* 入力カーソルをシアン色に */
         #playerInput {
             caret-color: #22d3ee;
         }
@@ -124,24 +106,23 @@
 </head>
 
 <body class="text-white h-[100dvh] w-screen flex flex-col relative overflow-hidden">
-
+    
+    <!-- 背景 (z-0) -->
     <div id="bgLayer" class="absolute inset-0 z-0"></div>
 
     <!-- UI 左側 (z-10) -->
-    <div
-        class="absolute top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-10 ui-layer-left pointer-events-none">
+    <div class="absolute top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-10 ui-layer-left pointer-events-none">
         <div class="flex flex-col">
-            <!-- 変更: ここにあったゲームタイトルを削除し、スコアのみにする -->
-            <!-- これでプレイ画面が非常にスッキリします -->
-
             <div class="text-sm font-bold text-yellow-600 mt-2">HI-SCORE: <span id="highScoreDisplay">0</span></div>
             <div class="text-xl">SCORE: <span id="scoreDisplay" class="text-cyan-400">0</span></div>
             <div class="text-lg">SISU SHIELD: <span id="healthDisplay" class="text-green-400">100%</span></div>
         </div>
     </div>
 
+    <!-- キャンバス (z-20) -->
     <canvas id="gameCanvas" class="absolute inset-0 z-20"></canvas>
 
+    <!-- UI 右側 (リスト) (z-60) -->
     <div class="absolute top-0 right-0 p-4 pt-[max(1rem,env(safe-area-inset-top))] z-[60] pointer-events-none">
         <div id="logContainer"
             class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col relative hide-on-keyboard transition-all duration-500 pointer-events-auto">
@@ -150,26 +131,25 @@
         </div>
     </div>
 
+    <!-- スタート画面 (z-50) -->
     <div id="startScreen"
         class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center pointer-events-auto">
-        <!-- 変更: メインタイトルを FINNISH DEFENSE に昇格 -->
-        <h1
-            class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 mb-4 neon-text text-center">
+        <h1 class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 mb-4 text-center title-style">
             FINNISH<br>DEFENSE
         </h1>
-        <!-- 変更: サブタイトルを追加 -->
         <p class="text-xl md:text-2xl text-cyan-400 tracking-widest mb-8 font-bold">TYPE TO SURVIVE</p>
-
-        <p class="text-lg mb-8 text-center px-4 text-slate-300">Protect the city from falling meteors.<br>Type the words
-            to activate lasers.</p>
-
+        
+        <p class="text-lg mb-8 text-center px-4 text-slate-300">Protect the city from falling meteors.<br>Type the words to activate lasers.</p>
+        
         <button id="startButton"
             class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white text-2xl rounded border-b-4 border-cyan-800 active:border-0 active:translate-y-1 transition-all">START
             DEFENSE</button>
 
-        <div class="text-slate-500 text-sm mt-4 font-mono">v6.2</div>
+        <!-- バージョン情報とバグレポートリンク -->
+        <div id="versionDisplay" class="text-slate-500 text-sm mt-4 font-mono"></div>
     </div>
 
+    <!-- ゲームオーバー画面 (z-50) -->
     <div id="gameOverScreen"
         class="hidden absolute inset-0 z-50 bg-red-900/90 flex flex-col items-center justify-center pointer-events-auto">
         <h1 class="text-6xl font-bold text-white mb-4">GAME OVER</h1>
@@ -179,37 +159,50 @@
         <div class="text-xl text-yellow-400 mb-8 font-bold">High Score: <span id="finalHighScore">0</span></div>
 
         <div id="restartContainer" class="hidden flex flex-col items-center gap-4">
-            <!-- 既存の TRY AGAIN ボタン -->
+            <!-- TRY AGAIN ボタン: w-64 で幅固定 -->
             <button id="restartButton"
-                class="px-8 py-4 bg-white text-red-900 text-2xl rounded font-bold hover:bg-gray-200 shadow-lg transition-transform active:scale-95">
-                TRY AGAIN <span class="text-sm font-normal block text-center text-gray-500">(PRESS ENTER)</span>
+                class="w-64 py-4 bg-white text-red-900 text-2xl rounded font-bold hover:bg-gray-200 shadow-lg transition-transform active:scale-95 text-center">
+                TRY AGAIN <span class="text-sm font-normal block text-gray-500">(PRESS ENTER)</span>
             </button>
 
-            <!-- 追加: X (Twitter) シェアボタン -->
+            <!-- Twitter Share: w-64, justify-center -->
             <button id="shareButton"
-                class="px-6 py-2 bg-black text-white border border-slate-600 rounded hover:bg-slate-800 transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path
-                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
+                class="w-64 py-3 bg-black text-white border border-slate-600 rounded hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 font-bold">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 POST SCORE
             </button>
-        </div>
 
+            <!-- Native Share (Mobile): w-64, justify-center -->
+            <button id="nativeShareButton" class="hidden w-64 py-3 bg-slate-700 text-white border border-slate-500 rounded hover:bg-slate-600 transition-colors flex items-center justify-center gap-2 font-bold">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                SHARE
+            </button>
+
+            <!-- BACK TO TITLE ボタン -->
+            <button id="titleButton"
+                class="w-64 py-3 bg-transparent text-slate-400 border border-slate-700 rounded hover:bg-slate-800 hover:text-white transition-colors font-mono font-bold">
+                BACK TO TITLE
+            </button>
+        </div>
     </div>
 
+    <!-- 入力エリア (z-40) -->
     <div id="inputArea" class="absolute bottom-0 w-full p-4 z-40 flex justify-center items-center">
         <div class="relative w-full max-w-2xl">
             <div
                 class="absolute bottom-full left-1/2 -translate-x-1/2 w-16 h-8 bg-slate-700 rounded-t-lg border-t-2 border-x-2 border-slate-500 flex justify-center">
                 <div class="w-2 h-4 bg-cyan-500 rounded-full mt-1 animate-pulse"></div>
             </div>
-
+            
             <form id="gameForm" action="#" onsubmit="return false;" class="w-full">
+                <!-- AutoFill対策: type="search", one-time-code -->
                 <input type="text" id="playerInput"
                     class="w-full bg-slate-800 text-cyan-400 text-2xl px-4 py-3 rounded border-2 border-slate-600 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 uppercase placeholder-slate-600 text-center"
-                    placeholder="TYPE THE METEOR NAME..." autocomplete="one-time-code" autocorrect="off"
-                    autocapitalize="off" spellcheck="false">
+                    placeholder="TYPE THE METEOR NAME..." 
+                    autocomplete="one-time-code" 
+                    autocorrect="off" 
+                    autocapitalize="off"
+                    spellcheck="false">
             </form>
         </div>
     </div>
@@ -312,16 +305,19 @@
         const inputElement = document.getElementById('playerInput');
         const sound = new SoundManager();
 
+        // バージョン更新
+        const GAME_VERSION = "v20260112.10";
+
         let gameState = 'start';
-        let animationFrameId;
+        let animationFrameId; 
         let score = 0, health = 100, frameCount = 0;
-        let cityShakeTimer = 0;
+        let cityShakeTimer = 0; 
         let highScore = localStorage.getItem('finnishMeteorHighScore') || 0;
         let wordCollection = JSON.parse(localStorage.getItem('finnishWordCollection')) || {};
 
         let meteors = [], particles = [], lasers = [], stars = [], buildings = [];
         let spawnRate = 120, difficultyMultiplier = 1.0;
-
+        
         let cachedHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
         class Meteor {
@@ -342,11 +338,11 @@
                     this.speed *= 0.7;
                 }
 
-                this.radius = 5;
-                this.isHit = false;
-                this.hitTimer = 0;
+                this.radius = 5; 
+                this.isHit = false; 
+                this.hitTimer = 0; 
                 this.trail = [];
-                this.isDying = false;
+                this.isDying = false; 
             }
 
             update() {
@@ -369,10 +365,11 @@
             draw() {
                 let allTrailsGone = true;
 
+                // 1. テール（尾）の描画
                 for (let i = 0; i < this.trail.length; i++) {
                     const point = this.trail[i];
-                    point.alpha -= this.isDying ? 0.05 : 0.006;
-
+                    point.alpha -= this.isDying ? 0.05 : 0.006; 
+                    
                     if (point.alpha > 0) {
                         allTrailsGone = false;
                         ctx.beginPath();
@@ -382,26 +379,67 @@
                         ctx.fill();
                     }
                 }
-
                 this.allTrailsGone = allTrailsGone;
 
-                // 修正: ヒットしていなければ本体を描画
+                // 2. 本体（文字）の描画
                 if (!this.isHit) {
+                    // --- 隕石本体の円 ---
                     ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                     let grad = ctx.createRadialGradient(this.x, this.y, 1, this.x, this.y, this.radius);
                     grad.addColorStop(0, '#fdba74'); grad.addColorStop(1, '#dc2626');
                     ctx.fillStyle = grad; ctx.fill();
-                    ctx.font = '24px "VT323"'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
-                    ctx.shadowColor = "black"; ctx.shadowBlur = 4;
-                    ctx.fillText(this.word.toUpperCase(), this.x, this.y + 25);
-                    ctx.shadowBlur = 0;
-                }
-                // 修正: ヒットしていたら（消滅中でも）英語を描画
+
+                    // --- 文字のハイライト処理 ---
+                    ctx.font = '24px "VT323"';
+                    const text = this.word.toUpperCase();
+                    
+                    // 現在の入力内容を取得
+                    const inputVal = inputElement.value.toLowerCase().trim();
+                    let matchLength = 0;
+
+                    // 入力が空でなく、かつ前方一致する場合のみハイライト長さを計算
+                    if (inputVal.length > 0 && this.word.startsWith(inputVal)) {
+                        matchLength = inputVal.length;
+                    }
+
+                    // 文字列を「一致部分」と「残り」に分割
+                    const matchText = text.substring(0, matchLength);
+                    const restText = text.substring(matchLength);
+
+                    // 中央揃えのために文字幅を計算
+                    const matchWidth = ctx.measureText(matchText).width;
+                    const restWidth = ctx.measureText(restText).width;
+                    const totalWidth = matchWidth + restWidth;
+
+                    // 描き始めのX座標（中央から左へ半分ずらす）
+                    const startX = this.x - (totalWidth / 2);
+                    const textY = this.y + 25;
+
+                    // A. 一致した部分（シアン色で発光）
+                    if (matchLength > 0) {
+                        ctx.fillStyle = '#22d3ee'; // シアン
+                        ctx.shadowColor = '#22d3ee';
+                        ctx.shadowBlur = 15; // 強く光らせる
+                        ctx.textAlign = 'left'; // 座標指定で描くので左揃えにする
+                        ctx.fillText(matchText, startX, textY);
+                        ctx.shadowBlur = 0; // リセット
+                    }
+
+                    // B. 残りの部分（白色）
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowColor = 'black';
+                    ctx.shadowBlur = 4;
+                    ctx.textAlign = 'left'; // 続きから描く
+                    // 一致部分の幅だけ右にずらして描画
+                    ctx.fillText(restText, startX + matchWidth, textY);
+
+                } 
+                // 3. 撃破後の英語表示
                 else {
                     const alpha = 1.0 - (this.hitTimer / 60);
                     if (alpha > 0) {
                         ctx.font = 'bold 28px "VT323"'; ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`;
-                        ctx.textAlign = 'center';
+                        ctx.textAlign = 'center'; 
                         ctx.fillText(this.translation.toUpperCase(), this.x, this.y + 30);
                     }
                 }
@@ -467,7 +505,7 @@
             }
 
             ctx.globalAlpha = 0.5;
-
+            
             ctx.fillStyle = color;
             ctx.fillRect(0 + shakeX, canvas.height - 80 + shakeY, canvas.width, 80);
 
@@ -498,7 +536,7 @@
             logContainer.classList.remove('h-[60vh]');
 
             gameState = 'playing';
-            score = 0; health = 100; frameCount = 0; difficultyMultiplier = 1.0;
+            score = 0; health = 100; frameCount = 0; difficultyMultiplier = 1.0; 
             meteors = []; lasers = []; particles = [];
             defeatedList.innerHTML = ''; inputElement.value = ''; inputElement.focus();
 
@@ -510,13 +548,12 @@
         function processInput() {
             const val = inputElement.value.toLowerCase().trim();
             if (!val) return;
-            // 修正: 撃破済み(isDying)ではないメテオのみを対象にする
             const targets = meteors.filter(m => !m.isHit && !m.isDying).sort((a, b) => b.y - a.y);
             const target = targets.find(m => m.word === val);
             if (target) {
                 sound.playLaser();
                 lasers.push(new Laser(target.x, target.y));
-
+                
                 target.isHit = true;
                 target.isDying = true;
 
@@ -569,7 +606,7 @@
             gameState = 'gameover';
 
             document.body.classList.remove('playing-mode');
-
+            
             inputElement.blur();
 
             if (score > highScore) {
@@ -607,7 +644,7 @@
                 for (let i = meteors.length - 1; i >= 0; i--) {
                     const status = meteors[i].update();
                     meteors[i].draw();
-
+                    
                     if (status === 'destroyed') {
                         meteors.splice(i, 1);
                     }
@@ -628,10 +665,25 @@
             } else {
                 meteors.forEach(m => m.draw()); lasers.forEach(l => l.draw()); particles.forEach(p => p.draw());
             }
-            animationFrameId = requestAnimationFrame(gameLoop);
+            animationFrameId = requestAnimationFrame(gameLoop); 
         }
 
         function init() {
+            document.title = `Finnish Defense ${GAME_VERSION}`;
+            
+            const repoUrl = "https://gitlab.com/junichiyamada/finnish-defense"; 
+            const issueTitle = encodeURIComponent(`Bug Report ${GAME_VERSION}`);
+            const issueUrl = `${repoUrl}/-/issues/new?issue[title]=${issueTitle}`;
+
+            const versionContainer = document.getElementById('versionDisplay');
+            versionContainer.innerHTML = `
+                ${GAME_VERSION} 
+                <span class="mx-2 text-slate-700">|</span> 
+                <a href="${issueUrl}" target="_blank" class="hover:text-cyan-400 hover:underline transition-colors" title="Report a bug via GitLab">
+                    Report Bug
+                </a>
+            `;
+
             const randomName = 'input_' + Math.random().toString(36).substring(2, 15);
             inputElement.setAttribute('name', randomName);
 
@@ -640,7 +692,7 @@
                 const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
                 if (Math.abs(height - cachedHeight) < 100 && gameState === 'playing') {
-                    return;
+                    return; 
                 }
                 cachedHeight = height;
 
@@ -659,24 +711,56 @@
 
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', resizeGame);
-                window.visualViewport.addEventListener('scroll', () => window.scrollTo(0, 0));
+                window.visualViewport.addEventListener('scroll', () => window.scrollTo(0, 0)); 
             } else {
                 window.addEventListener('resize', resizeGame);
             }
 
             window.addEventListener('click', (e) => {
-                if (e.target.closest('button') || e.target.closest('#inputArea')) return;
-
+                if (e.target.closest('button') || e.target.closest('#inputArea') || e.target.closest('#versionDisplay')) return;
+                
                 if (gameState === 'playing') {
                     inputElement.focus();
                 }
             });
 
+            // 警告表示用の要素
+            const warningBox = document.createElement('div');
+            warningBox.className = "fixed top-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded shadow-lg z-[70] hidden font-mono text-center";
+            document.body.appendChild(warningBox);
+            let warningTimeout;
+
+            function showWarning(message) {
+                warningBox.textContent = message;
+                warningBox.classList.remove('hidden');
+                if (warningTimeout) clearTimeout(warningTimeout);
+                warningTimeout = setTimeout(() => {
+                    warningBox.classList.add('hidden');
+                }, 3000);
+            }
+
             inputElement.addEventListener('keydown', (e) => {
+                if (e.key === 'Process' || e.isComposing) {
+                    showWarning("⚠️ TURN OFF JAPANESE IME (入力モードを半角にしてください)");
+                    return;
+                }
+
                 if (gameState === 'playing') {
                     if (e.key === 'Enter') processInput();
                     sound.playType();
                 }
+                
+                // Keyboard Layout Check
+                if (gameState === 'playing' && e.code === 'Quote') {
+                    const char = e.key.toLowerCase();
+                    if (char !== 'ä' && char !== 'æ') {
+                        console.log("Detected Non-FI layout input on Quote key:", char);
+                    }
+                }
+            });
+
+            inputElement.addEventListener('compositionstart', () => {
+                showWarning("⚠️ TURN OFF IME");
             });
 
             window.addEventListener('keydown', (e) => {
@@ -693,22 +777,36 @@
             document.getElementById('startButton').addEventListener('click', startGame);
             document.getElementById('restartButton').addEventListener('click', startGame);
 
-            // 追加: シェアボタンのクリックイベント
+            const nativeShareBtn = document.getElementById('nativeShareButton');
+            if (navigator.share) {
+                nativeShareBtn.classList.remove('hidden');
+                
+                nativeShareBtn.addEventListener('click', async () => {
+                    const text = `FINNISH DEFENSE\nSCORE: ${score}\nHIGH SCORE: ${highScore}\nCan you save the city? 🇫🇮☄️`;
+                    const url = "https://junichiyamada.gitlab.io/finnish-defense/";
+                    
+                    try {
+                        await navigator.share({
+                            title: 'Finnish Defense',
+                            text: text,
+                            url: url
+                        });
+                    } catch (err) {
+                        console.log('Share canceled');
+                    }
+                });
+            }
+
             document.getElementById('shareButton').addEventListener('click', () => {
-                // シェアする文面を作成
                 const text = `FINNISH DEFENSE\nSCORE: ${score}\nHIGH SCORE: ${highScore}\n\nCan you save the city with SISU? 🇫🇮☄️\n`;
-
-                // ゲームのURL (あなたの公開URL)
                 const url = "https://junichiyamada.gitlab.io/finnish-defense/";
-
-                // ハッシュタグ
                 const hashtags = "FinnishDefense,TypingGame,IndieDev";
-
-                // X (Twitter) の投稿画面を開くURLを作成
                 const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}&hashtags=${hashtags}`;
-
-                // 別タブで開く
                 window.open(shareUrl, '_blank');
+            });
+
+            document.getElementById('titleButton').addEventListener('click', () => {
+                location.reload();
             });
         }
         init();
