@@ -180,7 +180,6 @@
         </div>
     </div>
 
-    <!-- 入力エリア (z-40) -->
     <div id="inputArea" class="absolute bottom-0 w-full p-4 z-40 flex justify-center items-center">
         <div class="relative w-full max-w-2xl">
             <div
@@ -299,7 +298,7 @@
         const sound = new SoundManager();
 
         // バージョン更新
-        const GAME_VERSION = "v20260112.12";
+        const GAME_VERSION = "v20260112.13";
 
         let gameState = 'start';
         let animationFrameId; 
@@ -339,7 +338,6 @@
             }
 
             update() {
-                // 修正: 撃破モード中もタイマーを進める (これがないと透明にならない)
                 if (this.isDying) {
                     this.hitTimer++; 
                     return 'dying';
@@ -410,13 +408,14 @@
 
                     if (matchLength > 0) {
                         if (isMismatch) {
-                            ctx.fillStyle = '#ef4444'; 
-                            ctx.shadowColor = '#ef4444';
+                            ctx.fillStyle = '#6b7280'; // 修正: 赤からダークグレーに変更
+                            ctx.shadowBlur = 0; // 発光なし
                         } else {
                             ctx.fillStyle = '#22d3ee'; 
                             ctx.shadowColor = '#22d3ee';
+                            ctx.shadowBlur = 15; 
                         }
-                        ctx.shadowBlur = 15; 
+                        
                         ctx.textAlign = 'left'; 
                         ctx.fillText(highlightText, startX, textY);
                         ctx.shadowBlur = 0; 
@@ -669,7 +668,6 @@
                         meteors.splice(i, 1);
                     }
                     else if (status === 'dying') {
-                        // 修正: 余韻時間が延びたので、削除判定も延長 (180フレーム)
                         if (meteors[i].hitTimer > 180 && meteors[i].allTrailsGone) {
                             meteors.splice(i, 1);
                         }
