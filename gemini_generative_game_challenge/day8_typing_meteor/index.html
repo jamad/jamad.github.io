@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Dark Readerなどの拡張機能による色変換をブロック -->
     <meta name="darkreader-lock">
     <title>Finnish Defense</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -29,12 +28,10 @@
             background-color: #0f172a;
         }
 
-        /* 通常のネオンテキスト */
         .neon-text {
             text-shadow: 0 0 2px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 0, 222, 0.4);
         }
 
-        /* タイトル専用スタイル */
         .title-style {
             -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
             filter: drop-shadow(0 0 5px rgba(255, 0, 222, 0.5)) drop-shadow(0 0 10px rgba(255, 0, 222, 0.3));
@@ -102,7 +99,6 @@
             caret-color: #22d3ee;
         }
 
-        /* フッターリンクのスタイル */
         #globalFooter a {
             text-decoration: none;
             transition: color 0.2s;
@@ -112,7 +108,6 @@
             text-decoration: underline;
         }
 
-        /* 復活: デバッグ情報用のスタイル */
         #debugInfo {
             position: fixed;
             top: 60px;
@@ -126,19 +121,17 @@
             z-index: 100;
             display: none; /* デフォルトは非表示 */
             pointer-events: none;
+            white-space: pre;
         }
     </style>
 </head>
 
 <body class="text-white h-[100dvh] w-screen flex flex-col relative overflow-hidden">
     
-    <!-- 背景 (z-0) -->
     <div id="bgLayer" class="absolute inset-0 z-0"></div>
 
-    <!-- 復活: デバッグ用コンテナ -->
     <div id="debugInfo">FPS: 0</div>
 
-    <!-- UI 左側 (z-10) -->
     <div class="absolute top-0 left-0 w-full px-4 pt-[max(1rem,env(safe-area-inset-top))] flex justify-between items-start z-10 ui-layer-left pointer-events-none">
         <div class="flex flex-col">
             <div class="text-sm font-bold text-yellow-600 mt-2">HI-SCORE: <span id="highScoreDisplay">0</span></div>
@@ -147,10 +140,8 @@
         </div>
     </div>
 
-    <!-- キャンバス (z-20) -->
     <canvas id="gameCanvas" class="absolute inset-0 z-20"></canvas>
 
-    <!-- UI 右側 (リスト) (z-60) -->
     <div class="absolute top-0 right-0 p-4 pt-[max(1rem,env(safe-area-inset-top))] z-[60] pointer-events-none">
         <div id="logContainer"
             class="w-48 h-64 bg-slate-900/80 border border-slate-600 rounded p-2 flex flex-col relative hide-on-keyboard transition-all duration-500 pointer-events-auto">
@@ -159,7 +150,6 @@
         </div>
     </div>
 
-    <!-- スタート画面 (z-50) -->
     <div id="startScreen"
         class="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center pointer-events-auto">
         <h1 class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-purple-400 to-pink-600 mb-4 text-center title-style">
@@ -176,7 +166,6 @@
         </button>
     </div>
 
-    <!-- ゲームオーバー画面 (z-50) -->
     <div id="gameOverScreen"
         class="hidden absolute inset-0 z-50 bg-red-900/90 flex flex-col items-center justify-center pointer-events-auto">
         <h1 class="text-6xl font-bold text-white mb-4">GAME OVER</h1>
@@ -317,7 +306,7 @@
         const debugInfo = document.getElementById('debugInfo');
         const sound = new SoundManager();
 
-        const GAME_VERSION = "v20260119.3";
+        const GAME_VERSION = "v20260119.5";
 
         let gameState = 'start';
         let animationFrameId; 
@@ -331,10 +320,10 @@
         
         let cachedHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
-        // デバッグ用
         let lastTime = 0;
         let showDebug = false;
         let lastDebugUpdateTime = 0;
+        let minFPS = 60; 
 
         class Meteor {
             constructor() {
@@ -580,6 +569,8 @@
             score = 0; health = 100; frameCount = 0; difficultyMultiplier = 1.0; 
             meteors = []; lasers = []; particles = [];
             defeatedList.innerHTML = ''; inputElement.value = ''; inputElement.focus();
+            
+            minFPS = 60;
 
             document.getElementById('highScoreDisplay').textContent = highScore;
 
@@ -681,11 +672,21 @@
             if (gameState === 'start') return;
             
             if (!lastTime) lastTime = timestamp;
+            const delta = timestamp - lastTime;
             
-            // Debug Update (0.5s interval)
+            // FPS計算
+            const currentFPS = Math.round(1000 / (delta + 0.001));
+            
+            // プレイ中、かつ開始直後(30フレーム)でなければ記録
+            if (gameState === 'playing' && frameCount > 30) {
+                if (currentFPS < minFPS) {
+                    minFPS = currentFPS;
+                }
+            }
+
+            // UI更新 (0.5秒ごと)
             if (showDebug && timestamp - lastDebugUpdateTime > 500) {
-                const currentFPS = Math.round(1000 / (timestamp - lastTime + 0.001));
-                debugInfo.innerHTML = `FPS: ${currentFPS}<br>Meteors: ${meteors.length}<br>Particles: ${particles.length}`;
+                debugInfo.innerHTML = `FPS: ${currentFPS} (Min: ${minFPS})<br>Meteors: ${meteors.length}<br>Particles: ${particles.length}`;
                 lastDebugUpdateTime = timestamp;
             }
             lastTime = timestamp;
@@ -728,13 +729,19 @@
 
         function parseWordData(data) {
             const list = [];
+            const isFinlandWord = (word) => /^[a-zA-ZäöÄÖ\s-]+$/.test(word);
+
             Object.values(data).forEach(entry => {
-                if (entry.lemma && entry.en) {
-                    list.push({ fi: entry.lemma, en: entry.en });
+                if (entry.lemma && entry.en && isFinlandWord(entry.lemma)) {
+                    list.push({ fi: entry.lemma.trim(), en: entry.en });
                 }
                 if (entry.forms && Array.isArray(entry.forms)) {
                     entry.forms.forEach(form => {
-                        list.push({ fi: form, en: entry.en });
+                        const cleanForm = form.trim();
+                        // 数字や英語が含まれる変化形は除外
+                        if (cleanForm && isFinlandWord(cleanForm)) {
+                            list.push({ fi: cleanForm, en: entry.en });
+                        }
                     });
                 }
             });
@@ -820,20 +827,15 @@
                 }
             });
 
-            // 修正: Alt+D イベントを window に移動
             window.addEventListener('keydown', (e) => {
-                // Debug Toggle
                 if (e.altKey && e.key.toLowerCase() === 'd') {
-                    e.preventDefault(); // アドレスバーへのフォーカスを阻止
+                    e.preventDefault(); 
                     showDebug = !showDebug;
                     debugInfo.style.display = showDebug ? 'block' : 'none';
                     return;
                 }
 
                 if (e.key === 'Process' || e.isComposing) {
-                    // showWarning("⚠️ TURN OFF JAPANESE IME..."); 
-                    // ※ showWarning関数は下で定義されているため、ここでは省略するか移動が必要
-                    // 簡略化のためコンソールログのみ
                     console.log("IME Detected");
                     return;
                 }
@@ -916,8 +918,6 @@
                 location.reload();
             });
         }
-        
-        // initを呼び出す
         init();
     </script>
 </body>
