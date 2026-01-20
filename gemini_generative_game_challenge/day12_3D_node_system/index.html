@@ -4,83 +4,482 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Constellio v20260120.3</title>
+    <title>Constellio v20260120.4</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-user-select: none; user-select: none; }
-        #canvas-container { width: 100vw; height: 100vh; touch-action: none; cursor: default; }
-        
-        #ui-layer { position: absolute; top: 20px; left: 20px; color: rgba(255, 255, 255, 0.8); pointer-events: none; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8); z-index: 10; }
-        h1 { margin: 0; font-size: 1.6rem; letter-spacing: 2px; font-weight: 300; }
-        p { margin: 5px 0; font-size: 0.9rem; }
-        .shortcut-help { font-size: 0.8rem; color: #aaa; margin-top: 2px; }
-
-        #debug-overlay {
-            display: none; position: absolute; top: 10px; right: 10px; width: 320px;
-            background: rgba(0, 0, 0, 0.85); color: #0f0; font-family: 'Consolas', monospace;
-            font-size: 0.75rem; padding: 10px; border-radius: 4px; pointer-events: none; z-index: 200;
-            white-space: pre-wrap; line-height: 1.3; border: 1px solid #0f0;
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        /* Fixed Width */
-        #search-container { position: absolute; top: 130px; right: 20px; width: 33vw; min-width: 300px; height: 40px; z-index: 10; }
-        #search-input { width: 100%; height: 100%; background: rgba(20, 20, 40, 0.85); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0 12px; color: white; font-size: 14px; backdrop-filter: blur(8px); outline: none; box-sizing: border-box; }
-        #search-input:focus { border-color: #4a90e2; background: rgba(30, 30, 60, 0.9); }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            touch-action: none;
+            cursor: default;
+        }
 
-        /* Fixed Width */
-        #outliner { position: absolute; top: 180px; right: 20px; width: 33vw; min-width: 300px; max-height: calc(100vh - 230px); background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: auto; padding: 8px; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; }
-        #outliner::-webkit-scrollbar { width: 6px; height: 6px; }
-        #outliner::-webkit-scrollbar-thumb { background-color: #4a90e2; border-radius: 3px; }
-        .outliner-item { padding: 1px 4px; margin-bottom: 1px; border-radius: 2px; cursor: pointer; font-size: 0.85rem; line-height: 1.2; white-space: pre; overflow: visible; transition: background 0.1s; display: block; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; color: rgba(255,255,255,0.5); width: auto; min-width: 100%; box-sizing: border-box; }
-        .outliner-item:hover { background: rgba(255, 255, 255, 0.1); color: #fff !important; }
-        .outliner-item.active { background: rgba(74, 144, 226, 0.2); color: #fff !important; font-weight: bold; border-left: 2px solid #4a90e2; }
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
 
-        #config-btn { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 20px; color: white; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2); transition: background 0.2s; z-index: 150; }
-        #config-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
 
-        #config-panel { display: none; position: absolute; top: 70px; right: 20px; width: 240px; background: rgba(30, 30, 50, 0.95); backdrop-filter: blur(12px); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); z-index: 150; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .config-item { margin-bottom: 15px; }
-        .config-label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 5px; }
-        .value-display { float: right; color: #4a90e2; font-weight: bold; }
-        input[type="range"] { width: 100%; cursor: pointer; }
-        select { width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #555; border-radius: 6px; outline: none; cursor: pointer; }
-        select option { background: #1e1e32; }
-        .config-action-btn { display: block; width: 100%; padding: 8px; margin-top: 8px; background: #4a90e2; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
-        .config-action-btn:hover { background: #357abd; }
-        .config-action-btn.secondary { background: #333; border: 1px solid #555; }
-        .config-action-btn.secondary:hover { background: #444; }
+        p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
 
-        #context-menu { display: none; position: absolute; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; padding: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); width: 220px; z-index: 100; }
-        .menu-header { font-weight: bold; padding: 8px 12px; border-bottom: 1px solid #eee; margin-bottom: 4px; color: #333; text-align: center; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .menu-item { display: block; width: 100%; padding: 10px 12px; margin: 2px 0; background: none; border: none; text-align: left; font-size: 14px; cursor: pointer; border-radius: 6px; color: #333; }
-        .menu-item:hover { background-color: #f0f0f0; }
-        .menu-item.delete { color: #ff4757; }
-        .menu-item.cancel { color: #666; border-top: 1px solid #eee; margin-top: 4px; }
+        .shortcut-help {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 2px;
+        }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 200; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); }
-        .modal-title { margin: 0 0 15px 0; color: #333; font-size: 1.1rem; }
-        .modal-desc { font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5; }
-        input[type="text"] { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 20px; font-size: 16px; border: 2px solid #eee; border-radius: 8px; outline: none; }
-        input[type="text"]:focus { border-color: #4a90e2; }
-        input[type="color"] { width: 100%; height: 50px; cursor: pointer; border: none; padding: 0; background: none; }
-        
-        .modal-buttons { display: flex; justify-content: space-between; gap: 10px; }
-        .modal-buttons-stack { display: flex; flex-direction: column; gap: 10px; }
-        .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; }
-        .btn-confirm { background: #4a90e2; color: white; }
-        .btn-danger { background: #ff4757; color: white; }
-        .btn-warning { background: #ffaa00; color: white; }
-        .btn-cancel { background: #f0f2f5; color: #666; }
+        #debug-overlay {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 320px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #0f0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.75rem;
+            padding: 10px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 200;
+            white-space: pre-wrap;
+            line-height: 1.3;
+            border: 1px solid #0f0;
+        }
 
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 300; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 15px; opacity: 0; transition: opacity 0.3s, bottom 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        #toast.show { visibility: visible; opacity: 1; bottom: 60px; }
-        #toast.success { background-color: #2ecc71; }
-        #toast.error { background-color: #e74c3c; }
+        /* Fixed Width & POSITION CHANGE: left */
+        #search-container {
+            position: absolute;
+            top: 130px;
+            left: 20px;
+            width: 33vw;
+            min-width: 300px;
+            height: 40px;
+            z-index: 10;
+        }
 
-        #footer { position: absolute; bottom: 10px; width: 100%; padding: 0 20px; box-sizing: border-box; color: rgba(255,255,255,0.4); font-size: 0.8rem; pointer-events: auto; z-index: 10; display: flex; justify-content: space-between; }
-        #footer-left, #footer-right { pointer-events: auto; }
-        #footer a { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s; }
-        #footer a:hover { color: #fff; text-decoration: underline; }
+        #search-input {
+            width: 100%;
+            height: 100%;
+            background: rgba(20, 20, 40, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 0 12px;
+            color: white;
+            font-size: 14px;
+            backdrop-filter: blur(8px);
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        #search-input:focus {
+            border-color: #4a90e2;
+            background: rgba(30, 30, 60, 0.9);
+        }
+
+        /* Fixed Width & POSITION CHANGE: left */
+        #outliner {
+            position: absolute;
+            top: 180px;
+            left: 20px;
+            width: 33vw;
+            min-width: 300px;
+            max-height: calc(100vh - 230px);
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: auto;
+            padding: 8px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        #outliner::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        #outliner::-webkit-scrollbar-thumb {
+            background-color: #4a90e2;
+            border-radius: 3px;
+        }
+
+        .outliner-item {
+            padding: 1px 4px;
+            margin-bottom: 1px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            line-height: 1.2;
+            white-space: pre;
+            overflow: visible;
+            transition: background 0.1s;
+            display: block;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            color: rgba(255, 255, 255, 0.5);
+            width: auto;
+            min-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .outliner-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff !important;
+        }
+
+        .outliner-item.active {
+            background: rgba(74, 144, 226, 0.2);
+            color: #fff !important;
+            font-weight: bold;
+            border-left: 2px solid #4a90e2;
+        }
+
+        #config-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 20px;
+            color: white;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background 0.2s;
+            z-index: 150;
+        }
+
+        #config-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        #config-panel {
+            display: none;
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            width: 240px;
+            background: rgba(30, 30, 50, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 150;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .config-item {
+            margin-bottom: 15px;
+        }
+
+        .config-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .value-display {
+            float: right;
+            color: #4a90e2;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid #555;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select option {
+            background: #1e1e32;
+        }
+
+        .config-action-btn {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .config-action-btn:hover {
+            background: #357abd;
+        }
+
+        .config-action-btn.secondary {
+            background: #333;
+            border: 1px solid #555;
+        }
+
+        .config-action-btn.secondary:hover {
+            background: #444;
+        }
+
+        #context-menu {
+            display: none;
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 220px;
+            z-index: 100;
+        }
+
+        .menu-header {
+            font-weight: bold;
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 4px;
+            color: #333;
+            text-align: center;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .menu-item {
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            margin: 2px 0;
+            background: none;
+            border: none;
+            text-align: left;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 6px;
+            color: #333;
+        }
+
+        .menu-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .menu-item.delete {
+            color: #ff4757;
+        }
+
+        .menu-item.cancel {
+            color: #666;
+            border-top: 1px solid #eee;
+            margin-top: 4px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-title {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .modal-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4a90e2;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 50px;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+            background: none;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .modal-buttons-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-confirm {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffaa00;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #f0f2f5;
+            color: #666;
+        }
+
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: fixed;
+            z-index: 300;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 15px;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 60px;
+        }
+
+        #toast.success {
+            background-color: #2ecc71;
+        }
+
+        #toast.error {
+            background-color: #e74c3c;
+        }
+
+        #footer {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.8rem;
+            pointer-events: auto;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #footer-left,
+        #footer-right {
+            pointer-events: auto;
+        }
+
+        #footer a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        #footer a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -94,12 +493,15 @@
         <h1 id="ui-title">Constellio</h1>
         <p id="ui-help-mouse">Click: Select / DblClick: Focus / Right: Menu</p>
         <p id="ui-help-wasd">Move: A(Parent) D(Child) W(Prev) S(Next)</p>
-        <p class="shortcut-help" id="ui-help-keys">Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)</p>
-        <p class="shortcut-help" id="ui-help-numpad" style="font-size:0.75rem; color:#888;">Numpad: 1(Front) 3(Right) 7(Top) 4/6/2/8(Orbit)</p>
+        <p class="shortcut-help" id="ui-help-keys">Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)
+        </p>
+        <p class="shortcut-help" id="ui-help-numpad" style="font-size:0.75rem; color:#888;">Numpad: 1(Front) 3(Right)
+            7(Top) 4/6/2/8(Orbit)</p>
     </div>
 
     <div id="search-container">
-        <input type="search" id="search-input" placeholder="🔍 Search Nodes (Enter to Jump)..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter') jumpToFirstMatch()">
+        <input type="search" id="search-input" placeholder="🔍 Search Nodes (Enter to Jump)..."
+            oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter') jumpToFirstMatch()">
     </div>
 
     <div id="outliner"></div>
@@ -115,7 +517,9 @@
             </select>
         </div>
         <div class="config-item">
-            <button class="config-action-btn" id="btn-wiki" onclick="window.open('https://gitlab.com/junichiyamada/3d-mindmap/-/wikis/HowToUse', '_blank')">📖 How to Use</button>
+            <button class="config-action-btn" id="btn-wiki"
+                onclick="window.open('https://gitlab.com/junichiyamada/3d-mindmap/-/wikis/HowToUse', '_blank')">📖 How
+                to Use</button>
             <button class="config-action-btn" id="btn-debug-toggle" onclick="toggleDebug()">🐞 Toggle Debug</button>
         </div>
         <div class="config-item">
@@ -123,7 +527,8 @@
                 <span id="label-dist">Node Distance</span>
                 <span class="value-display" id="dist-val">8.0</span>
             </label>
-            <input type="range" id="dist-slider" min="0.1" max="20" step="0.1" value="8" oninput="updateSpringLength(this.value)">
+            <input type="range" id="dist-slider" min="0.1" max="20" step="0.1" value="8"
+                oninput="updateSpringLength(this.value)">
         </div>
         <!-- Fog Control -->
         <div class="config-item">
@@ -131,15 +536,19 @@
                 <span id="label-fog">Fog Density</span>
                 <span class="value-display" id="fog-val">0.0020</span>
             </label>
-            <input type="range" id="fog-slider" min="0" max="0.01" step="0.0001" value="0.002" oninput="updateFogDensity(this.value)">
+            <input type="range" id="fog-slider" min="0" max="0.01" step="0.0001" value="0.002"
+                oninput="updateFogDensity(this.value)">
         </div>
 
         <div class="config-item">
-            <button class="config-action-btn secondary" id="btn-reset" onclick="resetCameraToRoot()">🎯 Reset Camera to Root</button>
+            <button class="config-action-btn secondary" id="btn-reset" onclick="resetCameraToRoot()">🎯 Reset Camera to
+                Root</button>
             <hr style="border:0; border-top:1px solid #555; margin:10px 0;">
             <button class="config-action-btn" id="btn-save-file" onclick="exportJSON()">⬇️ Save to File (.json)</button>
-            <button class="config-action-btn" id="btn-load-file" onclick="document.getElementById('file-input').click()">⬆️ Load from File (.json)</button>
-            <button class="config-action-btn secondary" id="btn-close" onclick="toggleConfig()" style="margin-top: 15px;">Close</button>
+            <button class="config-action-btn" id="btn-load-file"
+                onclick="document.getElementById('file-input').click()">⬆️ Load from File (.json)</button>
+            <button class="config-action-btn secondary" id="btn-close" onclick="toggleConfig()"
+                style="margin-top: 15px;">Close</button>
         </div>
     </div>
 
@@ -172,7 +581,8 @@
             <h3 class="modal-title" id="modal-rename-title">Rename Node</h3>
             <input type="text" id="node-name-input" placeholder="New Name">
             <div class="modal-buttons">
-                <button class="modal-btn btn-cancel" id="btn-rename-cancel" onclick="closeModal('rename-modal')">Cancel</button>
+                <button class="modal-btn btn-cancel" id="btn-rename-cancel"
+                    onclick="closeModal('rename-modal')">Cancel</button>
                 <button class="modal-btn btn-confirm" id="btn-rename-ok" onclick="confirmRename()">OK</button>
             </div>
         </div>
@@ -183,7 +593,8 @@
             <h3 class="modal-title" id="modal-url-title">Edit URL</h3>
             <input type="text" id="node-url-input" placeholder="https://...">
             <div class="modal-buttons">
-                <button class="modal-btn btn-cancel" id="btn-url-cancel" onclick="closeModal('url-modal')">Cancel</button>
+                <button class="modal-btn btn-cancel" id="btn-url-cancel"
+                    onclick="closeModal('url-modal')">Cancel</button>
                 <button class="modal-btn btn-confirm" id="btn-url-ok" onclick="confirmUrl()">OK</button>
             </div>
         </div>
@@ -194,7 +605,8 @@
             <h3 class="modal-title" id="modal-color-title">Change Color</h3>
             <input type="color" id="node-color-input" value="#ffffff">
             <div class="modal-buttons">
-                <button class="modal-btn btn-cancel" id="btn-color-cancel" onclick="closeModal('color-modal')">Cancel</button>
+                <button class="modal-btn btn-cancel" id="btn-color-cancel"
+                    onclick="closeModal('color-modal')">Cancel</button>
                 <button class="modal-btn btn-confirm" id="btn-color-ok" onclick="confirmColor()">OK</button>
             </div>
         </div>
@@ -205,9 +617,12 @@
             <h3 class="modal-title" id="modal-del-title">Confirm Deletion</h3>
             <p class="modal-desc" id="modal-del-desc">Deleting this node.<br>Choose how to handle children.</p>
             <div class="modal-buttons-stack">
-                <button class="modal-btn btn-danger" id="btn-del-all" onclick="executeDelete('all')">🗑️ Delete All Descendants</button>
-                <button class="modal-btn btn-warning" id="btn-del-link" onclick="executeDelete('reparent')">🔗 Reparent Children</button>
-                <button class="modal-btn btn-cancel" id="btn-del-cancel" onclick="closeModal('delete-modal')">Cancel</button>
+                <button class="modal-btn btn-danger" id="btn-del-all" onclick="executeDelete('all')">🗑️ Delete All
+                    Descendants</button>
+                <button class="modal-btn btn-warning" id="btn-del-link" onclick="executeDelete('reparent')">🔗 Reparent
+                    Children</button>
+                <button class="modal-btn btn-cancel" id="btn-del-cancel"
+                    onclick="closeModal('delete-modal')">Cancel</button>
             </div>
         </div>
     </div>
@@ -219,7 +634,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260120.3";
+        const APP_VERSION = "v20260120.4";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
@@ -261,7 +676,7 @@
 
         function changeLanguage(lang) {
             currentLang = lang; localStorage.setItem('mindmap_lang', lang); const t = i18n[lang];
-            const set = (id, txt) => { const e = document.getElementById(id); if(e) e.innerText = txt; }
+            const set = (id, txt) => { const e = document.getElementById(id); if (e) e.innerText = txt; }
             set('ui-title', t.title); set('ui-help-mouse', t.helpMouse); set('ui-help-wasd', t.helpWasd); set('ui-help-keys', t.helpKeys); set('ui-help-numpad', t.helpNum);
             document.getElementById('search-input').placeholder = t.searchPlace;
             set('label-lang', t.langLabel); set('label-dist', t.distLabel); set('label-fog', t.fogLabel);
@@ -275,7 +690,7 @@
         }
 
         const toastEl = document.getElementById('toast');
-        function showToast(msgKey, type='success') {
+        function showToast(msgKey, type = 'success') {
             const msg = i18n[currentLang][msgKey] || msgKey; toastEl.textContent = msg; toastEl.className = type === 'success' ? 'show success' : 'show error';
             setTimeout(() => { toastEl.className = toastEl.className.replace('show', ''); }, 3000);
         }
@@ -286,24 +701,24 @@
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             const now = audioCtx.currentTime;
-            if(type==='pop'){ osc.type='sine';osc.frequency.setValueAtTime(400,now);osc.frequency.exponentialRampToValueAtTime(800,now+0.1);gain.gain.setValueAtTime(0.5,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.2);osc.start(now);osc.stop(now+0.2); }
-            else if(type==='add'){ osc.type='triangle';osc.frequency.setValueAtTime(300,now);osc.frequency.linearRampToValueAtTime(600,now+0.1);gain.gain.setValueAtTime(0.3,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.4);osc.start(now);osc.stop(now+0.4); }
-            else if(type==='click'){ osc.type='square';osc.frequency.setValueAtTime(800,now);gain.gain.setValueAtTime(0.1,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.05);osc.start(now);osc.stop(now+0.05); }
-            else if(type==='delete'){ osc.type='sawtooth';osc.frequency.setValueAtTime(150,now);osc.frequency.linearRampToValueAtTime(50,now+0.3);gain.gain.setValueAtTime(0.3,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.3);osc.start(now);osc.stop(now+0.3); }
-            else if(type==='whoosh'){ const n=audioCtx.createBufferSource();const b=audioCtx.createBuffer(1,audioCtx.sampleRate*0.5,audioCtx.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=b;const f=audioCtx.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(200,now);f.frequency.linearRampToValueAtTime(2000,now+0.3);n.connect(f);f.connect(gain);gain.gain.setValueAtTime(0.5,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.5);n.start(now);n.stop(now+0.5); }
-            else if(type==='cancel'){ osc.type='sine';osc.frequency.setValueAtTime(300,now);osc.frequency.exponentialRampToValueAtTime(100,now+0.15);gain.gain.setValueAtTime(0.3,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.2);osc.start(now);osc.stop(now+0.2); }
+            if (type === 'pop') { osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.1); gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
+            else if (type === 'add') { osc.type = 'triangle'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(600, now + 0.1); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4); osc.start(now); osc.stop(now + 0.4); }
+            else if (type === 'click') { osc.type = 'square'; osc.frequency.setValueAtTime(800, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05); osc.start(now); osc.stop(now + 0.05); }
+            else if (type === 'delete') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(50, now + 0.3); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3); }
+            else if (type === 'whoosh') { const n = audioCtx.createBufferSource(); const b = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.5, audioCtx.sampleRate); const d = b.getChannelData(0); for (let i = 0; i < d.length; i++)d[i] = Math.random() * 2 - 1; n.buffer = b; const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(200, now); f.frequency.linearRampToValueAtTime(2000, now + 0.3); n.connect(f); f.connect(gain); gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5); n.start(now); n.stop(now + 0.5); }
+            else if (type === 'cancel') { osc.type = 'sine'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.15); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
         }
 
         const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene(); 
+        const scene = new THREE.Scene();
         let fogDensity = 0.002;
         scene.fog = new THREE.FogExp2(0x1a1a2e, fogDensity);
-        
+
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000); camera.position.set(0, 20, 30);
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(window.devicePixelRatio); container.appendChild(renderer.domElement);
         scene.add(new THREE.AmbientLight(0xffffff, 0.6));
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8); dirLight.position.set(10, 20, 10); scene.add(dirLight);
-        
+
         const controls = new THREE.TrackballControls(camera, renderer.domElement);
         controls.rotateSpeed = 5.0; controls.zoomSpeed = 1.2; controls.panSpeed = 0.8; controls.noZoom = false; controls.noPan = false; controls.staticMoving = false; controls.dynamicDampingFactor = 0.1;
 
@@ -314,57 +729,57 @@
         }
 
         function createStarField() {
-            const add = (c,s,col) => {
-                const geo=new THREE.BufferGeometry(); const pos=new Float32Array(c*3);
-                for(let i=0;i<c;i++){
-                    const r=800+Math.random()*400, t=Math.random()*Math.PI*2, p=Math.acos(2*Math.random()-1);
-                    pos[i*3]=r*Math.sin(p)*Math.cos(t); pos[i*3+1]=r*Math.sin(p)*Math.sin(t); pos[i*3+2]=r*Math.cos(p);
+            const add = (c, s, col) => {
+                const geo = new THREE.BufferGeometry(); const pos = new Float32Array(c * 3);
+                for (let i = 0; i < c; i++) {
+                    const r = 800 + Math.random() * 400, t = Math.random() * Math.PI * 2, p = Math.acos(2 * Math.random() - 1);
+                    pos[i * 3] = r * Math.sin(p) * Math.cos(t); pos[i * 3 + 1] = r * Math.sin(p) * Math.sin(t); pos[i * 3 + 2] = r * Math.cos(p);
                 }
-                geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-                scene.add(new THREE.Points(geo,new THREE.PointsMaterial({size:s,color:col,transparent:true,opacity:0.8,fog:false})));
+                geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: s, color: col, transparent: true, opacity: 0.8, fog: false })));
             };
-            add(1500,1.2,0xaaaaaa); add(400,2.5,0xffffff);
+            add(1500, 1.2, 0xaaaaaa); add(400, 2.5, 0xffffff);
         }
         createStarField();
 
-        let nodes=[], connections=[], nextId=1, selectedNode=null, activeNode=null, springLength=8, repulsionStrength=20;
+        let nodes = [], connections = [], nextId = 1, selectedNode = null, activeNode = null, springLength = 8, repulsionStrength = 20;
         const indicatorGroup = new THREE.Group(); scene.add(indicatorGroup);
         const indicators = {};
-        const triGeo = new THREE.Shape(); triGeo.moveTo(0,0.5); triGeo.lineTo(0.4,-0.3); triGeo.lineTo(-0.4,-0.3);
-        const triMat = color => new THREE.MeshBasicMaterial({color:color,side:THREE.DoubleSide,transparent:true,opacity:0.8});
-        const mkTri = (c,z,x,y) => { const m=new THREE.Mesh(new THREE.ShapeGeometry(triGeo),triMat(c)); m.rotation.z=z; m.position.set(x,y,0); m.scale.set(0.75,0.75,0.75); return m; };
-        
-        indicators.a = mkTri(0xff4444, Math.PI/2, -2.4, 0); 
-        indicators.d = mkTri(0xffaa00, -Math.PI/2, 2.4, 0); 
-        indicators.w = mkTri(0x44ff44, 0, 0, 1.7);          
-        indicators.s = mkTri(0x00ffff, Math.PI, 0, -1.7);   
-        Object.values(indicators).forEach(m=>indicatorGroup.add(m));
+        const triGeo = new THREE.Shape(); triGeo.moveTo(0, 0.5); triGeo.lineTo(0.4, -0.3); triGeo.lineTo(-0.4, -0.3);
+        const triMat = color => new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+        const mkTri = (c, z, x, y) => { const m = new THREE.Mesh(new THREE.ShapeGeometry(triGeo), triMat(c)); m.rotation.z = z; m.position.set(x, y, 0); m.scale.set(0.75, 0.75, 0.75); return m; };
+
+        indicators.a = mkTri(0xff4444, Math.PI / 2, -2.4, 0);
+        indicators.d = mkTri(0xffaa00, -Math.PI / 2, 2.4, 0);
+        indicators.w = mkTri(0x44ff44, 0, 0, 1.7);
+        indicators.s = mkTri(0x00ffff, Math.PI, 0, -1.7);
+        Object.values(indicators).forEach(m => indicatorGroup.add(m));
 
         const gizmoScene = new THREE.Scene(); const gizmoSize = 180;
-        const gizmoCam = new THREE.OrthographicCamera(-gizmoSize/2, gizmoSize/2, gizmoSize/2, -gizmoSize/2, 1, 1000); gizmoCam.position.z = 200;
+        const gizmoCam = new THREE.OrthographicCamera(-gizmoSize / 2, gizmoSize / 2, gizmoSize / 2, -gizmoSize / 2, 1, 1000); gizmoCam.position.z = 200;
         const gizmoRoot = new THREE.Group(); gizmoScene.add(gizmoRoot);
         gizmoRoot.add(new THREE.Mesh(new THREE.SphereGeometry(65, 16, 16), new THREE.MeshBasicMaterial({ color: 0x4a4a6a, transparent: true, opacity: 0.15, wireframe: true })));
         const createRing = (r, color, axis) => {
-            const c = new THREE.EllipseCurve(0,0,r,r,0,2*Math.PI,false,0); const g = new THREE.BufferGeometry().setFromPoints(c.getPoints(64));
+            const c = new THREE.EllipseCurve(0, 0, r, r, 0, 2 * Math.PI, false, 0); const g = new THREE.BufferGeometry().setFromPoints(c.getPoints(64));
             const l = new THREE.Line(g, new THREE.LineBasicMaterial({ color: color, linewidth: 2 }));
-            if(axis==='x') l.rotation.y=Math.PI/2; if(axis==='y') l.rotation.x=Math.PI/2; return l;
+            if (axis === 'x') l.rotation.y = Math.PI / 2; if (axis === 'y') l.rotation.x = Math.PI / 2; return l;
         };
         gizmoRoot.add(createRing(60, 0xff4444, 'x')); gizmoRoot.add(createRing(60, 0x44ff44, 'y')); gizmoRoot.add(createRing(60, 0x4444ff, 'z'));
         const dotFront = new THREE.Mesh(new THREE.CircleGeometry(6, 12), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
         dotFront.position.z = 65; gizmoRoot.add(dotFront);
-        const ringGeo = new THREE.BufferGeometry().setFromPoints(new THREE.EllipseCurve(0,0,6,6,0,2*Math.PI).getPoints(32));
+        const ringGeo = new THREE.BufferGeometry().setFromPoints(new THREE.EllipseCurve(0, 0, 6, 6, 0, 2 * Math.PI).getPoints(32));
         const dotBack = new THREE.Line(ringGeo, new THREE.LineBasicMaterial({ color: 0xffff00 }));
         dotBack.position.z = 65; gizmoRoot.add(dotBack);
 
         function updateIndicators() {
-            if(!activeNode){ indicatorGroup.visible=false; return; }
-            indicatorGroup.visible=true; indicatorGroup.position.copy(activeNode.mesh.position); indicatorGroup.quaternion.copy(camera.quaternion);
+            if (!activeNode) { indicatorGroup.visible = false; return; }
+            indicatorGroup.visible = true; indicatorGroup.position.copy(activeNode.mesh.position); indicatorGroup.quaternion.copy(camera.quaternion);
             indicators.a.visible = !!activeNode.parent;
-            indicators.d.visible = nodes.some(n=>n.parent===activeNode);
-            if(activeNode.parent){
-                const s=nodes.filter(n=>n.parent===activeNode.parent).sort((a,b)=>a.id-b.id);
-                const i=s.indexOf(activeNode); indicators.w.visible=(i>0); indicators.s.visible=(i<s.length-1);
-            } else { indicators.w.visible=false; indicators.s.visible=false; }
+            indicators.d.visible = nodes.some(n => n.parent === activeNode);
+            if (activeNode.parent) {
+                const s = nodes.filter(n => n.parent === activeNode.parent).sort((a, b) => a.id - b.id);
+                const i = s.indexOf(activeNode); indicators.w.visible = (i > 0); indicators.s.visible = (i < s.length - 1);
+            } else { indicators.w.visible = false; indicators.s.visible = false; }
         }
 
         function getContrastColor(hex) {
@@ -374,58 +789,105 @@
             return (((r * 299) + (g * 587) + (b * 114)) / 1000) >= 128 ? '#000000' : '#ffffff';
         }
 
-        function createNodeTexture(id, text, url, color='#ffffff', isActive=false) {
-            const canvas=document.createElement('canvas'); canvas.width=512; canvas.height=320;
-            const ctx=canvas.getContext('2d'); ctx.fillStyle=color; ctx.fillRect(0,0,512,320);
-            ctx.lineWidth=15; 
+        // MODIFIED FUNCTION
+        function createNodeTexture(id, text, url, color = '#ffffff', isActive = false) {
+            const canvas = document.createElement('canvas');
+            // Change 1: Canvas to be widescreen (e.g., 640x240)
+            canvas.width = 640;
+            canvas.height = 240;
+            const ctx = canvas.getContext('2d');
+
+            // Background and border
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 12;
             ctx.strokeStyle = isActive ? '#ffaa00' : '#4a90e2';
-            ctx.strokeRect(0,0,512,320);
-            try{ const qr=new QRious({value:url,size:180,level:'L'}); ctx.drawImage(qr.canvas,30,70); }catch(e){}
-            ctx.fillStyle = getContrastColor(color); ctx.font='bold 48px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
-            const displayText = `${id}: ${text}`;
-            let l='', lc=0, y=60;
-            for(let i=0;i<displayText.length;i++){
-                if(ctx.measureText(l+displayText[i]).width>240 && i>0){ ctx.fillText(l,240,y); l=displayText[i]; y+=58; lc++; if(lc>=4){l=l.slice(0,-1)+'...';break;} } else l+=displayText[i];
+            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+            // QR code (smaller, top-left)
+            try {
+                const qr = new QRious({ value: url, size: 100, level: 'L' });
+                ctx.drawImage(qr.canvas, 25, 25);
+            } catch (e) { }
+
+            // Modified text rendering logic
+            ctx.fillStyle = getContrastColor(color);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+
+            // Display ID as a header
+            ctx.font = 'bold 32px sans-serif';
+            ctx.fillText(`ID: ${id}`, 150, 30);
+
+            // Main text
+            ctx.font = '36px sans-serif';
+            const displayText = text;
+            let line = '';
+            let y = 80;
+            const maxWidth = 450; // Widen the text area
+            const lineHeight = 45;
+
+            for (let i = 0; i < displayText.length; i++) {
+                const testLine = line + displayText[i];
+                if (ctx.measureText(testLine).width > maxWidth && i > 0) {
+                    ctx.fillText(line, 150, y);
+                    line = displayText[i];
+                    y += lineHeight;
+                    // Render up to 3 lines and then truncate
+                    if (y > 80 + lineHeight * 2) {
+                        line = line.substring(0, line.length - 1) + '…';
+                        break;
+                    }
+                } else {
+                    line = testLine;
+                }
             }
-            ctx.fillText(l,240,y);
+            ctx.fillText(line, 150, y);
+
             return new THREE.CanvasTexture(canvas);
         }
 
-        function createNode(text, parent=null, savedPos=null, color='#ffffff', savedId=null) {
+        // MODIFIED FUNCTION
+        function createNode(text, parent = null, savedPos = null, color = '#ffffff', savedId = null) {
             const id = savedId ? savedId : nextId++;
-            if(savedId) nextId = Math.max(nextId, savedId + 1);
+            if (savedId) nextId = Math.max(nextId, savedId + 1);
             const url = DEFAULT_URL;
-            const mesh = new THREE.Mesh(new THREE.PlaneGeometry(4,2.5), new THREE.MeshBasicMaterial({map:createNodeTexture(id, text, url, color, false), side:THREE.DoubleSide}));
-            
-            if(savedPos) mesh.position.copy(savedPos);
-            else if(parent) {
-                const a=Math.random()*Math.PI*2, d=springLength;
-                mesh.position.set(parent.mesh.position.x+Math.cos(a)*d, parent.mesh.position.y+(Math.random()-0.5)*d, parent.mesh.position.z+Math.sin(a)*d);
+
+            // Change 2: Adjust PlaneGeometry to match the new canvas aspect ratio
+            const mesh = new THREE.Mesh(
+                new THREE.PlaneGeometry(6.4, 2.4), // Corresponds to 640x240
+                new THREE.MeshBasicMaterial({ map: createNodeTexture(id, text, url, color, false), side: THREE.DoubleSide })
+            );
+
+            if (savedPos) mesh.position.copy(savedPos);
+            else if (parent) {
+                const a = Math.random() * Math.PI * 2, d = springLength;
+                mesh.position.set(parent.mesh.position.x + Math.cos(a) * d, parent.mesh.position.y + (Math.random() - 0.5) * d, parent.mesh.position.z + Math.sin(a) * d);
             }
             scene.add(mesh);
-            
-            const node = { id:id, mesh:mesh, text:text, color:color, url:url, velocity:new THREE.Vector3(), force:new THREE.Vector3(), parent:parent };
+
+            const node = { id: id, mesh: mesh, text: text, color: color, url: url, velocity: new THREE.Vector3(), force: new THREE.Vector3(), parent: parent };
             nodes.push(node);
-            
-            if(parent) {
+
+            if (parent) {
                 const geo = new THREE.BufferGeometry().setFromPoints([parent.mesh.position, mesh.position]);
                 const mat = new THREE.LineBasicMaterial({ color: 0x4a90e2, transparent: true, opacity: 0.8 });
                 const line = new THREE.Line(geo, mat);
                 scene.add(line);
-                connections.push({line:line, from:parent, to:node});
+                connections.push({ line: line, from: parent, to: node });
             }
-            if(nodes.length===1) setActiveNode(node);
+            if (nodes.length === 1) setActiveNode(node);
             updateOutliner(); return node;
         }
 
         let lastActiveNode = null;
         function setActiveNode(node) {
-            if(lastActiveNode && lastActiveNode !== node) {
+            if (lastActiveNode && lastActiveNode !== node) {
                 lastActiveNode.mesh.material.map = createNodeTexture(lastActiveNode.id, lastActiveNode.text, lastActiveNode.url, lastActiveNode.color, false);
             }
             activeNode = node;
             lastActiveNode = node;
-            if(node) {
+            if (node) {
                 node.mesh.material.map = createNodeTexture(node.id, node.text, node.url, node.color, true);
             }
             updateOutliner();
@@ -433,13 +895,13 @@
         }
 
         function snapView(dir) {
-            if(!activeNode) return;
+            if (!activeNode) return;
             const t = controls.target; const dist = camera.position.distanceTo(t);
-            if(dir==='front') camera.position.set(t.x, t.y, t.z + dist);
-            if(dir==='back')  camera.position.set(t.x, t.y, t.z - dist);
-            if(dir==='right') camera.position.set(t.x + dist, t.y, t.z);
-            if(dir==='top')   camera.position.set(t.x, t.y + dist, t.z);
-            camera.lookAt(t); camera.up.set(0,1,0); 
+            if (dir === 'front') camera.position.set(t.x, t.y, t.z + dist);
+            if (dir === 'back') camera.position.set(t.x, t.y, t.z - dist);
+            if (dir === 'right') camera.position.set(t.x + dist, t.y, t.z);
+            if (dir === 'top') camera.position.set(t.x, t.y + dist, t.z);
+            camera.lookAt(t); camera.up.set(0, 1, 0);
         }
 
         function rotateView(dx, dy) {
@@ -474,52 +936,52 @@ Velocity: ${vel}
 Nodes: ${nodes.length}`;
         }
 
-        const raycaster=new THREE.Raycaster();
+        const raycaster = new THREE.Raycaster();
         const pointer = new THREE.Vector2();
         const mouseP = new THREE.Vector2();
-        let isLongPress=false, pressTimer, startP={x:0,y:0};
-        let mouseDownPos = {x:0, y:0};
+        let isLongPress = false, pressTimer, startP = { x: 0, y: 0 };
+        let mouseDownPos = { x: 0, y: 0 };
         let menuTargetNode = null; // Store context menu target
 
-        function getInt(cx, cy){ 
-            mouseP.x = (cx / window.innerWidth) * 2 - 1; 
-            mouseP.y = -(cy / window.innerHeight) * 2 + 1; 
-            raycaster.setFromCamera(mouseP, camera); 
-            const i=raycaster.intersectObjects(nodes.map(n=>n.mesh)); 
-            return i.length>0?nodes.find(n=>n.mesh===i[0].object):null; 
+        function getInt(cx, cy) {
+            mouseP.x = (cx / window.innerWidth) * 2 - 1;
+            mouseP.y = -(cy / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouseP, camera);
+            const i = raycaster.intersectObjects(nodes.map(n => n.mesh));
+            return i.length > 0 ? nodes.find(n => n.mesh === i[0].object) : null;
         }
 
         // Helper to check if event target is UI
         function isUIEvent(e) {
-            return e.target.closest('#ui-layer') || 
-                   e.target.closest('#config-panel') || 
-                   e.target.closest('#context-menu') || 
-                   e.target.closest('#outliner') ||
-                   e.target.closest('.modal-content') ||
-                   e.target.closest('#search-container');
+            return e.target.closest('#ui-layer') ||
+                e.target.closest('#config-panel') ||
+                e.target.closest('#context-menu') ||
+                e.target.closest('#outliner') ||
+                e.target.closest('.modal-content') ||
+                e.target.closest('#search-container');
         }
-        
-        window.addEventListener('mousedown',e=>{ 
-            if(isUIEvent(e)) return;
-            if(e.button!==0)return; 
-            isLongPress=false; startP={x:e.clientX,y:e.clientY};
-            mouseDownPos = {x:e.clientX, y:e.clientY};
 
-            pressTimer=setTimeout(()=>{
-                isLongPress=true;
-                const n=getInt(e.clientX,e.clientY);
-                if(n){
+        window.addEventListener('mousedown', e => {
+            if (isUIEvent(e)) return;
+            if (e.button !== 0) return;
+            isLongPress = false; startP = { x: e.clientX, y: e.clientY };
+            mouseDownPos = { x: e.clientX, y: e.clientY };
+
+            pressTimer = setTimeout(() => {
+                isLongPress = true;
+                const n = getInt(e.clientX, e.clientY);
+                if (n) {
                     setActiveNode(n);
                     menuTargetNode = n; // Fixed target
                     playSound('pop');
-                    showContextMenu(e.clientX,e.clientY,n);
+                    showContextMenu(e.clientX, e.clientY, n);
                 }
-            },600); 
+            }, 600);
         });
 
-        window.addEventListener('mousemove',e=>{ 
-            pointer.x=e.clientX; pointer.y=e.clientY; 
-            if(Math.hypot(e.clientX-startP.x,e.clientY-startP.y)>20) clearTimeout(pressTimer);
+        window.addEventListener('mousemove', e => {
+            pointer.x = e.clientX; pointer.y = e.clientY;
+            if (Math.hypot(e.clientX - startP.x, e.clientY - startP.y) > 20) clearTimeout(pressTimer);
             const hover = getInt(e.clientX, e.clientY);
             document.getElementById('canvas-container').style.cursor = hover ? 'pointer' : 'default';
         });
@@ -549,12 +1011,12 @@ Nodes: ${nodes.length}`;
         }
 
         window.addEventListener('mouseup', e => {
-            if(isUIEvent(e)) return;
+            if (isUIEvent(e)) return;
             clearTimeout(pressTimer);
-            if(!isLongPress && Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y) < 20) {
+            if (!isLongPress && Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y) < 20) {
                 // RE-CHECK: Use direct Raycast at release point
                 const n = getInt(e.clientX, e.clientY);
-                if(n) {
+                if (n) {
                     setActiveNode(n);
                     playSound('click');
                     lastClickType = "Click (Hit)";
@@ -567,55 +1029,55 @@ Nodes: ${nodes.length}`;
                 lastClickType = "Drag/LongPress";
             }
         });
-        
+
         window.addEventListener('dblclick', e => {
-            if(isUIEvent(e)) return;
+            if (isUIEvent(e)) return;
             const n = getInt(e.clientX, e.clientY);
-            if(n) {
+            if (n) {
                 focusOnNodeWithTrace(n);
                 playSound('whoosh');
                 lastClickType = "DblClick";
             }
         });
 
-        window.addEventListener('contextmenu',e=>{ 
-            e.preventDefault(); 
-            if(isUIEvent(e)) return;
-            const n=getInt(e.clientX,e.clientY); 
-            if(n){
+        window.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            if (isUIEvent(e)) return;
+            const n = getInt(e.clientX, e.clientY);
+            if (n) {
                 setActiveNode(n);
                 menuTargetNode = n; // Store target
                 playSound('pop');
-                showContextMenu(e.clientX,e.clientY,n);
-            } 
+                showContextMenu(e.clientX, e.clientY, n);
+            }
         });
 
         const keys = {};
         window.addEventListener('keyup', e => keys[e.code] = false);
         window.addEventListener('keydown', e => {
-            if(e.target.tagName==='INPUT') return;
+            if (e.target.tagName === 'INPUT') return;
             keys[e.code] = true;
 
             if (e.altKey && e.key.toLowerCase() === 'd') { e.preventDefault(); toggleDebug(); return; }
 
-            if(e.key==='Escape'){ 
-                if(document.querySelector('.modal-overlay[style*="flex"]')){closeModal('rename-modal');closeModal('url-modal');closeModal('color-modal');closeModal('delete-modal');return;}
-                if(document.getElementById('context-menu').style.display==='block'){document.getElementById('context-menu').style.display='none';playSound('cancel');return;}
-                if(document.getElementById('config-panel').style.display==='block'){toggleConfig();return;}
+            if (e.key === 'Escape') {
+                if (document.querySelector('.modal-overlay[style*="flex"]')) { closeModal('rename-modal'); closeModal('url-modal'); closeModal('color-modal'); closeModal('delete-modal'); return; }
+                if (document.getElementById('context-menu').style.display === 'block') { document.getElementById('context-menu').style.display = 'none'; playSound('cancel'); return; }
+                if (document.getElementById('config-panel').style.display === 'block') { toggleConfig(); return; }
             }
-            if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();return;}
-            if(e.altKey&&e.key.toLowerCase()==='s'){e.preventDefault();exportJSON();return;}
-            if(e.altKey&&e.key.toLowerCase()==='o'){e.preventDefault();document.getElementById('file-input').click();return;}
-            if(e.altKey&&e.key.toLowerCase()==='r'){e.preventDefault();resetCameraToRoot();return;}
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); return; }
+            if (e.altKey && e.key.toLowerCase() === 's') { e.preventDefault(); exportJSON(); return; }
+            if (e.altKey && e.key.toLowerCase() === 'o') { e.preventDefault(); document.getElementById('file-input').click(); return; }
+            if (e.altKey && e.key.toLowerCase() === 'r') { e.preventDefault(); resetCameraToRoot(); return; }
 
-            if(e.code==='Numpad1') snapView('front');
-            if(e.code==='Numpad3') snapView('right');
-            if(e.code==='Numpad7') snapView('top');
-            if(e.code==='Numpad9') snapView('back');
-            
+            if (e.code === 'Numpad1') snapView('front');
+            if (e.code === 'Numpad3') snapView('right');
+            if (e.code === 'Numpad7') snapView('top');
+            if (e.code === 'Numpad9') snapView('back');
+
             // Enter Key for Context Menu
-            if(e.key === 'Enter') {
-                if(activeNode) {
+            if (e.key === 'Enter') {
+                if (activeNode) {
                     menuTargetNode = activeNode;
                     const vec = activeNode.mesh.position.clone().project(camera);
                     const x = (vec.x * .5 + .5) * window.innerWidth;
@@ -626,68 +1088,68 @@ Nodes: ${nodes.length}`;
                 return;
             }
 
-            if(!activeNode&&nodes.length>0) setActiveNode(nodes[0]);
-            if(!activeNode) return;
+            if (!activeNode && nodes.length > 0) setActiveNode(nodes[0]);
+            if (!activeNode) return;
 
-            let t=null, k=e.key.toLowerCase();
+            let t = null, k = e.key.toLowerCase();
             // All shortcuts use activeNode as target
-            if(e.key==='F2'){menuTargetNode=activeNode; handleMenu('rename');return;}
-            if(e.key==='Delete'||e.key==='Backspace'){menuTargetNode=activeNode; handleMenu('delete_confirm');return;}
-            
+            if (e.key === 'F2') { menuTargetNode = activeNode; handleMenu('rename'); return; }
+            if (e.key === 'Delete' || e.key === 'Backspace') { menuTargetNode = activeNode; handleMenu('delete_confirm'); return; }
+
             // Throttled Insert/Tab
-            if(e.key==='Insert'||e.key==='Tab'){
+            if (e.key === 'Insert' || e.key === 'Tab') {
                 e.preventDefault();
                 const now = Date.now();
                 if (now - lastAdd < 200) return; // 200ms Throttle
                 lastAdd = now;
-                menuTargetNode=activeNode; handleMenu('add'); return;
+                menuTargetNode = activeNode; handleMenu('add'); return;
             }
-            
-            if(k==='c'){menuTargetNode=activeNode; handleMenu('color');return;}
-            if(k==='u'){menuTargetNode=activeNode; handleMenu('open_url');return;}
-            
-            if(k==='a'&&activeNode.parent) t=activeNode.parent; 
-            else if(k==='d'){const c=nodes.filter(n=>n.parent===activeNode);if(c.length)t=c[0];} 
-            else if(k==='w'||k==='s'){ 
-                const s=nodes.filter(n=>n.parent===activeNode.parent).sort((a,b)=>a.id-b.id); 
-                const i=s.indexOf(activeNode); 
-                if(i!==-1){
-                    if(k==='w'&&i>0)t=s[i-1];
-                    if(k==='s'&&i<s.length-1)t=s[i+1];
+
+            if (k === 'c') { menuTargetNode = activeNode; handleMenu('color'); return; }
+            if (k === 'u') { menuTargetNode = activeNode; handleMenu('open_url'); return; }
+
+            if (k === 'a' && activeNode.parent) t = activeNode.parent;
+            else if (k === 'd') { const c = nodes.filter(n => n.parent === activeNode); if (c.length) t = c[0]; }
+            else if (k === 'w' || k === 's') {
+                const s = nodes.filter(n => n.parent === activeNode.parent).sort((a, b) => a.id - b.id);
+                const i = s.indexOf(activeNode);
+                if (i !== -1) {
+                    if (k === 'w' && i > 0) t = s[i - 1];
+                    if (k === 's' && i < s.length - 1) t = s[i + 1];
                 }
             }
-            if(t)focusOnNodeWithTrace(t);
+            if (t) focusOnNodeWithTrace(t);
         });
 
-        let isAnimatingCamera=false, animationQueue=[];
+        let isAnimatingCamera = false, animationQueue = [];
         function focusOnNodeWithTrace(t) {
-            if(!activeNode) setActiveNode(t); 
-            if(activeNode===t){ setActiveNode(t); return; }
-            let cp=[], tmp=activeNode; while(tmp){cp.push(tmp);tmp=tmp.parent;}
-            let tp=[], tmp2=t; while(tmp2){tp.push(tmp2);tmp2=tmp2.parent;}
-            let lca=null; for(let n of cp){if(tp.includes(n)){lca=n;break;}}
-            animationQueue=[];
-            for(let i=0;i<cp.length;i++){if(cp[i]===lca)break;animationQueue.push(cp[i]);}
-            if(lca)animationQueue.push(lca);
-            let dp=[]; for(let i=0;i<tp.length;i++){if(tp[i]===lca)break;dp.push(tp[i]);}
-            dp.reverse().forEach(n=>animationQueue.push(n));
-            if(animationQueue.length>0&&animationQueue[0]===activeNode)animationQueue.shift();
+            if (!activeNode) setActiveNode(t);
+            if (activeNode === t) { setActiveNode(t); return; }
+            let cp = [], tmp = activeNode; while (tmp) { cp.push(tmp); tmp = tmp.parent; }
+            let tp = [], tmp2 = t; while (tmp2) { tp.push(tmp2); tmp2 = tmp2.parent; }
+            let lca = null; for (let n of cp) { if (tp.includes(n)) { lca = n; break; } }
+            animationQueue = [];
+            for (let i = 0; i < cp.length; i++) { if (cp[i] === lca) break; animationQueue.push(cp[i]); }
+            if (lca) animationQueue.push(lca);
+            let dp = []; for (let i = 0; i < tp.length; i++) { if (tp[i] === lca) break; dp.push(tp[i]); }
+            dp.reverse().forEach(n => animationQueue.push(n));
+            if (animationQueue.length > 0 && animationQueue[0] === activeNode) animationQueue.shift();
             setActiveNode(t);
-            if(animationQueue.length>0){isAnimatingCamera=true;playSound('whoosh');}
+            if (animationQueue.length > 0) { isAnimatingCamera = true; playSound('whoosh'); }
         }
-        function updateCamera(){
+        function updateCamera() {
             updateIndicators();
-            if(isAnimatingCamera){
-                if(animationQueue.length>0){
-                    const n=animationQueue[0], off=new THREE.Vector3(0,5,15), tl=n.mesh.position.clone().add(off);
-                    controls.target.lerp(n.mesh.position,0.1); camera.position.lerp(tl,0.15);
-                    if(camera.position.distanceTo(tl)<8)animationQueue.shift();
+            if (isAnimatingCamera) {
+                if (animationQueue.length > 0) {
+                    const n = animationQueue[0], off = new THREE.Vector3(0, 5, 15), tl = n.mesh.position.clone().add(off);
+                    controls.target.lerp(n.mesh.position, 0.1); camera.position.lerp(tl, 0.15);
+                    if (camera.position.distanceTo(tl) < 8) animationQueue.shift();
                 } else {
-                    const tl=activeNode.mesh.position.clone().add(new THREE.Vector3(0,5,15));
-                    controls.target.lerp(activeNode.mesh.position,0.1); camera.position.lerp(tl,0.1);
-                    if(camera.position.distanceTo(tl)<0.1){isAnimatingCamera=false;controls.target.copy(activeNode.mesh.position);}
+                    const tl = activeNode.mesh.position.clone().add(new THREE.Vector3(0, 5, 15));
+                    controls.target.lerp(activeNode.mesh.position, 0.1); camera.position.lerp(tl, 0.1);
+                    if (camera.position.distanceTo(tl) < 0.1) { isAnimatingCamera = false; controls.target.copy(activeNode.mesh.position); }
                 }
-            } else if(activeNode) controls.target.lerp(activeNode.mesh.position,0.1);
+            } else if (activeNode) controls.target.lerp(activeNode.mesh.position, 0.1);
         }
 
         const outliner = document.getElementById('outliner');
@@ -696,28 +1158,28 @@ Nodes: ${nodes.length}`;
             outliner.innerHTML = '';
             let parent = activeNode ? activeNode.parent : null;
             let firstChild = null, prevSib = null, nextSib = null;
-            if(activeNode) {
-                const children = nodes.filter(n=>n.parent===activeNode);
-                if(children.length>0) firstChild = children[0];
-                if(parent) {
-                    const sibs = nodes.filter(n=>n.parent===parent).sort((a,b)=>a.id-b.id);
+            if (activeNode) {
+                const children = nodes.filter(n => n.parent === activeNode);
+                if (children.length > 0) firstChild = children[0];
+                if (parent) {
+                    const sibs = nodes.filter(n => n.parent === parent).sort((a, b) => a.id - b.id);
                     const idx = sibs.indexOf(activeNode);
-                    if(idx > 0) prevSib = sibs[idx-1];
-                    if(idx < sibs.length-1) nextSib = sibs[idx+1];
+                    if (idx > 0) prevSib = sibs[idx - 1];
+                    if (idx < sibs.length - 1) nextSib = sibs[idx + 1];
                 }
             }
             function build(node, prefix, isLast) {
                 const d = document.createElement('div'); d.className = 'outliner-item';
-                if(activeNode && activeNode.id === node.id) {
+                if (activeNode && activeNode.id === node.id) {
                     d.classList.add('active');
                     setTimeout(() => d.scrollIntoView({ block: 'nearest', inline: 'end', behavior: 'smooth' }), 50);
                 }
                 d.style.color = 'rgba(255,255,255,0.5)';
-                if(activeNode && activeNode.id === node.id) d.style.color = '#ffffff';
-                else if(node === parent) d.style.color = '#ff4444';
-                else if(node === firstChild) d.style.color = '#ffaa00';
-                else if(node === prevSib) d.style.color = '#44ff44';
-                else if(node === nextSib) d.style.color = '#00ffff';
+                if (activeNode && activeNode.id === node.id) d.style.color = '#ffffff';
+                else if (node === parent) d.style.color = '#ff4444';
+                else if (node === firstChild) d.style.color = '#ffaa00';
+                else if (node === prevSib) d.style.color = '#44ff44';
+                else if (node === nextSib) d.style.color = '#00ffff';
                 const marker = node.parent ? (isLast ? '└─ ' : '├─ ') : '';
                 d.textContent = prefix + marker + node.id + ": " + node.text;
                 d.onclick = (e) => { e.stopPropagation(); focusOnNodeWithTrace(node); };
@@ -730,182 +1192,188 @@ Nodes: ${nodes.length}`;
             nodes.filter(n => !n.parent).forEach((r, i) => build(r, '', i === nodes.filter(n => !n.parent).length - 1));
         }
 
-        function showContextMenu(x,y,n){
-            document.getElementById('menu-title').innerText=n.text;
-            document.getElementById('ctx-delete').style.display=n.parent?'block':'none';
-            const m=document.getElementById('context-menu'); m.style.left=Math.min(x,window.innerWidth-220)+'px'; m.style.top=Math.min(y,window.innerHeight-210)+'px'; m.style.display='block';
+        function showContextMenu(x, y, n) {
+            document.getElementById('menu-title').innerText = n.text;
+            document.getElementById('ctx-delete').style.display = n.parent ? 'block' : 'none';
+            const m = document.getElementById('context-menu'); m.style.left = Math.min(x, window.innerWidth - 220) + 'px'; m.style.top = Math.min(y, window.innerHeight - 210) + 'px'; m.style.display = 'block';
         }
-        function handleMenu(act){
-            if(!menuTargetNode) return; // Must have target
-            document.getElementById('context-menu').style.display='none';
-            
-            if(act==='rename'){ 
-                const i=document.getElementById('node-name-input'); 
-                i.value=menuTargetNode.text; 
-                document.getElementById('rename-modal').style.display='flex'; 
-                i.focus(); i.select(); 
+        function handleMenu(act) {
+            if (!menuTargetNode) return; // Must have target
+            document.getElementById('context-menu').style.display = 'none';
+
+            if (act === 'rename') {
+                const i = document.getElementById('node-name-input');
+                i.value = menuTargetNode.text;
+                document.getElementById('rename-modal').style.display = 'flex';
+                i.focus(); i.select();
             }
-            else if(act==='edit_url'){ 
-                const i=document.getElementById('node-url-input'); 
-                i.value=menuTargetNode.url; 
-                document.getElementById('url-modal').style.display='flex'; 
-                i.focus(); i.select(); 
+            else if (act === 'edit_url') {
+                const i = document.getElementById('node-url-input');
+                i.value = menuTargetNode.url;
+                document.getElementById('url-modal').style.display = 'flex';
+                i.focus(); i.select();
             }
-            else if(act==='open_url'){ playSound('whoosh'); window.open(menuTargetNode.url,'_blank'); }
-            else if(act==='color'){ 
+            else if (act === 'open_url') { playSound('whoosh'); window.open(menuTargetNode.url, '_blank'); }
+            else if (act === 'color') {
                 document.getElementById('node-color-input').value = menuTargetNode.color || '#ffffff';
-                document.getElementById('color-modal').style.display='flex'; 
+                document.getElementById('color-modal').style.display = 'flex';
             }
-            else if(act==='add'){ const n=createNode('New Node', menuTargetNode); playSound('add'); focusOnNodeWithTrace(n); }
-            else if(act==='delete_confirm') document.getElementById('delete-modal').style.display='flex';
-            else if(act==='url'){ playSound('whoosh'); window.open(menuTargetNode.url,'_blank'); }
+            else if (act === 'add') { const n = createNode('New Node', menuTargetNode); playSound('add'); focusOnNodeWithTrace(n); }
+            else if (act === 'delete_confirm') document.getElementById('delete-modal').style.display = 'flex';
+            else if (act === 'url') { playSound('whoosh'); window.open(menuTargetNode.url, '_blank'); }
             else playSound('cancel');
         }
-        function closeModal(id){ document.getElementById(id).style.display='none'; playSound('cancel'); }
-        
-        function confirmRename(){
-            const v=document.getElementById('node-name-input').value;
-            if(menuTargetNode&&v){ 
-                menuTargetNode.text=v; 
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; playSound('cancel'); }
+
+        function confirmRename() {
+            const v = document.getElementById('node-name-input').value;
+            if (menuTargetNode && v) {
+                menuTargetNode.text = v;
                 const isActive = (menuTargetNode === activeNode);
-                menuTargetNode.mesh.material.map=createNodeTexture(menuTargetNode.id, v, menuTargetNode.url, menuTargetNode.color, isActive); 
-                updateOutliner(); playSound('click'); 
+                menuTargetNode.mesh.material.map = createNodeTexture(menuTargetNode.id, v, menuTargetNode.url, menuTargetNode.color, isActive);
+                updateOutliner(); playSound('click');
             }
             closeModal('rename-modal');
         }
-        function confirmUrl(){
-            const v=document.getElementById('node-url-input').value;
-            if(menuTargetNode&&v){ 
-                menuTargetNode.url=v; 
+        function confirmUrl() {
+            const v = document.getElementById('node-url-input').value;
+            if (menuTargetNode && v) {
+                menuTargetNode.url = v;
                 const isActive = (menuTargetNode === activeNode);
-                menuTargetNode.mesh.material.map=createNodeTexture(menuTargetNode.id, menuTargetNode.text, v, menuTargetNode.color, isActive); 
-                playSound('click'); 
+                menuTargetNode.mesh.material.map = createNodeTexture(menuTargetNode.id, menuTargetNode.text, v, menuTargetNode.color, isActive);
+                playSound('click');
             }
             closeModal('url-modal');
         }
-        function confirmColor(){
-            const v=document.getElementById('node-color-input').value;
-            if(menuTargetNode){
-                menuTargetNode.color=v; 
+        function confirmColor() {
+            const v = document.getElementById('node-color-input').value;
+            if (menuTargetNode) {
+                menuTargetNode.color = v;
                 const isActive = (menuTargetNode === activeNode);
-                menuTargetNode.mesh.material.map=createNodeTexture(menuTargetNode.id, menuTargetNode.text, menuTargetNode.url, v, isActive);
+                menuTargetNode.mesh.material.map = createNodeTexture(menuTargetNode.id, menuTargetNode.text, menuTargetNode.url, v, isActive);
                 playSound('click');
             }
             closeModal('color-modal');
         }
-        function applyColor(v){ /* Preview */ }
-        
-        function handleSearch(v){ const val=v.toLowerCase(); document.querySelectorAll('.outliner-item').forEach(e=>e.style.display=e.innerText.toLowerCase().includes(val)?'block':'none'); }
-        function jumpToFirstMatch(){ for(let e of document.querySelectorAll('.outliner-item'))if(e.style.display!=='none'){e.click();playSound('click');break;} }
-        function executeDelete(mode){
-            if(!menuTargetNode||!menuTargetNode.parent)return;
-            const t=menuTargetNode, p=t.parent; closeModal('delete-modal');
-            const toDel=new Set();
-            if(mode==='all'){ const c=n=>{toDel.add(n);nodes.filter(x=>x.parent===n).forEach(c);}; c(t); }
-            else if(mode==='reparent'){ toDel.add(t); nodes.filter(n=>n.parent===t).forEach(c=>{ c.parent=p; const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints([p.mesh.position,c.mesh.position]),new THREE.LineBasicMaterial({color:0x4a90e2,transparent:true,opacity:0.8})); scene.add(l); connections.push({line:l,from:p,to:c}); }); }
-            toDel.forEach(n=>{scene.remove(n.mesh);n.mesh.geometry.dispose();n.mesh.material.dispose();});
-            const deadC=connections.filter(c=>toDel.has(c.from)||toDel.has(c.to));
-            deadC.forEach(c=>{scene.remove(c.line);c.line.geometry.dispose();});
-            connections=connections.filter(c=>!toDel.has(c.from)&&!toDel.has(c.to));
-            nodes=nodes.filter(n=>!toDel.has(n));
+        function applyColor(v) { /* Preview */ }
+
+        function handleSearch(v) { const val = v.toLowerCase(); document.querySelectorAll('.outliner-item').forEach(e => e.style.display = e.innerText.toLowerCase().includes(val) ? 'block' : 'none'); }
+        function jumpToFirstMatch() { for (let e of document.querySelectorAll('.outliner-item')) if (e.style.display !== 'none') { e.click(); playSound('click'); break; } }
+        function executeDelete(mode) {
+            if (!menuTargetNode || !menuTargetNode.parent) return;
+            const t = menuTargetNode, p = t.parent; closeModal('delete-modal');
+            const toDel = new Set();
+            if (mode === 'all') { const c = n => { toDel.add(n); nodes.filter(x => x.parent === n).forEach(c); }; c(t); }
+            else if (mode === 'reparent') { toDel.add(t); nodes.filter(n => n.parent === t).forEach(c => { c.parent = p; const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints([p.mesh.position, c.mesh.position]), new THREE.LineBasicMaterial({ color: 0x4a90e2, transparent: true, opacity: 0.8 })); scene.add(l); connections.push({ line: l, from: p, to: c }); }); }
+            toDel.forEach(n => { scene.remove(n.mesh); n.mesh.geometry.dispose(); n.mesh.material.dispose(); });
+            const deadC = connections.filter(c => toDel.has(c.from) || toDel.has(c.to));
+            deadC.forEach(c => { scene.remove(c.line); c.line.geometry.dispose(); });
+            connections = connections.filter(c => !toDel.has(c.from) && !toDel.has(c.to));
+            nodes = nodes.filter(n => !toDel.has(n));
             setActiveNode(p); focusOnNodeWithTrace(p); playSound('delete'); showToast('msgDel');
         }
-        function toggleConfig(){ const p=document.getElementById('config-panel'); p.style.display=p.style.display==='block'?'none':'block'; if(p.style.display==='block')playSound('click'); }
-        function updateSpringLength(v){ springLength=parseFloat(v); document.getElementById('dist-val').innerText=springLength.toFixed(1); repulsionStrength=springLength*2.5; }
-        function resetCameraToRoot(){ if(nodes[0])focusOnNodeWithTrace(nodes[0]); }
-        function importJSON(el){
-            const f=el.files[0]; if(!f)return;
-            const r=new FileReader(); r.onload=e=>{
-                try{
-                    const d=JSON.parse(e.target.result);
-                    nodes.forEach(n=>scene.remove(n.mesh)); connections.forEach(c=>scene.remove(c.line));
-                    nodes=[]; connections=[]; nextId=1; activeNode=null;
-                    const m={}; d.nodes.forEach(x=>{m[x.id]={...x,real:null}; nextId=Math.max(nextId,x.id+1);});
-                    d.nodes.sort((a,b)=>a.id-b.id).forEach(x=>{
+        function toggleConfig() { const p = document.getElementById('config-panel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; if (p.style.display === 'block') playSound('click'); }
+        function updateSpringLength(v) { springLength = parseFloat(v); document.getElementById('dist-val').innerText = springLength.toFixed(1); repulsionStrength = springLength * 2.5; }
+        function resetCameraToRoot() { if (nodes[0]) focusOnNodeWithTrace(nodes[0]); }
+        function importJSON(el) {
+            const f = el.files[0]; if (!f) return;
+            const r = new FileReader(); r.onload = e => {
+                try {
+                    const d = JSON.parse(e.target.result);
+                    nodes.forEach(n => scene.remove(n.mesh)); connections.forEach(c => scene.remove(c.line));
+                    nodes = []; connections = []; nextId = 1; activeNode = null;
+                    const m = {}; d.nodes.forEach(x => { m[x.id] = { ...x, real: null }; nextId = Math.max(nextId, x.id + 1); });
+                    d.nodes.sort((a, b) => a.id - b.id).forEach(x => {
                         const p = x.parentId ? m[x.parentId].real : null;
-                        const n = createNode(x.text, p, new THREE.Vector3(x.pos.x,x.pos.y,x.pos.z),x.color||'#ffffff', x.id);
-                        n.url = x.url || DEFAULT_URL; 
-                        m[x.id].real=n;
+                        const n = createNode(x.text, p, new THREE.Vector3(x.pos.x, x.pos.y, x.pos.z), x.color || '#ffffff', x.id);
+                        n.url = x.url || DEFAULT_URL;
+                        m[x.id].real = n;
                     });
-                    if(d.springLength) updateSpringLength(d.springLength);
-                    if(d.fogDensity !== undefined) {
+                    if (d.springLength) updateSpringLength(d.springLength);
+                    if (d.fogDensity !== undefined) {
                         updateFogDensity(d.fogDensity);
                         document.getElementById('fog-slider').value = d.fogDensity;
                     }
-                    if(nodes.length>0){ setActiveNode(nodes[0]); }
+                    if (nodes.length > 0) { setActiveNode(nodes[0]); }
                     playSound('add'); showToast('msgLoaded');
-                }catch(err){ showToast('msgErr','error'); }
-                el.value='';
+                } catch (err) { showToast('msgErr', 'error'); }
+                el.value = '';
             }; r.readAsText(f);
         }
 
         let lastAdd = 0;
 
-        function updateLayout(){
-            nodes.forEach(n=>{ n.force.set(0,0,0); if(n.id===1)n.force.sub(n.mesh.position).multiplyScalar(0.05); });
-            for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
-                const d=new THREE.Vector3().subVectors(nodes[i].mesh.position,nodes[j].mesh.position);
-                let l=d.length(); if(l===0)l=0.01; d.normalize().multiplyScalar(repulsionStrength/(l*l));
+        function updateLayout() {
+            nodes.forEach(n => { n.force.set(0, 0, 0); if (n.id === 1) n.force.sub(n.mesh.position).multiplyScalar(0.05); });
+            for (let i = 0; i < nodes.length; i++)for (let j = i + 1; j < nodes.length; j++) {
+                const d = new THREE.Vector3().subVectors(nodes[i].mesh.position, nodes[j].mesh.position);
+                let l = d.length(); if (l === 0) l = 0.01; d.normalize().multiplyScalar(repulsionStrength / (l * l));
                 nodes[i].force.add(d); nodes[j].force.sub(d);
             }
-            connections.forEach(c=>{
-                const d=new THREE.Vector3().subVectors(c.to.mesh.position,c.from.mesh.position);
-                const l=d.length(); d.normalize().multiplyScalar((l-springLength)*0.05);
+            connections.forEach(c => {
+                const d = new THREE.Vector3().subVectors(c.to.mesh.position, c.from.mesh.position);
+                const l = d.length(); d.normalize().multiplyScalar((l - springLength) * 0.05);
                 c.to.force.sub(d); c.from.force.add(d);
-                const p=c.line.geometry.attributes.position.array;
-                p[0]=c.from.mesh.position.x; p[1]=c.from.mesh.position.y; p[2]=c.from.mesh.position.z;
-                p[3]=c.to.mesh.position.x; p[4]=c.to.mesh.position.y; p[5]=c.to.mesh.position.z;
-                c.line.geometry.attributes.position.needsUpdate=true;
+                const p = c.line.geometry.attributes.position.array;
+                p[0] = c.from.mesh.position.x; p[1] = c.from.mesh.position.y; p[2] = c.from.mesh.position.z;
+                p[3] = c.to.mesh.position.x; p[4] = c.to.mesh.position.y; p[5] = c.to.mesh.position.z;
+                c.line.geometry.attributes.position.needsUpdate = true;
             });
-            nodes.forEach(n=>{ if(n.id!==1){n.velocity.add(n.force).multiplyScalar(0.9); n.mesh.position.add(n.velocity);} n.mesh.quaternion.copy(camera.quaternion); });
+            nodes.forEach(n => { if (n.id !== 1) { n.velocity.add(n.force).multiplyScalar(0.9); n.mesh.position.add(n.velocity); } n.mesh.quaternion.copy(camera.quaternion); });
         }
 
-        document.getElementById('node-name-input').addEventListener('keydown', e=>{if(e.key==='Enter')confirmRename();});
-        document.getElementById('node-url-input').addEventListener('keydown', e=>{if(e.key==='Enter')confirmUrl();});
-        
+        document.getElementById('node-name-input').addEventListener('keydown', e => { if (e.key === 'Enter') confirmRename(); });
+        document.getElementById('node-url-input').addEventListener('keydown', e => { if (e.key === 'Enter') confirmUrl(); });
+
         const root = createNode("ROOT");
         setActiveNode(root); changeLanguage(currentLang); window.focus();
-        
-        function animate(){ 
-            requestAnimationFrame(animate); 
-            controls.update(); 
-            updateLayout(); 
-            updateCamera(); 
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            updateLayout();
+            updateCamera();
             updateDebugInfo();
 
             const speed = 0.05;
             const isRotating = keys['Numpad4'] || keys['Numpad6'] || keys['Numpad2'] || keys['Numpad8'];
-            if (isRotating && isAnimatingCamera) isAnimatingCamera = false; 
+            if (isRotating && isAnimatingCamera) isAnimatingCamera = false;
 
-            if(keys['Numpad4']) rotateView(speed, 0);  
-            if(keys['Numpad6']) rotateView(-speed, 0); 
-            if(keys['Numpad2']) rotateView(0, -speed); 
-            if(keys['Numpad8']) rotateView(0, speed);  
+            if (keys['Numpad4']) rotateView(speed, 0);
+            if (keys['Numpad6']) rotateView(-speed, 0);
+            if (keys['Numpad2']) rotateView(0, -speed);
+            if (keys['Numpad8']) rotateView(0, speed);
 
             gizmoRoot.quaternion.copy(camera.quaternion).invert();
-            
+
             const dotPos = new THREE.Vector3();
             dotFront.getWorldPosition(dotPos);
-            if (dotPos.z > 0) { dotFront.visible = true; dotBack.visible = false; } 
+            if (dotPos.z > 0) { dotFront.visible = true; dotBack.visible = false; }
             else { dotFront.visible = false; dotBack.visible = true; }
 
             renderer.autoClear = false; renderer.clear();
             renderer.render(scene, camera);
-            
-            const w=window.innerWidth, h=window.innerHeight;
+
+            const w = window.innerWidth, h = window.innerHeight;
             renderer.setScissorTest(true);
-            renderer.setScissor(20, 20, 180, 180); 
-            renderer.setViewport(20, 20, 180, 180);
+
+            // MODIFIED: Position Gizmo at bottom right
+            const gizmoWidth = 180;
+            const gizmoMargin = 20;
+            renderer.setScissor(window.innerWidth - gizmoWidth - gizmoMargin, gizmoMargin, gizmoWidth, gizmoWidth);
+            renderer.setViewport(window.innerWidth - gizmoWidth - gizmoMargin, gizmoMargin, gizmoWidth, gizmoWidth);
+
             renderer.render(gizmoScene, gizmoCam);
             renderer.setScissorTest(false);
             renderer.setViewport(0, 0, w, h);
         }
-        window.addEventListener('resize',()=>{
-            camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); 
-            renderer.setSize(window.innerWidth,window.innerHeight);
-            controls.handleResize(); 
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            controls.handleResize();
         });
         animate();
     </script>
 </body>
+
 </html>
