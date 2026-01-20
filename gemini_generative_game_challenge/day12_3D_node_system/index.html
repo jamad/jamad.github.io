@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Constellio v20260120.9</title>
+    <title>ReticuluMind v20260120.10</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-user-select: none; user-select: none; }
         #canvas-container { width: 100vw; height: 100vh; touch-action: none; cursor: default; }
@@ -69,11 +69,7 @@
         .btn-danger { background: #ff4757; color: white; }
         .btn-warning { background: #ffaa00; color: white; }
         .btn-cancel { background: #f0f2f5; color: #666; }
-        /* BUG FIX: Add focus style for modal buttons */
-        .modal-btn:focus {
-            outline: 3px solid #4a90e2;
-            outline-offset: 2px;
-        }
+        .modal-btn:focus { outline: 3px solid #4a90e2; outline-offset: 2px; }
 
         #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 300; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 15px; opacity: 0; transition: opacity 0.3s, bottom 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         #toast.show { visibility: visible; opacity: 1; bottom: 60px; }
@@ -91,7 +87,7 @@
     <div id="canvas-container"></div>
     <div id="debug-overlay"></div>
     <div id="ui-layer">
-        <h1 id="ui-title">Constellio</h1>
+        <h1 id="ui-title">ReticuluMind</h1>
         <p id="ui-help-mouse">Click: Select / DblClick: Focus / Right: Menu</p>
         <p id="ui-help-wasd">Move: A(Parent) D(Child) W(Prev) S(Next)</p>
         <p class="shortcut-help" id="ui-help-keys">Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)</p>
@@ -203,43 +199,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        // VERSION UPDATE
         const APP_VERSION = "v20260120.9";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
 
         const i18n = {
-            ja: {
-                title: "Constellio", helpMouse: "クリック: 選択 / ダブル: 移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNum: "テンキー: 1(前) 3(右) 7(上) 4/6/2/8(回転)",
-                searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", closeBtn: "閉じる",
-                ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル",
-                renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK",
-                urlTitle: "URLを編集", urlPlace: "https://...",
-                colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK",
-                delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル",
-                msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました"
-            },
-            en: {
-                title: "Constellio", helpMouse: "Click: Select / DblClick: Focus / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNum: "Numpad: 1(Front) 3(Right) 7(Top) 4/6/2/8(Orbit)",
-                searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", closeBtn: "Close",
-                ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel",
-                renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK",
-                urlTitle: "Edit URL", urlPlace: "https://...",
-                colTitle: "Change Color", colCancel: "Cancel", colOk: "OK",
-                delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel",
-                msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted"
-            },
-            fi: {
-                title: "Constellio", helpMouse: "Napsauta: Valitse / Tupla: Kohdista / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNum: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) 4/6/2/8(Pyöritä)",
-                searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", closeBtn: "Sulje",
-                ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta",
-                renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK",
-                urlTitle: "Muokkaa URL", urlPlace: "https://...",
-                colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK",
-                delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta",
-                msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu"
-            }
+            ja: { title: "ReticuluMind", helpMouse: "クリック: 選択 / ダブル: 移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNum: "テンキー: 1(前) 3(右) 7(上) 4/6/2/8(回転)", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました" },
+            en: { title: "ReticuluMind", helpMouse: "Click: Select / DblClick: Focus / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNum: "Numpad: 1(Front) 3(Right) 7(Top) 4/6/2/8(Orbit)", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted" },
+            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Valitse / Tupla: Kohdista / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNum: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) 4/6/2/8(Pyöritä)", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu" }
         };
 
         let currentLang = localStorage.getItem('mindmap_lang') || 'en';
@@ -320,7 +288,6 @@
         const triMat = color => new THREE.MeshBasicMaterial({color:color,side:THREE.DoubleSide,transparent:true,opacity:0.8});
         const mkTri = (c,z,x,y) => { const m=new THREE.Mesh(new THREE.ShapeGeometry(triGeo),triMat(c)); m.rotation.z=z; m.position.set(x,y,0); m.scale.set(0.75,0.75,0.75); return m; };
         
-        // MODIFICATION: Darken indicator colors
         indicators.a = mkTri(0xcc3333, Math.PI/2, -3.7, 0); 
         indicators.d = mkTri(0xdd8800, -Math.PI/2, 3.7, 0); 
         indicators.w = mkTri(0x33cc33, 0, 0, 1.8);          
@@ -601,22 +568,26 @@ Nodes: ${nodes.length}`;
         const keys = {};
         window.addEventListener('keyup', e => keys[e.code] = false);
 
-        // BUG FIX: Overhaul keydown listener for proper modal focus management
         window.addEventListener('keydown', e => {
             if(e.target.tagName === 'INPUT') return;
             keys[e.code] = true;
 
             const activeModal = document.querySelector('.modal-overlay[style*="flex"]');
             if (activeModal) {
+                e.stopImmediatePropagation(); // Prevent other key listeners
                 if (e.key === 'Escape') {
                     closeModal(activeModal.id);
                     return;
                 }
-
+                if (e.key === 'Enter') {
+                    if (document.activeElement && document.activeElement.classList.contains('modal-btn')) {
+                        document.activeElement.click();
+                    }
+                    return;
+                }
                 const focusable = Array.from(activeModal.querySelectorAll('.modal-btn'));
                 if (focusable.length > 0) {
                     const currentIndex = focusable.indexOf(document.activeElement);
-                    
                     if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
                         e.preventDefault();
                         const nextIndex = (currentIndex + 1) % focusable.length;
@@ -627,8 +598,6 @@ Nodes: ${nodes.length}`;
                         focusable[prevIndex].focus();
                     }
                 }
-                // Prevent other keydown handlers from firing when a modal is open
-                // (e.g., prevents 'Enter' from opening the context menu)
                 return;
             }
 
@@ -690,7 +659,7 @@ Nodes: ${nodes.length}`;
                 }
             }
             if(t)focusOnNodeWithTrace(t);
-        });
+        }, true); // Use capture phase to intercept key events early
 
         let isAnimatingCamera=false, animationQueue=[];
         function focusOnNodeWithTrace(t) {
@@ -736,7 +705,6 @@ Nodes: ${nodes.length}`;
             updateOutliner();
         }
         
-        // MODIFICATION: Fix outliner rendering order and colors
         function updateOutliner() {
             const filterVal = document.getElementById('search-input').value.toLowerCase();
             outliner.innerHTML = '';
@@ -824,11 +792,11 @@ Nodes: ${nodes.length}`;
                 document.getElementById('color-modal').style.display='flex'; 
             }
             else if(act==='add'){ const n=createNode('New Node', menuTargetNode); playSound('add'); focusOnNodeWithTrace(n); }
-            // BUG FIX: Set focus on the first button when opening delete modal
             else if(act==='delete_confirm') {
                 const modal = document.getElementById('delete-modal');
                 modal.style.display = 'flex';
-                modal.querySelector('.modal-btn').focus();
+                // Defer focus until the element is truly visible
+                setTimeout(() => modal.querySelector('.modal-btn').focus(), 0);
             }
             else if(act==='url'){ playSound('whoosh'); if(menuTargetNode.url) window.open(menuTargetNode.url,'_blank'); }
             else playSound('cancel');
@@ -847,7 +815,7 @@ Nodes: ${nodes.length}`;
         }
         function confirmUrl(){
             const v=document.getElementById('node-url-input').value;
-            if(menuTargetNode){ // Allow setting empty URL
+            if(menuTargetNode){
                 menuTargetNode.url=v; 
                 const isActive = (menuTargetNode === activeNode);
                 menuTargetNode.mesh.material.map=createNodeTexture(menuTargetNode.id, menuTargetNode.text, v, menuTargetNode.color, isActive); 
