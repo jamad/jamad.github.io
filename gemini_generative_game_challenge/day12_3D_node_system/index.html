@@ -21,12 +21,10 @@
             white-space: pre-wrap; line-height: 1.3; border: 1px solid #0f0;
         }
 
-        /* Position changed to left */
         #search-container { position: absolute; top: 130px; left: 20px; width: 33vw; min-width: 300px; height: 40px; z-index: 10; }
         #search-input { width: 100%; height: 100%; background: rgba(20, 20, 40, 0.85); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0 12px; color: white; font-size: 14px; backdrop-filter: blur(8px); outline: none; box-sizing: border-box; }
         #search-input:focus { border-color: #4a90e2; background: rgba(30, 30, 60, 0.9); }
 
-        /* Position changed to left */
         #outliner { position: absolute; top: 180px; left: 20px; width: 33vw; min-width: 300px; max-height: calc(100vh - 230px); background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: auto; padding: 8px; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; }
         #outliner::-webkit-scrollbar { width: 6px; height: 6px; }
         #outliner::-webkit-scrollbar-thumb { background-color: #4a90e2; border-radius: 3px; }
@@ -71,6 +69,11 @@
         .btn-danger { background: #ff4757; color: white; }
         .btn-warning { background: #ffaa00; color: white; }
         .btn-cancel { background: #f0f2f5; color: #666; }
+        /* BUG FIX: Add focus style for modal buttons */
+        .modal-btn:focus {
+            outline: 3px solid #4a90e2;
+            outline-offset: 2px;
+        }
 
         #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 300; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 15px; opacity: 0; transition: opacity 0.3s, bottom 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         #toast.show { visibility: visible; opacity: 1; bottom: 60px; }
@@ -317,11 +320,11 @@
         const triMat = color => new THREE.MeshBasicMaterial({color:color,side:THREE.DoubleSide,transparent:true,opacity:0.8});
         const mkTri = (c,z,x,y) => { const m=new THREE.Mesh(new THREE.ShapeGeometry(triGeo),triMat(c)); m.rotation.z=z; m.position.set(x,y,0); m.scale.set(0.75,0.75,0.75); return m; };
         
-        // MODIFICATION 1: Darken indicator colors
-        indicators.a = mkTri(0xcc3333, Math.PI/2, -3.7, 0); // Parent (Darker Red)
-        indicators.d = mkTri(0xdd8800, -Math.PI/2, 3.7, 0);  // Child (Darker Orange)
-        indicators.w = mkTri(0x33cc33, 0, 0, 1.8);           // Prev Sib (Darker Green)
-        indicators.s = mkTri(0x00cccc, Math.PI, 0, -1.8);    // Next Sib (Darker Cyan)
+        // MODIFICATION: Darken indicator colors
+        indicators.a = mkTri(0xcc3333, Math.PI/2, -3.7, 0); 
+        indicators.d = mkTri(0xdd8800, -Math.PI/2, 3.7, 0); 
+        indicators.w = mkTri(0x33cc33, 0, 0, 1.8);          
+        indicators.s = mkTri(0x00cccc, Math.PI, 0, -1.8);   
         Object.values(indicators).forEach(m=>indicatorGroup.add(m));
 
         const gizmoScene = new THREE.Scene(); const gizmoSize = 180;
@@ -597,23 +600,55 @@ Nodes: ${nodes.length}`;
 
         const keys = {};
         window.addEventListener('keyup', e => keys[e.code] = false);
+
+        // BUG FIX: Overhaul keydown listener for proper modal focus management
         window.addEventListener('keydown', e => {
-            if(e.target.tagName==='INPUT') return;
+            if(e.target.tagName === 'INPUT') return;
             keys[e.code] = true;
+
+            const activeModal = document.querySelector('.modal-overlay[style*="flex"]');
+            if (activeModal) {
+                if (e.key === 'Escape') {
+                    closeModal(activeModal.id);
+                    return;
+                }
+
+                const focusable = Array.from(activeModal.querySelectorAll('.modal-btn'));
+                if (focusable.length > 0) {
+                    const currentIndex = focusable.indexOf(document.activeElement);
+                    
+                    if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
+                        e.preventDefault();
+                        const nextIndex = (currentIndex + 1) % focusable.length;
+                        focusable[nextIndex].focus();
+                    } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
+                        e.preventDefault();
+                        const prevIndex = (currentIndex - 1 + focusable.length) % focusable.length;
+                        focusable[prevIndex].focus();
+                    }
+                }
+                // Prevent other keydown handlers from firing when a modal is open
+                // (e.g., prevents 'Enter' from opening the context menu)
+                return;
+            }
+
             if (e.altKey && e.key.toLowerCase() === 'd') { e.preventDefault(); toggleDebug(); return; }
-            if(e.key==='Escape'){ 
-                if(document.querySelector('.modal-overlay[style*="flex"]')){closeModal('rename-modal');closeModal('url-modal');closeModal('color-modal');closeModal('delete-modal');return;}
+
+            if(e.key === 'Escape'){
                 if(document.getElementById('context-menu').style.display==='block'){document.getElementById('context-menu').style.display='none';playSound('cancel');return;}
                 if(document.getElementById('config-panel').style.display==='block'){toggleConfig();return;}
             }
+
             if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();return;}
             if(e.altKey&&e.key.toLowerCase()==='s'){e.preventDefault();exportJSON();return;}
             if(e.altKey&&e.key.toLowerCase()==='o'){e.preventDefault();document.getElementById('file-input').click();return;}
             if(e.altKey&&e.key.toLowerCase()==='r'){e.preventDefault();resetCameraToRoot();return;}
+
             if(e.code==='Numpad1') snapView('front');
             if(e.code==='Numpad3') snapView('right');
             if(e.code==='Numpad7') snapView('top');
             if(e.code==='Numpad9') snapView('back');
+            
             if(e.key === 'Enter') {
                 if(activeNode) {
                     menuTargetNode = activeNode;
@@ -625,11 +660,14 @@ Nodes: ${nodes.length}`;
                 }
                 return;
             }
+
             if(!activeNode&&nodes.length>0) setActiveNode(nodes[0]);
             if(!activeNode) return;
+
             let t=null, k=e.key.toLowerCase();
             if(e.key==='F2'){menuTargetNode=activeNode; handleMenu('rename');return;}
             if(e.key==='Delete'||e.key==='Backspace'){menuTargetNode=activeNode; handleMenu('delete_confirm');return;}
+            
             if(e.key==='Insert'||e.key==='Tab'){
                 e.preventDefault();
                 const now = Date.now();
@@ -637,8 +675,10 @@ Nodes: ${nodes.length}`;
                 lastAdd = now;
                 menuTargetNode=activeNode; handleMenu('add'); return;
             }
+            
             if(k==='c'){menuTargetNode=activeNode; handleMenu('color');return;}
             if(k==='u'){menuTargetNode=activeNode; handleMenu('open_url');return;}
+            
             if(k==='a'&&activeNode.parent) t=activeNode.parent; 
             else if(k==='d'){const c=nodes.filter(n=>n.parent===activeNode);if(c.length)t=c[0];} 
             else if(k==='w'||k==='s'){ 
@@ -696,7 +736,7 @@ Nodes: ${nodes.length}`;
             updateOutliner();
         }
         
-        // MODIFICATION 2: Fix outliner rendering order
+        // MODIFICATION: Fix outliner rendering order and colors
         function updateOutliner() {
             const filterVal = document.getElementById('search-input').value.toLowerCase();
             outliner.innerHTML = '';
@@ -720,10 +760,10 @@ Nodes: ${nodes.length}`;
                 }
                 d.style.color = 'rgba(255,255,255,0.5)';
                 if(activeNode && activeNode.id === node.id) d.style.color = '#ffffff';
-                else if(node === parent) d.style.color = '#cc3333'; // Match indicator color
-                else if(node === firstChild) d.style.color = '#dd8800'; // Match indicator color
-                else if(node === prevSib) d.style.color = '#33cc33'; // Match indicator color
-                else if(node === nextSib) d.style.color = '#00cccc'; // Match indicator color
+                else if(node === parent) d.style.color = '#cc3333';
+                else if(node === firstChild) d.style.color = '#dd8800';
+                else if(node === prevSib) d.style.color = '#33cc33';
+                else if(node === nextSib) d.style.color = '#00cccc';
 
                 const children = nodes.filter(n => n.parent === node);
                 const marker = node.parent ? (isLast ? '└─ ' : '├─ ') : '';
@@ -767,13 +807,30 @@ Nodes: ${nodes.length}`;
         function handleMenu(act){
             if(!menuTargetNode) return;
             document.getElementById('context-menu').style.display='none';
-            if(act==='rename'){ const i=document.getElementById('node-name-input'); i.value=menuTargetNode.text; document.getElementById('rename-modal').style.display='flex'; i.focus(); i.select(); }
-            else if(act==='edit_url'){ const i=document.getElementById('node-url-input'); i.value=menuTargetNode.url; document.getElementById('url-modal').style.display='flex'; i.focus(); i.select(); }
-            else if(act==='open_url'){ playSound('whoosh'); window.open(menuTargetNode.url,'_blank'); }
-            else if(act==='color'){ document.getElementById('node-color-input').value = menuTargetNode.color || '#ffffff'; document.getElementById('color-modal').style.display='flex'; }
+            
+            if(act==='rename'){ 
+                const i=document.getElementById('node-name-input'); i.value=menuTargetNode.text; 
+                document.getElementById('rename-modal').style.display='flex'; 
+                i.focus(); i.select(); 
+            }
+            else if(act==='edit_url'){ 
+                const i=document.getElementById('node-url-input'); i.value=menuTargetNode.url; 
+                document.getElementById('url-modal').style.display='flex'; 
+                i.focus(); i.select(); 
+            }
+            else if(act==='open_url'){ playSound('whoosh'); if(menuTargetNode.url) window.open(menuTargetNode.url,'_blank'); }
+            else if(act==='color'){ 
+                document.getElementById('node-color-input').value = menuTargetNode.color || '#ffffff';
+                document.getElementById('color-modal').style.display='flex'; 
+            }
             else if(act==='add'){ const n=createNode('New Node', menuTargetNode); playSound('add'); focusOnNodeWithTrace(n); }
-            else if(act==='delete_confirm') document.getElementById('delete-modal').style.display='flex';
-            else if(act==='url'){ playSound('whoosh'); window.open(menuTargetNode.url,'_blank'); }
+            // BUG FIX: Set focus on the first button when opening delete modal
+            else if(act==='delete_confirm') {
+                const modal = document.getElementById('delete-modal');
+                modal.style.display = 'flex';
+                modal.querySelector('.modal-btn').focus();
+            }
+            else if(act==='url'){ playSound('whoosh'); if(menuTargetNode.url) window.open(menuTargetNode.url,'_blank'); }
             else playSound('cancel');
         }
         function closeModal(id){ document.getElementById(id).style.display='none'; playSound('cancel'); }
@@ -790,7 +847,7 @@ Nodes: ${nodes.length}`;
         }
         function confirmUrl(){
             const v=document.getElementById('node-url-input').value;
-            if(menuTargetNode&&v){ 
+            if(menuTargetNode){ // Allow setting empty URL
                 menuTargetNode.url=v; 
                 const isActive = (menuTargetNode === activeNode);
                 menuTargetNode.mesh.material.map=createNodeTexture(menuTargetNode.id, menuTargetNode.text, v, menuTargetNode.color, isActive); 
