@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Constellio v20260120.1</title>
+    <title>Constellio v20260120.3</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-user-select: none; user-select: none; }
         #canvas-container { width: 100vw; height: 100vh; touch-action: none; cursor: default; }
@@ -21,11 +21,13 @@
             white-space: pre-wrap; line-height: 1.3; border: 1px solid #0f0;
         }
 
+        /* Fixed Width */
         #search-container { position: absolute; top: 130px; right: 20px; width: 33vw; min-width: 300px; height: 40px; z-index: 10; }
         #search-input { width: 100%; height: 100%; background: rgba(20, 20, 40, 0.85); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0 12px; color: white; font-size: 14px; backdrop-filter: blur(8px); outline: none; box-sizing: border-box; }
         #search-input:focus { border-color: #4a90e2; background: rgba(30, 30, 60, 0.9); }
 
-        #outliner { position: absolute; top: 180px; right: 20px; width: 300px; max-height: calc(100vh - 230px); background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: auto; padding: 8px; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; }
+        /* Fixed Width */
+        #outliner { position: absolute; top: 180px; right: 20px; width: 33vw; min-width: 300px; max-height: calc(100vh - 230px); background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: auto; padding: 8px; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; }
         #outliner::-webkit-scrollbar { width: 6px; height: 6px; }
         #outliner::-webkit-scrollbar-thumb { background-color: #4a90e2; border-radius: 3px; }
         .outliner-item { padding: 1px 4px; margin-bottom: 1px; border-radius: 2px; cursor: pointer; font-size: 0.85rem; line-height: 1.2; white-space: pre; overflow: visible; transition: background 0.1s; display: block; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; color: rgba(255,255,255,0.5); width: auto; min-width: 100%; box-sizing: border-box; }
@@ -217,7 +219,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260120.1";
+        const APP_VERSION = "v20260120.3";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
@@ -486,8 +488,19 @@ Nodes: ${nodes.length}`;
             const i=raycaster.intersectObjects(nodes.map(n=>n.mesh)); 
             return i.length>0?nodes.find(n=>n.mesh===i[0].object):null; 
         }
+
+        // Helper to check if event target is UI
+        function isUIEvent(e) {
+            return e.target.closest('#ui-layer') || 
+                   e.target.closest('#config-panel') || 
+                   e.target.closest('#context-menu') || 
+                   e.target.closest('#outliner') ||
+                   e.target.closest('.modal-content') ||
+                   e.target.closest('#search-container');
+        }
         
         window.addEventListener('mousedown',e=>{ 
+            if(isUIEvent(e)) return;
             if(e.button!==0)return; 
             isLongPress=false; startP={x:e.clientX,y:e.clientY};
             mouseDownPos = {x:e.clientX, y:e.clientY};
@@ -511,8 +524,32 @@ Nodes: ${nodes.length}`;
             document.getElementById('canvas-container').style.cursor = hover ? 'pointer' : 'default';
         });
 
-        // FIXED v35: Trust Hover State for Click
+        // FIXED v35: Direct Click Check - but only attach anchor to body
+        function exportJSON() {
+            const d = JSON.stringify({
+                nodes: nodes.map(n => ({
+                    id: n.id,
+                    text: n.text,
+                    parentId: n.parent ? n.parent.id : null,
+                    pos: n.mesh.position,
+                    color: n.color,
+                    url: n.url
+                })),
+                springLength,
+                fogDensity
+            });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([d], { type: 'application/json' }));
+            a.download = 'mindmap.json';
+            document.body.appendChild(a); // Fix: Append to body
+            a.click();
+            document.body.removeChild(a); // Fix: Remove after click
+            playSound('add');
+            showToast('msgSaved');
+        }
+
         window.addEventListener('mouseup', e => {
+            if(isUIEvent(e)) return;
             clearTimeout(pressTimer);
             if(!isLongPress && Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y) < 20) {
                 // RE-CHECK: Use direct Raycast at release point
@@ -532,6 +569,7 @@ Nodes: ${nodes.length}`;
         });
         
         window.addEventListener('dblclick', e => {
+            if(isUIEvent(e)) return;
             const n = getInt(e.clientX, e.clientY);
             if(n) {
                 focusOnNodeWithTrace(n);
@@ -542,6 +580,7 @@ Nodes: ${nodes.length}`;
 
         window.addEventListener('contextmenu',e=>{ 
             e.preventDefault(); 
+            if(isUIEvent(e)) return;
             const n=getInt(e.clientX,e.clientY); 
             if(n){
                 setActiveNode(n);
@@ -594,10 +633,16 @@ Nodes: ${nodes.length}`;
             // All shortcuts use activeNode as target
             if(e.key==='F2'){menuTargetNode=activeNode; handleMenu('rename');return;}
             if(e.key==='Delete'||e.key==='Backspace'){menuTargetNode=activeNode; handleMenu('delete_confirm');return;}
-            if(e.key==='Insert'||e.key==='Tab'){e.preventDefault();
-                const now = Date.now(); if (now - lastAdd < 200) return; lastAdd = now;
+            
+            // Throttled Insert/Tab
+            if(e.key==='Insert'||e.key==='Tab'){
+                e.preventDefault();
+                const now = Date.now();
+                if (now - lastAdd < 200) return; // 200ms Throttle
+                lastAdd = now;
                 menuTargetNode=activeNode; handleMenu('add'); return;
             }
+            
             if(k==='c'){menuTargetNode=activeNode; handleMenu('color');return;}
             if(k==='u'){menuTargetNode=activeNode; handleMenu('open_url');return;}
             
@@ -768,7 +813,6 @@ Nodes: ${nodes.length}`;
         function toggleConfig(){ const p=document.getElementById('config-panel'); p.style.display=p.style.display==='block'?'none':'block'; if(p.style.display==='block')playSound('click'); }
         function updateSpringLength(v){ springLength=parseFloat(v); document.getElementById('dist-val').innerText=springLength.toFixed(1); repulsionStrength=springLength*2.5; }
         function resetCameraToRoot(){ if(nodes[0])focusOnNodeWithTrace(nodes[0]); }
-        function exportJSON(){ const d=JSON.stringify({nodes:nodes.map(n=>({id:n.id,text:n.text,parentId:n.parent?n.parent.id:null,pos:n.mesh.position,color:n.color,url:n.url})),springLength,fogDensity}); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([d],{type:'application/json'})); a.download='mindmap.json'; a.click(); playSound('add'); showToast('msgSaved'); }
         function importJSON(el){
             const f=el.files[0]; if(!f)return;
             const r=new FileReader(); r.onload=e=>{
