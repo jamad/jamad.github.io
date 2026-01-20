@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Constellio v20260120.7</title>
+    <title>Constellio v20260120.9</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-user-select: none; user-select: none; }
         #canvas-container { width: 100vw; height: 100vh; touch-action: none; cursor: default; }
@@ -201,7 +201,7 @@
 
     <script>
         // VERSION UPDATE
-        const APP_VERSION = "v20260120.7";
+        const APP_VERSION = "v20260120.9";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
@@ -310,16 +310,18 @@
         createStarField();
 
         let nodes=[], connections=[], nextId=1, selectedNode=null, activeNode=null, springLength=8, repulsionStrength=20;
+        const collapsedNodes = new Set();
         const indicatorGroup = new THREE.Group(); scene.add(indicatorGroup);
         const indicators = {};
         const triGeo = new THREE.Shape(); triGeo.moveTo(0,0.5); triGeo.lineTo(0.4,-0.3); triGeo.lineTo(-0.4,-0.3);
         const triMat = color => new THREE.MeshBasicMaterial({color:color,side:THREE.DoubleSide,transparent:true,opacity:0.8});
         const mkTri = (c,z,x,y) => { const m=new THREE.Mesh(new THREE.ShapeGeometry(triGeo),triMat(c)); m.rotation.z=z; m.position.set(x,y,0); m.scale.set(0.75,0.75,0.75); return m; };
         
-        indicators.a = mkTri(0xff4444, Math.PI/2, -3.7, 0); 
-        indicators.d = mkTri(0xffaa00, -Math.PI/2, 3.7, 0); 
-        indicators.w = mkTri(0x44ff44, 0, 0, 1.8);          
-        indicators.s = mkTri(0x00ffff, Math.PI, 0, -1.8);   
+        // MODIFICATION 1: Darken indicator colors
+        indicators.a = mkTri(0xcc3333, Math.PI/2, -3.7, 0); // Parent (Darker Red)
+        indicators.d = mkTri(0xdd8800, -Math.PI/2, 3.7, 0);  // Child (Darker Orange)
+        indicators.w = mkTri(0x33cc33, 0, 0, 1.8);           // Prev Sib (Darker Green)
+        indicators.s = mkTri(0x00cccc, Math.PI, 0, -1.8);    // Next Sib (Darker Cyan)
         Object.values(indicators).forEach(m=>indicatorGroup.add(m));
 
         const gizmoScene = new THREE.Scene(); const gizmoSize = 180;
@@ -356,7 +358,6 @@
             return (((r * 299) + (g * 587) + (b * 114)) / 1000) >= 128 ? '#000000' : '#ffffff';
         }
 
-        // MODIFIED FUNCTION for conditional QR code
         function createNodeTexture(id, text, url, color = '#ffffff', isActive = false) {
             const canvas = document.createElement('canvas');
             canvas.width = 640; canvas.height = 240;
@@ -366,27 +367,22 @@
             ctx.lineWidth = 12;
             ctx.strokeStyle = isActive ? '#ffaa00' : '#4a90e2';
             ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-            // Conditional QR code / Placeholder
             const qrSpaceX = 25, qrSpaceY = 25, qrSize = 100;
-            if (url && url !== '') { // If URL is not null, undefined, or empty string
+            if (url && url !== '') {
                 try {
                     const qr = new QRious({ value: url, size: qrSize, level: 'L' });
                     ctx.drawImage(qr.canvas, qrSpaceX, qrSpaceY);
                 } catch(e) {
-                    // Draw an error box if QR generation fails
                     ctx.fillStyle = '#ffdddd';
                     ctx.fillRect(qrSpaceX, qrSpaceY, qrSize, qrSize);
                 }
             } else {
-                // Draw a plain square placeholder
                 ctx.fillStyle = '#ffffff';
                 ctx.strokeStyle = '#bbbbbb';
                 ctx.lineWidth = 5;
                 ctx.fillRect(qrSpaceX, qrSpaceY, qrSize, qrSize);
                 ctx.strokeRect(qrSpaceX, qrSpaceY, qrSize, qrSize);
             }
-
             ctx.fillStyle = getContrastColor(color);
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
@@ -416,14 +412,10 @@
             return new THREE.CanvasTexture(canvas);
         }
 
-        // MODIFIED FUNCTION for default URL
         function createNode(text, parent = null, savedPos = null, color = '#ffffff', savedId = null) {
             const id = savedId ? savedId : nextId++;
             if(savedId) nextId = Math.max(nextId, savedId + 1);
-            
-            // New nodes start with an empty URL, except for the root node.
             const url = (nodes.length === 0) ? DEFAULT_URL : '';
-
             const mesh = new THREE.Mesh(
                 new THREE.PlaneGeometry(6.4, 2.4),
                 new THREE.MeshBasicMaterial({map:createNodeTexture(id, text, url, color, false), side:THREE.DoubleSide})
@@ -692,6 +684,19 @@ Nodes: ${nodes.length}`;
         }
 
         const outliner = document.getElementById('outliner');
+
+        function toggleCollapse(nodeId, event) {
+            event.stopPropagation();
+            if (collapsedNodes.has(nodeId)) {
+                collapsedNodes.delete(nodeId);
+            } else {
+                collapsedNodes.add(nodeId);
+            }
+            playSound('click');
+            updateOutliner();
+        }
+        
+        // MODIFICATION 2: Fix outliner rendering order
         function updateOutliner() {
             const filterVal = document.getElementById('search-input').value.toLowerCase();
             outliner.innerHTML = '';
@@ -715,18 +720,41 @@ Nodes: ${nodes.length}`;
                 }
                 d.style.color = 'rgba(255,255,255,0.5)';
                 if(activeNode && activeNode.id === node.id) d.style.color = '#ffffff';
-                else if(node === parent) d.style.color = '#ff4444';
-                else if(node === firstChild) d.style.color = '#ffaa00';
-                else if(node === prevSib) d.style.color = '#44ff44';
-                else if(node === nextSib) d.style.color = '#00ffff';
+                else if(node === parent) d.style.color = '#cc3333'; // Match indicator color
+                else if(node === firstChild) d.style.color = '#dd8800'; // Match indicator color
+                else if(node === prevSib) d.style.color = '#33cc33'; // Match indicator color
+                else if(node === nextSib) d.style.color = '#00cccc'; // Match indicator color
+
+                const children = nodes.filter(n => n.parent === node);
                 const marker = node.parent ? (isLast ? '└─ ' : '├─ ') : '';
-                d.textContent = prefix + marker + node.id + ": " + node.text;
-                d.onclick = (e) => { e.stopPropagation(); focusOnNodeWithTrace(node); };
+
+                d.appendChild(document.createTextNode(prefix + marker));
+
+                if (children.length > 0) {
+                    const toggleSpan = document.createElement('span');
+                    toggleSpan.textContent = collapsedNodes.has(node.id) ? '[+]' : '[-]';
+                    toggleSpan.style.cursor = 'pointer';
+                    toggleSpan.onclick = (e) => toggleCollapse(node.id, e);
+                    d.appendChild(toggleSpan);
+                }
+                
+                const textNode = document.createTextNode(" " + node.id + ": " + node.text);
+                d.appendChild(textNode);
+
+                d.onclick = (e) => { 
+                    if (e.target.tagName !== 'SPAN') {
+                        e.stopPropagation(); 
+                        focusOnNodeWithTrace(node);
+                    }
+                };
+
                 const searchText = (node.id + " " + node.text).toLowerCase();
                 if (!searchText.includes(filterVal)) d.style.display = 'none';
                 outliner.appendChild(d);
-                const children = nodes.filter(n => n.parent === node);
-                children.forEach((c, i) => build(c, prefix + (node.parent ? (isLast ? '   ' : '│  ') : ''), i === children.length - 1));
+
+                if (!collapsedNodes.has(node.id)) {
+                    children.forEach((c, i) => build(c, prefix + (node.parent ? (isLast ? '   ' : '│  ') : ''), i === children.length - 1));
+                }
             }
             nodes.filter(n => !n.parent).forEach((r, i) => build(r, '', i === nodes.filter(n => !n.parent).length - 1));
         }
@@ -801,7 +829,6 @@ Nodes: ${nodes.length}`;
         function updateSpringLength(v){ springLength=parseFloat(v); document.getElementById('dist-val').innerText=springLength.toFixed(1); repulsionStrength=springLength*2.5; }
         function resetCameraToRoot(){ if(nodes[0])focusOnNodeWithTrace(nodes[0]); }
         
-        // MODIFIED FUNCTION for URL default on loading
         function importJSON(el){
             const f=el.files[0]; if(!f)return;
             const r=new FileReader(); r.onload=e=>{
@@ -813,7 +840,6 @@ Nodes: ${nodes.length}`;
                     d.nodes.sort((a,b)=>a.id-b.id).forEach(x=>{
                         const p = x.parentId ? m[x.parentId].real : null;
                         const n = createNode(x.text, p, new THREE.Vector3(x.pos.x,x.pos.y,x.pos.z),x.color||'#ffffff', x.id);
-                        // If URL is missing from save file, treat it as empty.
                         n.url = x.url || ''; 
                         m[x.id].real=n;
                     });
