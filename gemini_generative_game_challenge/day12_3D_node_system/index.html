@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Constellio v20260120.4</title>
+    <title>Constellio v20260120.5</title>
     <style>
         body {
             margin: 0;
@@ -69,7 +69,7 @@
             border: 1px solid #0f0;
         }
 
-        /* Fixed Width & POSITION CHANGE: left */
+        /* Position changed to left */
         #search-container {
             position: absolute;
             top: 130px;
@@ -99,7 +99,7 @@
             background: rgba(30, 30, 60, 0.9);
         }
 
-        /* Fixed Width & POSITION CHANGE: left */
+        /* Position changed to left */
         #outliner {
             position: absolute;
             top: 180px;
@@ -485,10 +485,7 @@
 
 <body>
     <div id="canvas-container"></div>
-
-    <!-- Debug Overlay -->
     <div id="debug-overlay"></div>
-
     <div id="ui-layer">
         <h1 id="ui-title">Constellio</h1>
         <p id="ui-help-mouse">Click: Select / DblClick: Focus / Right: Menu</p>
@@ -498,15 +495,12 @@
         <p class="shortcut-help" id="ui-help-numpad" style="font-size:0.75rem; color:#888;">Numpad: 1(Front) 3(Right)
             7(Top) 4/6/2/8(Orbit)</p>
     </div>
-
     <div id="search-container">
         <input type="search" id="search-input" placeholder="🔍 Search Nodes (Enter to Jump)..."
             oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter') jumpToFirstMatch()">
     </div>
-
     <div id="outliner"></div>
     <div id="config-btn" onclick="toggleConfig()">⚙️</div>
-
     <div id="config-panel">
         <div class="config-item">
             <label class="config-label" id="label-lang">Language</label>
@@ -530,7 +524,6 @@
             <input type="range" id="dist-slider" min="0.1" max="20" step="0.1" value="8"
                 oninput="updateSpringLength(this.value)">
         </div>
-        <!-- Fog Control -->
         <div class="config-item">
             <label class="config-label">
                 <span id="label-fog">Fog Density</span>
@@ -539,7 +532,6 @@
             <input type="range" id="fog-slider" min="0" max="0.01" step="0.0001" value="0.002"
                 oninput="updateFogDensity(this.value)">
         </div>
-
         <div class="config-item">
             <button class="config-action-btn secondary" id="btn-reset" onclick="resetCameraToRoot()">🎯 Reset Camera to
                 Root</button>
@@ -551,19 +543,14 @@
                 style="margin-top: 15px;">Close</button>
         </div>
     </div>
-
     <div id="footer">
         <div id="footer-left">
             <a href="https://junichiyamada.gitlab.io/" target="_blank">🏠 Home</a>
         </div>
-        <div id="footer-right">
-            <!-- JS Populated -->
-        </div>
+        <div id="footer-right"></div>
     </div>
-
     <input type="file" id="file-input" style="display:none" accept=".json" onchange="importJSON(this)">
     <input type="color" id="color-input" style="display:none" oninput="applyColor(this.value)">
-
     <div id="context-menu">
         <div class="menu-header" id="menu-title">Node Name</div>
         <button class="menu-item" id="ctx-rename" onclick="handleMenu('rename')">✏️ Rename Node</button>
@@ -574,8 +561,6 @@
         <button class="menu-item delete" id="ctx-delete" onclick="handleMenu('delete_confirm')">🗑️ Delete Node</button>
         <button class="menu-item cancel" id="ctx-cancel" onclick="handleMenu('cancel')">Cancel</button>
     </div>
-
-    <!-- Modals -->
     <div id="rename-modal" class="modal-overlay">
         <div class="modal-content">
             <h3 class="modal-title" id="modal-rename-title">Rename Node</h3>
@@ -587,7 +572,6 @@
             </div>
         </div>
     </div>
-
     <div id="url-modal" class="modal-overlay">
         <div class="modal-content">
             <h3 class="modal-title" id="modal-url-title">Edit URL</h3>
@@ -599,7 +583,6 @@
             </div>
         </div>
     </div>
-
     <div id="color-modal" class="modal-overlay">
         <div class="modal-content">
             <h3 class="modal-title" id="modal-color-title">Change Color</h3>
@@ -611,7 +594,6 @@
             </div>
         </div>
     </div>
-
     <div id="delete-modal" class="modal-overlay">
         <div class="modal-content">
             <h3 class="modal-title" id="modal-del-title">Confirm Deletion</h3>
@@ -626,7 +608,6 @@
             </div>
         </div>
     </div>
-
     <div id="toast">Message</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -634,7 +615,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260120.4";
+        // VERSION UPDATE
+        const APP_VERSION = "v20260120.5";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
@@ -749,10 +731,11 @@
         const triMat = color => new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
         const mkTri = (c, z, x, y) => { const m = new THREE.Mesh(new THREE.ShapeGeometry(triGeo), triMat(c)); m.rotation.z = z; m.position.set(x, y, 0); m.scale.set(0.75, 0.75, 0.75); return m; };
 
-        indicators.a = mkTri(0xff4444, Math.PI / 2, -2.4, 0);
-        indicators.d = mkTri(0xffaa00, -Math.PI / 2, 2.4, 0);
-        indicators.w = mkTri(0x44ff44, 0, 0, 1.7);
-        indicators.s = mkTri(0x00ffff, Math.PI, 0, -1.7);
+        // BUG FIX: Adjust indicator positions for the new larger node size
+        indicators.a = mkTri(0xff4444, Math.PI / 2, -3.7, 0);
+        indicators.d = mkTri(0xffaa00, -Math.PI / 2, 3.7, 0);
+        indicators.w = mkTri(0x44ff44, 0, 0, 1.8);
+        indicators.s = mkTri(0x00ffff, Math.PI, 0, -1.8);
         Object.values(indicators).forEach(m => indicatorGroup.add(m));
 
         const gizmoScene = new THREE.Scene(); const gizmoSize = 180;
@@ -789,51 +772,37 @@
             return (((r * 299) + (g * 587) + (b * 114)) / 1000) >= 128 ? '#000000' : '#ffffff';
         }
 
-        // MODIFIED FUNCTION
         function createNodeTexture(id, text, url, color = '#ffffff', isActive = false) {
             const canvas = document.createElement('canvas');
-            // Change 1: Canvas to be widescreen (e.g., 640x240)
             canvas.width = 640;
             canvas.height = 240;
             const ctx = canvas.getContext('2d');
-
-            // Background and border
             ctx.fillStyle = color;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.lineWidth = 12;
             ctx.strokeStyle = isActive ? '#ffaa00' : '#4a90e2';
             ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-            // QR code (smaller, top-left)
             try {
                 const qr = new QRious({ value: url, size: 100, level: 'L' });
                 ctx.drawImage(qr.canvas, 25, 25);
             } catch (e) { }
-
-            // Modified text rendering logic
             ctx.fillStyle = getContrastColor(color);
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
-
-            // Display ID as a header
             ctx.font = 'bold 32px sans-serif';
             ctx.fillText(`ID: ${id}`, 150, 30);
-
-            // Main text
             ctx.font = '36px sans-serif';
             const displayText = text;
             let line = '';
             let y = 80;
-            const maxWidth = 450; // Widen the text area
+            const maxWidth = 450;
             const lineHeight = 45;
-
             for (let i = 0; i < displayText.length; i++) {
                 const testLine = line + displayText[i];
                 if (ctx.measureText(testLine).width > maxWidth && i > 0) {
                     ctx.fillText(line, 150, y);
                     line = displayText[i];
                     y += lineHeight;
-                    // Render up to 3 lines and then truncate
                     if (y > 80 + lineHeight * 2) {
                         line = line.substring(0, line.length - 1) + '…';
                         break;
@@ -843,32 +812,25 @@
                 }
             }
             ctx.fillText(line, 150, y);
-
             return new THREE.CanvasTexture(canvas);
         }
 
-        // MODIFIED FUNCTION
         function createNode(text, parent = null, savedPos = null, color = '#ffffff', savedId = null) {
             const id = savedId ? savedId : nextId++;
             if (savedId) nextId = Math.max(nextId, savedId + 1);
             const url = DEFAULT_URL;
-
-            // Change 2: Adjust PlaneGeometry to match the new canvas aspect ratio
             const mesh = new THREE.Mesh(
-                new THREE.PlaneGeometry(6.4, 2.4), // Corresponds to 640x240
+                new THREE.PlaneGeometry(6.4, 2.4),
                 new THREE.MeshBasicMaterial({ map: createNodeTexture(id, text, url, color, false), side: THREE.DoubleSide })
             );
-
             if (savedPos) mesh.position.copy(savedPos);
             else if (parent) {
                 const a = Math.random() * Math.PI * 2, d = springLength;
                 mesh.position.set(parent.mesh.position.x + Math.cos(a) * d, parent.mesh.position.y + (Math.random() - 0.5) * d, parent.mesh.position.z + Math.sin(a) * d);
             }
             scene.add(mesh);
-
             const node = { id: id, mesh: mesh, text: text, color: color, url: url, velocity: new THREE.Vector3(), force: new THREE.Vector3(), parent: parent };
             nodes.push(node);
-
             if (parent) {
                 const geo = new THREE.BufferGeometry().setFromPoints([parent.mesh.position, mesh.position]);
                 const mat = new THREE.LineBasicMaterial({ color: 0x4a90e2, transparent: true, opacity: 0.8 });
@@ -941,7 +903,7 @@ Nodes: ${nodes.length}`;
         const mouseP = new THREE.Vector2();
         let isLongPress = false, pressTimer, startP = { x: 0, y: 0 };
         let mouseDownPos = { x: 0, y: 0 };
-        let menuTargetNode = null; // Store context menu target
+        let menuTargetNode = null;
 
         function getInt(cx, cy) {
             mouseP.x = (cx / window.innerWidth) * 2 - 1;
@@ -951,14 +913,8 @@ Nodes: ${nodes.length}`;
             return i.length > 0 ? nodes.find(n => n.mesh === i[0].object) : null;
         }
 
-        // Helper to check if event target is UI
         function isUIEvent(e) {
-            return e.target.closest('#ui-layer') ||
-                e.target.closest('#config-panel') ||
-                e.target.closest('#context-menu') ||
-                e.target.closest('#outliner') ||
-                e.target.closest('.modal-content') ||
-                e.target.closest('#search-container');
+            return e.target.closest('#ui-layer') || e.target.closest('#config-panel') || e.target.closest('#context-menu') || e.target.closest('#outliner') || e.target.closest('.modal-content') || e.target.closest('#search-container');
         }
 
         window.addEventListener('mousedown', e => {
@@ -966,13 +922,12 @@ Nodes: ${nodes.length}`;
             if (e.button !== 0) return;
             isLongPress = false; startP = { x: e.clientX, y: e.clientY };
             mouseDownPos = { x: e.clientX, y: e.clientY };
-
             pressTimer = setTimeout(() => {
                 isLongPress = true;
                 const n = getInt(e.clientX, e.clientY);
                 if (n) {
                     setActiveNode(n);
-                    menuTargetNode = n; // Fixed target
+                    menuTargetNode = n;
                     playSound('pop');
                     showContextMenu(e.clientX, e.clientY, n);
                 }
@@ -986,26 +941,18 @@ Nodes: ${nodes.length}`;
             document.getElementById('canvas-container').style.cursor = hover ? 'pointer' : 'default';
         });
 
-        // FIXED v35: Direct Click Check - but only attach anchor to body
         function exportJSON() {
             const d = JSON.stringify({
-                nodes: nodes.map(n => ({
-                    id: n.id,
-                    text: n.text,
-                    parentId: n.parent ? n.parent.id : null,
-                    pos: n.mesh.position,
-                    color: n.color,
-                    url: n.url
-                })),
+                nodes: nodes.map(n => ({ id: n.id, text: n.text, parentId: n.parent ? n.parent.id : null, pos: n.mesh.position, color: n.color, url: n.url })),
                 springLength,
                 fogDensity
             });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([d], { type: 'application/json' }));
             a.download = 'mindmap.json';
-            document.body.appendChild(a); // Fix: Append to body
+            document.body.appendChild(a);
             a.click();
-            document.body.removeChild(a); // Fix: Remove after click
+            document.body.removeChild(a);
             playSound('add');
             showToast('msgSaved');
         }
@@ -1014,7 +961,6 @@ Nodes: ${nodes.length}`;
             if (isUIEvent(e)) return;
             clearTimeout(pressTimer);
             if (!isLongPress && Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y) < 20) {
-                // RE-CHECK: Use direct Raycast at release point
                 const n = getInt(e.clientX, e.clientY);
                 if (n) {
                     setActiveNode(n);
@@ -1046,7 +992,7 @@ Nodes: ${nodes.length}`;
             const n = getInt(e.clientX, e.clientY);
             if (n) {
                 setActiveNode(n);
-                menuTargetNode = n; // Store target
+                menuTargetNode = n;
                 playSound('pop');
                 showContextMenu(e.clientX, e.clientY, n);
             }
@@ -1057,9 +1003,7 @@ Nodes: ${nodes.length}`;
         window.addEventListener('keydown', e => {
             if (e.target.tagName === 'INPUT') return;
             keys[e.code] = true;
-
             if (e.altKey && e.key.toLowerCase() === 'd') { e.preventDefault(); toggleDebug(); return; }
-
             if (e.key === 'Escape') {
                 if (document.querySelector('.modal-overlay[style*="flex"]')) { closeModal('rename-modal'); closeModal('url-modal'); closeModal('color-modal'); closeModal('delete-modal'); return; }
                 if (document.getElementById('context-menu').style.display === 'block') { document.getElementById('context-menu').style.display = 'none'; playSound('cancel'); return; }
@@ -1069,13 +1013,10 @@ Nodes: ${nodes.length}`;
             if (e.altKey && e.key.toLowerCase() === 's') { e.preventDefault(); exportJSON(); return; }
             if (e.altKey && e.key.toLowerCase() === 'o') { e.preventDefault(); document.getElementById('file-input').click(); return; }
             if (e.altKey && e.key.toLowerCase() === 'r') { e.preventDefault(); resetCameraToRoot(); return; }
-
             if (e.code === 'Numpad1') snapView('front');
             if (e.code === 'Numpad3') snapView('right');
             if (e.code === 'Numpad7') snapView('top');
             if (e.code === 'Numpad9') snapView('back');
-
-            // Enter Key for Context Menu
             if (e.key === 'Enter') {
                 if (activeNode) {
                     menuTargetNode = activeNode;
@@ -1087,27 +1028,20 @@ Nodes: ${nodes.length}`;
                 }
                 return;
             }
-
             if (!activeNode && nodes.length > 0) setActiveNode(nodes[0]);
             if (!activeNode) return;
-
             let t = null, k = e.key.toLowerCase();
-            // All shortcuts use activeNode as target
             if (e.key === 'F2') { menuTargetNode = activeNode; handleMenu('rename'); return; }
             if (e.key === 'Delete' || e.key === 'Backspace') { menuTargetNode = activeNode; handleMenu('delete_confirm'); return; }
-
-            // Throttled Insert/Tab
             if (e.key === 'Insert' || e.key === 'Tab') {
                 e.preventDefault();
                 const now = Date.now();
-                if (now - lastAdd < 200) return; // 200ms Throttle
+                if (now - lastAdd < 200) return;
                 lastAdd = now;
                 menuTargetNode = activeNode; handleMenu('add'); return;
             }
-
             if (k === 'c') { menuTargetNode = activeNode; handleMenu('color'); return; }
             if (k === 'u') { menuTargetNode = activeNode; handleMenu('open_url'); return; }
-
             if (k === 'a' && activeNode.parent) t = activeNode.parent;
             else if (k === 'd') { const c = nodes.filter(n => n.parent === activeNode); if (c.length) t = c[0]; }
             else if (k === 'w' || k === 's') {
@@ -1198,26 +1132,12 @@ Nodes: ${nodes.length}`;
             const m = document.getElementById('context-menu'); m.style.left = Math.min(x, window.innerWidth - 220) + 'px'; m.style.top = Math.min(y, window.innerHeight - 210) + 'px'; m.style.display = 'block';
         }
         function handleMenu(act) {
-            if (!menuTargetNode) return; // Must have target
+            if (!menuTargetNode) return;
             document.getElementById('context-menu').style.display = 'none';
-
-            if (act === 'rename') {
-                const i = document.getElementById('node-name-input');
-                i.value = menuTargetNode.text;
-                document.getElementById('rename-modal').style.display = 'flex';
-                i.focus(); i.select();
-            }
-            else if (act === 'edit_url') {
-                const i = document.getElementById('node-url-input');
-                i.value = menuTargetNode.url;
-                document.getElementById('url-modal').style.display = 'flex';
-                i.focus(); i.select();
-            }
+            if (act === 'rename') { const i = document.getElementById('node-name-input'); i.value = menuTargetNode.text; document.getElementById('rename-modal').style.display = 'flex'; i.focus(); i.select(); }
+            else if (act === 'edit_url') { const i = document.getElementById('node-url-input'); i.value = menuTargetNode.url; document.getElementById('url-modal').style.display = 'flex'; i.focus(); i.select(); }
             else if (act === 'open_url') { playSound('whoosh'); window.open(menuTargetNode.url, '_blank'); }
-            else if (act === 'color') {
-                document.getElementById('node-color-input').value = menuTargetNode.color || '#ffffff';
-                document.getElementById('color-modal').style.display = 'flex';
-            }
+            else if (act === 'color') { document.getElementById('node-color-input').value = menuTargetNode.color || '#ffffff'; document.getElementById('color-modal').style.display = 'flex'; }
             else if (act === 'add') { const n = createNode('New Node', menuTargetNode); playSound('add'); focusOnNodeWithTrace(n); }
             else if (act === 'delete_confirm') document.getElementById('delete-modal').style.display = 'flex';
             else if (act === 'url') { playSound('whoosh'); window.open(menuTargetNode.url, '_blank'); }
@@ -1357,7 +1277,6 @@ Nodes: ${nodes.length}`;
             const w = window.innerWidth, h = window.innerHeight;
             renderer.setScissorTest(true);
 
-            // MODIFIED: Position Gizmo at bottom right
             const gizmoWidth = 180;
             const gizmoMargin = 20;
             renderer.setScissor(window.innerWidth - gizmoWidth - gizmoMargin, gizmoMargin, gizmoWidth, gizmoWidth);
