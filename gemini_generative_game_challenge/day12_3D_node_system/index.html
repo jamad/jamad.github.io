@@ -4,12 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Constellio v20260118.3</title>
+    <title>Constellio v20260119.1</title>
     <style>
-        /* Block default touch actions to allow custom 3D controls */
-        body { margin: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-        
-        /* touch-action: none is CRITICAL for iOS custom gestures */
+        body { margin: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-user-select: none; user-select: none; }
         #canvas-container { width: 100vw; height: 100vh; touch-action: none; cursor: default; }
         
         #ui-layer { position: absolute; top: 20px; left: 20px; color: rgba(255, 255, 255, 0.8); pointer-events: none; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8); z-index: 10; }
@@ -29,7 +26,11 @@
         #search-input { width: 100%; height: 100%; background: rgba(20, 20, 40, 0.85); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0 12px; color: white; font-size: 14px; backdrop-filter: blur(8px); outline: none; box-sizing: border-box; }
         #search-input:focus { border-color: #4a90e2; background: rgba(30, 30, 60, 0.9); }
 
-        #outliner { position: absolute; top: 180px; right: 20px; width: 300px; max-height: calc(100vh - 230px); background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: auto; padding: 8px; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; }
+        #outliner { 
+            position: absolute; top: 180px; right: 20px; 
+            width: 33vw; min-width: 300px;
+            max-height: calc(100vh - 230px); background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: auto; padding: 8px; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; 
+        }
         #outliner::-webkit-scrollbar { width: 6px; height: 6px; }
         #outliner::-webkit-scrollbar-thumb { background-color: #4a90e2; border-radius: 3px; }
         .outliner-item { padding: 1px 4px; margin-bottom: 1px; border-radius: 2px; cursor: pointer; font-size: 0.85rem; line-height: 1.2; white-space: pre; overflow: visible; transition: background 0.1s; display: block; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; color: rgba(255,255,255,0.5); width: auto; min-width: 100%; box-sizing: border-box; }
@@ -79,10 +80,24 @@
         #toast.success { background-color: #2ecc71; }
         #toast.error { background-color: #e74c3c; }
 
-        #footer { position: absolute; bottom: 10px; width: 100%; padding: 0 20px; box-sizing: border-box; color: rgba(255,255,255,0.4); font-size: 0.8rem; pointer-events: auto; z-index: 10; display: flex; justify-content: space-between; }
+        #footer { position: absolute; bottom: 10px; width: 100%; padding: 0 20px; box-sizing: border-box; color: rgba(255,255,255,0.4); font-size: 0.8rem; pointer-events: none; z-index: 10; display: flex; justify-content: space-between; }
         #footer-left, #footer-right { pointer-events: auto; }
         #footer a { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s; }
         #footer a:hover { color: #fff; text-decoration: underline; }
+
+        /* iOS Warning Overlay */
+        #ios-warning {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 9999;
+            color: white; justify-content: center; align-items: center; flex-direction: column;
+            text-align: center; padding: 20px; box-sizing: border-box;
+        }
+        #ios-warning h2 { color: #ffaa00; margin-bottom: 20px; }
+        #ios-warning p { margin-bottom: 30px; line-height: 1.6; }
+        #ios-warning button {
+            padding: 12px 24px; background: #444; border: 1px solid #666; color: #fff;
+            border-radius: 6px; font-size: 1rem; cursor: pointer;
+        }
     </style>
 </head>
 
@@ -91,6 +106,13 @@
 
     <!-- Debug Overlay -->
     <div id="debug-overlay"></div>
+
+    <!-- iOS Warning -->
+    <div id="ios-warning">
+        <h2>⚠️ Device Not Supported</h2>
+        <p>Constellio is optimized for PC (Mouse & Keyboard).<br>iOS / Touch devices are not fully supported yet.</p>
+        <button onclick="document.getElementById('ios-warning').style.display='none'">Close & Try Anyway</button>
+    </div>
 
     <div id="ui-layer">
         <h1 id="ui-title">Constellio</h1>
@@ -221,8 +243,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260118.3";
+        const APP_VERSION = "v20260119.1";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
+
+        // iOS Detection
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (isIOS) {
+            document.getElementById('ios-warning').style.display = 'flex';
+        }
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
 
@@ -489,64 +517,33 @@ Nodes: ${nodes.length}`;
             const i=raycaster.intersectObjects(nodes.map(n=>n.mesh)); 
             return i.length>0?nodes.find(n=>n.mesh===i[0].object):null; 
         }
-
-        // Helper to check if event target is UI
-        function isUIEvent(e) {
-            return e.target.closest('#ui-layer') || 
-                   e.target.closest('#config-panel') || 
-                   e.target.closest('#context-menu') || 
-                   e.target.closest('#outliner') ||
-                   e.target.closest('.modal-content') ||
-                   e.target.closest('#search-container');
-        }
         
-        window.addEventListener('pointerdown', e => { 
-            // If touching UI, do not trigger 3D events
-            if(isUIEvent(e)) return;
-
-            // If menu is open and we click canvas, close it
-            const menu = document.getElementById('context-menu');
-            if(menu.style.display === 'block' && !e.target.closest('#context-menu')) {
-                menu.style.display = 'none';
-            }
-
-            if(e.button !== 0) return; 
-
-            isLongPress = false; 
-            startP = {x:e.clientX, y:e.clientY};
+        window.addEventListener('mousedown',e=>{ 
+            if(e.button!==0)return; 
+            isLongPress=false; startP={x:e.clientX,y:e.clientY};
             mouseDownPos = {x:e.clientX, y:e.clientY};
 
-            pressTimer = setTimeout(()=>{
-                // Re-check distance to ensure it's still a hold, not a drag
-                if(Math.hypot(pointer.x - startP.x, pointer.y - startP.y) < 15) {
-                    isLongPress = true;
-                    const n = getInt(e.clientX, e.clientY);
-                    if(n){setActiveNode(n); playSound('pop'); showContextMenu(e.clientX,e.clientY,n);}
-                }
-            }, 600); 
+            pressTimer=setTimeout(()=>{
+                isLongPress=true;
+                const n=getInt(e.clientX,e.clientY);
+                if(n){setActiveNode(n);playSound('pop');showContextMenu(e.clientX,e.clientY,n);}
+            },600); 
         });
 
-        window.addEventListener('pointermove', e => { 
-            pointer.x = e.clientX; 
-            pointer.y = e.clientY; 
-            
-            if(Math.hypot(e.clientX-startP.x, e.clientY-startP.y) > 40) {
-                clearTimeout(pressTimer);
-            }
-
+        window.addEventListener('mousemove',e=>{ 
+            pointer.x=e.clientX; pointer.y=e.clientY; 
+            if(Math.hypot(e.clientX-startP.x,e.clientY-startP.y)>20) clearTimeout(pressTimer);
             const hover = getInt(e.clientX, e.clientY);
             document.getElementById('canvas-container').style.cursor = hover ? 'pointer' : 'default';
         });
 
-        window.addEventListener('pointerup', e => {
-            if(isUIEvent(e)) return;
-            if(e.button !== 0) return;
-
+        // FIXED LOGIC v37: Trust the hovered node from mousemove
+        // If we are over a node when releasing, we select it.
+        // No strict comparison with mousedown target.
+        window.addEventListener('mouseup', e => {
             clearTimeout(pressTimer);
-            
-            const dist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
-
-            if(!isLongPress && dist < 40) {
+            if(!isLongPress && Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y) < 20) {
+                // Re-calculate hit at release point
                 const n = getInt(e.clientX, e.clientY);
                 if(n) {
                     setActiveNode(n);
@@ -555,7 +552,7 @@ Nodes: ${nodes.length}`;
                     lastClickDebug = `ID:${n.id}`;
                 } else {
                     lastClickType = "Click (Miss)";
-                    lastClickDebug = `Dist:${dist.toFixed(1)}px`;
+                    lastClickDebug = `X:${e.clientX}`;
                 }
             } else {
                 lastClickType = "Drag/LongPress";
@@ -563,7 +560,6 @@ Nodes: ${nodes.length}`;
         });
         
         window.addEventListener('dblclick', e => {
-            if(isUIEvent(e)) return;
             const n = getInt(e.clientX, e.clientY);
             if(n) {
                 focusOnNodeWithTrace(n);
@@ -572,18 +568,7 @@ Nodes: ${nodes.length}`;
             }
         });
 
-        // Context Menu Handler
-        window.addEventListener('contextmenu', e => { 
-            e.preventDefault(); 
-            if(isUIEvent(e)) return;
-            
-            const n = getInt(e.clientX, e.clientY); 
-            if(n){
-                setActiveNode(n);
-                playSound('pop');
-                showContextMenu(e.clientX,e.clientY,n);
-            }
-        });
+        window.addEventListener('contextmenu',e=>{ e.preventDefault(); const n=getInt(e.clientX,e.clientY); if(n){setActiveNode(n);playSound('pop');showContextMenu(e.clientX,e.clientY,n);} });
 
         const keys = {};
         window.addEventListener('keyup', e => keys[e.code] = false);
@@ -787,7 +772,6 @@ Nodes: ${nodes.length}`;
         }
         function toggleConfig(){ const p=document.getElementById('config-panel'); p.style.display=p.style.display==='block'?'none':'block'; if(p.style.display==='block')playSound('click'); }
         function updateSpringLength(v){ springLength=parseFloat(v); document.getElementById('dist-val').innerText=springLength.toFixed(1); repulsionStrength=springLength*2.5; }
-        function updateFogDensity(v){ fogDensity=parseFloat(v); document.getElementById('fog-val').innerText=fogDensity.toFixed(4); scene.fog.density=fogDensity; }
         function resetCameraToRoot(){ if(nodes[0])focusOnNodeWithTrace(nodes[0]); }
         function exportJSON(){ const d=JSON.stringify({nodes:nodes.map(n=>({id:n.id,text:n.text,parentId:n.parent?n.parent.id:null,pos:n.mesh.position,color:n.color,url:n.url})),springLength,fogDensity}); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([d],{type:'application/json'})); a.download='mindmap.json'; a.click(); playSound('add'); showToast('msgSaved'); }
         function importJSON(el){
