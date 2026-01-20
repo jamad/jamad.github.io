@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finnish Translator Tool</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Nunito:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', 'Noto Sans JP', sans-serif;
+            background-color: #0f172a;
+            /* Dark Slate */
+            color: white;
+            touch-action: manipulation;
+            overflow-x: hidden;
+        }
+
+        /* パネル共通スタイル */
+        .panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 250px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 翻訳実行時の発光エフェクト */
+        .panel.active {
+            border-color: #60a5fa;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+        }
+
+        .lang-label {
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+            z-index: 10;
+        }
+
+        textarea {
+            resize: none;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            width: 100%;
+            flex-grow: 1;
+            font-size: 1.25rem;
+            line-height: 1.5;
+            z-index: 10;
+        }
+
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 結果表示エリア */
+        .result-area {
+            font-size: 1.25rem;
+            flex-grow: 1;
+            white-space: pre-wrap;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 10;
+        }
+
+        .result-area.show {
+            opacity: 1;
+        }
+
+        /* スマホ用ボタンスタイル */
+        .action-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: none;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
+            cursor: pointer;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* ツールチップ的なコピー通知 */
+        .copy-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .copy-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col p-4 md:p-8">
+
+    <!-- Header -->
+    <header class="mb-6 flex justify-between items-center">
+        <h1
+            class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-teal-400 drop-shadow-sm">
+            Finnish Spark
+        </h1>
+        <div class="text-xs text-slate-400 font-mono border border-slate-700 px-2 py-1 rounded">
+            JP &lt; EN &lt; FI
+        </div>
+    </header>
+
+    <!-- Main Grid Layout -->
+    <main class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow max-w-7xl mx-auto w-full h-full">
+
+        <!-- 1. Japanese Panel (Left on Desktop, Bottom on Mobile) -->
+        <div class="panel p-6 order-3 md:order-1 border-t-4 border-t-pink-500" id="panel-ja">
+            <div class="flex justify-between items-center mb-2">
+                <span class="lang-label bg-pink-500/20 text-pink-300">Japanese</span>
+                <button onclick="copyToClipboard('result-ja')"
+                    class="text-slate-400 hover:text-white transition p-2 rounded-full hover:bg-slate-700/50"
+                    title="Copy">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                </button>
+            </div>
+            <div id="result-ja" class="result-area text-slate-200"></div>
+        </div>
+
+        <!-- 2. English Panel (Center) -->
+        <div class="panel p-6 order-2 md:order-2 border-t-4 border-t-yellow-500" id="panel-en">
+            <div class="flex justify-between items-center mb-2">
+                <span class="lang-label bg-yellow-500/20 text-yellow-300">English</span>
+                <button onclick="copyToClipboard('result-en')"
+                    class="text-slate-400 hover:text-white transition p-2 rounded-full hover:bg-slate-700/50"
+                    title="Copy">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                </button>
+            </div>
+            <div id="result-en" class="result-area text-slate-200"></div>
+        </div>
+
+        <!-- 3. Finnish Input Panel (Right on Desktop, Top on Mobile) -->
+        <div class="panel p-6 order-1 md:order-3 border-t-4 border-t-blue-500 relative" id="panel-fi">
+            <span class="lang-label bg-blue-500/20 text-blue-300">Finnish (Input)</span>
+            <textarea id="input-fi" placeholder="Kirjoita suomea tähän... (例: Minä pidän kahvista)"></textarea>
+
+            <!-- Controls -->
+            <div class="flex gap-2 mt-4 z-10">
+                <button onclick="clearText()"
+                    class="px-4 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold transition">
+                    ✕
+                </button>
+                <button id="btn-translate" onclick="translateText()"
+                    class="action-btn flex-grow py-3 rounded-xl flex justify-center items-center gap-2 group">
+                    <span>TRANSLATE</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 transition"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Copy Toast Notification -->
+    <div id="copy-toast" class="copy-toast">Copied to clipboard!</div>
+
+    <!-- Audio Elements -->
+    <audio id="sound-type"
+        src="https://assets.mixkit.co/sfx/preview/mixkit-mechanical-keyboard-typing-1386.mp3"></audio>
+    <audio id="sound-woosh" src="https://assets.mixkit.co/sfx/preview/mixkit-fast-sci-fi-whoosh-3129.mp3"></audio>
+    <audio id="sound-success" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"></audio>
+
+    <script>
+        // DOM Elements
+        const inputFi = document.getElementById('input-fi');
+        const resultEn = document.getElementById('result-en');
+        const resultJa = document.getElementById('result-ja');
+        const panelJa = document.getElementById('panel-ja');
+        const panelEn = document.getElementById('panel-en');
+        const panelFi = document.getElementById('panel-fi');
+        const btnTranslate = document.getElementById('btn-translate');
+        const copyToast = document.getElementById('copy-toast');
+
+        // Sounds
+        const soundType = document.getElementById('sound-type');
+        const soundWhoosh = document.getElementById('sound-woosh');
+        const soundSuccess = document.getElementById('sound-success');
+
+        soundType.volume = 0.2;
+        soundWhoosh.volume = 0.3;
+        soundSuccess.volume = 0.2;
+
+        function playSound(audioElement) {
+            audioElement.currentTime = 0;
+            // ユーザー操作なしでの再生エラーを防ぐためcatchを入れる
+            audioElement.play().catch(e => console.log('Audio autoplay blocked', e));
+        }
+
+        // Typing Sound
+        let lastTypeTime = 0;
+        inputFi.addEventListener('input', () => {
+            const now = Date.now();
+            if (now - lastTypeTime > 150) {
+                playSound(soundType);
+                lastTypeTime = now;
+            }
+        });
+
+        // Clear Function
+        function clearText() {
+            inputFi.value = '';
+            resultEn.classList.remove('show');
+            resultJa.classList.remove('show');
+            setTimeout(() => {
+                resultEn.innerText = '';
+                resultJa.innerText = '';
+            }, 300);
+            inputFi.focus();
+        }
+
+        // Copy Function
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            if (!text) return;
+
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                copyToast.classList.add('show');
+                setTimeout(() => copyToast.classList.remove('show'), 2000);
+            } catch (err) {
+                console.error('Copy failed', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Translation Logic
+        async function translateText() {
+            const text = inputFi.value.trim();
+            if (!text) return;
+
+            // UI Feedback: Start
+            playSound(soundWhoosh);
+            btnTranslate.disabled = true;
+            btnTranslate.querySelector('span').innerText = '...';
+
+            // Reset results
+            resultEn.classList.remove('show');
+            resultJa.classList.remove('show');
+            panelJa.classList.add('active');
+            panelEn.classList.add('active');
+
+            // Show loading text
+            resultEn.innerText = 'Translating...';
+            resultJa.innerText = '翻訳中...';
+            resultEn.classList.add('show');
+            resultJa.classList.add('show');
+
+            try {
+                // 1. Try Local Backend first (優先: ローカルPythonサーバー)
+                // fetchのタイムアウトを短くして、ダメならすぐAPIに切り替える
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 1000); // 1秒で諦める
+
+                try {
+                    const response = await fetch('/translate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: text }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        completeTranslation(data.english, data.japanese);
+                        return;
+                    }
+                } catch (e) {
+                    // Local backend failed or timed out. Fall through to external API.
+                    console.log("Local backend unavailable, switching to External API.");
+                }
+
+                // 2. Fallback: External Free API (MyMemory)
+                // Note: MyMemory API has a daily limit for free use.
+                // Request 1: FI -> EN
+                const resEn = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=fi|en`);
+                const dataEn = await resEn.json();
+                const translatedEn = dataEn.responseData.translatedText;
+
+                // Request 2: FI -> JA
+                const resJa = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=fi|ja`);
+                const dataJa = await resJa.json();
+                const translatedJa = dataJa.responseData.translatedText;
+
+                completeTranslation(translatedEn, translatedJa);
+
+            } catch (error) {
+                console.error('All translation methods failed:', error);
+
+                // 3. Final Fallback (if offline or API limit reached)
+                completeTranslation(
+                    "Connection Error or API Limit Reached.",
+                    "通信エラー、または翻訳APIの上限に達しました。"
+                );
+            }
+        }
+
+        function completeTranslation(enText, jaText) {
+            // Remove old text class to fade out (optional, skipping for snappiness here)
+            // Update Text
+            resultEn.innerText = enText;
+            resultJa.innerText = jaText;
+
+            // Play Success Sound
+            playSound(soundSuccess);
+
+            // Cleanup UI
+            panelJa.classList.remove('active');
+            panelEn.classList.remove('active');
+            btnTranslate.disabled = false;
+            btnTranslate.querySelector('span').innerText = 'TRANSLATE';
+        }
+
+        // Ctrl+Enter Shortcut
+        inputFi.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                translateText();
+            }
+        });
+    </script>
+</body>
+
+</html>
