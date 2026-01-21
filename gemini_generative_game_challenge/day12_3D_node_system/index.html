@@ -91,7 +91,8 @@
         <p id="ui-help-mouse">Click: Select / DblClick: Focus / Right: Menu</p>
         <p id="ui-help-wasd">Move: A(Parent) D(Child) W(Prev) S(Next)</p>
         <p class="shortcut-help" id="ui-help-keys">Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)</p>
-        <p class="shortcut-help" id="ui-help-numpad" style="font-size:0.75rem; color:#888;">Numpad: 1(Front) 3(Right) 7(Top) 4/6/2/8(Orbit)</p>
+        <p class="shortcut-help" id="ui-help-numpad-snap">Numpad: 1(Front) 3(Right) 7(Top) - Snap View</p>
+        <p class="shortcut-help" id="ui-help-numpad-rotate">Numpad: 2/4/6/8 - Rotate View</p>```
     </div>
     <div id="search-container">
         <input type="search" id="search-input" placeholder="🔍 Search Nodes (Enter to Jump)..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter') jumpToFirstMatch()">
@@ -199,7 +200,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260120.9";
+        const APP_VERSION = "v20260121.1";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
