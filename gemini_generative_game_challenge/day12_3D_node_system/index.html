@@ -75,6 +75,7 @@
         #toast.show { visibility: visible; opacity: 1; bottom: 60px; }
         #toast.success { background-color: #2ecc71; }
         #toast.error { background-color: #e74c3c; }
+        #toast.warning { background-color: #f39c12; }
 
         #footer { position: absolute; bottom: 10px; width: 100%; padding: 0 20px; box-sizing: border-box; color: rgba(255,255,255,0.4); font-size: 0.8rem; pointer-events: auto; z-index: 10; display: flex; justify-content: space-between; }
         #footer-left, #footer-right { pointer-events: auto; }
@@ -201,15 +202,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260121.12";
+        const APP_VERSION = "v20260121.13";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
 
         const i18n = {
-            ja: { title: "ReticuluMind", helpMouse: "クリック: フォーカス / ダブル: 視点移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNumSnap: "テンキー: 1(前) 3(右) 7(上) - 視点スナップ", helpNumRotate: "テンキー: 2/4/6/8 - 視点回転", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", historyBtn: "📜 履歴マップを見る", backToMapBtn: "🗺️ マップに戻る", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました" },
-            en: { title: "ReticuluMind", helpMouse: "Click: Focus / DblClick: Move View / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Front) 3(Right) 7(Top) - Snap View", helpNumRotate: "Numpad: 2/4/6/8 - Rotate View", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", historyBtn: "📜 View History Map", backToMapBtn: "🗺️ Back to Main Map", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted" },
-            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Kohdista / Tupla: Siirrä näkymää / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) - Näkymän vaihto", helpNumRotate: "Numpad: 2/4/6/8 - Kierrä näkymää", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", historyBtn: "📜 Näytä historia", backToMapBtn: "🗺️ Takaisin karttaan", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu" }
+            ja: { title: "ReticuluMind", helpMouse: "クリック: フォーカス / ダブル: 視点移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNumSnap: "テンキー: 1(前) 3(右) 7(上) - 視点スナップ", helpNumRotate: "テンキー: 2/4/6/8 - 視点回転", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", historyBtn: "📜 履歴マップを見る", backToMapBtn: "🗺️ マップに戻る", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました", msgMobileWarn: "このツールはPC向けです。モバイルでは一部機能が動作しない場合があります。" },
+            en: { title: "ReticuluMind", helpMouse: "Click: Focus / DblClick: Move View / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Front) 3(Right) 7(Top) - Snap View", helpNumRotate: "Numpad: 2/4/6/8 - Rotate View", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", historyBtn: "📜 View History Map", backToMapBtn: "🗺️ Back to Main Map", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted", msgMobileWarn: "This tool is optimized for PC. Some features may not work on mobile devices." },
+            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Kohdista / Tupla: Siirrä näkymää / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) - Näkymän vaihto", helpNumRotate: "Numpad: 2/4/6/8 - Kierrä näkymää", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", historyBtn: "📜 Näytä historia", backToMapBtn: "🗺️ Takaisin karttaan", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu", msgMobileWarn: "Tämä työkalu on optimoitu tietokoneelle. Jotkin ominaisuudet eivät välttämättä toimi mobiililaitteilla." }
         };
 
         let currentLang = localStorage.getItem('mindmap_lang') || 'en';
@@ -233,7 +234,9 @@
 
         const toastEl = document.getElementById('toast');
         function showToast(msgKey, type='success') {
-            const msg = i18n[currentLang][msgKey] || msgKey; toastEl.textContent = msg; toastEl.className = type === 'success' ? 'show success' : 'show error';
+            const msg = i18n[currentLang][msgKey] || msgKey; 
+            toastEl.textContent = msg; 
+            toastEl.className = 'show ' + type;
             setTimeout(() => { toastEl.className = toastEl.className.replace('show', ''); }, 3000);
         }
 
@@ -557,9 +560,7 @@ Nodes: ${nodes.length}`;
                 if (isHistoryView) {
                     if (n.historyIndex !== undefined) {
                         historyIndex = n.historyIndex;
-                        loadState(history[historyIndex], true);
-                        isHistoryView = false;
-                        document.getElementById('btn-history').innerText = i18n[currentLang].historyBtn;
+                        toggleHistoryView(); // Toggles back to main map with the selected state
                         playSound('whoosh');
                     }
                 } else {
@@ -925,6 +926,7 @@ Nodes: ${nodes.length}`;
         }
 
         function recordHistory() {
+            if (isHistoryView) return;
             if (historyIndex < history.length - 1) {
                 history = history.slice(0, historyIndex + 1);
             }
@@ -951,12 +953,19 @@ Nodes: ${nodes.length}`;
                 playSound('pop');
             }
         }
+        
+        function checkDeviceCompatibility() {
+            if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                showToast('msgMobileWarn', 'warning');
+            }
+        }
 
         function importJSON(el){
             const f=el.files[0]; if(!f)return;
             const r=new FileReader(); r.onload=e=>{
                 try{
                     const d=JSON.parse(e.target.result);
+                    history = []; historyIndex = -1;
                     loadState(d);
                 }catch(err){ 
                     showToast('msgErr','error'); 
@@ -983,14 +992,18 @@ Nodes: ${nodes.length}`;
 
                 let lastHistoryNode = null;
                 for (let i = 0; i < history.length; i++) {
-                    const text = `History State ${i}`;
+                    const text = `State ${i}`;
                     const color = (i === historyIndex) ? '#aaffaa' : '#ffffff';
                     const newNode = createNode(text, lastHistoryNode, null, color, i + 1, '');
                     newNode.historyIndex = i;
                     lastHistoryNode = newNode;
                 }
-                if(nodes.length > 0) focusOnNodeWithTrace(nodes[historyIndex] || nodes[0]);
+                if(nodes.length > 0) {
+                    const targetNode = nodes.find(n => n.id === historyIndex + 1) || nodes[nodes.length - 1];
+                    focusOnNodeWithTrace(targetNode);
+                }
             }
+            toggleConfig();
         }
 
         let lastAdd = 0;
@@ -1021,6 +1034,7 @@ Nodes: ${nodes.length}`;
         setActiveNode(root);
         recordHistory(); // Record initial state
         changeLanguage(currentLang); 
+        checkDeviceCompatibility();
         window.focus();
         
         function animate(){ 
@@ -1070,4 +1084,3 @@ Nodes: ${nodes.length}`;
     </script>
 </body>
 </html>
-
