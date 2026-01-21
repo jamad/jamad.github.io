@@ -128,6 +128,7 @@
         </div>
         <div class="config-item">
             <button class="config-action-btn secondary" id="btn-reset" onclick="resetCameraToRoot()">🎯 Reset Camera to Root</button>
+            <button class="config-action-btn secondary" id="btn-history" onclick="toggleHistoryView()">📜 View History Map</button>
             <hr style="border:0; border-top:1px solid #555; margin:10px 0;">
             <button class="config-action-btn" id="btn-save-file" onclick="exportJSON()">⬇️ Save to File (.json)</button>
             <button class="config-action-btn" id="btn-load-file" onclick="document.getElementById('file-input').click()">⬆️ Load from File (.json)</button>
@@ -200,15 +201,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260121.11";
+        const APP_VERSION = "v20260121.12";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
 
         const i18n = {
-            ja: { title: "ReticuluMind", helpMouse: "クリック: フォーカス / ダブル: 視点移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNumSnap: "テンキー: 1(前) 3(右) 7(上) - 視点スナップ", helpNumRotate: "テンキー: 2/4/6/8 - 視点回転", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました" },
-            en: { title: "ReticuluMind", helpMouse: "Click: Focus / DblClick: Move View / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Front) 3(Right) 7(Top) - Snap View", helpNumRotate: "Numpad: 2/4/6/8 - Rotate View", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted" },
-            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Kohdista / Tupla: Siirrä näkymää / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) - Näkymän vaihto", helpNumRotate: "Numpad: 2/4/6/8 - Kierrä näkymää", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu" }
+            ja: { title: "ReticuluMind", helpMouse: "クリック: フォーカス / ダブル: 視点移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNumSnap: "テンキー: 1(前) 3(右) 7(上) - 視点スナップ", helpNumRotate: "テンキー: 2/4/6/8 - 視点回転", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", historyBtn: "📜 履歴マップを見る", backToMapBtn: "🗺️ マップに戻る", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました" },
+            en: { title: "ReticuluMind", helpMouse: "Click: Focus / DblClick: Move View / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Front) 3(Right) 7(Top) - Snap View", helpNumRotate: "Numpad: 2/4/6/8 - Rotate View", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", historyBtn: "📜 View History Map", backToMapBtn: "🗺️ Back to Main Map", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted" },
+            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Kohdista / Tupla: Siirrä näkymää / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) - Näkymän vaihto", helpNumRotate: "Numpad: 2/4/6/8 - Kierrä näkymää", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", historyBtn: "📜 Näytä historia", backToMapBtn: "🗺️ Takaisin karttaan", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu" }
         };
 
         let currentLang = localStorage.getItem('mindmap_lang') || 'en';
@@ -221,6 +222,7 @@
             document.getElementById('search-input').placeholder = t.searchPlace;
             set('label-lang', t.langLabel); set('label-dist', t.distLabel); set('label-fog', t.fogLabel);
             set('btn-reset', t.resetBtn); set('btn-save-file', t.saveFile); set('btn-load-file', t.loadFile); set('btn-close', t.closeBtn);
+            set('btn-history', isHistoryView ? t.backToMapBtn : t.historyBtn);
             set('ctx-rename', t.ctxRename); set('ctx-edit-url', t.ctxEditUrl); set('ctx-open-url', t.ctxOpenUrl); set('ctx-color', t.ctxColor); set('ctx-add', t.ctxAdd); set('ctx-delete', t.ctxDel); set('ctx-cancel', t.ctxCancel);
             set('modal-rename-title', t.renTitle); document.getElementById('node-name-input').placeholder = t.renPlace; set('btn-rename-cancel', t.renCancel); set('btn-rename-ok', t.renOk);
             set('modal-url-title', t.urlTitle); document.getElementById('node-url-input').placeholder = t.urlPlace; set('btn-url-cancel', t.renCancel); set('btn-url-ok', t.renOk);
@@ -286,6 +288,8 @@
         const collapsedNodes = new Set();
         let history = [];
         let historyIndex = -1;
+        let isHistoryView = false;
+        let mainMapSnapshot = null;
         const indicatorGroup = new THREE.Group(); scene.add(indicatorGroup);
         const indicators = {};
         const triGeo = new THREE.Shape(); triGeo.moveTo(0,0.5); triGeo.lineTo(0.4,-0.3); triGeo.lineTo(-0.4,-0.3);
@@ -315,7 +319,7 @@
         dotBack.position.z = 65; gizmoRoot.add(dotBack);
 
         function updateIndicators() {
-            if(!activeNode){ indicatorGroup.visible=false; return; }
+            if(!activeNode || isHistoryView){ indicatorGroup.visible=false; return; }
             indicatorGroup.visible=true; indicatorGroup.position.copy(activeNode.mesh.position); indicatorGroup.quaternion.copy(camera.quaternion);
             indicators.a.visible = !!activeNode.parent;
             indicators.d.visible = nodes.some(n=>n.parent===activeNode);
@@ -515,11 +519,8 @@ Nodes: ${nodes.length}`;
         });
 
         function exportJSON() {
-            const d = JSON.stringify({
-                nodes: nodes.map(n => ({ id: n.id, text: n.text, parentId: n.parent ? n.parent.id : null, pos: n.mesh.position, color: n.color, url: n.url })),
-                springLength,
-                fogDensity
-            });
+            const dataToSave = isHistoryView ? mainMapSnapshot : createSnapshot();
+            const d = JSON.stringify(dataToSave);
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([d], { type: 'application/json' }));
             a.download = 'mindmap.json';
@@ -550,18 +551,28 @@ Nodes: ${nodes.length}`;
         });
         
         window.addEventListener('dblclick', e => {
-            if(isUIEvent(e)) return;
+            if (isUIEvent(e)) return;
             const n = getInt(e.clientX, e.clientY);
-            if(n) {
-                focusOnNodeWithTrace(n);
-                playSound('whoosh');
+            if (n) {
+                if (isHistoryView) {
+                    if (n.historyIndex !== undefined) {
+                        historyIndex = n.historyIndex;
+                        loadState(history[historyIndex], true);
+                        isHistoryView = false;
+                        document.getElementById('btn-history').innerText = i18n[currentLang].historyBtn;
+                        playSound('whoosh');
+                    }
+                } else {
+                    focusOnNodeWithTrace(n);
+                    playSound('whoosh');
+                }
                 lastClickType = "DblClick";
             }
         });
 
         window.addEventListener('contextmenu',e=>{ 
             e.preventDefault(); 
-            if(isUIEvent(e)) return;
+            if(isUIEvent(e) || isHistoryView) return;
             const n=getInt(e.clientX,e.clientY); 
             if(n){
                 setActiveNode(n);
@@ -580,52 +591,36 @@ Nodes: ${nodes.length}`;
             
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
                 e.preventDefault();
-                undo();
+                if (!isHistoryView) undo();
                 return;
             }
             if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
                 e.preventDefault();
-                redo();
+                if (!isHistoryView) redo();
                 return;
             }
 
             const activeModal = document.querySelector('.modal-overlay[style*="flex"]');
             if (activeModal) {
-                e.stopImmediatePropagation(); // Prevent other key listeners
-                if (e.key === 'Escape') {
-                    closeModal(activeModal.id);
-                    return;
-                }
-                if (e.key === 'Enter') {
-                    if (document.activeElement && document.activeElement.classList.contains('modal-btn')) {
-                        document.activeElement.click();
-                    }
-                    return;
-                }
+                e.stopImmediatePropagation();
+                if (e.key === 'Escape') { closeModal(activeModal.id); return; }
+                if (e.key === 'Enter') { if (document.activeElement && document.activeElement.classList.contains('modal-btn')) { document.activeElement.click(); } return; }
                 const focusable = Array.from(activeModal.querySelectorAll('.modal-btn'));
                 if (focusable.length > 0) {
                     const currentIndex = focusable.indexOf(document.activeElement);
-                    if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
-                        e.preventDefault();
-                        const nextIndex = (currentIndex + 1) % focusable.length;
-                        focusable[nextIndex].focus();
-                    } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
-                        e.preventDefault();
-                        const prevIndex = (currentIndex - 1 + focusable.length) % focusable.length;
-                        focusable[prevIndex].focus();
-                    }
+                    if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) { e.preventDefault(); const nextIndex = (currentIndex + 1) % focusable.length; focusable[nextIndex].focus(); } 
+                    else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) { e.preventDefault(); const prevIndex = (currentIndex - 1 + focusable.length) % focusable.length; focusable[prevIndex].focus(); }
                 }
                 return;
             }
 
             if (e.altKey && e.key.toLowerCase() === 'd') { e.preventDefault(); toggleDebug(); return; }
-
             if(e.key === 'Escape'){
                 if(document.getElementById('context-menu').style.display==='block'){document.getElementById('context-menu').style.display='none';playSound('cancel');return;}
                 if(document.getElementById('config-panel').style.display==='block'){toggleConfig();return;}
             }
 
-            if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();return;}
+            if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();exportJSON();return;}
             if(e.altKey&&e.key.toLowerCase()==='s'){e.preventDefault();exportJSON();return;}
             if(e.altKey&&e.key.toLowerCase()==='o'){e.preventDefault();document.getElementById('file-input').click();return;}
             if(e.altKey&&e.key.toLowerCase()==='r'){e.preventDefault();resetCameraToRoot();return;}
@@ -635,7 +630,7 @@ Nodes: ${nodes.length}`;
             if(e.code==='Numpad7') snapView('top');
             if(e.code==='Numpad9') snapView('back');
             
-            if(e.key === 'Enter') {
+            if(e.key === 'Enter' && !isHistoryView) {
                 if(activeNode) {
                     menuTargetNode = activeNode;
                     const vec = activeNode.mesh.position.clone().project(camera);
@@ -651,10 +646,10 @@ Nodes: ${nodes.length}`;
             if(!activeNode) return;
 
             let t=null, k=e.key.toLowerCase();
-            if(e.key==='F2'){menuTargetNode=activeNode; handleMenu('rename');return;}
-            if(e.key==='Delete'||e.key==='Backspace'){menuTargetNode=activeNode; handleMenu('delete_confirm');return;}
+            if(e.key==='F2' && !isHistoryView){menuTargetNode=activeNode; handleMenu('rename');return;}
+            if((e.key==='Delete'||e.key==='Backspace') && !isHistoryView){menuTargetNode=activeNode; handleMenu('delete_confirm');return;}
             
-            if(e.key==='Insert'||e.key==='Tab'){
+            if((e.key==='Insert'||e.key==='Tab') && !isHistoryView){
                 e.preventDefault();
                 const now = Date.now();
                 if (now - lastAdd < 200) return;
@@ -662,12 +657,12 @@ Nodes: ${nodes.length}`;
                 menuTargetNode=activeNode; handleMenu('add'); return;
             }
             
-            if(k==='c'){menuTargetNode=activeNode; handleMenu('color');return;}
-            if(k==='u'){menuTargetNode=activeNode; handleMenu('open_url');return;}
+            if(k==='c' && !isHistoryView){menuTargetNode=activeNode; handleMenu('color');return;}
+            if(k==='u' && !isHistoryView){menuTargetNode=activeNode; handleMenu('open_url');return;}
             
-            if(k==='a'&&activeNode.parent) t=activeNode.parent; 
-            else if(k==='d'){const c=nodes.filter(n=>n.parent===activeNode);if(c.length)t=c[0];} 
-            else if(k==='w'||k==='s'){ 
+            if(!isHistoryView && k==='a'&&activeNode.parent) t=activeNode.parent; 
+            else if(!isHistoryView && k==='d'){const c=nodes.filter(n=>n.parent===activeNode);if(c.length)t=c[0];} 
+            else if(!isHistoryView && (k==='w'||k==='s')){ 
                 const s=nodes.filter(n=>n.parent===activeNode.parent).sort((a,b)=>a.id-b.id); 
                 const i=s.indexOf(activeNode); 
                 if(i!==-1){
@@ -676,7 +671,7 @@ Nodes: ${nodes.length}`;
                 }
             }
             if(t)focusOnNodeWithTrace(t);
-        }, true); // Use capture phase to intercept key events early
+        }, true);
 
         let isAnimatingCamera=false, animationQueue=[];
         function focusOnNodeWithTrace(t) {
@@ -896,11 +891,11 @@ Nodes: ${nodes.length}`;
             };
         }
 
-        function loadState(state, isHistory = false) {
+        function loadState(state, isHistoryOp = false) {
             nodes.forEach(n => scene.remove(n.mesh));
             connections.forEach(c => scene.remove(c.line));
             nodes = []; connections = []; nextId = 1; activeNode = null;
-            collapsedNodes.clear();
+            if(!isHistoryOp) collapsedNodes.clear();
 
             const nodeMap = {};
             state.nodes.forEach(x => {
@@ -921,7 +916,7 @@ Nodes: ${nodes.length}`;
             }
             if (nodes.length > 0) setActiveNode(nodes[0]);
             
-            if (!isHistory) {
+            if (!isHistoryOp) {
                 playSound('add');
                 showToast('msgLoaded');
                 recordHistory();
@@ -969,6 +964,33 @@ Nodes: ${nodes.length}`;
                 }
                 el.value='';
             }; r.readAsText(f);
+        }
+
+        function toggleHistoryView() {
+            const btn = document.getElementById('btn-history');
+            if (isHistoryView) {
+                loadState(mainMapSnapshot, true);
+                isHistoryView = false;
+                btn.innerText = i18n[currentLang].historyBtn;
+            } else {
+                mainMapSnapshot = createSnapshot();
+                isHistoryView = true;
+                btn.innerText = i18n[currentLang].backToMapBtn;
+                
+                nodes.forEach(n=>scene.remove(n.mesh)); 
+                connections.forEach(c=>scene.remove(c.line));
+                nodes=[]; connections=[]; nextId=1;
+
+                let lastHistoryNode = null;
+                for (let i = 0; i < history.length; i++) {
+                    const text = `History State ${i}`;
+                    const color = (i === historyIndex) ? '#aaffaa' : '#ffffff';
+                    const newNode = createNode(text, lastHistoryNode, null, color, i + 1, '');
+                    newNode.historyIndex = i;
+                    lastHistoryNode = newNode;
+                }
+                if(nodes.length > 0) focusOnNodeWithTrace(nodes[historyIndex] || nodes[0]);
+            }
         }
 
         let lastAdd = 0;
