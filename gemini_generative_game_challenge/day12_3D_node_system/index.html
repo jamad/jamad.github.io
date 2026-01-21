@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ReticuluMind v20260121.7</title>
+    <title>ReticuluMind v20260121.8</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-user-select: none; user-select: none; }
         #canvas-container { width: 100vw; height: 100vh; touch-action: none; cursor: default; }
@@ -384,13 +384,15 @@
             return new THREE.CanvasTexture(canvas);
         }
 
-        function createNode(text, parent = null, savedPos = null, color = '#ffffff', savedId = null) {
+        function createNode(text, parent = null, savedPos = null, color = '#ffffff', savedId = null, url = undefined) {
             const id = savedId ? savedId : nextId++;
             if(savedId) nextId = Math.max(nextId, savedId + 1);
-            const url = (nodes.length === 0) ? DEFAULT_URL : '';
+            
+            const finalUrl = (url !== undefined) ? url : (nodes.length === 0 ? DEFAULT_URL : '');
+
             const mesh = new THREE.Mesh(
                 new THREE.PlaneGeometry(6.4, 2.4),
-                new THREE.MeshBasicMaterial({map:createNodeTexture(id, text, url, color, false), side:THREE.DoubleSide})
+                new THREE.MeshBasicMaterial({map:createNodeTexture(id, text, finalUrl, color, false), side:THREE.DoubleSide})
             );
             if(savedPos) mesh.position.copy(savedPos);
             else if(parent) {
@@ -398,7 +400,7 @@
                 mesh.position.set(parent.mesh.position.x+Math.cos(a)*d, parent.mesh.position.y+(Math.random()-0.5)*d, parent.mesh.position.z+Math.sin(a)*d);
             }
             scene.add(mesh);
-            const node = { id:id, mesh:mesh, text:text, color:color, url:url, velocity:new THREE.Vector3(), force:new THREE.Vector3(), parent:parent };
+            const node = { id:id, mesh:mesh, text:text, color:color, url:finalUrl, velocity:new THREE.Vector3(), force:new THREE.Vector3(), parent:parent };
             nodes.push(node);
             if(parent) {
                 const geo = new THREE.BufferGeometry().setFromPoints([parent.mesh.position, mesh.position]);
@@ -866,8 +868,7 @@ Nodes: ${nodes.length}`;
                     const m={}; d.nodes.forEach(x=>{m[x.id]={...x,real:null}; nextId=Math.max(nextId,x.id+1);});
                     d.nodes.sort((a,b)=>a.id-b.id).forEach(x=>{
                         const p = x.parentId ? m[x.parentId].real : null;
-                        const n = createNode(x.text, p, new THREE.Vector3(x.pos.x,x.pos.y,x.pos.z),x.color||'#ffffff', x.id);
-                        n.url = x.url || ''; 
+                        const n = createNode(x.text, p, new THREE.Vector3(x.pos.x,x.pos.y,x.pos.z), x.color||'#ffffff', x.id, x.url);
                         m[x.id].real=n;
                     });
                     if(d.springLength) updateSpringLength(d.springLength);
