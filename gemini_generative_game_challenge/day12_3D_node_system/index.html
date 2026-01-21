@@ -200,7 +200,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260121.10";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
@@ -284,6 +283,8 @@
 
         let nodes=[], connections=[], nextId=1, activeNode=null, springLength=8, repulsionStrength=20;
         const collapsedNodes = new Set();
+        let history = [];
+        let historyIndex = -1;
         const indicatorGroup = new THREE.Group(); scene.add(indicatorGroup);
         const indicators = {};
         const triGeo = new THREE.Shape(); triGeo.moveTo(0,0.5); triGeo.lineTo(0.4,-0.3); triGeo.lineTo(-0.4,-0.3);
@@ -575,6 +576,17 @@ Nodes: ${nodes.length}`;
         window.addEventListener('keydown', e => {
             if(e.target.tagName === 'INPUT') return;
             keys[e.code] = true;
+            
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                e.preventDefault();
+                undo();
+                return;
+            }
+            if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
+                e.preventDefault();
+                redo();
+                return;
+            }
 
             const activeModal = document.querySelector('.modal-overlay[style*="flex"]');
             if (activeModal) {
@@ -795,7 +807,12 @@ Nodes: ${nodes.length}`;
                 document.getElementById('node-color-input').value = menuTargetNode.color || '#ffffff';
                 document.getElementById('color-modal').style.display='flex'; 
             }
-            else if(act==='add'){ const n=createNode('New Node', menuTargetNode); playSound('add'); focusOnNodeWithTrace(n); }
+            else if(act==='add'){ 
+                const n=createNode('New Node', menuTargetNode); 
+                playSound('add'); 
+                focusOnNodeWithTrace(n);
+                recordHistory();
+            }
             else if(act==='delete_confirm') {
                 const modal = document.getElementById('delete-modal');
                 modal.style.display = 'flex';
@@ -809,31 +826,35 @@ Nodes: ${nodes.length}`;
         
         function confirmRename(){
             const v=document.getElementById('node-name-input').value;
-            if(menuTargetNode&&v){ 
+            if(menuTargetNode&&v && menuTargetNode.text !== v){ 
                 menuTargetNode.text=v; 
                 const isActive = (menuTargetNode === activeNode);
                 menuTargetNode.mesh.material.map=createNodeTexture(menuTargetNode.id, v, menuTargetNode.url, menuTargetNode.color, isActive); 
-                updateOutliner(); playSound('click'); 
+                updateOutliner(); 
+                playSound('click'); 
+                recordHistory();
             }
             closeModal('rename-modal');
         }
         function confirmUrl(){
             const v=document.getElementById('node-url-input').value;
-            if(menuTargetNode){
+            if(menuTargetNode && v !== menuTargetNode.url){
                 menuTargetNode.url=v; 
                 const isActive = (menuTargetNode === activeNode);
                 menuTargetNode.mesh.material.map=createNodeTexture(menuTargetNode.id, menuTargetNode.text, v, menuTargetNode.color, isActive); 
                 playSound('click'); 
+                recordHistory();
             }
             closeModal('url-modal');
         }
         function confirmColor(){
             const v=document.getElementById('node-color-input').value;
-            if(menuTargetNode){
+            if(menuTargetNode && v !== menuTargetNode.color){
                 menuTargetNode.color=v; 
                 const isActive = (menuTargetNode === activeNode);
                 menuTargetNode.mesh.material.map=createNodeTexture(menuTargetNode.id, menuTargetNode.text, menuTargetNode.url, v, isActive);
                 playSound('click');
+                recordHistory();
             }
             closeModal('color-modal');
         }
@@ -853,32 +874,98 @@ Nodes: ${nodes.length}`;
             connections=connections.filter(c=>!toDel.has(c.from)&&!toDel.has(c.to));
             nodes=nodes.filter(n=>!toDel.has(n));
             setActiveNode(p); focusOnNodeWithTrace(p); playSound('delete'); showToast('msgDel');
+            recordHistory();
         }
         function toggleConfig(){ const p=document.getElementById('config-panel'); p.style.display=p.style.display==='block'?'none':'block'; if(p.style.display==='block')playSound('click'); }
         function updateSpringLength(v){ springLength=parseFloat(v); document.getElementById('dist-val').innerText=springLength.toFixed(1); repulsionStrength=springLength*2.5; }
         function resetCameraToRoot(){ if(nodes[0])focusOnNodeWithTrace(nodes[0]); }
         
+        function createSnapshot() {
+            return {
+                nodes: nodes.map(n => ({
+                    id: n.id,
+                    text: n.text,
+                    parentId: n.parent ? n.parent.id : null,
+                    pos: n.mesh.position.clone(),
+                    color: n.color,
+                    url: n.url
+                })),
+                springLength: springLength,
+                fogDensity: fogDensity
+            };
+        }
+
+        function loadState(state, isHistory = false) {
+            nodes.forEach(n => scene.remove(n.mesh));
+            connections.forEach(c => scene.remove(c.line));
+            nodes = []; connections = []; nextId = 1; activeNode = null;
+            collapsedNodes.clear();
+
+            const nodeMap = {};
+            state.nodes.forEach(x => {
+                nodeMap[x.id] = { ...x, real: null };
+                nextId = Math.max(nextId, x.id + 1);
+            });
+
+            state.nodes.sort((a, b) => (a.id || 0) - (b.id || 0)).forEach(x => {
+                const parent = x.parentId ? nodeMap[x.parentId].real : null;
+                const newNode = createNode(x.text, parent, new THREE.Vector3(x.pos.x, x.pos.y, x.pos.z), x.color || '#ffffff', x.id, x.url);
+                nodeMap[x.id].real = newNode;
+            });
+
+            if (state.springLength) updateSpringLength(state.springLength);
+            if (state.fogDensity !== undefined) {
+                updateFogDensity(state.fogDensity);
+                document.getElementById('fog-slider').value = state.fogDensity;
+            }
+            if (nodes.length > 0) setActiveNode(nodes[0]);
+            
+            if (!isHistory) {
+                playSound('add');
+                showToast('msgLoaded');
+                recordHistory();
+            }
+            updateOutliner();
+        }
+
+        function recordHistory() {
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            history.push(createSnapshot());
+            historyIndex++;
+            if (history.length > 50) { // Limit history size
+                history.shift();
+                historyIndex--;
+            }
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                loadState(history[historyIndex], true);
+                playSound('cancel');
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                loadState(history[historyIndex], true);
+                playSound('pop');
+            }
+        }
+
         function importJSON(el){
             const f=el.files[0]; if(!f)return;
             const r=new FileReader(); r.onload=e=>{
                 try{
                     const d=JSON.parse(e.target.result);
-                    nodes.forEach(n=>scene.remove(n.mesh)); connections.forEach(c=>scene.remove(c.line));
-                    nodes=[]; connections=[]; nextId=1; activeNode=null;
-                    const m={}; d.nodes.forEach(x=>{m[x.id]={...x,real:null}; nextId=Math.max(nextId,x.id+1);});
-                    d.nodes.sort((a,b)=>a.id-b.id).forEach(x=>{
-                        const p = x.parentId ? m[x.parentId].real : null;
-                        const n = createNode(x.text, p, new THREE.Vector3(x.pos.x,x.pos.y,x.pos.z), x.color||'#ffffff', x.id, x.url);
-                        m[x.id].real=n;
-                    });
-                    if(d.springLength) updateSpringLength(d.springLength);
-                    if(d.fogDensity !== undefined) {
-                        updateFogDensity(d.fogDensity);
-                        document.getElementById('fog-slider').value = d.fogDensity;
-                    }
-                    if(nodes.length>0){ setActiveNode(nodes[0]); }
-                    playSound('add'); showToast('msgLoaded');
-                }catch(err){ showToast('msgErr','error'); }
+                    loadState(d);
+                }catch(err){ 
+                    showToast('msgErr','error'); 
+                    console.error("Failed to load JSON:", err);
+                }
                 el.value='';
             }; r.readAsText(f);
         }
@@ -908,7 +995,10 @@ Nodes: ${nodes.length}`;
         document.getElementById('node-url-input').addEventListener('keydown', e=>{if(e.key==='Enter')confirmUrl();});
         
         const root = createNode("ROOT");
-        setActiveNode(root); changeLanguage(currentLang); window.focus();
+        setActiveNode(root);
+        recordHistory(); // Record initial state
+        changeLanguage(currentLang); 
+        window.focus();
         
         function animate(){ 
             requestAnimationFrame(animate); 
@@ -957,3 +1047,4 @@ Nodes: ${nodes.length}`;
     </script>
 </body>
 </html>
+
