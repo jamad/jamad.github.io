@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ReticuluMind v20260120.10</title>
+    <title>ReticuluMind v20260121.7</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-user-select: none; user-select: none; }
         #canvas-container { width: 100vw; height: 100vh; touch-action: none; cursor: default; }
@@ -21,11 +21,11 @@
             white-space: pre-wrap; line-height: 1.3; border: 1px solid #0f0;
         }
 
-        #search-container { position: absolute; top: 200px; left: 20px; width: 33vw; min-width: 300px; height: 40px; z-index: 10; }
+        #search-container { position: absolute; top: 170px; left: 20px; width: 33vw; min-width: 300px; height: 40px; z-index: 10; }
         #search-input { width: 100%; height: 100%; background: rgba(20, 20, 40, 0.85); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0 12px; color: white; font-size: 14px; backdrop-filter: blur(8px); outline: none; box-sizing: border-box; }
         #search-input:focus { border-color: #4a90e2; background: rgba(30, 30, 60, 0.9); }
 
-        #outliner { position: absolute; top: 250px; left: 20px; width: 33vw; min-width: 300px; max-height: calc(100vh - 230px); background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: auto; padding: 8px; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; }
+        #outliner { position: absolute; top: 220px; left: 20px; width: 33vw; min-width: 300px; max-height: calc(100vh - 270px); background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: auto; padding: 8px; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; }
         #outliner::-webkit-scrollbar { width: 6px; height: 6px; }
         #outliner::-webkit-scrollbar-thumb { background-color: #4a90e2; border-radius: 3px; }
         .outliner-item { padding: 1px 4px; margin-bottom: 1px; border-radius: 2px; cursor: pointer; font-size: 0.85rem; line-height: 1.2; white-space: pre; overflow: visible; transition: background 0.1s; display: block; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; color: rgba(255,255,255,0.5); width: auto; min-width: 100%; box-sizing: border-box; }
@@ -88,7 +88,7 @@
     <div id="debug-overlay"></div>
     <div id="ui-layer">
         <h1 id="ui-title">ReticuluMind</h1>
-        <p id="ui-help-mouse">Click: Select / DblClick: Focus / Right: Menu</p>
+        <p id="ui-help-mouse">Click: Focus / DblClick: Move View / Right: Menu</p>
         <p id="ui-help-wasd">Move: A(Parent) D(Child) W(Prev) S(Next)</p>
         <p class="shortcut-help" id="ui-help-keys">Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)</p>
         <p class="shortcut-help" id="ui-help-numpad-snap">Numpad: 1(Front) 3(Right) 7(Top) - Snap View</p>
@@ -200,15 +200,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260121.4";
+        const APP_VERSION = "v20260121.7";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
 
         const i18n = {
-            ja: { title: "ReticuluMind", helpMouse: "クリック: 選択 / ダブル: 移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNum: "テンキー: 1(前) 3(右) 7(上) 4/6/2/8(回転)", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました" },
-            en: { title: "ReticuluMind", helpMouse: "Click: Select / DblClick: Focus / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNum: "Numpad: 1(Front) 3(Right) 7(Top) 4/6/2/8(Orbit)", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted" },
-            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Valitse / Tupla: Kohdista / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNum: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) 4/6/2/8(Pyöritä)", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu" }
+            ja: { title: "ReticuluMind", helpMouse: "クリック: フォーカス / ダブル: 視点移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNumSnap: "テンキー: 1(前) 3(右) 7(上) - 視点スナップ", helpNumRotate: "テンキー: 2/4/6/8 - 視点回転", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました" },
+            en: { title: "ReticuluMind", helpMouse: "Click: Focus / DblClick: Move View / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Front) 3(Right) 7(Top) - Snap View", helpNumRotate: "Numpad: 2/4/6/8 - Rotate View", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted" },
+            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Kohdista / Tupla: Siirrä näkymää / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) - Näkymän vaihto", helpNumRotate: "Numpad: 2/4/6/8 - Kierrä näkymää", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu" }
         };
 
         let currentLang = localStorage.getItem('mindmap_lang') || 'en';
@@ -216,7 +216,8 @@
         function changeLanguage(lang) {
             currentLang = lang; localStorage.setItem('mindmap_lang', lang); const t = i18n[lang];
             const set = (id, txt) => { const e = document.getElementById(id); if(e) e.innerText = txt; }
-            set('ui-title', t.title); set('ui-help-mouse', t.helpMouse); set('ui-help-wasd', t.helpWasd); set('ui-help-keys', t.helpKeys); set('ui-help-numpad', t.helpNum);
+            set('ui-title', t.title); set('ui-help-mouse', t.helpMouse); set('ui-help-wasd', t.helpWasd); set('ui-help-keys', t.helpKeys); 
+            set('ui-help-numpad-snap', t.helpNumSnap); set('ui-help-numpad-rotate', t.helpNumRotate);
             document.getElementById('search-input').placeholder = t.searchPlace;
             set('label-lang', t.langLabel); set('label-dist', t.distLabel); set('label-fog', t.fogLabel);
             set('btn-reset', t.resetBtn); set('btn-save-file', t.saveFile); set('btn-load-file', t.loadFile); set('btn-close', t.closeBtn);
@@ -281,7 +282,7 @@
         }
         createStarField();
 
-        let nodes=[], connections=[], nextId=1, selectedNode=null, activeNode=null, springLength=8, repulsionStrength=20;
+        let nodes=[], connections=[], nextId=1, activeNode=null, springLength=8, repulsionStrength=20;
         const collapsedNodes = new Set();
         const indicatorGroup = new THREE.Group(); scene.add(indicatorGroup);
         const indicators = {};
