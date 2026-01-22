@@ -38,6 +38,7 @@
         #config-panel { display: none; position: absolute; top: 70px; right: 20px; width: 240px; background: rgba(30, 30, 50, 0.95); backdrop-filter: blur(12px); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); z-index: 150; border: 1px solid rgba(255, 255, 255, 0.1); }
         .config-item { margin-bottom: 15px; }
         .config-label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 5px; }
+        .config-section-label { font-size: 0.75rem; color: #777; text-transform: uppercase; margin-top: 15px; margin-bottom: -5px; font-weight: bold; }
         .value-display { float: right; color: #4a90e2; font-weight: bold; }
         input[type="range"] { width: 100%; cursor: pointer; }
         select { width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #555; border-radius: 6px; outline: none; cursor: pointer; }
@@ -46,6 +47,9 @@
         .config-action-btn:hover { background: #357abd; }
         .config-action-btn.secondary { background: #333; border: 1px solid #555; }
         .config-action-btn.secondary:hover { background: #444; }
+        .config-action-btn:disabled { background: #555; color: #999; cursor: not-allowed; }
+        .config-action-btn.secondary:disabled { background: #222; border-color: #444; color: #777; }
+
 
         #context-menu { display: none; position: absolute; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; padding: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); width: 220px; z-index: 100; }
         .menu-header { font-weight: bold; padding: 8px 12px; border-bottom: 1px solid #eee; margin-bottom: 4px; color: #333; text-align: center; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -100,6 +104,8 @@
     </div>
     <div id="outliner"></div>
     <div id="config-btn" onclick="toggleConfig()">⚙️</div>
+    
+    <!-- MODIFICATION: Reorder Config Panel -->
     <div id="config-panel">
         <div class="config-item">
             <label class="config-label" id="label-lang">Language</label>
@@ -109,9 +115,19 @@
                 <option value="fi">Suomi</option>
             </select>
         </div>
+        
+        <hr style="border:0; border-top:1px solid #555; margin:15px 0;">
+        <label class="config-section-label" id="label-primary-actions">Primary Actions</label>
         <div class="config-item">
-            <button class="config-action-btn" id="btn-wiki" onclick="window.open('https://gitlab.com/junichiyamada/3d-mindmap/-/wikis/HowToUse', '_blank')">📖 How to Use</button>
-            <button class="config-action-btn" id="btn-debug-toggle" onclick="toggleDebug()">🐞 Toggle Debug</button>
+            <button class="config-action-btn" id="btn-save-file" onclick="exportJSON()">⬇️ Save to File (.json)</button>
+            <button class="config-action-btn" id="btn-load-file" onclick="document.getElementById('file-input').click()">⬆️ Load from File (.json)</button>
+            <button class="config-action-btn secondary" id="btn-resume" disabled>↩️ Resume Last Session (Coming Soon)</button>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #555; margin:15px 0;">
+        <label class="config-section-label" id="label-view-controls">View Controls</label>
+        <div class="config-item">
+             <button class="config-action-btn secondary" id="btn-reset" onclick="resetCameraToRoot()">🎯 Reset Camera to Root</button>
         </div>
         <div class="config-item">
             <label class="config-label">
@@ -127,15 +143,26 @@
             </label>
             <input type="range" id="fog-slider" min="0" max="0.01" step="0.0001" value="0.002" oninput="updateFogDensity(this.value)">
         </div>
+
+        <hr style="border:0; border-top:1px solid #555; margin:15px 0;">
+        <label class="config-section-label" id="label-experimental">Experimental Features</label>
         <div class="config-item">
-            <button class="config-action-btn secondary" id="btn-reset" onclick="resetCameraToRoot()">🎯 Reset Camera to Root</button>
             <button class="config-action-btn secondary" id="btn-history" onclick="toggleHistoryView()">📜 View History Map</button>
-            <hr style="border:0; border-top:1px solid #555; margin:10px 0;">
-            <button class="config-action-btn" id="btn-save-file" onclick="exportJSON()">⬇️ Save to File (.json)</button>
-            <button class="config-action-btn" id="btn-load-file" onclick="document.getElementById('file-input').click()">⬆️ Load from File (.json)</button>
-            <button class="config-action-btn secondary" id="btn-close" onclick="toggleConfig()" style="margin-top: 15px;">Close</button>
+        </div>
+        
+        <hr style="border:0; border-top:1px solid #555; margin:15px 0;">
+        <label class="config-section-label" id="label-development">Development</label>
+         <div class="config-item">
+            <button class="config-action-btn" id="btn-wiki" onclick="window.open('https://gitlab.com/junichiyamada/3d-mindmap/-/wikis/HowToUse', '_blank')">📖 How to Use</button>
+            <button class="config-action-btn secondary" id="btn-debug-toggle" onclick="toggleDebug()">🐞 Toggle Debug</button>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #555; margin:20px 0;">
+        <div class="config-item">
+            <button class="config-action-btn secondary" id="btn-close" onclick="toggleConfig()">Close</button>
         </div>
     </div>
+
     <div id="footer">
         <div id="footer-left">
             <a href="https://junichiyamada.gitlab.io/" target="_blank">🏠 Home</a>
@@ -202,15 +229,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260121.13";
+        const APP_VERSION = "v20260122.1";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
 
         const i18n = {
-            ja: { title: "ReticuluMind", helpMouse: "クリック: フォーカス / ダブル: 視点移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNumSnap: "テンキー: 1(前) 3(右) 7(上) - 視点スナップ", helpNumRotate: "テンキー: 2/4/6/8 - 視点回転", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", historyBtn: "📜 履歴マップを見る", backToMapBtn: "🗺️ マップに戻る", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました", msgMobileWarn: "このツールはPC向けです。モバイルでは一部機能が動作しない場合があります。" },
-            en: { title: "ReticuluMind", helpMouse: "Click: Focus / DblClick: Move View / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Front) 3(Right) 7(Top) - Snap View", helpNumRotate: "Numpad: 2/4/6/8 - Rotate View", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", historyBtn: "📜 View History Map", backToMapBtn: "🗺️ Back to Main Map", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted", msgMobileWarn: "This tool is optimized for PC. Some features may not work on mobile devices." },
-            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Kohdista / Tupla: Siirrä näkymää / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) - Näkymän vaihto", helpNumRotate: "Numpad: 2/4/6/8 - Kierrä näkymää", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", historyBtn: "📜 Näytä historia", backToMapBtn: "🗺️ Takaisin karttaan", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu", msgMobileWarn: "Tämä työkalu on optimoitu tietokoneelle. Jotkin ominaisuudet eivät välttämättä toimi mobiililaitteilla." }
+            ja: { title: "ReticuluMind", helpMouse: "クリック: フォーカス / ダブル: 視点移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNumSnap: "テンキー: 1(前) 3(右) 7(上) - 視点スナップ", helpNumRotate: "テンキー: 2/4/6/8 - 視点回転", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", primaryActionsLabel: "主な操作", viewControlsLabel: "表示設定", experimentalLabel: "実験的な機能", developmentLabel: "開発", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", historyBtn: "📜 履歴マップを見る", backToMapBtn: "🗺️ マップに戻る", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", resumeBtn: "↩️ 前回のセッションを再開", comingSoonLabel: "（近日公開）", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました", msgMobileWarn: "このツールはPC向けです。モバイルでは一部機能が動作しない場合があります。" },
+            en: { title: "ReticuluMind", helpMouse: "Click: Focus / DblClick: Move View / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Front) 3(Right) 7(Top) - Snap View", helpNumRotate: "Numpad: 2/4/6/8 - Rotate View", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", primaryActionsLabel: "Primary Actions", viewControlsLabel: "View Controls", experimentalLabel: "Experimental Features", developmentLabel: "Development", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", historyBtn: "📜 View History Map", backToMapBtn: "🗺️ Back to Main Map", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", resumeBtn: "↩️ Resume Last Session", comingSoonLabel: " (Coming Soon)", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted", msgMobileWarn: "This tool is optimized for PC. Some features may not work on mobile devices." },
+            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Kohdista / Tupla: Siirrä näkymää / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) - Näkymän vaihto", helpNumRotate: "Numpad: 2/4/6/8 - Kierrä näkymää", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", primaryActionsLabel: "Päätoiminnot", viewControlsLabel: "Näkymän säädöt", experimentalLabel: "Kokeelliset ominaisuudet", developmentLabel: "Kehitys", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", historyBtn: "📜 Näytä historia", backToMapBtn: "🗺️ Takaisin karttaan", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", resumeBtn: "↩️ Jatka viimeistä istuntoa", comingSoonLabel: " (Tulossa pian)", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu", msgMobileWarn: "Tämä työkalu on optimoitu tietokoneelle. Jotkin ominaisuudet eivät välttämättä toimi mobiililaitteilla." }
         };
 
         let currentLang = localStorage.getItem('mindmap_lang') || 'en';
@@ -221,9 +248,15 @@
             set('ui-title', t.title); set('ui-help-mouse', t.helpMouse); set('ui-help-wasd', t.helpWasd); set('ui-help-keys', t.helpKeys); 
             set('ui-help-numpad-snap', t.helpNumSnap); set('ui-help-numpad-rotate', t.helpNumRotate);
             document.getElementById('search-input').placeholder = t.searchPlace;
-            set('label-lang', t.langLabel); set('label-dist', t.distLabel); set('label-fog', t.fogLabel);
+            set('label-lang', t.langLabel);
+            set('label-primary-actions', t.primaryActionsLabel);
+            set('label-view-controls', t.viewControlsLabel);
+            set('label-experimental', t.experimentalLabel);
+            set('label-development', t.developmentLabel);
+            set('label-dist', t.distLabel); set('label-fog', t.fogLabel);
             set('btn-reset', t.resetBtn); set('btn-save-file', t.saveFile); set('btn-load-file', t.loadFile); set('btn-close', t.closeBtn);
             set('btn-history', isHistoryView ? t.backToMapBtn : t.historyBtn);
+            document.getElementById('btn-resume').innerText = t.resumeBtn + t.comingSoonLabel;
             set('ctx-rename', t.ctxRename); set('ctx-edit-url', t.ctxEditUrl); set('ctx-open-url', t.ctxOpenUrl); set('ctx-color', t.ctxColor); set('ctx-add', t.ctxAdd); set('ctx-delete', t.ctxDel); set('ctx-cancel', t.ctxCancel);
             set('modal-rename-title', t.renTitle); document.getElementById('node-name-input').placeholder = t.renPlace; set('btn-rename-cancel', t.renCancel); set('btn-rename-ok', t.renOk);
             set('modal-url-title', t.urlTitle); document.getElementById('node-url-input').placeholder = t.urlPlace; set('btn-url-cancel', t.renCancel); set('btn-url-ok', t.renOk);
@@ -1083,4 +1116,5 @@ Nodes: ${nodes.length}`;
         animate();
     </script>
 </body>
-</html>
+</html>v20260122.1 で　また、UIのオーバーラップがおきていました。
+outlinerのtopが大きすぎたようです。
