@@ -226,7 +226,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260123.1";
+        const APP_VERSION = "v20260123.2";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
@@ -1048,8 +1048,28 @@ Nodes: ${nodes.length}`;
         function autosave() {
             if (isHistoryView) return;
             try {
-                const snapshot = JSON.stringify(createSnapshot());
-                localStorage.setItem('reticulumind_autosave', snapshot);
+                const snapshot = createSnapshot();
+                const snapshotString = JSON.stringify(snapshot);
+
+                // Don't save if it's identical to the last autosave
+                const keys = Object.keys(localStorage).filter(k => k.startsWith('reticulumind_autosave_')).sort().reverse();
+                if (keys.length > 0 && localStorage.getItem(keys[0]) === snapshotString) {
+                    return; 
+                }
+
+                const now = new Date();
+                const timestamp = now.getFullYear().toString() +
+                                  (now.getMonth() + 1).toString().padStart(2, '0') + 
+                                  now.getDate().toString().padStart(2, '0') + 
+                                  now.getHours().toString().padStart(2, '0') + 
+                                  now.getMinutes().toString().padStart(2, '0') + 
+                                  now.getSeconds().toString().padStart(2, '0');
+
+                const key = `reticulumind_autosave_${timestamp}`;
+                localStorage.setItem(key, snapshotString);
+
+                pruneAutosaves();
+
             } catch (e) {
                 console.error("Autosave failed:", e);
             }
@@ -1057,8 +1077,9 @@ Nodes: ${nodes.length}`;
 
         function resumeLastSession() {
             try {
-                const savedState = localStorage.getItem('reticulumind_autosave');
-                if (savedState) {
+                const keys = Object.keys(localStorage).filter(k => k.startsWith('reticulumind_autosave_')).sort().reverse();
+                if (keys.length > 0) {
+                    const savedState = localStorage.getItem(keys[0]);
                     history = []; historyIndex = -1;
                     loadState(JSON.parse(savedState));
                     showToast('msgLoaded');
@@ -1075,9 +1096,63 @@ Nodes: ${nodes.length}`;
         }
 
         function checkIfAutosaveExists() {
-            if (localStorage.getItem('reticulumind_autosave')) {
+            const keys = Object.keys(localStorage).filter(k => k.startsWith('reticulumind_autosave_'));
+            if (keys.length > 0) {
                 if (confirm(i18n[currentLang].msgConfirmResume)) {
                     resumeLastSession();
+                }
+            }
+        }
+
+        function pruneAutosaves() {
+            const keys = Object.keys(localStorage).filter(k => k.startsWith('reticulumind_autosave_')).sort();
+            const saves = keys.map(key => {
+                const timestamp = key.split('_')[2];
+                const date = new Date(
+                    parseInt(timestamp.substring(0, 4)),
+                    parseInt(timestamp.substring(4, 6)) - 1,
+                    parseInt(timestamp.substring(6, 8)),
+                    parseInt(timestamp.substring(8, 10)),
+                    parseInt(timestamp.substring(10, 12))
+                );
+                return { key, date };
+            });
+
+            const now = new Date();
+            const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+            const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+            const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+            const toKeep = new Set();
+            const groups = {
+                tenMinutes: {},
+                hour: {},
+                day: {},
+                older: {}
+            };
+
+            for (const save of saves) {
+                if (save.date > tenMinutesAgo) {
+                    toKeep.add(save.key); // Keep all recent
+                } else if (save.date > oneHourAgo) {
+                    const groupKey = `${save.date.getHours()}-${Math.floor(save.date.getMinutes() / 10)}`;
+                    groups.hour[groupKey] = save.key; // Keep latest per 10-min block
+                } else if (save.date > oneDayAgo) {
+                    const groupKey = save.date.getHours();
+                    groups.day[groupKey] = save.key; // Keep latest per hour
+                } else {
+                    const groupKey = save.date.toDateString();
+                    groups.older[groupKey] = save.key; // Keep latest per day
+                }
+            }
+            
+            Object.values(groups.hour).forEach(key => toKeep.add(key));
+            Object.values(groups.day).forEach(key => toKeep.add(key));
+            Object.values(groups.older).forEach(key => toKeep.add(key));
+
+            for (const save of saves) {
+                if (!toKeep.has(save.key)) {
+                    localStorage.removeItem(save.key);
                 }
             }
         }
