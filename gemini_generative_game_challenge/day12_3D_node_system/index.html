@@ -226,7 +226,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260123.2";
+        const APP_VERSION = "v20260123.3";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
@@ -1014,6 +1014,7 @@ Nodes: ${nodes.length}`;
             }; r.readAsText(f);
         }
 
+        
         function toggleHistoryView() {
             const btn = document.getElementById('btn-history');
             if (isHistoryView) {
@@ -1029,20 +1030,65 @@ Nodes: ${nodes.length}`;
                 connections.forEach(c=>scene.remove(c.line));
                 nodes=[]; connections=[]; nextId=1;
 
+                // Build combined history
+                displayedHistory = [];
+                history.forEach((snapshot, index) => {
+                    displayedHistory.push({
+                        type: 'Session Edit',
+                        timestamp: new Date(Date.now() - (history.length - 1 - index) * 30000), // Approximate time based on potential saves
+                        snapshot: snapshot,
+                        nodeId: 0 // Will be assigned later
+                    });
+                });
+
+                const autosaveKeys = Object.keys(localStorage).filter(k => k.startsWith('reticulumind_autosave_')).sort();
+                autosaveKeys.forEach(key => {
+                    const timestampStr = key.split('_')[2];
+                    const tsDate = new Date(
+                        parseInt(timestampStr.substring(0,4)), 
+                        parseInt(timestampStr.substring(4,6))-1, 
+                        parseInt(timestampStr.substring(6,8)), 
+                        parseInt(timestampStr.substring(8,10)), 
+                        parseInt(timestampStr.substring(10,12)), 
+                        parseInt(timestampStr.substring(12,14))
+                    );
+                    displayedHistory.push({
+                        type: 'Autosave',
+                        timestamp: tsDate,
+                        snapshot: JSON.parse(localStorage.getItem(key)),
+                        nodeId: 0 
+                    });
+                });
+
+                displayedHistory.sort((a,b) => a.timestamp - b.timestamp);
+                
+                // Create nodes from combined history
                 let lastHistoryNode = null;
-                for (let i = 0; i < history.length; i++) {
-                    const text = `State ${i}`;
-                    const color = (i === historyIndex) ? '#aaffaa' : '#ffffff';
-                    const newNode = createNode(text, lastHistoryNode, null, color, i + 1, '');
-                    newNode.historyIndex = i;
+                displayedHistory.forEach((item, index) => {
+                    const d = item.timestamp;
+                    const timeString = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                    const dateString = `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+                    const text = `[${i18n[currentLang][item.type === 'Autosave' ? 'historyAutosave' : 'historySession']}] ${dateString} ${timeString}`;
+                    
+                    const isCurrent = JSON.stringify(item.snapshot) === JSON.stringify(mainMapSnapshot);
+                    const color = isCurrent ? '#aaffaa' : '#ffffff';
+                    
+                    const newNodeId = index + 1;
+                    item.nodeId = newNodeId;
+                    const newNode = createNode(text, lastHistoryNode, null, color, newNodeId, '');
+                    newNode.historyData = item; // Attach full history item
                     lastHistoryNode = newNode;
-                }
+                });
+                
                 if(nodes.length > 0) {
-                    const targetNode = nodes.find(n => n.id === historyIndex + 1) || nodes[nodes.length - 1];
-                    focusOnNodeWithTrace(targetNode);
+                    const currentIndex = displayedHistory.findIndex(h => JSON.stringify(h.snapshot) === JSON.stringify(mainMapSnapshot));
+                    const targetNode = nodes[currentIndex] || nodes[nodes.length - 1];
+                    if(targetNode) focusOnNodeWithTrace(targetNode);
                 }
             }
-            toggleConfig();
+            if (document.getElementById('config-panel').style.display === 'block') {
+                toggleConfig();
+            }
         }
 
         function autosave() {
