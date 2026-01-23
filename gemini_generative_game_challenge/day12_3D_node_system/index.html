@@ -226,15 +226,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script>
-        const APP_VERSION = "v20260122.2";
+        const APP_VERSION = "v20260123.1";
         const DEFAULT_URL = "https://junichiyamada.gitlab.io/3d-mindmap";
 
         document.getElementById('footer-right').innerHTML = `${APP_VERSION} | <a href="https://gitlab.com/junichiyamada/3d-mindmap/-/issues/new?issue[title]=Bug%20Report%20${encodeURIComponent(APP_VERSION)}" target="_blank">🐛 Bug Report</a>`;
 
         const i18n = {
-            ja: { title: "ReticuluMind", helpMouse: "クリック: フォーカス / ダブル: 視点移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNumSnap: "テンキー: 1(前) 3(右) 7(上) - 視点スナップ", helpNumRotate: "テンキー: 2/4/6/8 - 視点回転", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", primaryActionsLabel: "主な操作", viewControlsLabel: "表示設定", experimentalLabel: "実験的な機能", developmentLabel: "開発", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", historyBtn: "📜 履歴マップを見る", backToMapBtn: "🗺️ マップに戻る", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", resumeBtn: "↩️ 前回のセッションを再開", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました", msgMobileWarn: "このツールはPC向けです。モバイルでは一部機能が動作しない場合があります。", msgNoSession: "保存されたセッションが見つかりません", msgConfirmResume: "前回終了時のセッションが見つかりました。復元しますか？" },
-            en: { title: "ReticuluMind", helpMouse: "Click: Focus / DblClick: Move View / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Front) 3(Right) 7(Top) - Snap View", helpNumRotate: "Numpad: 2/4/6/8 - Rotate View", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", primaryActionsLabel: "Primary Actions", viewControlsLabel: "View Controls", experimentalLabel: "Experimental Features", developmentLabel: "Development", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", historyBtn: "📜 View History Map", backToMapBtn: "🗺️ Back to Main Map", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", resumeBtn: "↩️ Resume Last Session", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted", msgMobileWarn: "This tool is optimized for PC. Some features may not work on mobile devices.", msgNoSession: "No saved session found", msgConfirmResume: "A saved session was found. Would you like to restore it?" },
-            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Kohdista / Tupla: Siirrä näkymää / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) - Näkymän vaihto", helpNumRotate: "Numpad: 2/4/6/8 - Kierrä näkymää", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", primaryActionsLabel: "Päätoiminnot", viewControlsLabel: "Näkymän säädöt", experimentalLabel: "Kokeelliset ominaisuudet", developmentLabel: "Kehitys", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", historyBtn: "📜 Näytä historia", backToMapBtn: "🗺️ Takaisin karttaan", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", resumeBtn: "↩️ Jatka viimeistä istuntoa", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu", msgMobileWarn: "Tämä työkalu on optimoitu tietokoneelle. Jotkin ominaisuudet eivät välttämättä toimi mobiililaitteilla.", msgNoSession: "Tallennettua istuntoa ei löytynyt", msgConfirmResume: "Tallennettu istunto löytyi. Haluatko palauttaa sen?" }
+            ja: { title: "ReticuluMind", helpMouse: "クリック: フォーカス / ダブル: 視点移動 / 右: メニュー", helpWasd: "移動: A(親) D(子) W(前) S(次)", helpKeys: "キー: Ins/Tab(追加) F2(名前) Del(削除) Alt+S(保存) Alt+D(デバッグ)", helpNumSnap: "テンキー: 1(前) 3(右) 7(上) - 視点スナップ", helpNumRotate: "テンキー: 2/4/6/8 - 視点回転", searchPlace: "🔍 ノードを検索 (IDまたは名前)...", langLabel: "Language / 言語", primaryActionsLabel: "主な操作", viewControlsLabel: "表示設定", experimentalLabel: "実験的な機能", developmentLabel: "開発", distLabel: "ノード間の距離", fogLabel: "霧の濃さ", resetBtn: "🎯 ルートを中心にリセット", historyBtn: "📜 履歴マップを見る", backToMapBtn: "🗺️ マップに戻る", saveFile: "⬇️ ファイルに保存 (.json)", loadFile: "⬆️ ファイルから読込 (.json)", resumeBtn: "↩️ 前回のセッションを再開", closeBtn: "閉じる", ctxRename: "✏️ 名前を変更", ctxEditUrl: "🔗 URLを編集", ctxOpenUrl: "🔗 URLを開く", ctxColor: "🎨 色を変更", ctxAdd: "🌱 子ノードを作成", ctxDel: "🗑️ ノードを削除", ctxCancel: "キャンセル", renTitle: "ノード名を変更", renPlace: "新しい名前", renCancel: "キャンセル", renOk: "OK", urlTitle: "URLを編集", urlPlace: "https://...", colTitle: "色を変更", colCancel: "キャンセル", colOk: "OK", delTitle: "削除の確認", delDesc: "ノードを削除します。<br>子ノードの扱いを選択してください。", delAll: "🗑️ 子孫を全削除", delLink: "🔗 子を親に接続 (継承)", delCancel: "キャンセル", msgSaved: "ファイルは「ダウンロード」フォルダに保存されます", msgLoaded: "データを復元しました", msgErr: "データの読み込みに失敗しました", msgDel: "削除しました", msgMobileWarn: "このツールはPC向けです。モバイルでは一部機能が動作しない場合があります。", msgNoSession: "保存されたセッションが見つかりません", msgConfirmResume: "前回終了時のセッションが見つかりました。復元しますか？", historySession: "[セッション]", historyAutosave: "[自動保存]" },
+            en: { title: "ReticuluMind", helpMouse: "Click: Focus / DblClick: Move View / Right: Menu", helpWasd: "Move: A(Parent) D(Child) W(Prev) S(Next)", helpKeys: "Keys: Ins/Tab(Add) F2(Rename) Del(Delete) Alt+S(Save) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Front) 3(Right) 7(Top) - Snap View", helpNumRotate: "Numpad: 2/4/6/8 - Rotate View", searchPlace: "🔍 Search Nodes (ID or Name)...", langLabel: "Language", primaryActionsLabel: "Primary Actions", viewControlsLabel: "View Controls", experimentalLabel: "Experimental Features", developmentLabel: "Development", distLabel: "Node Distance", fogLabel: "Fog Density", resetBtn: "🎯 Reset Camera to Root", historyBtn: "📜 View History Map", backToMapBtn: "🗺️ Back to Main Map", saveFile: "⬇️ Save to File (.json)", loadFile: "⬆️ Load from File (.json)", resumeBtn: "↩️ Resume Last Session", closeBtn: "Close", ctxRename: "✏️ Rename Node", ctxEditUrl: "🔗 Edit URL", ctxOpenUrl: "🔗 Open URL", ctxColor: "🎨 Change Color", ctxAdd: "🌱 Add Child Node", ctxDel: "🗑️ Delete Node", ctxCancel: "Cancel", renTitle: "Rename Node", renPlace: "New Name", renCancel: "Cancel", renOk: "OK", urlTitle: "Edit URL", urlPlace: "https://...", colTitle: "Change Color", colCancel: "Cancel", colOk: "OK", delTitle: "Confirm Deletion", delDesc: "Deleting this node.<br>Choose how to handle children.", delAll: "🗑️ Delete All Descendants", delLink: "🔗 Reparent Children", delCancel: "Cancel", msgSaved: "File saved to Downloads folder", msgLoaded: "Data restored", msgErr: "Failed to load data", msgDel: "Deleted", msgMobileWarn: "This tool is optimized for PC. Some features may not work on mobile devices.", msgNoSession: "No saved session found", msgConfirmResume: "A saved session was found. Would you like to restore it?", historySession: "[Session Edit]", historyAutosave: "[Autosave]" },
+            fi: { title: "ReticuluMind", helpMouse: "Napsauta: Kohdista / Tupla: Siirrä näkymää / Oikea: Valikko", helpWasd: "Liiku: A(Ylös) D(Alas) W(Vasen) S(Oikea)", helpKeys: "Näppäimet: Ins/Tab(Lisää) F2(Nimeä) Del(Poista) Alt+S(Tallenna) Alt+D(Debug)", helpNumSnap: "Numpad: 1(Etu) 3(Oikea) 7(Ylä) - Näkymän vaihto", helpNumRotate: "Numpad: 2/4/6/8 - Kierrä näkymää", searchPlace: "🔍 Etsi solmuja (ID tai Nimi)...", langLabel: "Kieli", primaryActionsLabel: "Päätoiminnot", viewControlsLabel: "Näkymän säädöt", experimentalLabel: "Kokeelliset ominaisuudet", developmentLabel: "Kehitys", distLabel: "Solmujen etäisyys", fogLabel: "Sumun Tiheys", resetBtn: "🎯 Keskitä juureen", historyBtn: "📜 Näytä historia", backToMapBtn: "🗺️ Takaisin karttaan", saveFile: "⬇️ Tallenna tiedostoon (.json)", loadFile: "⬆️ Lataa tiedostosta (.json)", resumeBtn: "↩️ Jatka viimeistä istuntoa", closeBtn: "Sulje", ctxRename: "✏️ Nimeä uudelleen", ctxEditUrl: "🔗 Muokkaa URL", ctxOpenUrl: "🔗 Avaa URL", ctxColor: "🎨 Vaihda väriä", ctxAdd: "🌱 Lisää lapsisolmu", ctxDel: "🗑️ Poista solmu", ctxCancel: "Peruuta", renTitle: "Nimeä solmu uudelleen", renPlace: "Uusi nimi", renCancel: "Peruuta", renOk: "OK", urlTitle: "Muokkaa URL", urlPlace: "https://...", colTitle: "Vaihda väriä", colCancel: "Peruuta", colOk: "OK", delTitle: "Vahvista poisto", delDesc: "Poistetaan solmu.<br>Valitse lapsisolmujen käsittely.", delAll: "🗑️ Poista kaikki", delLink: "🔗 Yhdistä ylempään", delCancel: "Peruuta", msgSaved: "Tiedosto tallennettu", msgLoaded: "Tiedot palautettu", msgErr: "Lataus epäonnistui", msgDel: "Poistettu", msgMobileWarn: "Tämä työkalu on optimoitu tietokoneelle. Jotkin ominaisuudet eivät välttämättä toimi mobiililaitteilla.", msgNoSession: "Tallennettua istuntoa ei löytynyt", msgConfirmResume: "Tallennettu istunto löytyi. Haluatko palauttaa sen?", historySession: "[Istunto]", historyAutosave: "[Automaattinen tallennus]" }
         };
 
         let currentLang = localStorage.getItem('mindmap_lang') || 'en';
@@ -323,6 +323,7 @@
         let historyIndex = -1;
         let isHistoryView = false;
         let mainMapSnapshot = null;
+        let displayedHistory = [];
         const indicatorGroup = new THREE.Group(); scene.add(indicatorGroup);
         const indicators = {};
         const triGeo = new THREE.Shape(); triGeo.moveTo(0,0.5); triGeo.lineTo(0.4,-0.3); triGeo.lineTo(-0.4,-0.3);
@@ -588,10 +589,18 @@ Nodes: ${nodes.length}`;
             const n = getInt(e.clientX, e.clientY);
             if (n) {
                 if (isHistoryView) {
-                    if (n.historyIndex !== undefined) {
-                        historyIndex = n.historyIndex;
-                        toggleHistoryView(); // Toggles back to main map with the selected state
-                        playSound('whoosh');
+                    if (n.historyData) {
+                        const historyEntry = displayedHistory.find(h => h.nodeId === n.id);
+                        if (historyEntry) {
+                            const sessionHistoryIndex = history.findIndex(h => JSON.stringify(h.snapshot) === JSON.stringify(historyEntry.snapshot));
+                            if (sessionHistoryIndex > -1) {
+                                historyIndex = sessionHistoryIndex;
+                            }
+                            isHistoryView = false;
+                            loadState(historyEntry.snapshot, true);
+                            document.getElementById('btn-history').innerText = i18n[currentLang].historyBtn;
+                            playSound('whoosh');
+                        }
                     }
                 } else {
                     focusOnNodeWithTrace(n);
@@ -781,7 +790,7 @@ Nodes: ${nodes.length}`;
 
                 d.appendChild(document.createTextNode(prefix + marker));
 
-                if (children.length > 0) {
+                if (children.length > 0 && !isHistoryView) {
                     const toggleSpan = document.createElement('span');
                     toggleSpan.textContent = collapsedNodes.has(node.id) ? '[+]' : '[-]';
                     toggleSpan.style.cursor = 'pointer';
@@ -1060,6 +1069,9 @@ Nodes: ${nodes.length}`;
                 showToast('msgErr', 'error');
                 console.error("Failed to resume session:", e);
             }
+            if (document.getElementById('config-panel').style.display === 'block') {
+                toggleConfig();
+            }
         }
 
         function checkIfAutosaveExists() {
@@ -1069,6 +1081,7 @@ Nodes: ${nodes.length}`;
                 }
             }
         }
+
 
         let lastAdd = 0;
 
