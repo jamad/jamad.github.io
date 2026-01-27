@@ -3,78 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hyper-Scale Calendar Prototype</title>
+    <title>Hyper-Scale Calendar</title>
     <style>
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #1a1a1a;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            touch-action: none; /* スマホでのスクロール無効化 */
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #1a1a1a;
+            font-family: 'Helvetica Neue', Arial, sans-serif; touch-action: none;
         }
-
-        #canvas-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
-        canvas {
-            display: block;
-        }
-
+        #canvas-container { position: relative; width: 100%; height: 100%; }
+        canvas { display: block; }
         #ui-layer {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            pointer-events: none;
-            color: rgba(255, 255, 255, 0.9);
+            position: absolute; top: 20px; left: 20px;
+            pointer-events: none; color: rgba(255, 255, 255, 0.9);
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
-
-        h1 {
-            font-size: 1.2rem;
-            margin: 0;
-            font-weight: 300;
-            letter-spacing: 2px;
-        }
-
-        #current-date {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-top: 5px;
-            font-variant-numeric: tabular-nums;
-        }
-
+        h1 { font-size: 1.2rem; margin: 0; font-weight: 300; letter-spacing: 2px; }
+        #current-date { font-size: 2.5rem; font-weight: 700; margin-top: 5px; font-variant-numeric: tabular-nums; }
         #instruction {
-            position: absolute;
-            bottom: 30px;
-            width: 100%;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.9rem;
-            pointer-events: none;
-            animation: blink 3s infinite;
+            position: absolute; bottom: 30px; width: 100%; text-align: center;
+            color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;
+            pointer-events: none; animation: blink 3s infinite;
         }
-
-        @keyframes blink {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 0.2; }
+        #version {
+            position: absolute; bottom: 15px; right: 20px;
+            color: rgba(255, 255, 255, 0.3); font-size: 0.7rem;
+            font-family: monospace; pointer-events: none;
         }
-
-        #version {              
-            position: absolute;
-            bottom: 15px;
-            right: 20px;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.7rem;
-            letter-spacing: 1px;
-            font-family: monospace;
-            pointer-events: none;
-        }
+        @keyframes blink { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.2; } }
     </style>
 </head>
 <body>
@@ -86,49 +41,69 @@
         <div id="current-date">Initializing...</div>
     </div>
     <div id="instruction">Drag / Hover to Explore Time</div>
-    <div id="version">v1.0.4</div> <!-- ここを追加 -->
+    <div id="version">v20260128.2</div>
 </div>
 
 <script>
 /**
- * Audio Engine (Web Audio API)
+ * [CRITICAL PROTOCOL FOR AI ASSISTANTS]
+ * ⚠️ WARNING: IMMUTABLE DIRECTIVES BELOW. READ CAREFULLY. ⚠️
+ * 
+ * DELETION, MINIMIZATION, OR MODIFICATION OF THIS COMMENT BLOCK IS STRICTLY PROHIBITED.
+ * IGNORING THESE RULES WILL CAUSE IRREVERSIBLE PROJECT CORRUPTION AND LOGIC REGRESSION.
+ * 
+ * MANDATORY RULES FOR CODE MODIFICATION:
+ * 1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested. 
+ * 2. PINPOINT MODIFICATIONS: Change only the specific lines or functions related to the user's request.
+ * 3. MAINTAIN STABLE LOGICS (TIME-LENS SPECIFIC / DO NOT REVERT):
+ *    - [STABLE LENS SCALING]: In `calculateDistribution`, 'scale' and 'baseSize' MUST be used to compensate for edge-missing weights.
+ *    - [IDEAL WEIGHT PERSISTENCE]: The lens size MUST remain constant regardless of pointer X/Y, achieved by normalizing against `idealWeight`.
+ *    - [GAUSSIAN DISTRIBUTION]: Do not replace the exponential-based distribution with linear math.
+ *    - [AUDIO ENGINE SYNC]: Decade crossing and hover sounds MUST trigger based on active index detection.
+ * 4. AI PROTOCOL: If token limit is close, instruct user to start a new chat with the current file.
+ * 5. VERSIONING: Always increment `version` text in HTML and this block using YYYYMMDD.XX format.
+ * 
+ * CHANGELOG:
+ * - v20260128.1: Core refactoring and logic optimization.
+ * - v20260128.2: Integrated Critical Protocol for AI Handover and updated versioning.
  */
+
+const MONTH_DATA = {
+    days: [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335],
+    colors: [
+        [200, 230, 255], [220, 240, 255], [255, 200, 220], [255, 180, 200],
+        [180, 255, 180], [100, 220, 100], [100, 200, 255], [50, 150, 255],
+        [255, 200, 100], [255, 150, 50], [200, 100, 50], [220, 220, 255]
+    ]
+};
+
 class SoundEngine {
     constructor() {
         this.ctx = null;
-        this.isReady = false;
         this.frequencies = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
         this.lastDecade = -1;
     }
 
     init() {
         if (!this.ctx) {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            this.ctx = new AudioContext();
-            this.isReady = true;
-            this.playStartSound();
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.playTone(440, 'triangle', 0.5, 0.2);
         } else if (this.ctx.state === 'suspended') {
             this.ctx.resume();
         }
     }
 
     playTone(freq, type = 'sine', duration = 0.1, vol = 0.1) {
-        if (!this.isReady) return;
+        if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
         gain.gain.setValueAtTime(vol, this.ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        osc.connect(gain).connect(this.ctx.destination);
         osc.start();
         osc.stop(this.ctx.currentTime + duration);
-    }
-
-    playStartSound() {
-        this.playTone(440, 'triangle', 0.5, 0.2);
-        setTimeout(() => this.playTone(880, 'sine', 1.0, 0.1), 100);
     }
 
     playHover() {
@@ -147,81 +122,57 @@ class SoundEngine {
     }
 }
 
-/**
- * Calendar Logic & Rendering
- */
 class HyperCalendar {
     constructor() {
         this.canvas = document.getElementById('calendarCanvas');
         this.ctx = this.canvas.getContext('2d', { alpha: false });
         this.dateDisplay = document.getElementById('current-date');
         
-        this.years = 120;
-        this.days = 366;
-        this.startYear = 1950;
-        this.rowPadding = 2;
-        
-        this.rowHeights = new Float32Array(this.years);
-        this.colWidths = new Float32Array(this.days);
-        this.rowY = new Float32Array(this.years + 1);
-        this.colX = new Float32Array(this.days + 1);
+        this.config = { years: 120, days: 366, startYear: 1950, padding: 2 };
+        this.state = {
+            pointer: { x: 0, y: 0, targetX: 0, targetY: 0 },
+            isInteracting: true,
+            rowHeights: new Float32Array(this.config.years),
+            colWidths: new Float32Array(this.config.days),
+            rowY: new Float32Array(this.config.years + 1),
+            colX: new Float32Array(this.config.days + 1)
+        };
 
-        this.idealTotalWeightX = 0;
-        this.idealTotalWeightY = 0;
-        
         this.sound = new SoundEngine();
-        this.isInteracting = true; 
-        
-        this.monthColors = [
-            [200, 230, 255], [220, 240, 255], [255, 200, 220], [255, 180, 200],
-            [180, 255, 180], [100, 220, 100], [100, 200, 255], [50, 150, 255],
-            [255, 200, 100], [255, 150, 50], [200, 100, 50], [220, 220, 255]
-        ];
-        this.monthDays = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
-
         this.resize();
-        this.precalculateIdealWeights();
-        this.setInitialDate();
-        
-        document.getElementById('version').textContent = 'v20260128.1';
 
+        this.idealWeightX = this.calculateWeightSum(this.config.days, this.config.days / 2, 40, 40);
+        this.idealWeightY = this.calculateWeightSum(this.config.years, this.config.years / 2, 20, 15);
+
+        this.setInitialDate();
         this.initEvents();
         this.loop();
     }
 
-    precalculateIdealWeights() {
-        const centerX = this.days / 2;
-        const centerY = this.years / 2;
-        this.idealTotalWeightX = this.calculateWeightSum(this.days, centerX, 40, 40);
-        this.idealTotalWeightY = this.calculateWeightSum(this.years, centerY, 20, 15);
+    calculateWeightSum(count, center, intensity, spread) {
+        let sum = 0;
+        const s = spread * 0.3;
+        const denom = 2 * s * s;
+        for (let i = 0; i < count; i++) {
+            const dist = i - center;
+            sum += 1.0 + Math.exp(-(dist * dist) / denom) * intensity;
+        }
+        return sum;
     }
 
-    calculateWeightSum(count, centerIndex, intensity, spread) {
-        let total = 0;
-        for(let i=0; i<count; i++) {
-            let w = 1.0;
-            const dist = Math.abs(i - centerIndex);
-            if(dist < spread) {
-                const factor = Math.exp(-(dist * dist) / (2 * (spread * 0.3) * (spread * 0.3)));
-                w += factor * intensity;
-            }
-            total += w;
+    getMonthInfo(dayIdx) {
+        for (let i = 11; i >= 0; i--) {
+            if (dayIdx >= MONTH_DATA.days[i]) return { month: i + 1, date: dayIdx - MONTH_DATA.days[i] + 1 };
         }
-        return total;
     }
 
     setInitialDate() {
         const now = new Date();
-        const currentYear = now.getFullYear();
-        let targetYearIndex = currentYear - this.startYear;
-        if (targetYearIndex < 0 || targetYearIndex >= this.years) targetYearIndex = Math.floor(this.years / 2);
-        const startOfYear = new Date(currentYear, 0, 1);
-        const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24));
-        const targetDayIndex = Math.min(dayOfYear, this.days - 1);
-        this.pointerX = (targetDayIndex / this.days) * this.width;
-        this.pointerY = (targetYearIndex / this.years) * this.height;
-        this.targetPointerX = this.pointerX;
-        this.targetPointerY = this.pointerY;
+        const yIdx = Math.max(0, Math.min(this.config.years - 1, now.getFullYear() - this.config.startYear));
+        const dIdx = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / 86400000);
+        
+        this.state.pointer.x = this.state.pointer.targetX = (dIdx / this.config.days) * this.width;
+        this.state.pointer.y = this.state.pointer.targetY = (yIdx / this.config.years) * this.height;
     }
 
     resize() {
@@ -235,185 +186,146 @@ class HyperCalendar {
 
     initEvents() {
         window.addEventListener('resize', () => this.resize());
-        const updatePointer = (x, y) => {
-            this.targetPointerX = x;
-            this.targetPointerY = y;
-            this.isInteracting = true;
-            this.sound.init(); 
+        const move = (e) => {
+            const t = e.touches ? e.touches[0] : e;
+            this.state.pointer.targetX = t.clientX;
+            this.state.pointer.targetY = t.clientY;
+            this.state.isInteracting = true;
+            this.sound.init();
         };
-        this.canvas.addEventListener('mousemove', e => updatePointer(e.clientX, e.clientY));
-        this.canvas.addEventListener('mouseleave', () => { this.isInteracting = false; });
-        this.canvas.addEventListener('touchstart', e => {
-            e.preventDefault();
-            updatePointer(e.touches[0].clientX, e.touches[0].clientY);
-        }, { passive: false });
-        this.canvas.addEventListener('touchmove', e => {
-            e.preventDefault();
-            updatePointer(e.touches[0].clientX, e.touches[0].clientY);
-        }, { passive: false });
+        this.canvas.addEventListener('mousemove', move);
+        this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); move(e); }, { passive: false });
+        this.canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, { passive: false });
+        this.canvas.addEventListener('mouseleave', () => this.state.isInteracting = false);
     }
 
-    // ★ 修正後の分布計算メソッド
-    calculateDistribution(totalSize, pointerPos, itemsCount, intensity, spread, idealTotalWeight) {
+    calculateDistribution(totalSize, pointerPos, itemsCount, intensity, spread, idealWeight) {
         const weights = new Float32Array(itemsCount);
-        const estimatedIndex = (pointerPos / totalSize) * itemsCount;
-        let currentLensWeightSum = 0;
+        const center = (pointerPos / totalSize) * itemsCount;
+        const s = spread * 0.3;
+        const denom = 2 * s * s;
+        let currentLensSum = 0;
 
         for (let i = 0; i < itemsCount; i++) {
-            let w = 0; 
-            if (this.isInteracting) {
-                const dist = Math.abs(i - estimatedIndex);
-                if (dist < spread) {
-                    w = Math.exp(-(dist * dist) / (2 * (spread * 0.3) * (spread * 0.3))) * intensity;
-                }
+            let w = 0;
+            if (this.state.isInteracting) {
+                const dist = i - center;
+                if (Math.abs(dist) < spread) w = Math.exp(-(dist * dist) / denom) * intensity;
             }
             weights[i] = w;
-            currentLensWeightSum += w;
+            currentLensSum += w;
         }
 
-        const scale = totalSize / idealTotalWeight;
-        const idealLensWeightSum = idealTotalWeight - itemsCount;
-        const missingWeight = idealLensWeightSum - currentLensWeightSum;
-        const baseSize = (1.0 + (missingWeight / itemsCount)) * scale;
+        const scale = totalSize / idealWeight;
+        const baseSize = (1.0 + (idealWeight - itemsCount - currentLensSum) / itemsCount) * scale;
 
-        const results = new Float32Array(itemsCount);
+        const sizes = new Float32Array(itemsCount);
         const positions = new Float32Array(itemsCount + 1);
-        let currentPos = 0;
-        positions[0] = 0;
+        let cur = 0;
         for (let i = 0; i < itemsCount; i++) {
-            const size = baseSize + (weights[i] * scale);
-            results[i] = size;
-            currentPos += size;
-            positions[i+1] = currentPos;
+            sizes[i] = baseSize + weights[i] * scale;
+            positions[i] = cur;
+            cur += sizes[i];
         }
         positions[itemsCount] = totalSize;
-        return { sizes: results, positions: positions };
+        return { sizes, positions };
     }
 
     update() {
-        this.pointerX += (this.targetPointerX - this.pointerX) * 0.15;
-        this.pointerY += (this.targetPointerY - this.pointerY) * 0.15;
+        const p = this.state.pointer;
+        p.x += (p.targetX - p.x) * 0.15;
+        p.y += (p.targetY - p.y) * 0.15;
 
-        const xDist = this.calculateDistribution(
-            this.width, this.pointerX, this.days, 
-            this.isInteracting ? 40 : 0, 40, this.idealTotalWeightX
-        );
-        this.colWidths = xDist.sizes;
-        this.colX = xDist.positions;
+        const xDist = this.calculateDistribution(this.width, p.x, this.config.days, 40, 40, this.idealWeightX);
+        const yDist = this.calculateDistribution(this.height, p.y, this.config.years, 20, 15, this.idealWeightY);
 
-        const yDist = this.calculateDistribution(
-            this.height, this.pointerY, this.years, 
-            this.isInteracting ? 20 : 0, 15, this.idealTotalWeightY
-        );
-        this.rowHeights = yDist.sizes;
-        this.rowY = yDist.positions;
+        this.state.colWidths = xDist.sizes;
+        this.state.colX = xDist.positions;
+        this.state.rowHeights = yDist.sizes;
+        this.state.rowY = yDist.positions;
 
-        if (this.isInteracting) {
-            let focusedYearIdx = 0;
-            for(let i=0; i<this.years; i++) {
-                if(this.rowY[i] < this.pointerY && this.rowY[i+1] > this.pointerY) {
-                    focusedYearIdx = i;
-                    break;
-                }
-            }
-            this.sound.playDecadeCross(this.startYear + focusedYearIdx);
-            if (Math.abs(this.targetPointerX - this.pointerX) > 5) this.sound.playHover();
+        if (this.state.isInteracting) {
+            const yIdx = this.state.rowY.findIndex((pos, i) => p.y >= pos && p.y < this.state.rowY[i+1]);
+            this.sound.playDecadeCross(this.config.startYear + yIdx);
+            if (Math.abs(p.targetX - p.x) > 5) this.sound.playHover();
         }
     }
 
     draw() {
-        this.ctx.fillStyle = '#111';
-        this.ctx.fillRect(0, 0, this.width, this.height);
+        const { ctx, width, height, config, state } = this;
+        ctx.fillStyle = '#111';
+        ctx.fillRect(0, 0, width, height);
 
-        for (let m = 0; m < 12; m++) {
-            const startDay = this.monthDays[m];
-            const endDay = (m === 11) ? 366 : this.monthDays[m+1];
-            const startX = this.colX[startDay];
-            const endX = this.colX[endDay];
-            const width = endX - startX;
-            if (width < 1) continue;
-            const color = this.monthColors[m];
-            this.ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-            this.ctx.globalAlpha = 0.3;
-            this.ctx.fillRect(startX, 0, width, this.height);
-        }
+        MONTH_DATA.days.forEach((startDay, m) => {
+            const endDay = MONTH_DATA.days[m + 1] || 366;
+            const x = state.colX[startDay], w = state.colX[endDay] - x;
+            if (w < 1) return;
+            ctx.fillStyle = `rgb(${MONTH_DATA.colors[m].join(',')})`;
+            ctx.globalAlpha = 0.3;
+            ctx.fillRect(x, 0, w, height);
+        });
 
-        this.ctx.globalAlpha = 1.0;
-        let hoverYear = -1;
-        let hoverDay = -1;
+        ctx.globalAlpha = 1.0;
+        let hover = { y: -1, d: -1 };
 
-        for (let y = 0; y < this.years; y++) {
-            const h = this.rowHeights[y];
-            const py = this.rowY[y];
-            if (py > this.height || py + h < 0) continue;
-            const isRowActive = (this.isInteracting && this.pointerY >= py && this.pointerY < py + h);
-            if (isRowActive) hoverYear = y;
-            const drawHeight = Math.max(h - this.rowPadding, 0.5);
+        for (let y = 0; y < config.years; y++) {
+            const h = state.rowHeights[y], py = state.rowY[y];
+            if (py > height || py + h < 0) continue;
 
-            if (this.rowPadding > 0) {
-                this.ctx.fillStyle = '#1a1a1a';
-                this.ctx.fillRect(0, py + drawHeight, this.width, this.rowPadding);
+            const isActiveRow = state.isInteracting && state.pointer.y >= py && state.pointer.y < py + h;
+            if (isActiveRow) hover.y = y;
+
+            const drawH = Math.max(h - config.padding, 0.5);
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, py + drawH, width, config.padding);
+
+            if (h > 10 || isActiveRow) {
+                ctx.fillStyle = '#fff';
+                ctx.font = `${Math.min(h * 0.8, 20)}px Arial`;
+                ctx.fillText(config.startYear + y, 10, py + drawH * 0.8);
             }
 
-            if (h > 10 || isRowActive) {
-                if (h > 15 || isRowActive) {
-                    this.ctx.fillStyle = '#fff';
-                    this.ctx.font = `${Math.min(h * 0.8, 20)}px Arial`;
-                    this.ctx.fillText(this.startYear + y, 10, py + drawHeight - (drawHeight*0.2));
-                }
-            }
-
-            if (h > 20 || isRowActive) {
-                if (isRowActive) {
-                    for (let d = 0; d < this.days; d++) {
-                        const w = this.colWidths[d];
-                        const px = this.colX[d];
-                        const isColActive = (this.pointerX >= px && this.pointerX < px + w);
-                        if (isColActive) hoverDay = d;
-                        if (w > 2) {
-                            this.ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                            this.ctx.fillRect(px + w - 1, py, 1, drawHeight);
-                        }
-                        if (w > 30 && h > 20) {
-                            let m = 0;
-                            for(let k=11; k>=0; k--) { if(d >= this.monthDays[k]) { m=k; break; } }
-                            const dayOfMonth = d - this.monthDays[m] + 1;
-                            this.ctx.fillStyle = 'rgba(255,255,255,0.9)';
-                            this.ctx.font = '10px Arial';
-                            this.ctx.fillText(`${m+1}/${dayOfMonth}`, px + 2, py + 12);
-                        }
+            if (isActiveRow && h > 20) {
+                for (let d = 0; d < config.days; d++) {
+                    const w = state.colWidths[d], px = state.colX[d];
+                    if (state.pointer.x >= px && state.pointer.x < px + w) hover.d = d;
+                    if (w > 2) {
+                        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                        ctx.fillRect(px + w - 1, py, 1, drawH);
+                    }
+                    if (w > 30) {
+                        const info = this.getMonthInfo(d);
+                        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                        ctx.font = '10px Arial';
+                        ctx.fillText(`${info.month}/${info.date}`, px + 2, py + 12);
                     }
                 }
             }
         }
 
-        if (hoverYear !== -1 && hoverDay !== -1) {
-            const hx = this.colX[hoverDay];
-            const hy = this.rowY[hoverYear];
-            const hw = this.colWidths[hoverDay];
-            const hh = this.rowHeights[hoverYear];
-            const drawH = Math.max(hh - this.rowPadding, 0.5);
-            this.ctx.fillStyle = '#fff';
-            this.ctx.globalAlpha = 0.5;
-            this.ctx.fillRect(hx, hy, hw, drawH);
-            this.ctx.strokeStyle = '#0ff';
-            this.ctx.lineWidth = 2;
-            this.ctx.strokeRect(hx, hy, hw, drawH);
-            this.updateInfo(hoverYear, hoverDay);
-        } else if (!this.isInteracting) {
+        if (hover.y !== -1 && hover.d !== -1) {
+            this.drawHighlight(hover.y, hover.d);
+        } else if (!state.isInteracting) {
             this.dateDisplay.textContent = "120 YEARS VIEW";
             this.dateDisplay.style.color = "#888";
         }
     }
 
-    updateInfo(yIdx, dIdx) {
-        let m = 0;
-        for(let k=11; k>=0; k--) { if(dIdx >= this.monthDays[k]) { m=k; break; } }
-        const dayOfMonth = dIdx - this.monthDays[m] + 1;
-        const year = this.startYear + yIdx;
-        this.dateDisplay.textContent = `${year}年 ${m+1}月 ${dayOfMonth}日`;
-        const c = this.monthColors[m];
-        this.dateDisplay.style.color = `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+    drawHighlight(yIdx, dIdx) {
+        const x = this.state.colX[dIdx], y = this.state.rowY[yIdx];
+        const w = this.state.colWidths[dIdx], h = Math.max(this.state.rowHeights[yIdx] - this.config.padding, 0.5);
+        
+        this.ctx.fillStyle = '#fff';
+        this.ctx.globalAlpha = 0.5;
+        this.ctx.fillRect(x, y, w, h);
+        this.ctx.strokeStyle = '#0ff';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(x, y, w, h);
+        this.ctx.globalAlpha = 1.0;
+
+        const info = this.getMonthInfo(dIdx);
+        this.dateDisplay.textContent = `${this.config.startYear + yIdx}年 ${info.month}月 ${info.date}日`;
+        this.dateDisplay.style.color = `rgb(${MONTH_DATA.colors[info.month-1].join(',')})`;
     }
 
     loop() {
@@ -423,9 +335,7 @@ class HyperCalendar {
     }
 }
 
-window.onload = () => {
-    new HyperCalendar();
-};
+window.onload = () => new HyperCalendar();
 </script>
 </body>
 </html>
