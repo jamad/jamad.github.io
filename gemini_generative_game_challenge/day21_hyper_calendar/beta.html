@@ -104,16 +104,12 @@ class SoundEngine {
         if (!this.isReady) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
         osc.type = type;
         osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-        
         gain.gain.setValueAtTime(vol, this.ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-
         osc.start();
         osc.stop(this.ctx.currentTime + duration);
     }
@@ -123,7 +119,7 @@ class SoundEngine {
         setTimeout(() => this.playTone(880, 'sine', 1.0, 0.1), 100);
     }
 
-    playHover(speed) {
+    playHover() {
         if (Math.random() > 0.8) {
             const f = this.frequencies[Math.floor(Math.random() * this.frequencies.length)];
             this.playTone(f * 2, 'sine', 0.05, 0.02);
@@ -148,53 +144,39 @@ class HyperCalendar {
         this.ctx = this.canvas.getContext('2d', { alpha: false });
         this.dateDisplay = document.getElementById('current-date');
         
-        // 設定
         this.years = 120;
         this.days = 366;
         this.startYear = 1950;
-        this.rowPadding = 2; // 年ごとの隙間(px)
+        this.rowPadding = 2;
         
-        // グリッド計算用
         this.rowHeights = new Float32Array(this.years);
         this.colWidths = new Float32Array(this.days);
         this.rowY = new Float32Array(this.years + 1);
         this.colX = new Float32Array(this.days + 1);
 
-        // 理想的な重み（サイズ変動防止用）
         this.idealTotalWeightX = 0;
         this.idealTotalWeightY = 0;
         
         this.sound = new SoundEngine();
-
-        // 状態
-        this.isInteracting = true; // 初期状態からフォーカス有効にする
+        this.isInteracting = true; 
         
         this.monthColors = [
             [200, 230, 255], [220, 240, 255], [255, 200, 220], [255, 180, 200],
             [180, 255, 180], [100, 220, 100], [100, 200, 255], [50, 150, 255],
             [255, 200, 100], [255, 150, 50], [200, 100, 50], [220, 220, 255]
         ];
-
         this.monthDays = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
 
         this.resize();
-        
-        // 理想的な重みの総和を計算（ポインタが中央にあると仮定）
         this.precalculateIdealWeights();
-
-        // 初期位置を「今日」に設定
         this.setInitialDate();
-
         this.initEvents();
         this.loop();
     }
 
     precalculateIdealWeights() {
-        // 画面中央での重み総和を計算しておく（これを基準に正規化する）
-        // intensity, spreadは update メソッド内の値と合わせる
         const centerX = this.days / 2;
         const centerY = this.years / 2;
-        
         this.idealTotalWeightX = this.calculateWeightSum(this.days, centerX, 40, 40);
         this.idealTotalWeightY = this.calculateWeightSum(this.years, centerY, 20, 15);
     }
@@ -216,19 +198,11 @@ class HyperCalendar {
     setInitialDate() {
         const now = new Date();
         const currentYear = now.getFullYear();
-        
-        // 範囲外なら中央にする
         let targetYearIndex = currentYear - this.startYear;
-        if (targetYearIndex < 0 || targetYearIndex >= this.years) {
-            targetYearIndex = Math.floor(this.years / 2);
-        }
-
-        // 簡易的に1月1日からの通算日を計算
+        if (targetYearIndex < 0 || targetYearIndex >= this.years) targetYearIndex = Math.floor(this.years / 2);
         const startOfYear = new Date(currentYear, 0, 1);
         const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24));
         const targetDayIndex = Math.min(dayOfYear, this.days - 1);
-
-        // 座標に変換（初期は均等分布と仮定して計算）
         this.pointerX = (targetDayIndex / this.days) * this.width;
         this.pointerY = (targetYearIndex / this.years) * this.height;
         this.targetPointerX = this.pointerX;
@@ -239,60 +213,42 @@ class HyperCalendar {
         const dpr = window.devicePixelRatio || 1;
         this.width = window.innerWidth;
         this.height = window.innerHeight;
-        
         this.canvas.width = this.width * dpr;
         this.canvas.height = this.height * dpr;
         this.ctx.scale(dpr, dpr);
-        
-        // リサイズ時に理想ウェイトも再計算が必要だが、インデックスベースなので値は変わらない。
-        // ただし初期位置などは更新が必要かもしれないが今回は省略。
     }
 
     initEvents() {
         window.addEventListener('resize', () => this.resize());
-
         const updatePointer = (x, y) => {
             this.targetPointerX = x;
             this.targetPointerY = y;
             this.isInteracting = true;
             this.sound.init(); 
         };
-
         this.canvas.addEventListener('mousemove', e => updatePointer(e.clientX, e.clientY));
-        this.canvas.addEventListener('mouseleave', () => {
-            // 画面外に出てもフォーカスを維持したい場合はここをコメントアウト
-            // 今回は「デフォルトで選択」の要望なので、外に出たら解除ではなく
-            // 「最後の位置を維持」または「解除」どちらかだが、
-            // 操作感を重視して解除（フラットに戻る）にする。
-            // ただし初期状態は isInteracting=true なので、一度入ってから出るまでは有効。
-            this.isInteracting = false; 
-        });
-
+        this.canvas.addEventListener('mouseleave', () => { this.isInteracting = false; });
         this.canvas.addEventListener('touchstart', e => {
             e.preventDefault();
             updatePointer(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: false });
-        
         this.canvas.addEventListener('touchmove', e => {
             e.preventDefault();
             updatePointer(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: false });
     }
 
-// 改良版分布計算：フォーカスサイズを固定し、端でのガタつきを解消
+    // ★ 修正後の分布計算メソッド
     calculateDistribution(totalSize, pointerPos, itemsCount, intensity, spread, idealTotalWeight) {
         const weights = new Float32Array(itemsCount);
         const estimatedIndex = (pointerPos / totalSize) * itemsCount;
-        
-        let currentLensWeightSum = 0;update(
+        let currentLensWeightSum = 0;
 
-        // 1. 各セルの「拡大分」のみを計算
         for (let i = 0; i < itemsCount; i++) {
             let w = 0; 
             if (this.isInteracting) {
                 const dist = Math.abs(i - estimatedIndex);
                 if (dist < spread) {
-                    // ガウス曲線による拡大率
                     w = Math.exp(-(dist * dist) / (2 * (spread * 0.3) * (spread * 0.3))) * intensity;
                 }
             }
@@ -300,33 +256,22 @@ class HyperCalendar {
             currentLensWeightSum += w;
         }
 
-        // 2. スケールを固定
-        // 理想的な総ウェイト（中心にある時の合計）を元に、1ウェイトあたりのピクセル数を固定する
         const scale = totalSize / idealTotalWeight;
-
-        // 3. 画面端での不足分（Slack）を計算
-        // 画面外に逃げたレンズ部分のウェイトを全セルに均等に割り振って隙間を埋める
         const idealLensWeightSum = idealTotalWeight - itemsCount;
         const missingWeight = idealLensWeightSum - currentLensWeightSum;
         const baseSize = (1.0 + (missingWeight / itemsCount)) * scale;
 
-        // 4. 座標とサイズの適用
         const results = new Float32Array(itemsCount);
         const positions = new Float32Array(itemsCount + 1);
         let currentPos = 0;
-        
         positions[0] = 0;
         for (let i = 0; i < itemsCount; i++) {
-            // サイズ = (ベースサイズ) + (固定スケールされた拡大分)
             const size = baseSize + (weights[i] * scale);
             results[i] = size;
             currentPos += size;
             positions[i+1] = currentPos;
         }
-
-        // 最後のセルの端を画面右端/下端に強制的に合わせる（浮動小数点の誤差対策）
         positions[itemsCount] = totalSize;
-
         return { sizes: results, positions: positions };
     }
 
@@ -334,22 +279,16 @@ class HyperCalendar {
         this.pointerX += (this.targetPointerX - this.pointerX) * 0.15;
         this.pointerY += (this.targetPointerY - this.pointerY) * 0.15;
 
-        // X軸（日付）
         const xDist = this.calculateDistribution(
             this.width, this.pointerX, this.days, 
-            this.isInteracting ? 40 : 0, 
-            40,
-            this.idealTotalWeightX
+            this.isInteracting ? 40 : 0, 40, this.idealTotalWeightX
         );
         this.colWidths = xDist.sizes;
         this.colX = xDist.positions;
 
-        // Y軸（年）
         const yDist = this.calculateDistribution(
-            this.height, this.height, this.pointerY, this.years, 
-            this.isInteracting ? 20 : 0, 
-            15,
-            this.idealTotalWeightY
+            this.height, this.pointerY, this.years, 
+            this.isInteracting ? 20 : 0, 15, this.idealTotalWeightY
         );
         this.rowHeights = yDist.sizes;
         this.rowY = yDist.positions;
@@ -363,10 +302,7 @@ class HyperCalendar {
                 }
             }
             this.sound.playDecadeCross(this.startYear + focusedYearIdx);
-            
-            if (Math.abs(this.targetPointerX - this.pointerX) > 5) {
-                this.sound.playHover();
-            }
+            if (Math.abs(this.targetPointerX - this.pointerX) > 5) this.sound.playHover();
         }
     }
 
@@ -374,17 +310,13 @@ class HyperCalendar {
         this.ctx.fillStyle = '#111';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        // 1. 月ごとのベース描画
         for (let m = 0; m < 12; m++) {
             const startDay = this.monthDays[m];
             const endDay = (m === 11) ? 366 : this.monthDays[m+1];
-            
             const startX = this.colX[startDay];
             const endX = this.colX[endDay];
             const width = endX - startX;
-
             if (width < 1) continue;
-
             const color = this.monthColors[m];
             this.ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
             this.ctx.globalAlpha = 0.3;
@@ -392,43 +324,26 @@ class HyperCalendar {
         }
 
         this.ctx.globalAlpha = 1.0;
-        
         let hoverYear = -1;
         let hoverDay = -1;
 
-        // 2. グリッド描画
         for (let y = 0; y < this.years; y++) {
             const h = this.rowHeights[y];
             const py = this.rowY[y];
-
             if (py > this.height || py + h < 0) continue;
-
             const isRowActive = (this.isInteracting && this.pointerY >= py && this.pointerY < py + h);
             if (isRowActive) hoverYear = y;
-
-            // パディングを適用した実際の描画高さ
-            // 高さが十分にない場合はパディングを減らすなどの調整も可能だが、
-            // ここではシンプルに引く（ただし最小0.5pxは残す）
             const drawHeight = Math.max(h - this.rowPadding, 0.5);
 
-            // 背景は黒(#111)なので、描画高さを減らせば隙間ができる
-            // ここでは特に「塗りつぶし」をしていない（背景が見えている）ので、
-            // 行の領域を「塗り」で表現する必要があるが、
-            // ベースレイヤー（月ごとの色）は既に全画面描画されている。
-            // なので、「隙間」を作るには、隙間の部分を「黒」で上書きする必要がある。
-            
-            // 行間の黒線（パディング）を描画
             if (this.rowPadding > 0) {
-                this.ctx.fillStyle = '#1a1a1a'; // 背景色と同じ
+                this.ctx.fillStyle = '#1a1a1a';
                 this.ctx.fillRect(0, py + drawHeight, this.width, this.rowPadding);
             }
 
-            // 年の境界線や文字
             if (h > 10 || isRowActive) {
                 if (h > 15 || isRowActive) {
                     this.ctx.fillStyle = '#fff';
                     this.ctx.font = `${Math.min(h * 0.8, 20)}px Arial`;
-                    // パディング分位置調整
                     this.ctx.fillText(this.startYear + y, 10, py + drawHeight - (drawHeight*0.2));
                 }
             }
@@ -438,21 +353,16 @@ class HyperCalendar {
                     for (let d = 0; d < this.days; d++) {
                         const w = this.colWidths[d];
                         const px = this.colX[d];
-                        
                         const isColActive = (this.pointerX >= px && this.pointerX < px + w);
                         if (isColActive) hoverDay = d;
-
                         if (w > 2) {
-                            // セルの縦区切り線
                             this.ctx.fillStyle = 'rgba(0,0,0,0.3)';
                             this.ctx.fillRect(px + w - 1, py, 1, drawHeight);
                         }
-                        
                         if (w > 30 && h > 20) {
                             let m = 0;
                             for(let k=11; k>=0; k--) { if(d >= this.monthDays[k]) { m=k; break; } }
                             const dayOfMonth = d - this.monthDays[m] + 1;
-                            
                             this.ctx.fillStyle = 'rgba(255,255,255,0.9)';
                             this.ctx.font = '10px Arial';
                             this.ctx.fillText(`${m+1}/${dayOfMonth}`, px + 2, py + 12);
@@ -462,37 +372,22 @@ class HyperCalendar {
             }
         }
 
-        // 3. ハイライト
         if (hoverYear !== -1 && hoverDay !== -1) {
             const hx = this.colX[hoverDay];
             const hy = this.rowY[hoverYear];
             const hw = this.colWidths[hoverDay];
             const hh = this.rowHeights[hoverYear];
-            // パディング考慮
             const drawH = Math.max(hh - this.rowPadding, 0.5);
-
             this.ctx.fillStyle = '#fff';
             this.ctx.globalAlpha = 0.5;
             this.ctx.fillRect(hx, hy, hw, drawH);
             this.ctx.strokeStyle = '#0ff';
             this.ctx.lineWidth = 2;
             this.ctx.strokeRect(hx, hy, hw, drawH);
-
-            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-            this.ctx.lineWidth = 1;
-            this.ctx.beginPath();
-            this.ctx.moveTo(hx + hw/2, 0);
-            this.ctx.lineTo(hx + hw/2, this.height);
-            this.ctx.moveTo(0, hy + drawH/2);
-            this.ctx.lineTo(this.width, hy + drawH/2);
-            this.ctx.stroke();
-
             this.updateInfo(hoverYear, hoverDay);
-        } else {
-            if (!this.isInteracting) {
-                this.dateDisplay.textContent = "120 YEARS VIEW";
-                this.dateDisplay.style.color = "#888";
-            }
+        } else if (!this.isInteracting) {
+            this.dateDisplay.textContent = "120 YEARS VIEW";
+            this.dateDisplay.style.color = "#888";
         }
     }
 
@@ -501,10 +396,7 @@ class HyperCalendar {
         for(let k=11; k>=0; k--) { if(dIdx >= this.monthDays[k]) { m=k; break; } }
         const dayOfMonth = dIdx - this.monthDays[m] + 1;
         const year = this.startYear + yIdx;
-        
-        const dateStr = `${year}年 ${m+1}月 ${dayOfMonth}日`;
-        this.dateDisplay.textContent = dateStr;
-        
+        this.dateDisplay.textContent = `${year}年 ${m+1}月 ${dayOfMonth}日`;
         const c = this.monthColors[m];
         this.dateDisplay.style.color = `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
     }
