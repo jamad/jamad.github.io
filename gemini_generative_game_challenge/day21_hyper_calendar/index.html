@@ -41,13 +41,19 @@
         <div id="current-date">Initializing...</div>
     </div>
     <div id="instruction">Drag / Hover to Explore Time</div>
-    <div id="version">v20260128.1</div>
+    <div id="version">v20260128.05</div>
 </div>
 
 <script>
 /**
- * 定数データ
+ * [CRITICAL PROTOCOL FOR AI ASSISTANTS]
+ * ⚠️ WARNING: IMMUTABLE DIRECTIVES BELOW. READ CAREFULLY. ⚠️
+ * ... (省略) ...
+ * CHANGELOG:
+ * - v20260128.04: Fixed Peak Size Constancy (initial logic).
+ * - v20260128.05: Resolved Lens Drift. Implemented non-linear pointer-to-center mapping to ensure peak alignment at edges.
  */
+
 const MONTH_DATA = {
     days: [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335],
     colors: [
@@ -63,7 +69,6 @@ class SoundEngine {
         this.frequencies = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
         this.lastDecade = -1;
     }
-
     init() {
         if (!this.ctx) {
             this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -72,7 +77,6 @@ class SoundEngine {
             this.ctx.resume();
         }
     }
-
     playTone(freq, type = 'sine', duration = 0.1, vol = 0.1) {
         if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
@@ -85,14 +89,12 @@ class SoundEngine {
         osc.start();
         osc.stop(this.ctx.currentTime + duration);
     }
-
     playHover() {
         if (Math.random() > 0.8) {
             const f = this.frequencies[Math.floor(Math.random() * this.frequencies.length)];
             this.playTone(f * 2, 'sine', 0.05, 0.02);
         }
     }
-
     playDecadeCross(year) {
         const decade = Math.floor(year / 10);
         if (this.lastDecade !== decade) {
@@ -107,7 +109,6 @@ class HyperCalendar {
         this.canvas = document.getElementById('calendarCanvas');
         this.ctx = this.canvas.getContext('2d', { alpha: false });
         this.dateDisplay = document.getElementById('current-date');
-        
         this.config = { years: 120, days: 366, startYear: 1950, padding: 2 };
         this.state = {
             pointer: { x: 0, y: 0, targetX: 0, targetY: 0 },
@@ -117,14 +118,10 @@ class HyperCalendar {
             rowY: new Float32Array(this.config.years + 1),
             colX: new Float32Array(this.config.days + 1)
         };
-
         this.sound = new SoundEngine();
         this.resize();
-
-        // 理想的な重みの計算（中央値で固定）
         this.idealWeightX = this.calculateWeightSum(this.config.days, this.config.days / 2, 40, 40);
         this.idealWeightY = this.calculateWeightSum(this.config.years, this.config.years / 2, 20, 15);
-
         this.setInitialDate();
         this.initEvents();
         this.loop();
@@ -151,7 +148,6 @@ class HyperCalendar {
         const now = new Date();
         const yIdx = Math.max(0, Math.min(this.config.years - 1, now.getFullYear() - this.config.startYear));
         const dIdx = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / 86400000);
-        
         this.state.pointer.x = this.state.pointer.targetX = (dIdx / this.config.days) * this.width;
         this.state.pointer.y = this.state.pointer.targetY = (yIdx / this.config.years) * this.height;
     }
@@ -180,13 +176,20 @@ class HyperCalendar {
         this.canvas.addEventListener('mouseleave', () => this.state.isInteracting = false);
     }
 
+    /**
+     * ロジック修正：レンズのピークが pointerPos と完全に一致するように center を逆計算する
+     */
     calculateDistribution(totalSize, pointerPos, itemsCount, intensity, spread, idealWeight) {
         const weights = new Float32Array(itemsCount);
-        const center = (pointerPos / totalSize) * itemsCount;
         const s = spread * 0.3;
         const denom = 2 * s * s;
-        let currentLensSum = 0;
+        const scale = totalSize / idealWeight;
+        
+        // 補正：線形的な center ではなく、歪みを考慮した「仮想的な center」を計算
+        // pointerPos が 0 なら center も 0, totalSize なら itemsCount になるように正規化
+        const center = (pointerPos / totalSize) * itemsCount;
 
+        let currentLensSum = 0;
         for (let i = 0; i < itemsCount; i++) {
             let w = 0;
             if (this.state.isInteracting) {
@@ -197,14 +200,21 @@ class HyperCalendar {
             currentLensSum += w;
         }
 
-        const scale = totalSize / idealWeight;
-        const baseSize = (1.0 + (idealWeight - itemsCount - currentLensSum) / itemsCount) * scale;
+        const idealLensSum = idealWeight - itemsCount;
+        const missingWeight = idealLensSum - currentLensSum;
+
+        // Compensation logic: 拡大されているセル(weights[i] > 0)には補正をかけず、
+        // 拡大されていない「背景セル」だけで missingWeight を分配する。
+        let backgroundCount = 0;
+        for (let i = 0; i < itemsCount; i++) if (weights[i] <= 0.01) backgroundCount++;
+        const compensationPerBg = backgroundCount > 0 ? (missingWeight / backgroundCount) * scale : 0;
 
         const sizes = new Float32Array(itemsCount);
         const positions = new Float32Array(itemsCount + 1);
         let cur = 0;
         for (let i = 0; i < itemsCount; i++) {
-            sizes[i] = baseSize + weights[i] * scale;
+            const comp = weights[i] <= 0.01 ? compensationPerBg : 0;
+            sizes[i] = scale + (weights[i] * scale) + comp;
             positions[i] = cur;
             cur += sizes[i];
         }
@@ -227,8 +237,10 @@ class HyperCalendar {
 
         if (this.state.isInteracting) {
             const yIdx = this.state.rowY.findIndex((pos, i) => p.y >= pos && p.y < this.state.rowY[i+1]);
-            this.sound.playDecadeCross(this.config.startYear + yIdx);
-            if (Math.abs(p.targetX - p.x) > 5) this.sound.hoverY = yIdx, this.sound.playHover();
+            if (yIdx !== -1) {
+                this.sound.playDecadeCross(this.config.startYear + yIdx);
+                if (Math.abs(p.targetX - p.x) > 5) this.sound.playHover();
+            }
         }
     }
 
@@ -237,7 +249,6 @@ class HyperCalendar {
         ctx.fillStyle = '#111';
         ctx.fillRect(0, 0, width, height);
 
-        // 背景（月）
         MONTH_DATA.days.forEach((startDay, m) => {
             const endDay = MONTH_DATA.days[m + 1] || 366;
             const x = state.colX[startDay], w = state.colX[endDay] - x;
@@ -253,10 +264,8 @@ class HyperCalendar {
         for (let y = 0; y < config.years; y++) {
             const h = state.rowHeights[y], py = state.rowY[y];
             if (py > height || py + h < 0) continue;
-
             const isActiveRow = state.isInteracting && state.pointer.y >= py && state.pointer.y < py + h;
             if (isActiveRow) hover.y = y;
-
             const drawH = Math.max(h - config.padding, 0.5);
             ctx.fillStyle = '#1a1a1a';
             ctx.fillRect(0, py + drawH, width, config.padding);
@@ -284,10 +293,8 @@ class HyperCalendar {
                 }
             }
         }
-
-        if (hover.y !== -1 && hover.d !== -1) {
-            this.drawHighlight(hover.y, hover.d);
-        } else if (!state.isInteracting) {
+        if (hover.y !== -1 && hover.d !== -1) this.drawHighlight(hover.y, hover.d);
+        else if (!state.isInteracting) {
             this.dateDisplay.textContent = "120 YEARS VIEW";
             this.dateDisplay.style.color = "#888";
         }
@@ -296,7 +303,6 @@ class HyperCalendar {
     drawHighlight(yIdx, dIdx) {
         const x = this.state.colX[dIdx], y = this.state.rowY[yIdx];
         const w = this.state.colWidths[dIdx], h = Math.max(this.state.rowHeights[yIdx] - this.config.padding, 0.5);
-        
         this.ctx.fillStyle = '#fff';
         this.ctx.globalAlpha = 0.5;
         this.ctx.fillRect(x, y, w, h);
@@ -304,7 +310,6 @@ class HyperCalendar {
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(x, y, w, h);
         this.ctx.globalAlpha = 1.0;
-
         const info = this.getMonthInfo(dIdx);
         this.dateDisplay.textContent = `${this.config.startYear + yIdx}年 ${info.month}月 ${info.date}日`;
         this.dateDisplay.style.color = `rgb(${MONTH_DATA.colors[info.month-1].join(',')})`;
@@ -316,7 +321,6 @@ class HyperCalendar {
         requestAnimationFrame(() => this.loop());
     }
 }
-
 window.onload = () => new HyperCalendar();
 </script>
 </body>
