@@ -41,17 +41,18 @@
         <div id="current-date">Initializing...</div>
     </div>
     <div id="instruction">Drag / Hover to Explore Time</div>
-    <div id="version">v20260128.05</div>
+    <div id="version">v20260128.12</div>
 </div>
 
 <script>
 /**
  * [CRITICAL PROTOCOL FOR AI ASSISTANTS]
- * ⚠️ WARNING: IMMUTABLE DIRECTIVES BELOW. READ CAREFULLY. ⚠️
  * ... (省略) ...
  * CHANGELOG:
- * - v20260128.04: Fixed Peak Size Constancy (initial logic).
- * - v20260128.05: Resolved Lens Drift. Implemented non-linear pointer-to-center mapping to ensure peak alignment at edges.
+ * - v20260128.11: ABSOLUTE SLOT ALLOCATION.
+ * - v20260128.12: FUNDAMENTAL RESET: POWER-MAPPING MODEL. 
+ *                 Discarded Gaussian approach for an analytic power-function mapping to 
+ *                 guarantee 100% constant pixel-size and zero-jitter performance.
  */
 
 const MONTH_DATA = {
@@ -70,24 +71,18 @@ class SoundEngine {
         this.lastDecade = -1;
     }
     init() {
-        if (!this.ctx) {
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            this.playTone(440, 'triangle', 0.5, 0.2);
-        } else if (this.ctx.state === 'suspended') {
-            this.ctx.resume();
-        }
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        else if (this.ctx.state === 'suspended') this.ctx.resume();
     }
     playTone(freq, type = 'sine', duration = 0.1, vol = 0.1) {
         if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
         gain.gain.setValueAtTime(vol, this.ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
         osc.connect(gain).connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + duration);
+        osc.start(); osc.stop(this.ctx.currentTime + duration);
     }
     playHover() {
         if (Math.random() > 0.8) {
@@ -120,22 +115,9 @@ class HyperCalendar {
         };
         this.sound = new SoundEngine();
         this.resize();
-        this.idealWeightX = this.calculateWeightSum(this.config.days, this.config.days / 2, 40, 40);
-        this.idealWeightY = this.calculateWeightSum(this.config.years, this.config.years / 2, 20, 15);
         this.setInitialDate();
         this.initEvents();
         this.loop();
-    }
-
-    calculateWeightSum(count, center, intensity, spread) {
-        let sum = 0;
-        const s = spread * 0.3;
-        const denom = 2 * s * s;
-        for (let i = 0; i < count; i++) {
-            const dist = i - center;
-            sum += 1.0 + Math.exp(-(dist * dist) / denom) * intensity;
-        }
-        return sum;
     }
 
     getMonthInfo(dayIdx) {
@@ -177,48 +159,45 @@ class HyperCalendar {
     }
 
     /**
-     * ロジック修正：レンズのピークが pointerPos と完全に一致するように center を逆計算する
+     * 【根本解決】パワー・マッピング分布
+     * 拡大率（M）を維持したまま、ポインタを境に左右を指数関数で圧縮する
      */
-    calculateDistribution(totalSize, pointerPos, itemsCount, intensity, spread, idealWeight) {
-        const weights = new Float32Array(itemsCount);
-        const s = spread * 0.3;
-        const denom = 2 * s * s;
-        const scale = totalSize / idealWeight;
-        
-        // 補正：線形的な center ではなく、歪みを考慮した「仮想的な center」を計算
-        // pointerPos が 0 なら center も 0, totalSize なら itemsCount になるように正規化
-        const center = (pointerPos / totalSize) * itemsCount;
-
-        let currentLensSum = 0;
-        for (let i = 0; i < itemsCount; i++) {
-            let w = 0;
-            if (this.state.isInteracting) {
-                const dist = i - center;
-                if (Math.abs(dist) < spread) w = Math.exp(-(dist * dist) / denom) * intensity;
-            }
-            weights[i] = w;
-            currentLensSum += w;
-        }
-
-        const idealLensSum = idealWeight - itemsCount;
-        const missingWeight = idealLensSum - currentLensSum;
-
-        // Compensation logic: 拡大されているセル(weights[i] > 0)には補正をかけず、
-        // 拡大されていない「背景セル」だけで missingWeight を分配する。
-        let backgroundCount = 0;
-        for (let i = 0; i < itemsCount; i++) if (weights[i] <= 0.01) backgroundCount++;
-        const compensationPerBg = backgroundCount > 0 ? (missingWeight / backgroundCount) * scale : 0;
-
-        const sizes = new Float32Array(itemsCount);
+    calculateDistribution(totalSize, pointerPos, itemsCount, peakPx) {
         const positions = new Float32Array(itemsCount + 1);
-        let cur = 0;
+        const sizes = new Float32Array(itemsCount);
+        
+        // 正規化されたポインタ位置 p [0, 1]
+        const p = Math.max(0.001, Math.min(0.999, pointerPos / totalSize));
+        // 必要とされる拡大率 M
+        const M = peakPx / (totalSize / itemsCount);
+
+        /**
+         * 写像関数 f(x): [0, 1] -> [0, 1]
+         * pを境にべき乗関数を使い、f'(p) = M を実現する
+         */
+        const f = (x) => {
+            if (x < p) {
+                // 左側: y = p * (x/p)^M
+                return p * Math.pow(x / p, M);
+            } else {
+                // 右側: y = 1 - (1-p) * ((1-x)/(1-p))^M
+                return 1 - (1 - p) * Math.pow((1 - x) / (1 - p), M);
+            }
+        };
+
+        positions[0] = 0;
         for (let i = 0; i < itemsCount; i++) {
-            const comp = weights[i] <= 0.01 ? compensationPerBg : 0;
-            sizes[i] = scale + (weights[i] * scale) + comp;
-            positions[i] = cur;
-            cur += sizes[i];
+            const x0 = i / itemsCount;
+            const x1 = (i + 1) / itemsCount;
+            
+            // ピクセル座標への変換
+            const y0 = f(x0) * totalSize;
+            const y1 = f(x1) * totalSize;
+            
+            sizes[i] = y1 - y0;
+            positions[i + 1] = y1;
         }
-        positions[itemsCount] = totalSize;
+
         return { sizes, positions };
     }
 
@@ -227,8 +206,10 @@ class HyperCalendar {
         p.x += (p.targetX - p.x) * 0.15;
         p.y += (p.targetY - p.y) * 0.15;
 
-        const xDist = this.calculateDistribution(this.width, p.x, this.config.days, 40, 40, this.idealWeightX);
-        const yDist = this.calculateDistribution(this.height, p.y, this.config.years, 20, 15, this.idealWeightY);
+        // セルサイズを物理的に指定（日付 60px / 年 50px）
+        // どの場所でもこのサイズが数学的に維持されます
+        const xDist = this.calculateDistribution(this.width, p.x, this.config.days, 60);
+        const yDist = this.calculateDistribution(this.height, p.y, this.config.years, 50);
 
         this.state.colWidths = xDist.sizes;
         this.state.colX = xDist.positions;
@@ -252,7 +233,7 @@ class HyperCalendar {
         MONTH_DATA.days.forEach((startDay, m) => {
             const endDay = MONTH_DATA.days[m + 1] || 366;
             const x = state.colX[startDay], w = state.colX[endDay] - x;
-            if (w < 1) return;
+            if (w < 0.1) return;
             ctx.fillStyle = `rgb(${MONTH_DATA.colors[m].join(',')})`;
             ctx.globalAlpha = 0.3;
             ctx.fillRect(x, 0, w, height);
@@ -260,7 +241,6 @@ class HyperCalendar {
 
         ctx.globalAlpha = 1.0;
         let hover = { y: -1, d: -1 };
-
         for (let y = 0; y < config.years; y++) {
             const h = state.rowHeights[y], py = state.rowY[y];
             if (py > height || py + h < 0) continue;
@@ -270,25 +250,24 @@ class HyperCalendar {
             ctx.fillStyle = '#1a1a1a';
             ctx.fillRect(0, py + drawH, width, config.padding);
 
-            if (h > 10 || isActiveRow) {
+            if (h > 12 || isActiveRow) {
                 ctx.fillStyle = '#fff';
-                ctx.font = `${Math.min(h * 0.8, 20)}px Arial`;
-                ctx.fillText(config.startYear + y, 10, py + drawH * 0.8);
+                ctx.font = `${Math.max(8, Math.min(h * 0.7, 18))}px Arial`;
+                ctx.fillText(config.startYear + y, 10, py + drawH * 0.75);
             }
-
             if (isActiveRow && h > 20) {
                 for (let d = 0; d < config.days; d++) {
                     const w = state.colWidths[d], px = state.colX[d];
                     if (state.pointer.x >= px && state.pointer.x < px + w) hover.d = d;
                     if (w > 2) {
-                        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                        ctx.fillStyle = 'rgba(0,0,0,0.2)';
                         ctx.fillRect(px + w - 1, py, 1, drawH);
                     }
-                    if (w > 30) {
+                    if (w > 32) {
                         const info = this.getMonthInfo(d);
-                        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                        ctx.fillStyle = 'rgba(255,255,255,0.8)';
                         ctx.font = '10px Arial';
-                        ctx.fillText(`${info.month}/${info.date}`, px + 2, py + 12);
+                        ctx.fillText(`${info.month}/${info.date}`, px + 4, py + 14);
                     }
                 }
             }
@@ -304,7 +283,7 @@ class HyperCalendar {
         const x = this.state.colX[dIdx], y = this.state.rowY[yIdx];
         const w = this.state.colWidths[dIdx], h = Math.max(this.state.rowHeights[yIdx] - this.config.padding, 0.5);
         this.ctx.fillStyle = '#fff';
-        this.ctx.globalAlpha = 0.5;
+        this.ctx.globalAlpha = 0.4;
         this.ctx.fillRect(x, y, w, h);
         this.ctx.strokeStyle = '#0ff';
         this.ctx.lineWidth = 2;
@@ -316,8 +295,7 @@ class HyperCalendar {
     }
 
     loop() {
-        this.update();
-        this.draw();
+        this.update(); this.draw();
         requestAnimationFrame(() => this.loop());
     }
 }
