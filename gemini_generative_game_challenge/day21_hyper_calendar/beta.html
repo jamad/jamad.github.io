@@ -2,11 +2,11 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Time Matrix Research v12</title>
+    <title>Time Matrix Research v14</title>
     <style>
         :root {
             --accent: #0f0;
-            --bg-panel: rgba(10, 10, 10, 0.8);
+            --bg-panel: rgba(10, 10, 10, 0.85);
             --border: rgba(255, 255, 255, 0.15);
             --text-main: #eee;
             --text-mute: #666;
@@ -16,33 +16,34 @@
         
         /* HUD Layout */
         #hud-container { position: absolute; inset: 0; pointer-events: none; }
-        #date-hud { position: absolute; top: 40px; left: 40px; transition: opacity 0.3s; }
-        #date-hud.hidden { opacity: 0; }
+        #date-hud { position: absolute; top: 40px; left: 40px; }
         #date-hud-label { font-size: 0.7rem; letter-spacing: 6px; color: var(--text-mute); font-weight: 400; margin-bottom: 8px; }
-        #date-display { font-size: 3.8rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+        #date-display { font-size: 3.8rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -2px; transition: opacity 0.3s; }
+        #date-display.hidden { opacity: 0; }
 
-        /* Config Panel Style (Ref: 3d-mindmap) */
+        /* Gear Config Button */
         #config-trigger {
             position: absolute; top: 40px; right: 40px; pointer-events: auto;
-            background: transparent; border: 1px solid var(--border); padding: 8px 20px;
-            border-radius: 20px; cursor: pointer; font-size: 11px; letter-spacing: 2px;
-            color: var(--text-mute); transition: 0.3s; backdrop-filter: blur(10px);
+            background: var(--bg-panel); border: 1px solid var(--border);
+            width: 44px; height: 44px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer;
+            transition: 0.3s; backdrop-filter: blur(10px);
         }
-        #config-trigger:hover { border-color: var(--accent); color: var(--accent); }
+        #config-trigger:hover { border-color: var(--accent); transform: rotate(45deg); }
+        #config-trigger svg { width: 22px; height: 22px; fill: var(--text-mute); transition: 0.3s; }
+        #config-trigger:hover svg { fill: var(--accent); }
 
         #config-panel {
-            position: absolute; top: 85px; right: 40px; width: 260px; pointer-events: auto;
+            position: absolute; top: 95px; right: 40px; width: 280px; pointer-events: auto;
             background: var(--bg-panel); border: 1px solid var(--border); padding: 25px;
             border-radius: 12px; backdrop-filter: blur(25px); display: none;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
-        .config-group { margin-bottom: 24px; }
-        .config-label { font-size: 10px; color: var(--text-mute); letter-spacing: 1.5px; margin-bottom: 12px; display: block; text-transform: uppercase; }
+        .config-group { margin-bottom: 20px; }
+        .config-label { font-size: 9px; color: var(--text-mute); letter-spacing: 1.5px; margin-bottom: 10px; display: block; text-transform: uppercase; }
+        .config-val { float: right; color: var(--accent); font-family: monospace; }
         
-        /* Slider Style */
         input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; background: #333; height: 3px; appearance: none; border-radius: 2px; }
-
-        /* Toggle Switch Style (Ref: 3d-mindmap) */
         .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -51,15 +52,12 @@
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        /* Debug Overlay */
         #debug-info {
             position: absolute; bottom: 100px; left: 40px; font-family: 'Roboto Mono', monospace;
             font-size: 10px; color: var(--accent); line-height: 1.8;
             background: rgba(0,0,0,0.85); padding: 15px; border: 1px solid var(--border);
             display: none; pointer-events: none; border-radius: 4px;
         }
-
-        /* Footer Style (Ref: 3d-mindmap) */
         footer {
             position: absolute; bottom: 35px; width: 100%; display: flex;
             justify-content: center; align-items: center; gap: 15px;
@@ -68,7 +66,6 @@
         footer a { color: var(--text-mute); text-decoration: none; transition: 0.3s; font-weight: 500; }
         footer a:hover { color: #fff; }
         .dot { color: #222; }
-        #ver-tag { font-family: monospace; opacity: 0.5; }
     </style>
 </head>
 <body>
@@ -79,16 +76,26 @@
             <div id="date-display">---</div>
         </div>
 
-        <div id="config-trigger">CONFIG</div>
+        <div id="config-trigger">
+            <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        </div>
 
         <div id="config-panel">
             <div class="config-group">
-                <span class="config-label">Magnification</span>
+                <span class="config-label">Magnification <span class="config-val" id="val-zoom">120</span></span>
                 <input type="range" id="slider-zoom" min="40" max="250" value="120">
             </div>
             <div class="config-group">
-                <span class="config-label">Ambient Brightness</span>
+                <span class="config-label">Ambient Brightness <span class="config-val" id="val-bg">20%</span></span>
                 <input type="range" id="slider-bg" min="1" max="60" value="20">
+            </div>
+            <div class="config-group">
+                <span class="config-label">Grid Padding Size <span class="config-val" id="val-pad">1px</span></span>
+                <input type="range" id="slider-pad-size" min="0" max="4" step="1" value="1">
+            </div>
+            <div class="config-group">
+                <span class="config-label">Grid Line Brightness <span class="config-val" id="val-pad-alpha">10%</span></span>
+                <input type="range" id="slider-pad-alpha" min="0" max="100" value="10">
             </div>
             <div class="config-group toggle-row">
                 <span class="config-label" style="margin-bottom:0">Show Date HUD</span>
@@ -97,7 +104,6 @@
                     <span class="slider"></span>
                 </label>
             </div>
-            <div style="font-size: 9px; color: #333; text-align: center; margin-top: 15px; letter-spacing: 1px;">ALT + D : SYSTEM DEBUG</div>
         </div>
 
         <div id="debug-info"></div>
@@ -105,7 +111,7 @@
         <footer>
             <a href="#">HOME</a>
             <span class="dot">|</span>
-            <span id="ver-tag">v.research.12</span>
+            <span style="font-family:monospace; opacity:0.5">v.research.14</span>
             <span class="dot">|</span>
             <a href="#">BUG REPORT</a>
         </footer>
@@ -116,9 +122,9 @@
 <script>
 /**
  * [CRITICAL PROTOCOL FOR AI ASSISTANTS]
- * v20260128.12: FIXED CENTER SNAPPING & UI REALIGNMENT.
- * - Implemented integer-based snapping for loupe center.
- * - Synced UI components with 3d-mindmap aesthetic.
+ * v20260128.14: INTRODUCED GRID PADDING CONTROL.
+ * - Added Background Padding Size (0,1,2,4px) and Alpha sliders.
+ * - Optimized background texture rendering for high-density line drawing.
  */
 
 const MONTH_COLORS = ["#A0C8FF","#B4D2FF","#FFC8DC","#FFB4C8","#B4FFB4","#64DC64","#64C8FF","#3296FF","#FFC864","#FF9632","#C86432","#DCDDFF"];
@@ -128,17 +134,13 @@ class ResearchApp {
     constructor() {
         this.canvas = document.getElementById('researchCanvas');
         this.ctx = this.canvas.getContext('2d', { alpha: false });
-        this.dateHUD = document.getElementById('date-hud');
         this.dateDisplay = document.getElementById('date-display');
         this.debugPanel = document.getElementById('debug-info');
         
-        this.settings = {
-            zoom: 120,
-            bgAlpha: 0.2,
-            showHUD: true,
-            debug: false,
-            loupeSize: 380,
-            margin: 60
+        this.settings = { 
+            zoom: 120, bgAlpha: 0.2, showHUD: true, debug: false, 
+            loupeSize: 380, margin: 60,
+            padSize: 1, padAlpha: 0.1
         };
 
         this.speeds = [1.0, 0.25, 0.05]; 
@@ -154,8 +156,7 @@ class ResearchApp {
     initEvents() {
         window.addEventListener('resize', () => this.resize());
         window.addEventListener('mousemove', e => {
-            this.rawMouse.x = e.clientX;
-            this.rawMouse.y = e.clientY;
+            this.rawMouse.x = e.clientX; this.rawMouse.y = e.clientY;
             const ratio = this.speeds[this.speedIdx];
             this.vPointer.x += e.movementX * ratio;
             this.vPointer.y += e.movementY * ratio;
@@ -163,28 +164,26 @@ class ResearchApp {
             this.vPointer.y = Math.max(0, Math.min(window.innerHeight, this.vPointer.y));
         });
 
-        // Config UI Handlers
         const btn = document.getElementById('config-trigger');
         const panel = document.getElementById('config-panel');
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        };
+        btn.onclick = (e) => { e.stopPropagation(); panel.style.display = panel.style.display === 'block' ? 'none' : 'block'; };
         window.onclick = () => { panel.style.display = 'none'; };
         panel.onclick = (e) => e.stopPropagation();
 
         // Control Bindings
-        document.getElementById('slider-zoom').oninput = (e) => { this.settings.zoom = parseInt(e.target.value); };
-        document.getElementById('slider-bg').oninput = (e) => { this.settings.bgAlpha = e.target.value / 100; };
+        const updateVal = (id, val) => document.getElementById(id).textContent = val;
+        
+        document.getElementById('slider-zoom').oninput = (e) => { this.settings.zoom = parseInt(e.target.value); updateVal('val-zoom', e.target.value); };
+        document.getElementById('slider-bg').oninput = (e) => { this.settings.bgAlpha = e.target.value / 100; updateVal('val-bg', e.target.value+'%'); };
+        document.getElementById('slider-pad-size').oninput = (e) => { this.settings.padSize = parseInt(e.target.value); updateVal('val-pad', e.target.value+'px'); };
+        document.getElementById('slider-pad-alpha').oninput = (e) => { this.settings.padAlpha = e.target.value / 100; updateVal('val-pad-alpha', e.target.value+'%'); };
+        
         document.getElementById('toggle-hud').onchange = (e) => {
             this.settings.showHUD = e.target.checked;
-            this.dateHUD.classList.toggle('hidden', !this.settings.showHUD);
+            this.dateDisplay.classList.toggle('hidden', !this.settings.showHUD);
         };
 
-        // Precision & Debug
-        window.addEventListener('mousedown', (e) => {
-            if(e.target.tagName === 'CANVAS') this.speedIdx = (this.speedIdx + 1) % this.speeds.length;
-        });
+        window.addEventListener('mousedown', (e) => { if(e.target.tagName === 'CANVAS') this.speedIdx = (this.speedIdx + 1) % this.speeds.length; });
         window.addEventListener('keydown', e => {
             if(e.key === 'Shift') this.speedIdx = (this.speedIdx + 1) % this.speeds.length;
             if(e.altKey && (e.key === 'd' || e.key === 'D')) {
@@ -196,40 +195,33 @@ class ResearchApp {
 
     resize() {
         const dpr = window.devicePixelRatio || 1;
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
-        this.canvas.width = this.width * dpr;
-        this.canvas.height = this.height * dpr;
+        this.width = window.innerWidth; this.height = window.innerHeight;
+        this.canvas.width = this.width * dpr; this.canvas.height = this.height * dpr;
         this.ctx.scale(dpr, dpr);
     }
 
     getDateInfo(yIdx, dIdx) {
-        let m = 0;
-        for(let i=11; i>=0; i--) { if(dIdx >= MONTH_DAYS[i]) { m = i; break; } }
+        let m = 0; for(let i=11; i>=0; i--) { if(dIdx >= MONTH_DAYS[i]) { m = i; break; } }
         return { year: 1950 + yIdx, month: m + 1, day: dIdx - MONTH_DAYS[m] + 1 };
     }
 
-    loop() {
-        this.draw();
-        requestAnimationFrame(() => this.loop());
-    }
+    loop() { this.draw(); requestAnimationFrame(() => this.loop()); }
 
     draw() {
         const { ctx, width, height, settings } = this;
         const margin = settings.margin;
-        const gridW = width - margin * 2;
-        const gridH = height - margin * 2;
+        const gridW = width - margin * 2; const gridH = height - margin * 2;
         const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
 
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, width, height);
 
-        const cellW = gridW / 366;
-        const cellH = gridH / 120;
+        const cellW = gridW / 366; const cellH = gridH / 120;
 
-        // 1. Background Grid (Static Texture)
+        // 1. Background Grid with Customizable Padding
         ctx.save();
         ctx.translate(margin, margin);
+        
+        // Month Blocks
         ctx.globalAlpha = settings.bgAlpha;
         for (let y = 0; y < 120; y++) {
             const py = y * cellH;
@@ -237,69 +229,62 @@ class ResearchApp {
                 const startDay = MONTH_DAYS[m];
                 const endDay = (m === 11) ? 366 : MONTH_DAYS[m+1];
                 ctx.fillStyle = MONTH_COLORS[m];
-                ctx.fillRect(startDay * cellW, py, (endDay - startDay) * cellW, cellH - 0.1);
+                // セル本体を描画
+                ctx.fillRect(startDay * cellW, py, (endDay - startDay) * cellW, cellH);
+            }
+        }
+
+        // Grid Lines (Padding Simulation)
+        if (settings.padAlpha > 0 && settings.padSize > 0) {
+            ctx.globalAlpha = settings.padAlpha;
+            ctx.fillStyle = "#000";
+            ctx.lineWidth = settings.padSize;
+            
+            // Vertical lines (Days)
+            for (let d = 0; d <= 366; d++) {
+                ctx.fillRect(d * cellW - settings.padSize/2, 0, settings.padSize, gridH);
+            }
+            // Horizontal lines (Years)
+            for (let y = 0; y <= 120; y++) {
+                ctx.fillRect(0, y * cellH - settings.padSize/2, gridW, settings.padSize);
             }
         }
         ctx.restore();
 
         // 2. Snapping Loupe Logic
-        const px = this.vPointer.x;
-        const py = this.vPointer.y;
-        const relX = px - margin;
-        const relY = py - margin;
-        
-        // Integer indexes
+        const px = this.vPointer.x; const py = this.vPointer.y;
+        const relX = px - margin; const relY = py - margin;
         const focusD = Math.floor(Math.max(0, Math.min(365, relX / cellW)));
         const focusY = Math.floor(Math.max(0, Math.min(119, relY / cellH)));
         const activeInfo = this.getDateInfo(focusY, focusD);
         const activeColor = MONTH_COLORS[activeInfo.month - 1];
 
         ctx.save();
-        ctx.beginPath();
-        ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2);
-        ctx.clip();
-
-        ctx.fillStyle = "#080808";
-        ctx.fillRect(px - settings.loupeSize, py - settings.loupeSize, settings.loupeSize*2, settings.loupeSize*2);
+        ctx.beginPath(); ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2); ctx.clip();
+        ctx.fillStyle = "#080808"; ctx.fillRect(px - settings.loupeSize, py - settings.loupeSize, settings.loupeSize*2, settings.loupeSize*2);
 
         const zoom = settings.zoom;
         const range = Math.ceil(settings.loupeSize / zoom) + 1;
-
         for (let y = focusY - range; y <= focusY + range; y++) {
             if (y < 0 || y >= 120) continue;
             for (let d = focusD - range; d <= focusD + range; d++) {
                 if (d < 0 || d >= 366) continue;
-
                 const dInfo = this.getDateInfo(y, d);
-                
-                // 【核心】スナップ計算: 選択セル(focusD, focusY)の中心を常に px, py に固定する
-                const dx = px + (d - focusD) * zoom - zoom/2;
-                const dy = py + (y - focusY) * zoom - zoom/2;
-                
+                const dx = px + (d - focusD) * zoom - zoom/2; const dy = py + (y - focusY) * zoom - zoom/2;
                 const isTarget = (y === focusY && d === focusD);
                 const isCross = (d === focusD || y === focusY);
-
                 if (isCross) {
                     ctx.fillStyle = MONTH_COLORS[dInfo.month - 1];
-                    ctx.globalAlpha = isTarget ? 1.0 : 0.2;
+                    ctx.globalAlpha = isTarget ? 1.0 : 0.25;
                     ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4);
-
                     if (isTarget) {
-                        ctx.fillStyle = "#000";
-                        ctx.textAlign = "center";
-                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = "#000"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
                         const fz = zoom * 0.12;
-                        ctx.font = `bold ${Math.max(10, fz)}px Arial`;
-                        ctx.fillText(`${dInfo.year}`, px, py - zoom*0.28);
-                        ctx.font = `bold ${Math.max(12, fz*1.2)}px Arial`;
-                        ctx.fillText(`${dInfo.month}月`, px, py - zoom*0.06);
-                        ctx.font = `bold ${Math.max(18, fz*2.5)}px Arial`;
-                        ctx.fillText(dInfo.day, px, py + zoom*0.28);
+                        ctx.font = `bold ${Math.max(10, fz)}px Arial`; ctx.fillText(`${dInfo.year}`, px, py - zoom*0.25);
+                        ctx.font = `bold ${Math.max(12, fz*1.2)}px Arial`; ctx.fillText(`${dInfo.month}月`, px, py - zoom*0.05);
+                        ctx.font = `bold ${Math.max(18, fz*2.5)}px Arial`; ctx.fillText(dInfo.day, px, py + zoom*0.28);
                     } else {
-                        ctx.fillStyle = "#fff";
-                        ctx.globalAlpha = 0.4;
-                        ctx.textAlign = "center";
-                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = "#fff"; ctx.globalAlpha = 0.4; ctx.textAlign = "center"; ctx.textBaseline = "middle";
                         ctx.font = `bold ${Math.max(10, zoom * 0.16)}px Arial`;
                         ctx.fillText(d === focusD ? dInfo.year : dInfo.day, dx + zoom/2, dy + zoom/2);
                     }
@@ -308,43 +293,27 @@ class ResearchApp {
         }
         ctx.restore();
 
-        // 3. Status Indicator (Follower)
         const currentSpeed = this.speeds[this.speedIdx];
         const indDist = settings.loupeSize / 2 + 5;
-        const indX = px + Math.cos(Math.PI/4) * indDist;
-        const indY = py + Math.sin(Math.PI/4) * indDist;
-        ctx.fillStyle = "rgba(0,0,0,0.8)";
-        ctx.beginPath(); ctx.arc(indX + 22, indY + 10, 22, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = currentSpeed === 1.0 ? "#fff" : accent;
-        ctx.font = "bold 9px monospace"; ctx.textAlign = "center";
+        const indX = px + Math.cos(Math.PI/4) * indDist; const indY = py + Math.sin(Math.PI/4) * indDist;
+        ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.beginPath(); ctx.arc(indX + 22, indY + 10, 22, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = currentSpeed === 1.0 ? "#fff" : accent; ctx.font = "bold 9px monospace"; ctx.textAlign = "center";
         ctx.fillText(`${currentSpeed.toFixed(2)}x`, indX + 22, indY + 13);
 
-        // 4. Scoping & UI
-        ctx.strokeStyle = currentSpeed === 1.0 ? activeColor : accent;
-        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = currentSpeed === 1.0 ? activeColor : accent; ctx.lineWidth = 2.5;
         ctx.beginPath(); ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2); ctx.stroke();
 
-        ctx.strokeStyle = "rgba(255,255,255,0.2)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(px, py - 15); ctx.lineTo(px, py + 15);
-        ctx.moveTo(px - 15, py); ctx.lineTo(px + 15, py);
-        ctx.stroke();
+        ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(px, py - 15); ctx.lineTo(px, py + 15); ctx.moveTo(px - 15, py); ctx.lineTo(px + 15, py); ctx.stroke();
 
         this.dateDisplay.textContent = `${activeInfo.year}年 ${activeInfo.month}月 ${activeInfo.day}日`;
         this.dateDisplay.style.color = activeColor;
 
         if(settings.debug) {
-            this.debugPanel.innerHTML = `
-                SYSTEM_POINTER: [${this.rawMouse.x}, ${this.rawMouse.y}]<br>
-                VIRTUAL_SCOPE: [${px.toFixed(1)}, ${py.toFixed(1)}]<br>
-                MATRIX_INDEX: Y:${focusY} D:${focusD}<br>
-                ACTIVE_SCALE: ${zoom}px | FLOW: ${currentSpeed}x
-            `;
+            this.debugPanel.innerHTML = `GRID: Pad ${settings.padSize}px / Alpha ${Math.round(settings.padAlpha*100)}%<br>INDEX: Y:${focusY} D:${focusD}<br>SCALE: ${zoom}px | FLOW: ${currentSpeed}x`;
         }
     }
 }
-
 window.onload = () => new ResearchApp();
 </script>
 </body>
