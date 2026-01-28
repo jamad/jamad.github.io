@@ -2,89 +2,111 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>120 Years Research - Config & Debug v10</title>
+    <title>Time Matrix Research v12</title>
     <style>
         :root {
             --accent: #0f0;
-            --bg-panel: rgba(15, 15, 15, 0.85);
-            --border: rgba(255, 255, 255, 0.1);
+            --bg-panel: rgba(10, 10, 10, 0.8);
+            --border: rgba(255, 255, 255, 0.15);
+            --text-main: #eee;
+            --text-mute: #666;
         }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Helvetica Neue', Arial, sans-serif; color: #fff; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Inter', 'Helvetica Neue', sans-serif; color: var(--text-main); }
         canvas { display: block; }
         
-        /* UI Layer */
-        #ui-overlay { position: absolute; inset: 0; pointer-events: none; }
-        #ui-top-left { position: absolute; top: 30px; left: 30px; }
-        #date-display { font-size: 3.5rem; font-weight: 900; margin-top: 5px; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+        /* HUD Layout */
+        #hud-container { position: absolute; inset: 0; pointer-events: none; }
+        #date-hud { position: absolute; top: 40px; left: 40px; transition: opacity 0.3s; }
+        #date-hud.hidden { opacity: 0; }
+        #date-hud-label { font-size: 0.7rem; letter-spacing: 6px; color: var(--text-mute); font-weight: 400; margin-bottom: 8px; }
+        #date-display { font-size: 3.8rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
 
-        /* Config Panel */
-        #config-btn {
-            position: absolute; top: 30px; right: 30px; pointer-events: auto;
-            background: var(--bg-panel); border: 1px solid var(--border); padding: 8px 15px;
-            border-radius: 4px; cursor: pointer; font-size: 12px; letter-spacing: 1px;
-            backdrop-filter: blur(10px); transition: 0.2s;
+        /* Config Panel Style (Ref: 3d-mindmap) */
+        #config-trigger {
+            position: absolute; top: 40px; right: 40px; pointer-events: auto;
+            background: transparent; border: 1px solid var(--border); padding: 8px 20px;
+            border-radius: 20px; cursor: pointer; font-size: 11px; letter-spacing: 2px;
+            color: var(--text-mute); transition: 0.3s; backdrop-filter: blur(10px);
         }
-        #config-btn:hover { background: rgba(40,40,40,0.9); border-color: #555; }
+        #config-trigger:hover { border-color: var(--accent); color: var(--accent); }
 
         #config-panel {
-            position: absolute; top: 75px; right: 30px; width: 220px; pointer-events: auto;
-            background: var(--bg-panel); border: 1px solid var(--border); padding: 20px;
-            border-radius: 8px; backdrop-filter: blur(15px); display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: absolute; top: 85px; right: 40px; width: 260px; pointer-events: auto;
+            background: var(--bg-panel); border: 1px solid var(--border); padding: 25px;
+            border-radius: 12px; backdrop-filter: blur(25px); display: none;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .config-item { margin-bottom: 20px; }
-        .config-item:last-child { margin-bottom: 0; }
-        .config-label { font-size: 10px; color: #888; letter-spacing: 1px; margin-bottom: 8px; display: block; text-transform: uppercase; }
-        input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+        .config-group { margin-bottom: 24px; }
+        .config-label { font-size: 10px; color: var(--text-mute); letter-spacing: 1.5px; margin-bottom: 12px; display: block; text-transform: uppercase; }
+        
+        /* Slider Style */
+        input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; background: #333; height: 3px; appearance: none; border-radius: 2px; }
 
-        /* Debug Display */
+        /* Toggle Switch Style (Ref: 3d-mindmap) */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 18px; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        /* Debug Overlay */
         #debug-info {
-            position: absolute; bottom: 80px; left: 30px; font-family: monospace;
-            font-size: 11px; color: var(--accent); line-height: 1.5;
-            background: rgba(0,0,0,0.7); padding: 10px; border-left: 2px solid var(--accent);
-            display: none; pointer-events: none;
+            position: absolute; bottom: 100px; left: 40px; font-family: 'Roboto Mono', monospace;
+            font-size: 10px; color: var(--accent); line-height: 1.8;
+            background: rgba(0,0,0,0.85); padding: 15px; border: 1px solid var(--border);
+            display: none; pointer-events: none; border-radius: 4px;
         }
 
-        /* Footer */
+        /* Footer Style (Ref: 3d-mindmap) */
         footer {
-            position: absolute; bottom: 25px; width: 100%; display: flex;
-            justify-content: center; gap: 30px; font-size: 10px; letter-spacing: 1px;
-            color: #666; pointer-events: auto;
+            position: absolute; bottom: 35px; width: 100%; display: flex;
+            justify-content: center; align-items: center; gap: 15px;
+            font-size: 10px; letter-spacing: 1.5px; color: var(--text-mute);
         }
-        footer a { color: #666; text-decoration: none; transition: 0.2s; }
-        footer a:hover { color: #aaa; }
-        #ver-tag { color: #333; font-family: monospace; }
-
-        @keyframes blink { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.2; } }
+        footer a { color: var(--text-mute); text-decoration: none; transition: 0.3s; font-weight: 500; }
+        footer a:hover { color: #fff; }
+        .dot { color: #222; }
+        #ver-tag { font-family: monospace; opacity: 0.5; }
     </style>
 </head>
 <body>
 
-    <div id="ui-overlay">
-        <div id="ui-top-left">
-            <div style="font-size: 0.75rem; letter-spacing: 6px; color: #666; font-weight: 300;">TIME MATRIX // 120 YEARS</div>
+    <div id="hud-container">
+        <div id="date-hud">
+            <div id="date-hud-label">TIME MATRIX // 120 YEARS</div>
             <div id="date-display">---</div>
         </div>
 
-        <div id="config-btn">CONFIG</div>
+        <div id="config-trigger">CONFIG</div>
 
         <div id="config-panel">
-            <div class="config-item">
-                <span class="config-label">Magnification (Zoom)</span>
-                <input type="range" id="slider-zoom" min="20" max="250" value="100">
+            <div class="config-group">
+                <span class="config-label">Magnification</span>
+                <input type="range" id="slider-zoom" min="40" max="250" value="120">
             </div>
-            <div class="config-item">
-                <span class="config-label">Background Brightness</span>
-                <input type="range" id="slider-bg" min="1" max="50" value="20">
+            <div class="config-group">
+                <span class="config-label">Ambient Brightness</span>
+                <input type="range" id="slider-bg" min="1" max="60" value="20">
             </div>
-            <div style="font-size: 9px; color: #444; text-align: center; margin-top: 10px;">Alt + D to toggle Debug</div>
+            <div class="config-group toggle-row">
+                <span class="config-label" style="margin-bottom:0">Show Date HUD</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-hud" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div style="font-size: 9px; color: #333; text-align: center; margin-top: 15px; letter-spacing: 1px;">ALT + D : SYSTEM DEBUG</div>
         </div>
 
         <div id="debug-info"></div>
 
         <footer>
             <a href="#">HOME</a>
-            <span id="ver-tag">v.research.10</span>
+            <span class="dot">|</span>
+            <span id="ver-tag">v.research.12</span>
+            <span class="dot">|</span>
             <a href="#">BUG REPORT</a>
         </footer>
     </div>
@@ -92,33 +114,31 @@
     <canvas id="researchCanvas"></canvas>
 
 <script>
-const config = {
-    startYear: 1950,
-    years: 120,
-    days: 366,
-    gridMargin: 60,
-    loupeSize: 380
-};
+/**
+ * [CRITICAL PROTOCOL FOR AI ASSISTANTS]
+ * v20260128.12: FIXED CENTER SNAPPING & UI REALIGNMENT.
+ * - Implemented integer-based snapping for loupe center.
+ * - Synced UI components with 3d-mindmap aesthetic.
+ */
 
-const MONTH_COLORS = [
-    "#A0C8FF", "#B4D2FF", "#FFC8DC", "#FFB4C8",
-    "#B4FFB4", "#64DC64", "#64C8FF", "#3296FF",
-    "#FFC864", "#FF9632", "#C86432", "#DCDDFF"
-];
+const MONTH_COLORS = ["#A0C8FF","#B4D2FF","#FFC8DC","#FFB4C8","#B4FFB4","#64DC64","#64C8FF","#3296FF","#FFC864","#FF9632","#C86432","#DCDDFF"];
 const MONTH_DAYS = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
 
 class ResearchApp {
     constructor() {
         this.canvas = document.getElementById('researchCanvas');
         this.ctx = this.canvas.getContext('2d', { alpha: false });
+        this.dateHUD = document.getElementById('date-hud');
         this.dateDisplay = document.getElementById('date-display');
         this.debugPanel = document.getElementById('debug-info');
         
-        // 可変設定
         this.settings = {
-            zoom: 100,
+            zoom: 120,
             bgAlpha: 0.2,
-            debug: false
+            showHUD: true,
+            debug: false,
+            loupeSize: 380,
+            margin: 60
         };
 
         this.speeds = [1.0, 0.25, 0.05]; 
@@ -133,7 +153,6 @@ class ResearchApp {
 
     initEvents() {
         window.addEventListener('resize', () => this.resize());
-        
         window.addEventListener('mousemove', e => {
             this.rawMouse.x = e.clientX;
             this.rawMouse.y = e.clientY;
@@ -144,8 +163,8 @@ class ResearchApp {
             this.vPointer.y = Math.max(0, Math.min(window.innerHeight, this.vPointer.y));
         });
 
-        // Config Toggle
-        const btn = document.getElementById('config-btn');
+        // Config UI Handlers
+        const btn = document.getElementById('config-trigger');
         const panel = document.getElementById('config-panel');
         btn.onclick = (e) => {
             e.stopPropagation();
@@ -154,17 +173,20 @@ class ResearchApp {
         window.onclick = () => { panel.style.display = 'none'; };
         panel.onclick = (e) => e.stopPropagation();
 
-        // Sliders
+        // Control Bindings
         document.getElementById('slider-zoom').oninput = (e) => { this.settings.zoom = parseInt(e.target.value); };
         document.getElementById('slider-bg').oninput = (e) => { this.settings.bgAlpha = e.target.value / 100; };
+        document.getElementById('toggle-hud').onchange = (e) => {
+            this.settings.showHUD = e.target.checked;
+            this.dateHUD.classList.toggle('hidden', !this.settings.showHUD);
+        };
 
-        // Speed cycle
+        // Precision & Debug
         window.addEventListener('mousedown', (e) => {
             if(e.target.tagName === 'CANVAS') this.speedIdx = (this.speedIdx + 1) % this.speeds.length;
         });
         window.addEventListener('keydown', e => {
             if(e.key === 'Shift') this.speedIdx = (this.speedIdx + 1) % this.speeds.length;
-            // Alt + D Debug
             if(e.altKey && (e.key === 'd' || e.key === 'D')) {
                 this.settings.debug = !this.settings.debug;
                 this.debugPanel.style.display = this.settings.debug ? 'block' : 'none';
@@ -184,7 +206,7 @@ class ResearchApp {
     getDateInfo(yIdx, dIdx) {
         let m = 0;
         for(let i=11; i>=0; i--) { if(dIdx >= MONTH_DAYS[i]) { m = i; break; } }
-        return { year: config.startYear + yIdx, month: m + 1, day: dIdx - MONTH_DAYS[m] + 1 };
+        return { year: 1950 + yIdx, month: m + 1, day: dIdx - MONTH_DAYS[m] + 1 };
     }
 
     loop() {
@@ -193,22 +215,23 @@ class ResearchApp {
     }
 
     draw() {
-        const { ctx, width, height } = this;
-        const margin = config.gridMargin;
+        const { ctx, width, height, settings } = this;
+        const margin = settings.margin;
         const gridW = width - margin * 2;
         const gridH = height - margin * 2;
+        const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
 
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, width, height);
 
-        const cellW = gridW / config.days;
-        const cellH = gridH / config.years;
+        const cellW = gridW / 366;
+        const cellH = gridH / 120;
 
-        // 1. 背景：テクスチャ（スライダーの明るさを反映）
+        // 1. Background Grid (Static Texture)
         ctx.save();
         ctx.translate(margin, margin);
-        ctx.globalAlpha = this.settings.bgAlpha;
-        for (let y = 0; y < config.years; y++) {
+        ctx.globalAlpha = settings.bgAlpha;
+        for (let y = 0; y < 120; y++) {
             const py = y * cellH;
             for (let m = 0; m < 12; m++) {
                 const startDay = MONTH_DAYS[m];
@@ -219,41 +242,44 @@ class ResearchApp {
         }
         ctx.restore();
 
-        // 2. 虫眼鏡ロジック
+        // 2. Snapping Loupe Logic
         const px = this.vPointer.x;
         const py = this.vPointer.y;
         const relX = px - margin;
         const relY = py - margin;
-        const focusD = Math.floor(Math.max(0, Math.min(config.days - 1, relX / cellW)));
-        const focusY = Math.floor(Math.max(0, Math.min(config.years - 1, relY / cellH)));
+        
+        // Integer indexes
+        const focusD = Math.floor(Math.max(0, Math.min(365, relX / cellW)));
+        const focusY = Math.floor(Math.max(0, Math.min(119, relY / cellH)));
         const activeInfo = this.getDateInfo(focusY, focusD);
         const activeColor = MONTH_COLORS[activeInfo.month - 1];
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(px, py, config.loupeSize / 2, 0, Math.PI * 2);
+        ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2);
         ctx.clip();
 
         ctx.fillStyle = "#080808";
-        ctx.fillRect(px - config.loupeSize, py - config.loupeSize, config.loupeSize*2, config.loupeSize*2);
+        ctx.fillRect(px - settings.loupeSize, py - settings.loupeSize, settings.loupeSize*2, settings.loupeSize*2);
 
-        const zoom = this.settings.zoom;
-        const range = Math.ceil(config.loupeSize / zoom) + 1;
+        const zoom = settings.zoom;
+        const range = Math.ceil(settings.loupeSize / zoom) + 1;
 
         for (let y = focusY - range; y <= focusY + range; y++) {
-            if (y < 0 || y >= config.years) continue;
+            if (y < 0 || y >= 120) continue;
             for (let d = focusD - range; d <= focusD + range; d++) {
-                if (d < 0 || d >= config.days) continue;
+                if (d < 0 || d >= 366) continue;
 
                 const dInfo = this.getDateInfo(y, d);
-                const dx = px + (d - (relX / cellW)) * zoom;
-                const dy = py + (y - (relY / cellH)) * zoom;
+                
+                // 【核心】スナップ計算: 選択セル(focusD, focusY)の中心を常に px, py に固定する
+                const dx = px + (d - focusD) * zoom - zoom/2;
+                const dy = py + (y - focusY) * zoom - zoom/2;
                 
                 const isTarget = (y === focusY && d === focusD);
-                const isVertical = (d === focusD && y !== focusY);
-                const isHorizontal = (y === focusY && d !== focusD);
+                const isCross = (d === focusD || y === focusY);
 
-                if (isTarget || isVertical || isHorizontal) {
+                if (isCross) {
                     ctx.fillStyle = MONTH_COLORS[dInfo.month - 1];
                     ctx.globalAlpha = isTarget ? 1.0 : 0.2;
                     ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4);
@@ -261,73 +287,63 @@ class ResearchApp {
                     if (isTarget) {
                         ctx.fillStyle = "#000";
                         ctx.textAlign = "center";
-                        ctx.font = `bold ${Math.max(10, zoom*0.13)}px Arial`;
-                        ctx.fillText(`${dInfo.year}`, dx + zoom/2, dy + zoom/2 - zoom*0.28);
-                        ctx.font = `bold ${Math.max(12, zoom*0.15)}px Arial`;
-                        ctx.fillText(`${dInfo.month}月`, dx + zoom/2, dy + zoom/2 - zoom*0.06);
-                        ctx.font = `bold ${Math.max(18, zoom*0.32)}px Arial`;
-                        ctx.fillText(dInfo.day, dx + zoom/2, dy + zoom/2 + zoom*0.3);
+                        ctx.textBaseline = "middle";
+                        const fz = zoom * 0.12;
+                        ctx.font = `bold ${Math.max(10, fz)}px Arial`;
+                        ctx.fillText(`${dInfo.year}`, px, py - zoom*0.28);
+                        ctx.font = `bold ${Math.max(12, fz*1.2)}px Arial`;
+                        ctx.fillText(`${dInfo.month}月`, px, py - zoom*0.06);
+                        ctx.font = `bold ${Math.max(18, fz*2.5)}px Arial`;
+                        ctx.fillText(dInfo.day, px, py + zoom*0.28);
                     } else {
                         ctx.fillStyle = "#fff";
                         ctx.globalAlpha = 0.4;
                         ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
-                        if (isVertical) {
-                            ctx.font = `bold ${Math.max(10, zoom*0.18)}px Arial`;
-                            ctx.fillText(dInfo.year, dx + zoom/2, dy + zoom/2);
-                        } else if (isHorizontal) {
-                            ctx.font = `bold ${Math.max(12, zoom*0.24)}px Arial`;
-                            ctx.fillText(dInfo.day, dx + zoom/2, dy + zoom/2);
-                        }
+                        ctx.font = `bold ${Math.max(10, zoom * 0.16)}px Arial`;
+                        ctx.fillText(d === focusD ? dInfo.year : dInfo.day, dx + zoom/2, dy + zoom/2);
                     }
                 }
             }
         }
         ctx.restore();
 
-        // 3. インジケーター & スピード
+        // 3. Status Indicator (Follower)
         const currentSpeed = this.speeds[this.speedIdx];
-        const indDist = config.loupeSize / 2 + 2;
+        const indDist = settings.loupeSize / 2 + 5;
         const indX = px + Math.cos(Math.PI/4) * indDist;
         const indY = py + Math.sin(Math.PI/4) * indDist;
-        ctx.fillStyle = "rgba(0,0,0,0.85)";
-        ctx.beginPath(); ctx.roundRect(indX, indY, 50, 18, 4); ctx.fill();
-        ctx.fillStyle = currentSpeed === 1.0 ? "#fff" : var("--accent");
-        ctx.font = "bold 10px monospace"; ctx.textAlign = "center";
-        ctx.fillText(`${currentSpeed.toFixed(2)}x`, indX + 25, indY + 13);
+        ctx.fillStyle = "rgba(0,0,0,0.8)";
+        ctx.beginPath(); ctx.arc(indX + 22, indY + 10, 22, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = currentSpeed === 1.0 ? "#fff" : accent;
+        ctx.font = "bold 9px monospace"; ctx.textAlign = "center";
+        ctx.fillText(`${currentSpeed.toFixed(2)}x`, indX + 22, indY + 13);
 
-        // 4. 外枠と十字
-        ctx.strokeStyle = currentSpeed === 1.0 ? activeColor : var("--accent");
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(px, py, config.loupeSize / 2, 0, Math.PI * 2); ctx.stroke();
+        // 4. Scoping & UI
+        ctx.strokeStyle = currentSpeed === 1.0 ? activeColor : accent;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2); ctx.stroke();
 
-        ctx.strokeStyle = "rgba(255,255,255,0.3)";
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(px, py - 25); ctx.lineTo(px, py + 25);
-        ctx.moveTo(px - 25, py); ctx.lineTo(px + 25, py);
+        ctx.moveTo(px, py - 15); ctx.lineTo(px, py + 15);
+        ctx.moveTo(px - 15, py); ctx.lineTo(px + 15, py);
         ctx.stroke();
 
-        // UI表示更新
         this.dateDisplay.textContent = `${activeInfo.year}年 ${activeInfo.month}月 ${activeInfo.day}日`;
         this.dateDisplay.style.color = activeColor;
 
-        // Debug Info
-        if(this.settings.debug) {
+        if(settings.debug) {
             this.debugPanel.innerHTML = `
-                RAW_MOUSE: ${this.rawMouse.x}, ${this.rawMouse.y}<br>
-                V_POINTER: ${px.toFixed(1)}, ${py.toFixed(1)}<br>
-                FOCUS_IDX: Y:${focusY} D:${focusD}<br>
-                SPEED: ${currentSpeed}x<br>
-                ZOOM: ${zoom}x<br>
-                BG_ALPHA: ${this.settings.bgAlpha}
+                SYSTEM_POINTER: [${this.rawMouse.x}, ${this.rawMouse.y}]<br>
+                VIRTUAL_SCOPE: [${px.toFixed(1)}, ${py.toFixed(1)}]<br>
+                MATRIX_INDEX: Y:${focusY} D:${focusD}<br>
+                ACTIVE_SCALE: ${zoom}px | FLOW: ${currentSpeed}x
             `;
         }
     }
 }
-
-// ヘルパー: CSS変数取得
-function var(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
 window.onload = () => new ResearchApp();
 </script>
