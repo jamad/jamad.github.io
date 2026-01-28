@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Time Matrix Research v19</title>
+    <title>Time Matrix Research v21</title>
     <style>
         :root {
             --accent: #0f0;
@@ -22,29 +22,29 @@
 
         .round-btn {
             background: var(--bg-panel); border: 1px solid var(--border);
-            width: 44px; height: 44px; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; cursor: pointer;
-            transition: 0.3s; backdrop-filter: blur(10px); pointer-events: auto;
+            border-radius: 20px; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); pointer-events: auto;
         }
         .round-btn:hover { border-color: var(--accent); color: var(--accent); }
-        .round-btn svg { width: 22px; height: 22px; fill: var(--text-mute); transition: 0.3s; }
-        .round-btn:hover svg { fill: var(--accent); }
 
-        #config-trigger { position: absolute; top: 40px; right: 40px; }
+        #config-trigger { position: absolute; top: 40px; right: 40px; width: 44px; height: 44px; border-radius: 50%; }
+        #config-trigger svg { width: 22px; height: 22px; fill: var(--text-mute); transition: 0.3s; }
+        #config-trigger:hover svg { fill: var(--accent); }
+
+        /* Today Button - Positioned specifically above sliders */
         #today-btn { 
-            position: absolute; bottom: 80px; left: 40px; /* 左側に移動してスライダーと干渉回避 */
-            width: auto; height: auto; border-radius: 20px; padding: 8px 20px;
-            font-size: 10px; font-weight: 600; letter-spacing: 2px; color: var(--text-mute);
+            position: absolute; bottom: 105px; right: 45px; 
+            padding: 8px 24px; font-size: 10px; font-weight: 600; letter-spacing: 2px; color: var(--text-mute);
         }
 
-        /* Axis Sliders */
+        /* Axis Controls */
         .axis-ui { position: absolute; pointer-events: auto; display: flex; align-items: center; gap: 10px; }
-        #x-axis-ui { bottom: 20px; left: 100px; right: 100px; }
-        #y-axis-ui { right: 20px; top: 120px; bottom: 120px; flex-direction: column; }
+        #x-axis-ui { bottom: 70px; left: 120px; right: 120px; }
+        #y-axis-ui { right: 45px; top: 150px; bottom: 150px; flex-direction: column; }
         
         .step-btn { 
-            background: none; border: 1px solid var(--border); color: var(--text-mute); 
-            width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px;
+            background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-mute); 
+            width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px;
             display: flex; align-items: center; justify-content: center; transition: 0.2s;
         }
         .step-btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -53,9 +53,7 @@
             appearance: none; background: #222; height: 4px; border-radius: 2px; flex-grow: 1; 
             accent-color: var(--accent); cursor: pointer;
         }
-        #y-axis-ui input { transform: rotate(90deg); width: 100%; height: 4px; }
 
-        /* Config Panel */
         #config-panel {
             position: absolute; top: 95px; right: 40px; width: 300px; pointer-events: auto;
             background: var(--bg-panel); border: 1px solid var(--border); padding: 25px;
@@ -67,6 +65,7 @@
         .config-val { float: right; color: var(--accent); font-family: monospace; }
         
         select, input[type=number] { background: #111; border: 1px solid #333; color: #fff; padding: 6px; font-size: 11px; border-radius: 4px; width: 100%; }
+        input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; background: #333; height: 3px; appearance: none; border-radius: 2px; }
         .birthday-inputs { display: flex; gap: 5px; }
         .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
@@ -77,7 +76,7 @@
         input:checked + .slider:before { transform: translateX(16px); }
 
         footer {
-            position: absolute; bottom: 35px; width: 100%; display: flex;
+            position: absolute; bottom: 25px; width: 100%; display: flex;
             justify-content: center; align-items: center; gap: 15px;
             font-size: 10px; letter-spacing: 1.5px; color: var(--text-mute);
         }
@@ -156,11 +155,11 @@
         </div>
 
         <footer>
-            <a href="#" data-i18n="home">HOME</a>
+            <a href="#">HOME</a>
             <span class="dot">|</span>
-            <span style="font-family:monospace; opacity:0.4">v.research.19</span>
+            <span style="font-family:monospace; opacity:0.4">v.research.21</span>
             <span class="dot">|</span>
-            <a href="#" data-i18n="bug">BUG REPORT</a>
+            <a href="#">BUG REPORT</a>
         </footer>
     </div>
     
@@ -169,20 +168,20 @@
 <script>
 /**
  * [CRITICAL PROTOCOL FOR AI ASSISTANTS]
- * v20260128.19: AXIS SLIDERS & TOUCH NAVIGATION.
- * - Added X (Days) and Y (Years) sliders with step buttons.
- * - Implemented direct canvas drag movement for iPad support.
- * - Realigned Today button and HUD logic for better layout.
+ * v20260128.21: FIXED TODAY POS, TEXT BRIGHTNESS & AXIS STEPS.
+ * - Repositioned Today button above horizontal slider at bottom-right.
+ * - Unified masked text brightness inside loupe (White alpha for all masked cells).
+ * - Fixed Y-axis step logic (+ for next year, - for prev year).
  */
 
 const MONTH_COLORS = ["#A0C8FF","#B4D2FF","#FFC8DC","#FFB4C8","#B4FFB4","#64DC64","#64C8FF","#3296FF","#FFC864","#FF9632","#C86432","#DCDDFF"];
 const ACCUM_DAYS = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
 
 const I18N = {
-    en: { title: "TIME MATRIX // 120 YEARS", today: "TODAY", lang: "Language", mag: "Magnification", ambient: "Ambient Brightness", birth: "Birthday", mask: "Life Span Mask", hud: "Show Date HUD", home: "HOME", bug: "BUG REPORT" },
-    ja: { title: "タイム・マトリックス // 120年", today: "今日", lang: "言語", mag: "倍率", ambient: "背景の明るさ", birth: "誕生日", mask: "ライフスパン・マスク", hud: "HUD表示", home: "ホーム", bug: "不具合報告" },
-    fi: { title: "AIKAMATRIISI // 120 VUOTTA", today: "TÄNÄÄN", lang: "Kieli", mag: "Suurennus", ambient: "Ympäristön kirkkaus", birth: "Syntymäaika", mask: "Elinkaaren maski", hud: "Näytä HUD", home: "KOTI", bug: "VIKAIilmoitus" },
-    da: { title: "TIDSMATRIX // 120 ÅR", today: "I DAG", lang: "Sprog", mag: "Forstørrelse", ambient: "Omgivende lysstyrke", birth: "Fødselsdag", mask: "Levetid Maske", hud: "Vis HUD", home: "HJEM", bug: "FEJLRAPPORT" }
+    en: { title: "TIME MATRIX // 120 YEARS", today: "TODAY", lang: "Language", mag: "Magnification", ambient: "Ambient Brightness", birth: "Birthday", mask: "Life Span Mask", hud: "Show Date HUD" },
+    ja: { title: "タイム・マトリックス // 120年", today: "今日", lang: "言語", mag: "倍率", ambient: "背景の明るさ", birth: "誕生日", mask: "ライフスパン・マスク", hud: "HUD表示" },
+    fi: { title: "AIKAMATRIISI // 120 VUOTTA", today: "TÄNÄÄN", lang: "Kieli", mag: "Suurennus", ambient: "Ympäristön kirkkaus", birth: "Syntymäaika", mask: "Elinkaaren maski", hud: "Näytä HUD" },
+    da: { title: "TIDSMATRIX // 120 ÅR", today: "I DAG", lang: "Sprog", mag: "Forstørrelse", ambient: "Omgivende lysstyrke", birth: "Fødselsdag", mask: "Levetid Maske", hud: "Vis HUD" }
 };
 
 class ResearchApp {
@@ -194,10 +193,9 @@ class ResearchApp {
             zoom: 120, bgAlpha: 0.2, showHUD: true, loupeSize: 380, margin: 60,
             birthY: 1968, birthM: 6, birthD: 19, maskEnabled: false, lang: 'ja'
         };
-        this.speeds = [1.0, 0.25, 0.05]; 
-        this.speedIdx = 0;
         this.vPointer = { x: 0, y: 0 };
         this.isDragging = false;
+        this.lastMousePos = { x: 0, y: 0 };
         
         this.resize();
         this.initEvents();
@@ -209,24 +207,23 @@ class ResearchApp {
     initEvents() {
         window.addEventListener('resize', () => this.resize());
 
-        // Mouse/Touch Drag Movement
         const handleStart = (e) => { 
-            if(e.target.tagName === 'CANVAS') this.isDragging = true; 
+            if(e.target.tagName === 'CANVAS') {
+                this.isDragging = true;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                this.lastMousePos = { x: clientX, y: clientY };
+            }
         };
         const handleMove = (e) => {
+            if (!this.isDragging) return;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            if (this.isDragging) {
-                this.vPointer.x += (e.movementX || 0);
-                this.vPointer.y += (e.movementY || 0);
-            } else if (!e.touches) { // Hover movement (PC)
-                const ratio = this.speeds[this.speedIdx];
-                this.vPointer.x += (e.movementX || 0) * ratio;
-                this.vPointer.y += (e.movementY || 0) * ratio;
-            }
-            this.vPointer.x = Math.max(0, Math.min(window.innerWidth, this.vPointer.x));
-            this.vPointer.y = Math.max(0, Math.min(window.innerHeight, this.vPointer.y));
+            const dx = clientX - this.lastMousePos.x;
+            const dy = clientY - this.lastMousePos.y;
+            this.vPointer.x = Math.max(0, Math.min(window.innerWidth, this.vPointer.x + dx));
+            this.vPointer.y = Math.max(0, Math.min(window.innerHeight, this.vPointer.y + dy));
+            this.lastMousePos = { x: clientX, y: clientY };
             this.syncSliders();
         };
         const handleEnd = () => { this.isDragging = false; };
@@ -234,8 +231,8 @@ class ResearchApp {
         window.addEventListener('mousedown', handleStart);
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('mouseup', handleEnd);
-        window.addEventListener('touchstart', handleStart);
-        window.addEventListener('touchmove', handleMove);
+        window.addEventListener('touchstart', handleStart, { passive: false });
+        window.addEventListener('touchmove', handleMove, { passive: false });
         window.addEventListener('touchend', handleEnd);
 
         // Sliders
@@ -244,16 +241,15 @@ class ResearchApp {
         sx.oninput = () => { this.vPointer.x = (sx.value / 1000) * window.innerWidth; };
         sy.oninput = () => { this.vPointer.y = (sy.value / 1000) * window.innerHeight; };
 
-        // Step Buttons
-        const stepX = (d) => { this.vPointer.x += d * ((window.innerWidth - this.settings.margin*2)/366); this.syncSliders(); };
-        const stepY = (d) => { this.vPointer.y += d * ((window.innerHeight - this.settings.margin*2)/120); this.syncSliders(); };
+        // Step buttons fix
+        const stepX = (d) => { this.vPointer.x = Math.max(0, Math.min(window.innerWidth, this.vPointer.x + d * ((window.innerWidth - this.settings.margin*2)/366))); this.syncSliders(); };
+        const stepY = (d) => { this.vPointer.y = Math.max(0, Math.min(window.innerHeight, this.vPointer.y + d * ((window.innerHeight - this.settings.margin*2)/120))); this.syncSliders(); };
         document.getElementById('x-minus').onclick = () => stepX(-1);
         document.getElementById('x-plus').onclick = () => stepX(1);
-        document.getElementById('y-minus').onclick = () => stepY(-1);
-        document.getElementById('y-plus').onclick = () => stepY(1);
+        document.getElementById('y-minus').onclick = () => stepY(-1); // Up is Past
+        document.getElementById('y-plus').onclick = () => stepY(1);  // Down is Future
 
-        // Config Toggle & HUD
-        document.getElementById('config-trigger').onclick = (e) => { e.stopPropagation(); const p = document.getElementById('config-panel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; };
+        document.getElementById('config-trigger').onclick = (e) => { e.stopPropagation(); document.getElementById('config-panel').style.display = 'block'; };
         document.getElementById('today-btn').onclick = () => this.jumpToDate(new Date());
         window.onclick = () => { document.getElementById('config-panel').style.display = 'none'; };
         document.getElementById('config-panel').onclick = (e) => e.stopPropagation();
@@ -294,8 +290,7 @@ class ResearchApp {
 
     jumpToDate(date) {
         const yIdx = date.getFullYear() - 1950;
-        const startOfYear = new Date(date.getFullYear(), 0, 1);
-        const dIdx = Math.floor((date - startOfYear) / 86400000);
+        const dIdx = Math.floor((date - new Date(date.getFullYear(), 0, 1)) / 86400000);
         const gridW = this.width - this.settings.margin * 2;
         const gridH = this.height - this.settings.margin * 2;
         this.vPointer.x = this.settings.margin + (dIdx / 366) * gridW;
@@ -327,8 +322,8 @@ class ResearchApp {
         ctx.fillStyle = "#000"; ctx.fillRect(0, 0, width, height);
 
         const now = new Date();
-        const todayIdx = (now.getFullYear() - 1950) * 366 + Math.floor((now - new Date(now.getFullYear(),0,1))/86400000);
-        const birthIdx = (settings.birthY - 1950) * 366 + ACCUM_DAYS[settings.birthM - 1] + (settings.birthD - 1);
+        const todayIdxTotal = (now.getFullYear() - 1950) * 366 + Math.floor((now - new Date(now.getFullYear(),0,1))/86400000);
+        const birthIdxTotal = (settings.birthY - 1950) * 366 + ACCUM_DAYS[settings.birthM - 1] + (settings.birthD - 1);
 
         // 1. Background Grid
         ctx.save();
@@ -338,7 +333,7 @@ class ResearchApp {
             for (let m = 0; m < 12; m++) {
                 const startDay = ACCUM_DAYS[m];
                 const endDay = (m === 11) ? 366 : ACCUM_DAYS[m+1];
-                const isAlive = !settings.maskEnabled || (y * 366 + startDay >= birthIdx && y * 366 + startDay <= todayIdx);
+                const isAlive = !settings.maskEnabled || (y * 366 + startDay >= birthIdxTotal && y * 366 + startDay <= todayIdxTotal);
                 ctx.globalAlpha = isAlive ? settings.bgAlpha : settings.bgAlpha * 0.1;
                 ctx.fillStyle = MONTH_COLORS[m];
                 ctx.fillRect(startDay * cellW, py, (endDay - startDay) * cellW, cellH - 0.1);
@@ -368,15 +363,17 @@ class ResearchApp {
                 const dx = px + (d - focusD) * zoom - zoom/2; const dy = py + (y - focusY) * zoom - zoom/2;
                 const isTarget = (y === focusY && d === focusD);
                 const isCross = (d === focusD || y === focusY);
-                const isAlive = !settings.maskEnabled || (y * 366 + d >= birthIdx && y * 366 + d <= todayIdx);
+                const isAlive = !settings.maskEnabled || (y * 366 + d >= birthIdxTotal && y * 366 + d <= todayIdxTotal);
 
                 ctx.fillStyle = MONTH_COLORS[dInfo.month - 1];
                 ctx.globalAlpha = isAlive ? (isTarget ? 1.0 : 0.25) : 0.05;
                 ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4);
                 
                 if (isTarget) {
-                    ctx.fillStyle = isAlive ? "#000" : "rgba(255,255,255,0.2)";
                     ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    // Mask logic for text brightness: matched with user feedback
+                    ctx.fillStyle = isAlive ? "#000" : "#fff";
+                    ctx.globalAlpha = isAlive ? 1.0 : 0.2;
                     ctx.font = `bold ${zoom * 0.1}px Arial`; ctx.fillText(`${dInfo.year}`, px, py - zoom*0.25);
                     ctx.font = `bold ${zoom * 0.12}px Arial`; ctx.fillText(`${dInfo.month}${settings.lang==='ja'?'月':''}`, px, py - zoom*0.06);
                     ctx.font = `bold ${zoom * 0.28}px Arial`; ctx.fillText(dInfo.day, px, py + zoom*0.25);
@@ -389,17 +386,8 @@ class ResearchApp {
         }
         ctx.restore();
 
-        // 3. Indicator
-        const currentSpeed = this.speeds[this.speedIdx];
-        const indDist = settings.loupeSize / 2 + 5;
-        const indX = px + Math.cos(Math.PI/4) * indDist; const indY = py + Math.sin(Math.PI/4) * indDist;
-        ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.beginPath(); ctx.arc(indX + 22, indY + 10, 22, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = currentSpeed === 1.0 ? "#fff" : accent; ctx.font = "bold 9px monospace"; ctx.textAlign = "center";
-        ctx.fillText(`${currentSpeed.toFixed(2)}x`, indX + 22, indY + 13);
-
-        ctx.strokeStyle = currentSpeed === 1.0 ? activeColor : accent; ctx.lineWidth = 2.5;
+        ctx.strokeStyle = activeColor; ctx.lineWidth = 2.5;
         ctx.beginPath(); ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2); ctx.stroke();
-
         this.dateDisplay.textContent = this.formatDate(activeInfo.year, activeInfo.month, activeInfo.day);
         this.dateDisplay.style.color = activeColor;
     }
