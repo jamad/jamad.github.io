@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Time Matrix - v20260128.34</title>
+    <title>JAMAD CALENDAR - v20260128.35</title>
     <style>
         :root {
             --accent: #0f0;
@@ -38,7 +38,6 @@
         #config-trigger svg { width: 22px; height: 22px; fill: var(--text-mute); transition: 0.3s; }
         #config-trigger:hover svg { fill: var(--accent); transform: rotate(45deg); }
 
-        /* Today Button - Aligned with X-axis slider */
         #today-btn { 
             position: absolute; bottom: 71px; right: 45px; 
             padding: 8px 24px; font-size: 10px; font-weight: 600; letter-spacing: 2px; color: #888;
@@ -46,11 +45,8 @@
         }
         #today-btn:hover { color: var(--accent); }
 
-        /* Axis Controls */
         .axis-ui { position: absolute; pointer-events: auto; display: flex; align-items: center; gap: 15px; }
         #x-axis-ui { bottom: 70px; left: 50%; transform: translateX(-50%); width: 33.33vw; min-width: 300px; }
-        
-        /* Fixed Y Axis UI - Steppers closer to slider ends */
         #y-axis-ui { right: 45px; top: 50%; transform: translateY(-50%); height: 33.33vh; min-height: 300px; flex-direction: column; justify-content: center; gap: 5px; }
         
         .step-btn { 
@@ -62,8 +58,6 @@
         .step-btn:hover { border-color: var(--accent); color: var(--accent); }
         
         input[type=range].matrix-slider { appearance: none; background: #222; height: 4px; border-radius: 2px; accent-color: var(--accent); cursor: pointer; margin: 0; flex-grow: 1; }
-        
-        /* Adjusted Y slider wrap for better end-to-end appearance */
         #slider-y-wrap { flex-grow: 1; position: relative; width: 32px; height: calc(100% - 80px); margin: 5px 0; }
         #slider-y { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(90deg); width: calc(33.33vh - 90px); min-width: 220px; }
 
@@ -100,7 +94,7 @@
 <body>
 
     <div id="ui-layer">
-        <div id="matrix-label" data-i18n="title">TIME MATRIX // 120 YEARS</div>
+        <div id="matrix-label" data-i18n="title">JAMAD CALENDAR // 120 YEARS</div>
 
         <div id="top-right-nav">
             <div id="lang-bar">
@@ -158,7 +152,7 @@
         <footer>
             <a href="#">HOME</a>
             <span class="dot">|</span>
-            <span style="font-family:monospace; opacity:0.4">v20260128.34</span>
+            <span id="ver-tag">v20260128.35-STABLE</span>
             <span class="dot">|</span>
             <a href="#">BUG REPORT</a>
         </footer>
@@ -168,21 +162,38 @@
 
 <script>
 /**
- * [CRITICAL PROTOCOL FOR AI ASSISTANTS]
- * v20260128.34: FAST REPEAT & UI ALIGNMENT.
- * - Reduced stepper auto-repeat interval to 0.2s.
- * - Aligned Today button vertically with X-slider (71px).
- * - Compacted Y-axis stepper spacing and fixed FI/DA month centering.
+ * [DEVELOPMENT NOTES FOR AI ASSISTANTS]
+ * CURRENT VERSION: v20260128.35-STABLE
+ * 
+ * MANDATORY RULES FOR CODE MODIFICATION:
+ * 1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested. 
+ *    Maintain the exact indentation (4 spaces) and spacing found in this file.
+ * 2. PINPOINT MODIFICATIONS: Change only the specific lines or functions related to the user's request.
+ * 3. MAINTAIN STABLE LOGICS (JAMAD-SPECIFIC):
+ *    - [CENTER SNAPPING]: Selected cell center MUST snap precisely to the virtual pointer position (px, py).
+ *    - [DRAG-ONLY INTERACTION]: Prohibit hover-follow; movement is exclusive to dragging or slider usage.
+ *    - [BOUNDARY LOCK]: vPointer MUST be clamped within the grid margin limits [settings.margin, size - settings.margin].
+ *    - [LEAP YEAR BLACKOUT]: Feb 29th MUST be blacked out (#000) on non-leap years using the isValid check.
+ *    - [STEPPER AUTO-REPEAT]: Stepper buttons (+/-) MUST loop every 0.2s during a long-press.
+ *    - [HIERARCHY UNIFICATION]: European languages (FI/DA) put Day on top; JA/EN put Day on bottom.
+ *    - [TRADITIONAL JA FORMAT]: Preserve the Era (和暦), Lunar Month, and Great Numerals (大字) logic.
+ * 4. AI PROTOCOL: If token limit (approx 1M) is reached, instruct user to start a new chat with the current file.
+ * 5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
+ *
+ * CHANGELOG:
+ * - v20260128.35: Finalized JAMAD CALENDAR Branding. Integrated development protocol.
  */
+
+const APP_VERSION = "v20260128.35-STABLE";
 
 const MONTH_COLORS = ["#A0C8FF","#B4D2FF","#FFC8DC","#FFB4C8","#B4FFB4","#64DC64","#64C8FF","#3296FF","#FFC864","#FF9632","#C86432","#DCDDFF"];
 const SLOT_STARTS = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
 
 const I18N = {
-    en: { title: "TIME MATRIX // 120 YEARS", today: "TODAY", mag: "Magnification", ambient: "Ambient Brightness", birth: "Birthday", mask: "Life Span Mask" },
-    ja: { title: "タイム・マトリックス // 120年", today: "今日", mag: "倍率", ambient: "背景の明るさ", birth: "誕生日", mask: "ライフスパン・マスク" },
-    fi: { title: "AIKAMATRIISI // 120 VUOTTA", today: "TÄNÄÄN", mag: "Suurennus", ambient: "Ympäristön kirkkaus", birth: "Syntymäaika", mask: "Elinkaaren maski" },
-    da: { title: "TIDSMATRIX // 120 ÅR", today: "I DAG", mag: "Forstørrelse", ambient: "Omgivende lysstyrke", birth: "Fødselsdag", mask: "Levetid Maske" }
+    en: { title: "JAMAD CALENDAR // 120 YEARS", today: "TODAY", mag: "Magnification", ambient: "Ambient Brightness", birth: "Birthday", mask: "Life Span Mask" },
+    ja: { title: "JAMAD CALENDAR // 120年", today: "今日", mag: "倍率", ambient: "背景の明るさ", birth: "誕生日", mask: "ライフスパン・マスク" },
+    fi: { title: "JAMAD CALENDAR // 120 VUOTTA", today: "TÄNÄÄN", mag: "Suurennus", ambient: "Ympäristön kirkkaus", birth: "Syntymäaika", mask: "Elinkaaren maski" },
+    da: { title: "JAMAD CALENDAR // 120 ÅR", today: "I DAG", mag: "Forstørrelse", ambient: "Omgivende lysstyrke", birth: "Fødselsdag", mask: "Levetid Maske" }
 };
 
 const JA_ERAS = [{ name: "令和", start: 2019 },{ name: "平成", start: 1989 },{ name: "昭和", start: 1926 },{ name: "大正", start: 1912 },{ name: "明治", start: 1868 }];
@@ -253,16 +264,12 @@ class ResearchApp {
     setupStepper(id, dir, axis) {
         const el = document.getElementById(id);
         const onStart = (e) => {
-            e.preventDefault();
-            this.step(dir, axis);
-            this.stepTimer = setInterval(() => this.step(dir, axis), 200); // 0.2s interval
+            e.preventDefault(); this.step(dir, axis);
+            this.stepTimer = setInterval(() => this.step(dir, axis), 200);
         };
         const onEnd = () => clearInterval(this.stepTimer);
-        el.addEventListener('mousedown', onStart);
-        el.addEventListener('touchstart', onStart, {passive: false});
-        window.addEventListener('mouseup', onEnd);
-        window.addEventListener('touchend', onEnd);
-        el.addEventListener('mouseleave', onEnd);
+        el.addEventListener('mousedown', onStart); el.addEventListener('touchstart', onStart, {passive: false});
+        window.addEventListener('mouseup', onEnd); window.addEventListener('touchend', onEnd); el.addEventListener('mouseleave', onEnd);
     }
 
     step(dir, axis) {
@@ -305,15 +312,14 @@ class ResearchApp {
             da: ['januar','februar','marts','april','maj','juni','juli','august','september','oktober','november','december']
         };
         if(this.settings.lang === 'ja') return [this.getJaEra(y), JA_LUNAR_MONTHS[m-1], this.toKanjiNumber(d) + "日"];
-        const mStr = months[this.settings.lang][m-1];
-        const dStr = (this.settings.lang === 'fi' || this.settings.lang === 'da') ? d + "." : d.toString();
+        const mStr = months[this.settings.lang][m-1], dStr = (this.settings.lang === 'fi' || this.settings.lang === 'da') ? d + "." : d.toString();
         if(this.settings.lang === 'fi' || this.settings.lang === 'da') return [dStr, mStr, y.toString()];
         return [y.toString(), mStr, dStr];
     }
 
     jumpToDate(date) {
-        const yIdx = date.getFullYear() - 1950;
-        const dIdx = Math.floor((date - new Date(date.getFullYear(), 0, 1)) / 86400000);
+        const yIdx = date.getFullYear() - 1950, startOfYear = new Date(date.getFullYear(), 0, 1);
+        const dIdx = Math.floor((date - startOfYear) / 86400000);
         this.vPointer.x = this.settings.margin + ((dIdx + 0.5) / 366) * (this.width - 200);
         this.vPointer.y = this.settings.margin + ((yIdx + 0.5) / 120) * (this.height - 200);
         this.syncSliders();
@@ -328,8 +334,7 @@ class ResearchApp {
 
     getDateInfo(yIdx, dIdx) {
         let m = 0; for(let i=11; i>=0; i--) { if(dIdx >= SLOT_STARTS[i]) { m = i; break; } }
-        const year = 1950 + yIdx;
-        const day = dIdx - SLOT_STARTS[m] + 1;
+        const year = 1950 + yIdx, day = dIdx - SLOT_STARTS[m] + 1;
         const monthMax = [31, this.isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m];
         return { year, month: m + 1, day, isValid: day <= monthMax };
     }
@@ -338,26 +343,21 @@ class ResearchApp {
 
     draw() {
         const { ctx, width, height, settings } = this;
-        const margin = settings.margin;
-        const gridW = width - margin * 2; const gridH = height - margin * 2;
-        const cellW = gridW / 366; const cellH = gridH / 120;
+        const margin = settings.margin, gridW = width - margin * 2, gridH = height - margin * 2;
+        const cellW = gridW / 366, cellH = gridH / 120;
         ctx.fillStyle = "#000"; ctx.fillRect(0, 0, width, height);
         if (gridW <= 0 || gridH <= 0) return;
 
-        const now = new Date();
-        const todayIdxT = (now.getFullYear() - 1950) * 366 + Math.floor((now - new Date(now.getFullYear(),0,1))/86400000);
+        const now = new Date(), todayIdxT = (now.getFullYear() - 1950) * 366 + Math.floor((now - new Date(now.getFullYear(),0,1))/86400000);
         const birthIdxT = (settings.birthY - 1950) * 366 + SLOT_STARTS[settings.birthM - 1] + (settings.birthD - 1);
 
         ctx.save(); ctx.translate(margin, margin);
         for (let y = 0; y < 120; y++) {
-            const py = y * cellH;
-            const isYLeap = this.isLeapYear(1950+y);
+            const py = y * cellH, isYLeap = this.isLeapYear(1950+y);
             for (let m = 0; m < 12; m++) {
-                const startD = SLOT_STARTS[m];
-                const realDays = [31, isYLeap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m];
+                const startD = SLOT_STARTS[m], realDays = [31, isYLeap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m];
                 for (let s = 0; s < (SLOT_STARTS[m+1] - startD); s++) {
-                    const slotIdx = startD + s;
-                    const isValid = (s < realDays);
+                    const slotIdx = startD + s, isValid = (s < realDays);
                     const isAlive = !settings.maskEnabled || (y * 366 + slotIdx >= birthIdxT && y * 366 + slotIdx <= todayIdxT);
                     ctx.fillStyle = isValid ? MONTH_COLORS[m] : "#000";
                     ctx.globalAlpha = isValid ? (isAlive ? settings.bgAlpha : settings.bgAlpha * 0.1) : 1.0;
@@ -368,55 +368,42 @@ class ResearchApp {
         }
         ctx.restore();
 
-        const px = this.vPointer.x; const py = this.vPointer.y;
-        const focusD = Math.floor(Math.max(0, Math.min(365, (px - margin) / cellW)));
-        const focusY = Math.floor(Math.max(0, Math.min(119, (py - margin) / cellH)));
-        const activeInfo = this.getDateInfo(focusY, focusD);
-        const activeColor = activeInfo.isValid ? MONTH_COLORS[activeInfo.month - 1] : "#222";
+        const px = this.vPointer.x, py = this.vPointer.y;
+        const focusD = Math.floor(Math.max(0, Math.min(365, (px - margin) / cellW))), focusY = Math.floor(Math.max(0, Math.min(119, (py - margin) / cellH)));
+        const info = this.getDateInfo(focusY, focusD), activeColor = info.isValid ? MONTH_COLORS[info.month - 1] : "#222";
 
         ctx.save();
         ctx.beginPath(); ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2); ctx.clip();
         ctx.fillStyle = "#080808"; ctx.fillRect(px - settings.loupeSize, py - settings.loupeSize, settings.loupeSize*2, settings.loupeSize*2);
 
-        const zoom = settings.zoom;
-        const range = Math.ceil(settings.loupeSize / zoom) + 1;
-        const isEuro = (settings.lang === 'fi' || settings.lang === 'da');
-
+        const zoom = settings.zoom, range = Math.ceil(settings.loupeSize / zoom) + 1, isEuro = (settings.lang === 'fi' || settings.lang === 'da');
         for (let y = focusY - range; y <= focusY + range; y++) {
             if (y < 0 || y >= 120) continue;
             for (let d = focusD - range; d <= focusD + range; d++) {
                 if (d < 0 || d >= 366) continue;
-                const info = this.getDateInfo(y, d);
-                const dx = px + (d - focusD) * zoom - zoom/2; const dy = py + (y - focusY) * zoom - zoom/2;
-                const isTarget = (y === focusY && d === focusD);
-                const isCross = (d === focusD || y === focusY);
-                const isAlive = !settings.maskEnabled || (y * 366 + d >= birthIdxT && y * 366 + d <= todayIdxT);
-
-                if (!info.isValid) {
-                    ctx.fillStyle = "#000"; ctx.globalAlpha = 1.0; ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4);
-                } else {
-                    ctx.fillStyle = MONTH_COLORS[info.month - 1];
-                    ctx.globalAlpha = isAlive ? (isTarget ? 1.0 : 0.25) : 0.05;
+                const dInf = this.getDateInfo(y, d), dx = px + (d - focusD) * zoom - zoom/2, dy = py + (y - focusY) * zoom - zoom/2;
+                const isT = (y === focusY && d === focusD), isC = (d === focusD || y === focusY);
+                const isA = !settings.maskEnabled || (y * 366 + d >= birthIdxT && y * 366 + d <= todayIdxT);
+                if (!dInf.isValid) { ctx.fillStyle = "#000"; ctx.globalAlpha = 1.0; ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4); }
+                else {
+                    ctx.fillStyle = MONTH_COLORS[dInf.month - 1]; ctx.globalAlpha = isA ? (isT ? 1.0 : 0.25) : 0.05;
                     ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4);
-                    if (isTarget) {
-                        ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                        ctx.fillStyle = isAlive ? "#000" : "#fff"; ctx.globalAlpha = isAlive ? 1.0 : 0.4;
-                        const parts = this.getFormattedDateParts(info.year, info.month, info.day);
+                    if (isT) {
+                        ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = isA ? "#000" : "#fff"; ctx.globalAlpha = isA ? 1.0 : 0.4;
+                        const pt = this.getFormattedDateParts(dInf.year, dInf.month, dInf.day);
                         if(isEuro) {
-                            ctx.font = `bold ${zoom * 0.23}px Arial`; ctx.fillText(parts[0], px, py - zoom*0.22);
-                            ctx.font = `bold ${zoom * 0.13}px Arial`; ctx.fillText(parts[1], px, py + zoom*0.02);
-                            ctx.font = `bold ${zoom * 0.11}px Arial`; ctx.fillText(parts[2], px, py + zoom*0.26);
+                            ctx.font = `bold ${zoom * 0.23}px Arial`; ctx.fillText(pt[0], px, py - zoom*0.22);
+                            ctx.font = `bold ${zoom * 0.13}px Arial`; ctx.fillText(pt[1], px, py + zoom*0.02);
+                            ctx.font = `bold ${zoom * 0.11}px Arial`; ctx.fillText(pt[2], px, py + zoom*0.26);
                         } else {
-                            ctx.font = `bold ${zoom * 0.11}px Arial`; ctx.fillText(parts[0], px, py - zoom*0.27);
-                            ctx.font = `bold ${zoom * 0.13}px Arial`; ctx.fillText(parts[1], px, py - zoom*0.06);
-                            ctx.font = `bold ${zoom * (settings.lang==='ja'?0.23:0.28)}px Arial`; ctx.fillText(parts[2], px, py + zoom*0.26);
+                            ctx.font = `bold ${zoom * 0.11}px Arial`; ctx.fillText(pt[0], px, py - zoom*0.27);
+                            ctx.font = `bold ${zoom * 0.13}px Arial`; ctx.fillText(pt[1], px, py - zoom*0.06);
+                            ctx.font = `bold ${zoom * (settings.lang==='ja'?0.23:0.28)}px Arial`; ctx.fillText(pt[2], px, py + zoom*0.26);
                         }
-                    } else if (isCross) {
-                        ctx.fillStyle = "#fff"; ctx.globalAlpha = isAlive ? 0.4 : 0.2;
-                        ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                        ctx.font = `bold ${zoom * 0.15}px Arial`;
-                        let label = d === focusD ? (settings.lang === 'ja' ? this.getJaEra(info.year) : info.year) : (settings.lang === 'ja' ? this.toKanjiNumber(info.day) : info.day);
-                        ctx.fillText(label, dx + zoom/2, dy + zoom/2);
+                    } else if (isC) {
+                        ctx.fillStyle = "#fff"; ctx.globalAlpha = isA ? 0.4 : 0.2; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `bold ${zoom * 0.15}px Arial`;
+                        let l = d === focusD ? (settings.lang === 'ja' ? this.getJaEra(dInf.year) : dInf.year) : (settings.lang === 'ja' ? this.toKanjiNumber(dInf.day) : dInf.day);
+                        ctx.fillText(l, dx + zoom/2, dy + zoom/2);
                     }
                 }
             }
