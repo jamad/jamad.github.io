@@ -2,27 +2,93 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>120 Years Research - Final Milestone v9</title>
+    <title>120 Years Research - Config & Debug v10</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Helvetica Neue', Arial, sans-serif; }
-        canvas { display: block; }
-        #ui {
-            position: absolute; top: 30px; left: 30px; color: #fff;
-            pointer-events: none; text-shadow: 0 0 20px rgba(0,0,0,0.8);
+        :root {
+            --accent: #0f0;
+            --bg-panel: rgba(15, 15, 15, 0.85);
+            --border: rgba(255, 255, 255, 0.1);
         }
-        #date-display { font-size: 4rem; font-weight: 900; margin-top: 5px; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
-        #ver { position: absolute; bottom: 10px; right: 10px; color: #222; font-size: 10px; font-family: monospace; }
-        .instruction { color: #666; font-size: 12px; margin-top: 10px; letter-spacing: 2px; text-transform: uppercase; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Helvetica Neue', Arial, sans-serif; color: #fff; }
+        canvas { display: block; }
+        
+        /* UI Layer */
+        #ui-overlay { position: absolute; inset: 0; pointer-events: none; }
+        #ui-top-left { position: absolute; top: 30px; left: 30px; }
+        #date-display { font-size: 3.5rem; font-weight: 900; margin-top: 5px; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+
+        /* Config Panel */
+        #config-btn {
+            position: absolute; top: 30px; right: 30px; pointer-events: auto;
+            background: var(--bg-panel); border: 1px solid var(--border); padding: 8px 15px;
+            border-radius: 4px; cursor: pointer; font-size: 12px; letter-spacing: 1px;
+            backdrop-filter: blur(10px); transition: 0.2s;
+        }
+        #config-btn:hover { background: rgba(40,40,40,0.9); border-color: #555; }
+
+        #config-panel {
+            position: absolute; top: 75px; right: 30px; width: 220px; pointer-events: auto;
+            background: var(--bg-panel); border: 1px solid var(--border); padding: 20px;
+            border-radius: 8px; backdrop-filter: blur(15px); display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .config-item { margin-bottom: 20px; }
+        .config-item:last-child { margin-bottom: 0; }
+        .config-label { font-size: 10px; color: #888; letter-spacing: 1px; margin-bottom: 8px; display: block; text-transform: uppercase; }
+        input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+        /* Debug Display */
+        #debug-info {
+            position: absolute; bottom: 80px; left: 30px; font-family: monospace;
+            font-size: 11px; color: var(--accent); line-height: 1.5;
+            background: rgba(0,0,0,0.7); padding: 10px; border-left: 2px solid var(--accent);
+            display: none; pointer-events: none;
+        }
+
+        /* Footer */
+        footer {
+            position: absolute; bottom: 25px; width: 100%; display: flex;
+            justify-content: center; gap: 30px; font-size: 10px; letter-spacing: 1px;
+            color: #666; pointer-events: auto;
+        }
+        footer a { color: #666; text-decoration: none; transition: 0.2s; }
+        footer a:hover { color: #aaa; }
+        #ver-tag { color: #333; font-family: monospace; }
+
+        @keyframes blink { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.2; } }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <div style="font-size: 0.8rem; letter-spacing: 8px; color: #999; font-weight: 300;">TIME MATRIX // 120 YEARS</div>
-        <div id="date-display">---</div>
-        <div class="instruction">Shift or Click to cycle precision [1.00 / 0.25 / 0.05]</div>
+
+    <div id="ui-overlay">
+        <div id="ui-top-left">
+            <div style="font-size: 0.75rem; letter-spacing: 6px; color: #666; font-weight: 300;">TIME MATRIX // 120 YEARS</div>
+            <div id="date-display">---</div>
+        </div>
+
+        <div id="config-btn">CONFIG</div>
+
+        <div id="config-panel">
+            <div class="config-item">
+                <span class="config-label">Magnification (Zoom)</span>
+                <input type="range" id="slider-zoom" min="20" max="250" value="100">
+            </div>
+            <div class="config-item">
+                <span class="config-label">Background Brightness</span>
+                <input type="range" id="slider-bg" min="1" max="50" value="20">
+            </div>
+            <div style="font-size: 9px; color: #444; text-align: center; margin-top: 10px;">Alt + D to toggle Debug</div>
+        </div>
+
+        <div id="debug-info"></div>
+
+        <footer>
+            <a href="#">HOME</a>
+            <span id="ver-tag">v.research.10</span>
+            <a href="#">BUG REPORT</a>
+        </footer>
     </div>
     
-    <div id="ver">v.research.09</div>
     <canvas id="researchCanvas"></canvas>
 
 <script>
@@ -30,9 +96,8 @@ const config = {
     startYear: 1950,
     years: 120,
     days: 366,
-    gridMargin: 60,  // カレンダーを画面端まで拡大
-    loupeSize: 380,  
-    zoom: 100 
+    gridMargin: 60,
+    loupeSize: 380
 };
 
 const MONTH_COLORS = [
@@ -42,15 +107,24 @@ const MONTH_COLORS = [
 ];
 const MONTH_DAYS = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
 
-class FinalResearchCalendar {
+class ResearchApp {
     constructor() {
         this.canvas = document.getElementById('researchCanvas');
         this.ctx = this.canvas.getContext('2d', { alpha: false });
         this.dateDisplay = document.getElementById('date-display');
+        this.debugPanel = document.getElementById('debug-info');
         
+        // 可変設定
+        this.settings = {
+            zoom: 100,
+            bgAlpha: 0.2,
+            debug: false
+        };
+
         this.speeds = [1.0, 0.25, 0.05]; 
         this.speedIdx = 0;
         this.vPointer = { x: window.innerWidth/2, y: window.innerHeight/2 };
+        this.rawMouse = { x: 0, y: 0 };
         
         this.resize();
         this.initEvents();
@@ -59,16 +133,43 @@ class FinalResearchCalendar {
 
     initEvents() {
         window.addEventListener('resize', () => this.resize());
+        
         window.addEventListener('mousemove', e => {
+            this.rawMouse.x = e.clientX;
+            this.rawMouse.y = e.clientY;
             const ratio = this.speeds[this.speedIdx];
             this.vPointer.x += e.movementX * ratio;
             this.vPointer.y += e.movementY * ratio;
             this.vPointer.x = Math.max(0, Math.min(window.innerWidth, this.vPointer.x));
             this.vPointer.y = Math.max(0, Math.min(window.innerHeight, this.vPointer.y));
         });
-        const cycleSpeed = () => { this.speedIdx = (this.speedIdx + 1) % this.speeds.length; };
-        window.addEventListener('keydown', e => { if(e.key === 'Shift') cycleSpeed(); });
-        window.addEventListener('mousedown', cycleSpeed);
+
+        // Config Toggle
+        const btn = document.getElementById('config-btn');
+        const panel = document.getElementById('config-panel');
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        };
+        window.onclick = () => { panel.style.display = 'none'; };
+        panel.onclick = (e) => e.stopPropagation();
+
+        // Sliders
+        document.getElementById('slider-zoom').oninput = (e) => { this.settings.zoom = parseInt(e.target.value); };
+        document.getElementById('slider-bg').oninput = (e) => { this.settings.bgAlpha = e.target.value / 100; };
+
+        // Speed cycle
+        window.addEventListener('mousedown', (e) => {
+            if(e.target.tagName === 'CANVAS') this.speedIdx = (this.speedIdx + 1) % this.speeds.length;
+        });
+        window.addEventListener('keydown', e => {
+            if(e.key === 'Shift') this.speedIdx = (this.speedIdx + 1) % this.speeds.length;
+            // Alt + D Debug
+            if(e.altKey && (e.key === 'd' || e.key === 'D')) {
+                this.settings.debug = !this.settings.debug;
+                this.debugPanel.style.display = this.settings.debug ? 'block' : 'none';
+            }
+        });
     }
 
     resize() {
@@ -103,22 +204,22 @@ class FinalResearchCalendar {
         const cellW = gridW / config.days;
         const cellH = gridH / config.years;
 
-        // 1. 背景：全データテクスチャ
+        // 1. 背景：テクスチャ（スライダーの明るさを反映）
         ctx.save();
         ctx.translate(margin, margin);
+        ctx.globalAlpha = this.settings.bgAlpha;
         for (let y = 0; y < config.years; y++) {
             const py = y * cellH;
             for (let m = 0; m < 12; m++) {
                 const startDay = MONTH_DAYS[m];
                 const endDay = (m === 11) ? 366 : MONTH_DAYS[m+1];
                 ctx.fillStyle = MONTH_COLORS[m];
-                ctx.globalAlpha = 0.2; 
                 ctx.fillRect(startDay * cellW, py, (endDay - startDay) * cellW, cellH - 0.1);
             }
         }
         ctx.restore();
 
-        // 2. 虫眼鏡
+        // 2. 虫眼鏡ロジック
         const px = this.vPointer.x;
         const py = this.vPointer.y;
         const relX = px - margin;
@@ -136,8 +237,8 @@ class FinalResearchCalendar {
         ctx.fillStyle = "#080808";
         ctx.fillRect(px - config.loupeSize, py - config.loupeSize, config.loupeSize*2, config.loupeSize*2);
 
-        const zoom = config.zoom;
-        const range = 5;
+        const zoom = this.settings.zoom;
+        const range = Math.ceil(config.loupeSize / zoom) + 1;
 
         for (let y = focusY - range; y <= focusY + range; y++) {
             if (y < 0 || y >= config.years) continue;
@@ -160,22 +261,22 @@ class FinalResearchCalendar {
                     if (isTarget) {
                         ctx.fillStyle = "#000";
                         ctx.textAlign = "center";
-                        ctx.font = "bold 13px Arial";
-                        ctx.fillText(`${dInfo.year}`, dx + zoom/2, dy + zoom/2 - 28);
-                        ctx.font = "bold 15px Arial";
-                        ctx.fillText(`${dInfo.month}月`, dx + zoom/2, dy + zoom/2 - 6);
-                        ctx.font = "bold 32px Arial";
-                        ctx.fillText(dInfo.day, dx + zoom/2, dy + zoom/2 + 30);
+                        ctx.font = `bold ${Math.max(10, zoom*0.13)}px Arial`;
+                        ctx.fillText(`${dInfo.year}`, dx + zoom/2, dy + zoom/2 - zoom*0.28);
+                        ctx.font = `bold ${Math.max(12, zoom*0.15)}px Arial`;
+                        ctx.fillText(`${dInfo.month}月`, dx + zoom/2, dy + zoom/2 - zoom*0.06);
+                        ctx.font = `bold ${Math.max(18, zoom*0.32)}px Arial`;
+                        ctx.fillText(dInfo.day, dx + zoom/2, dy + zoom/2 + zoom*0.3);
                     } else {
                         ctx.fillStyle = "#fff";
                         ctx.globalAlpha = 0.4;
                         ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
                         if (isVertical) {
-                            ctx.font = "bold 18px Arial";
+                            ctx.font = `bold ${Math.max(10, zoom*0.18)}px Arial`;
                             ctx.fillText(dInfo.year, dx + zoom/2, dy + zoom/2);
                         } else if (isHorizontal) {
-                            ctx.font = "bold 24px Arial";
+                            ctx.font = `bold ${Math.max(12, zoom*0.24)}px Arial`;
                             ctx.fillText(dInfo.day, dx + zoom/2, dy + zoom/2);
                         }
                     }
@@ -184,19 +285,19 @@ class FinalResearchCalendar {
         }
         ctx.restore();
 
-        // 3. インジケーター
+        // 3. インジケーター & スピード
         const currentSpeed = this.speeds[this.speedIdx];
         const indDist = config.loupeSize / 2 + 2;
         const indX = px + Math.cos(Math.PI/4) * indDist;
         const indY = py + Math.sin(Math.PI/4) * indDist;
         ctx.fillStyle = "rgba(0,0,0,0.85)";
         ctx.beginPath(); ctx.roundRect(indX, indY, 50, 18, 4); ctx.fill();
-        ctx.fillStyle = currentSpeed === 1.0 ? "#fff" : "#0f0";
+        ctx.fillStyle = currentSpeed === 1.0 ? "#fff" : var("--accent");
         ctx.font = "bold 10px monospace"; ctx.textAlign = "center";
         ctx.fillText(`${currentSpeed.toFixed(2)}x`, indX + 25, indY + 13);
 
         // 4. 外枠と十字
-        ctx.strokeStyle = currentSpeed === 1.0 ? activeColor : "#0f0";
+        ctx.strokeStyle = currentSpeed === 1.0 ? activeColor : var("--accent");
         ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(px, py, config.loupeSize / 2, 0, Math.PI * 2); ctx.stroke();
 
@@ -210,10 +311,25 @@ class FinalResearchCalendar {
         // UI表示更新
         this.dateDisplay.textContent = `${activeInfo.year}年 ${activeInfo.month}月 ${activeInfo.day}日`;
         this.dateDisplay.style.color = activeColor;
+
+        // Debug Info
+        if(this.settings.debug) {
+            this.debugPanel.innerHTML = `
+                RAW_MOUSE: ${this.rawMouse.x}, ${this.rawMouse.y}<br>
+                V_POINTER: ${px.toFixed(1)}, ${py.toFixed(1)}<br>
+                FOCUS_IDX: Y:${focusY} D:${focusD}<br>
+                SPEED: ${currentSpeed}x<br>
+                ZOOM: ${zoom}x<br>
+                BG_ALPHA: ${this.settings.bgAlpha}
+            `;
+        }
     }
 }
 
-new FinalResearchCalendar();
+// ヘルパー: CSS変数取得
+function var(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+window.onload = () => new ResearchApp();
 </script>
 </body>
 </html>
