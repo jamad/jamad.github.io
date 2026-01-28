@@ -2,304 +2,399 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hyper-Scale Calendar</title>
+    <title>Time Matrix - v20260128.29</title>
     <style>
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background-color: #1a1a1a;
-            font-family: 'Helvetica Neue', Arial, sans-serif; touch-action: none;
+        :root {
+            --accent: #0f0;
+            --bg-panel: rgba(10, 10, 10, 0.9);
+            --border: rgba(255, 255, 255, 0.15);
+            --text-main: #eee;
+            --text-mute: #666;
         }
-        #canvas-container { position: relative; width: 100%; height: 100%; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Inter', 'Noto Sans JP', sans-serif; color: var(--text-main); touch-action: none; }
         canvas { display: block; }
-        #ui-layer {
-            position: absolute; top: 20px; left: 20px;
-            pointer-events: none; color: rgba(255, 255, 255, 0.9);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        
+        #ui-layer { position: absolute; inset: 0; pointer-events: none; }
+        #matrix-label { position: absolute; top: 40px; left: 40px; font-size: 0.7rem; letter-spacing: 6px; color: var(--text-mute); font-weight: 400; text-transform: uppercase; }
+
+        .round-btn {
+            background: var(--bg-panel); border: 1px solid var(--border);
+            border-radius: 20px; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); pointer-events: auto;
         }
-        h1 { font-size: 1.2rem; margin: 0; font-weight: 300; letter-spacing: 2px; }
-        #current-date { font-size: 2.5rem; font-weight: 700; margin-top: 5px; font-variant-numeric: tabular-nums; }
-        #instruction {
-            position: absolute; bottom: 30px; width: 100%; text-align: center;
-            color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;
-            pointer-events: none; animation: blink 3s infinite;
+        .round-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Top-Right Navigation Bar */
+        #top-right-nav { position: absolute; top: 40px; right: 40px; display: flex; align-items: center; gap: 20px; pointer-events: auto; }
+        
+        /* Language Buttons - Changed to Square for Grouping */
+        #lang-bar { display: flex; gap: 6px; padding-right: 15px; border-right: 1px solid var(--border); }
+        .lang-btn { 
+            width: 38px; height: 38px; border-radius: 6px; background: var(--bg-panel); border: 1px solid var(--border);
+            color: var(--text-mute); font-size: 10px; font-weight: 700; cursor: pointer; transition: 0.3s; 
+            backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center;
         }
-        #version {
-            position: absolute; bottom: 15px; right: 20px;
-            color: rgba(255, 255, 255, 0.3); font-size: 0.7rem;
-            font-family: monospace; pointer-events: none;
+        .lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .lang-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,255,0,0.15); }
+
+        #config-trigger { width: 44px; height: 44px; border-radius: 50%; }
+        #config-trigger svg { width: 22px; height: 22px; fill: var(--text-mute); transition: 0.3s; }
+        #config-trigger:hover svg { fill: var(--accent); }
+        #config-trigger:hover { transform: rotate(45deg); }
+
+        #today-btn { 
+            position: absolute; bottom: 105px; right: 45px; 
+            padding: 8px 24px; font-size: 10px; font-weight: 600; letter-spacing: 2px; color: #888;
         }
-        @keyframes blink { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.2; } }
+        #today-btn:hover { color: var(--accent); }
+
+        /* Sliders */
+        .axis-ui { position: absolute; pointer-events: auto; display: flex; align-items: center; gap: 15px; }
+        #x-axis-ui { bottom: 70px; left: 50%; transform: translateX(-50%); width: 33.33vw; min-width: 300px; }
+        #y-axis-ui { right: 45px; top: 50%; transform: translateY(-50%); height: 33.33vh; min-height: 300px; flex-direction: column; }
+        
+        .step-btn { 
+            background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-mute); 
+            width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0;
+        }
+        .step-btn:hover { border-color: var(--accent); color: var(--accent); }
+        
+        input[type=range].matrix-slider { appearance: none; background: #222; height: 4px; border-radius: 2px; accent-color: var(--accent); cursor: pointer; margin: 0; flex-grow: 1; }
+        #slider-y-wrap { flex-grow: 1; position: relative; width: 30px; height: 100%; }
+        #slider-y { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(90deg); width: 25vh; }
+
+        #config-panel {
+            position: absolute; top: 95px; right: 40px; width: 280px; pointer-events: auto;
+            background: var(--bg-panel); border: 1px solid var(--border); padding: 25px;
+            border-radius: 12px; backdrop-filter: blur(25px); display: none;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+        .config-group { margin-bottom: 18px; }
+        .config-label { font-size: 9px; color: var(--text-mute); letter-spacing: 1.5px; margin-bottom: 10px; display: block; text-transform: uppercase; }
+        .config-val { float: right; color: var(--accent); font-family: monospace; }
+        
+        input[type=number] { background: #111; border: 1px solid #333; color: #fff; padding: 6px; font-size: 11px; border-radius: 4px; width: 100%; }
+        .birthday-inputs { display: flex; gap: 5px; }
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+        .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 18px; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        footer {
+            position: absolute; bottom: 25px; width: 100%; display: flex;
+            justify-content: center; align-items: center; gap: 15px;
+            font-size: 10px; letter-spacing: 1.5px; color: var(--text-mute);
+        }
+        footer a { color: var(--text-mute); text-decoration: none; transition: 0.3s; }
+        footer a:hover { color: #fff; }
+        .dot { color: #222; }
     </style>
 </head>
 <body>
 
-<div id="canvas-container">
-    <canvas id="calendarCanvas"></canvas>
     <div id="ui-layer">
-        <h1>TIME LENS // 120 YEARS</h1>
-        <div id="current-date">Initializing...</div>
+        <div id="matrix-label" data-i18n="title">TIME MATRIX // 120 YEARS</div>
+
+        <div id="top-right-nav">
+            <div id="lang-bar">
+                <div class="lang-btn" data-lang="en">EN</div>
+                <div class="lang-btn active" data-lang="ja">JA</div>
+                <div class="lang-btn" data-lang="fi">FI</div>
+                <div class="lang-btn" data-lang="da">DA</div>
+            </div>
+            <div id="config-trigger" class="round-btn">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            </div>
+        </div>
+
+        <div id="today-btn" class="round-btn" data-i18n="today">TODAY</div>
+
+        <div id="x-axis-ui" class="axis-ui">
+            <button class="step-btn" id="x-minus">−</button>
+            <input type="range" id="slider-x" class="matrix-slider" min="0" max="1000" value="500">
+            <button class="step-btn" id="x-plus">+</button>
+        </div>
+        <div id="y-axis-ui" class="axis-ui">
+            <button class="step-btn" id="y-minus">−</button>
+            <div id="slider-y-wrap">
+                <input type="range" id="slider-y" class="matrix-slider" min="0" max="1000" value="500">
+            </div>
+            <button class="step-btn" id="y-plus">+</button>
+        </div>
+
+        <div id="config-panel">
+            <div class="config-group">
+                <span class="config-label"><span data-i18n="mag">Magnification</span> <span class="config-val" id="val-zoom">120</span></span>
+                <input type="range" id="slider-zoom" min="40" max="250" value="120">
+            </div>
+            <div class="config-group">
+                <span class="config-label"><span data-i18n="ambient">Ambient Brightness</span> <span class="config-val" id="val-bg">20%</span></span>
+                <input type="range" id="slider-bg" min="1" max="80" value="20">
+            </div>
+            <div class="config-group">
+                <span class="config-label" data-i18n="birth">Birthday</span>
+                <div class="birthday-inputs">
+                    <input type="number" id="birth-y" value="1968" min="1950" max="2070">
+                    <input type="number" id="birth-m" value="6" min="1" max="12">
+                    <input type="number" id="birth-d" value="19" min="1" max="31">
+                </div>
+            </div>
+            <div class="config-group toggle-row">
+                <span class="config-label" style="margin-bottom:0" data-i18n="mask">Life Span Mask</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-mask" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <footer>
+            <a href="#">HOME</a>
+            <span class="dot">|</span>
+            <span style="font-family:monospace; opacity:0.4">v20260128.29</span>
+            <span class="dot">|</span>
+            <a href="#">BUG REPORT</a>
+        </footer>
     </div>
-    <div id="instruction">Drag / Hover to Explore Time</div>
-    <div id="version">v20260128.12</div>
-</div>
+    
+    <canvas id="researchCanvas"></canvas>
 
 <script>
 /**
  * [CRITICAL PROTOCOL FOR AI ASSISTANTS]
- * ... (省略) ...
- * CHANGELOG:
- * - v20260128.11: ABSOLUTE SLOT ALLOCATION.
- * - v20260128.12: FUNDAMENTAL RESET: POWER-MAPPING MODEL. 
- *                 Discarded Gaussian approach for an analytic power-function mapping to 
- *                 guarantee 100% constant pixel-size and zero-jitter performance.
+ * v20260128.29: BOUNDARY CLAMPING & SQUARE LANG BUTTONS.
+ * - Restricted vPointer to stay strictly within table margins (Loupe stops at edges).
+ * - Redesigned Lang buttons to square shapes and separated from Config gear.
+ * - Updated slider sync to reflect new boundary-locked coordinate space.
  */
 
-const MONTH_DATA = {
-    days: [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335],
-    colors: [
-        [200, 230, 255], [220, 240, 255], [255, 200, 220], [255, 180, 200],
-        [180, 255, 180], [100, 220, 100], [100, 200, 255], [50, 150, 255],
-        [255, 200, 100], [255, 150, 50], [200, 100, 50], [220, 220, 255]
-    ]
+const MONTH_COLORS = ["#A0C8FF","#B4D2FF","#FFC8DC","#FFB4C8","#B4FFB4","#64DC64","#64C8FF","#3296FF","#FFC864","#FF9632","#C86432","#DCDDFF"];
+const ACCUM_DAYS = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+
+const I18N = {
+    en: { title: "TIME MATRIX // 120 YEARS", today: "TODAY", mag: "Magnification", ambient: "Ambient Brightness", birth: "Birthday", mask: "Life Span Mask" },
+    ja: { title: "タイム・マトリックス // 120年", today: "今日", mag: "倍率", ambient: "背景の明るさ", birth: "誕生日", mask: "ライフスパン・マスク" },
+    fi: { title: "AIKAMATRIISI // 120 VUOTTA", today: "TÄNÄÄN", mag: "Suurennus", ambient: "Ympäristön kirkkaus", birth: "Syntymäaika", mask: "Elinkaaren maski" },
+    da: { title: "TIDSMATRIX // 120 ÅR", today: "I DAG", mag: "Forstørrelse", ambient: "Omgivende lysstyrke", birth: "Fødselsdag", mask: "Levetid Maske" }
 };
 
-class SoundEngine {
-    constructor() {
-        this.ctx = null;
-        this.frequencies = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
-        this.lastDecade = -1;
-    }
-    init() {
-        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        else if (this.ctx.state === 'suspended') this.ctx.resume();
-    }
-    playTone(freq, type = 'sine', duration = 0.1, vol = 0.1) {
-        if (!this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-        osc.connect(gain).connect(this.ctx.destination);
-        osc.start(); osc.stop(this.ctx.currentTime + duration);
-    }
-    playHover() {
-        if (Math.random() > 0.8) {
-            const f = this.frequencies[Math.floor(Math.random() * this.frequencies.length)];
-            this.playTone(f * 2, 'sine', 0.05, 0.02);
-        }
-    }
-    playDecadeCross(year) {
-        const decade = Math.floor(year / 10);
-        if (this.lastDecade !== decade) {
-            this.playTone(110 + (decade % 10) * 20, 'square', 0.1, 0.05);
-            this.lastDecade = decade;
-        }
-    }
-}
+const JA_ERAS = [{ name: "令和", start: 2019 },{ name: "平成", start: 1989 },{ name: "昭和", start: 1926 }];
+const JA_LUNAR_MONTHS = ["睦月","如月","弥生","卯月","皐月","水無月","文月","葉月","長月","神無月","霜月","師走"];
+const KANJI_DIGITS = ["零","壱","弐","参","肆","伍","陸","漆","捌","玖"];
 
-class HyperCalendar {
+class ResearchApp {
     constructor() {
-        this.canvas = document.getElementById('calendarCanvas');
+        this.canvas = document.getElementById('researchCanvas');
         this.ctx = this.canvas.getContext('2d', { alpha: false });
-        this.dateDisplay = document.getElementById('current-date');
-        this.config = { years: 120, days: 366, startYear: 1950, padding: 2 };
-        this.state = {
-            pointer: { x: 0, y: 0, targetX: 0, targetY: 0 },
-            isInteracting: true,
-            rowHeights: new Float32Array(this.config.years),
-            colWidths: new Float32Array(this.config.days),
-            rowY: new Float32Array(this.config.years + 1),
-            colX: new Float32Array(this.config.days + 1)
+        this.settings = { zoom: 120, bgAlpha: 0.2, loupeSize: 380, margin: 100, birthY: 1968, birthM: 6, birthD: 19, maskEnabled: true, lang: 'ja' };
+        this.vPointer = { x: 0, y: 0 };
+        this.isDragging = false; this.lastMousePos = { x: 0, y: 0 };
+        this.resize(); this.initEvents(); this.updateI18n(); this.jumpToDate(new Date()); this.loop();
+    }
+
+    initEvents() {
+        window.addEventListener('resize', () => { this.resize(); this.syncSliders(); });
+        const handleStart = (e) => { 
+            if(e.target.tagName === 'CANVAS') {
+                this.isDragging = true;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                this.lastMousePos = { x: clientX, y: clientY };
+            }
         };
-        this.sound = new SoundEngine();
-        this.resize();
-        this.setInitialDate();
-        this.initEvents();
-        this.loop();
+        const handleMove = (e) => {
+            if (!this.isDragging) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            // Apply movement and CLAMP to table boundaries
+            const dx = clientX - this.lastMousePos.x;
+            const dy = clientY - this.lastMousePos.y;
+            this.vPointer.x = Math.max(this.settings.margin, Math.min(this.width - this.settings.margin, this.vPointer.x + dx));
+            this.vPointer.y = Math.max(this.settings.margin, Math.min(this.height - this.settings.margin, this.vPointer.y + dy));
+            
+            this.lastMousePos = { x: clientX, y: clientY }; this.syncSliders();
+        };
+        const handleEnd = () => { this.isDragging = false; };
+
+        window.addEventListener('mousedown', handleStart); window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', handleEnd);
+        window.addEventListener('touchstart', handleStart, { passive: false }); window.addEventListener('touchmove', handleMove, { passive: false }); window.addEventListener('touchend', handleEnd);
+
+        const gridW = () => this.width - this.settings.margin * 2;
+        const gridH = () => this.height - this.settings.margin * 2;
+
+        document.getElementById('slider-x').oninput = (e) => { this.vPointer.x = this.settings.margin + (e.target.value / 1000) * gridW(); };
+        document.getElementById('slider-y').oninput = (e) => { this.vPointer.y = this.settings.margin + (e.target.value / 1000) * gridH(); };
+
+        document.getElementById('x-minus').onclick = () => this.stepX(-1); document.getElementById('x-plus').onclick = () => this.stepX(1);
+        document.getElementById('y-minus').onclick = () => this.stepY(-1); document.getElementById('y-plus').onclick = () => this.stepY(1);
+
+        document.getElementById('config-trigger').onclick = (e) => { e.stopPropagation(); const p = document.getElementById('config-panel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; };
+        document.getElementById('today-btn').onclick = () => this.jumpToDate(new Date());
+        window.onclick = () => { document.getElementById('config-panel').style.display = 'none'; };
+        document.getElementById('config-panel').onclick = (e) => e.stopPropagation();
+
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.onclick = () => {
+                this.settings.lang = btn.dataset.lang;
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active'); this.updateI18n();
+            };
+        });
+
+        document.getElementById('slider-zoom').oninput = (e) => { this.settings.zoom = parseInt(e.target.value); document.getElementById('val-zoom').textContent = e.target.value; };
+        document.getElementById('slider-bg').oninput = (e) => { this.settings.bgAlpha = e.target.value / 100; document.getElementById('val-bg').textContent = e.target.value+'%'; };
+        document.getElementById('birth-y').onchange = (e) => this.settings.birthY = parseInt(e.target.value);
+        document.getElementById('birth-m').onchange = (e) => this.settings.birthM = parseInt(e.target.value);
+        document.getElementById('birth-d').onchange = (e) => this.settings.birthD = parseInt(e.target.value);
+        document.getElementById('toggle-mask').onchange = (e) => this.settings.maskEnabled = e.target.checked;
     }
 
-    getMonthInfo(dayIdx) {
-        for (let i = 11; i >= 0; i--) {
-            if (dayIdx >= MONTH_DATA.days[i]) return { month: i + 1, date: dayIdx - MONTH_DATA.days[i] + 1 };
+    stepX(d) { this.vPointer.x = Math.max(this.settings.margin, Math.min(this.width - this.settings.margin, this.vPointer.x + d * ((this.width - 200)/366))); this.syncSliders(); }
+    stepY(d) { this.vPointer.y = Math.max(this.settings.margin, Math.min(this.height - this.settings.margin, this.vPointer.y + d * ((this.height - 200)/120))); this.syncSliders(); }
+
+    syncSliders() {
+        const gridW = this.width - this.settings.margin * 2;
+        const gridH = this.height - this.settings.margin * 2;
+        document.getElementById('slider-x').value = ((this.vPointer.x - this.settings.margin) / gridW) * 1000;
+        document.getElementById('slider-y').value = ((this.vPointer.y - this.settings.margin) / gridH) * 1000;
+    }
+
+    updateI18n() {
+        const langData = I18N[this.settings.lang];
+        document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = langData[el.dataset.i18n]; });
+    }
+
+    toKanjiDay(d) {
+        if (d < 10) return KANJI_DIGITS[d];
+        if (d === 10) return "拾";
+        if (d < 20) return "拾" + KANJI_DIGITS[d % 10];
+        if (d === 20) return "弐拾";
+        if (d < 30) return "弐拾" + KANJI_DIGITS[d % 10];
+        return "参拾" + (d > 30 ? KANJI_DIGITS[d % 10] : "");
+    }
+
+    formatDate(y, m, d) {
+        if(this.settings.lang === 'ja') {
+            const era = JA_ERAS.find(e => y >= e.start);
+            const eraYear = y - era.start + 1;
+            const eraStr = eraYear === 1 ? "元" : this.toKanjiDay(eraYear);
+            return `${era.name}${eraStr}年 ${JA_LUNAR_MONTHS[m-1]} ${this.toKanjiDay(d)}日`;
         }
+        const months = {
+            en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+            fi: ['tammikuuta','helmikuuta','maaliskuuta','huhtikuuta','toukokuuta','kesäkuuta','heinäkuuta','elokuuta','syyskuuta','lokakuuta','marraskuuta','joulukuuta'],
+            da: ['januar','februar','marts','april','maj','juni','juli','august','september','oktober','november','december']
+        };
+        const mStr = months[this.settings.lang][m-1];
+        if(this.settings.lang === 'fi' || this.settings.lang === 'da') return `${d}. ${mStr} ${y}`;
+        return `${mStr} ${d}, ${y}`;
     }
 
-    setInitialDate() {
-        const now = new Date();
-        const yIdx = Math.max(0, Math.min(this.config.years - 1, now.getFullYear() - this.config.startYear));
-        const dIdx = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / 86400000);
-        this.state.pointer.x = this.state.pointer.targetX = (dIdx / this.config.days) * this.width;
-        this.state.pointer.y = this.state.pointer.targetY = (yIdx / this.config.years) * this.height;
+    jumpToDate(date) {
+        const yIdx = date.getFullYear() - 1950;
+        const dIdx = Math.floor((date - new Date(date.getFullYear(), 0, 1)) / 86400000);
+        this.vPointer.x = this.settings.margin + ((dIdx + 0.5) / 366) * (this.width - this.settings.margin * 2);
+        this.vPointer.y = this.settings.margin + ((yIdx + 0.5) / 120) * (this.height - this.settings.margin * 2);
+        this.syncSliders();
     }
 
     resize() {
         const dpr = window.devicePixelRatio || 1;
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
-        this.canvas.width = this.width * dpr;
-        this.canvas.height = this.height * dpr;
-        this.ctx.scale(dpr, dpr);
+        this.width = window.innerWidth; this.height = window.innerHeight;
+        this.canvas.width = this.width * dpr; this.canvas.height = this.height * dpr;
+        this.ctx.scale(dpr, dpr); this.settings.margin = 100;
     }
 
-    initEvents() {
-        window.addEventListener('resize', () => this.resize());
-        const move = (e) => {
-            const t = e.touches ? e.touches[0] : e;
-            this.state.pointer.targetX = t.clientX;
-            this.state.pointer.targetY = t.clientY;
-            this.state.isInteracting = true;
-            this.sound.init();
-        };
-        this.canvas.addEventListener('mousemove', move);
-        this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); move(e); }, { passive: false });
-        this.canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, { passive: false });
-        this.canvas.addEventListener('mouseleave', () => this.state.isInteracting = false);
+    getDateInfo(yIdx, dIdx) {
+        let m = 0; for(let i=11; i>=0; i--) { if(dIdx >= ACCUM_DAYS[i]) { m = i; break; } }
+        return { year: 1950 + yIdx, month: m + 1, day: dIdx - ACCUM_DAYS[m] + 1 };
     }
 
-    /**
-     * 【根本解決】パワー・マッピング分布
-     * 拡大率（M）を維持したまま、ポインタを境に左右を指数関数で圧縮する
-     */
-    calculateDistribution(totalSize, pointerPos, itemsCount, peakPx) {
-        const positions = new Float32Array(itemsCount + 1);
-        const sizes = new Float32Array(itemsCount);
-        
-        // 正規化されたポインタ位置 p [0, 1]
-        const p = Math.max(0.001, Math.min(0.999, pointerPos / totalSize));
-        // 必要とされる拡大率 M
-        const M = peakPx / (totalSize / itemsCount);
-
-        /**
-         * 写像関数 f(x): [0, 1] -> [0, 1]
-         * pを境にべき乗関数を使い、f'(p) = M を実現する
-         */
-        const f = (x) => {
-            if (x < p) {
-                // 左側: y = p * (x/p)^M
-                return p * Math.pow(x / p, M);
-            } else {
-                // 右側: y = 1 - (1-p) * ((1-x)/(1-p))^M
-                return 1 - (1 - p) * Math.pow((1 - x) / (1 - p), M);
-            }
-        };
-
-        positions[0] = 0;
-        for (let i = 0; i < itemsCount; i++) {
-            const x0 = i / itemsCount;
-            const x1 = (i + 1) / itemsCount;
-            
-            // ピクセル座標への変換
-            const y0 = f(x0) * totalSize;
-            const y1 = f(x1) * totalSize;
-            
-            sizes[i] = y1 - y0;
-            positions[i + 1] = y1;
-        }
-
-        return { sizes, positions };
-    }
-
-    update() {
-        const p = this.state.pointer;
-        p.x += (p.targetX - p.x) * 0.15;
-        p.y += (p.targetY - p.y) * 0.15;
-
-        // セルサイズを物理的に指定（日付 60px / 年 50px）
-        // どの場所でもこのサイズが数学的に維持されます
-        const xDist = this.calculateDistribution(this.width, p.x, this.config.days, 60);
-        const yDist = this.calculateDistribution(this.height, p.y, this.config.years, 50);
-
-        this.state.colWidths = xDist.sizes;
-        this.state.colX = xDist.positions;
-        this.state.rowHeights = yDist.sizes;
-        this.state.rowY = yDist.positions;
-
-        if (this.state.isInteracting) {
-            const yIdx = this.state.rowY.findIndex((pos, i) => p.y >= pos && p.y < this.state.rowY[i+1]);
-            if (yIdx !== -1) {
-                this.sound.playDecadeCross(this.config.startYear + yIdx);
-                if (Math.abs(p.targetX - p.x) > 5) this.sound.playHover();
-            }
-        }
-    }
+    loop() { this.draw(); requestAnimationFrame(() => this.loop()); }
 
     draw() {
-        const { ctx, width, height, config, state } = this;
-        ctx.fillStyle = '#111';
-        ctx.fillRect(0, 0, width, height);
+        const { ctx, width, height, settings } = this;
+        const margin = settings.margin;
+        const gridW = width - margin * 2; const gridH = height - margin * 2;
+        const cellW = gridW / 366; const cellH = gridH / 120;
+        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, width, height);
+        if (gridW <= 0 || gridH <= 0) return;
 
-        MONTH_DATA.days.forEach((startDay, m) => {
-            const endDay = MONTH_DATA.days[m + 1] || 366;
-            const x = state.colX[startDay], w = state.colX[endDay] - x;
-            if (w < 0.1) return;
-            ctx.fillStyle = `rgb(${MONTH_DATA.colors[m].join(',')})`;
-            ctx.globalAlpha = 0.3;
-            ctx.fillRect(x, 0, w, height);
-        });
+        const now = new Date();
+        const todayIdxT = (now.getFullYear() - 1950) * 366 + Math.floor((now - new Date(now.getFullYear(),0,1))/86400000);
+        const birthIdxT = (settings.birthY - 1950) * 366 + ACCUM_DAYS[settings.birthM - 1] + (settings.birthD - 1);
 
-        ctx.globalAlpha = 1.0;
-        let hover = { y: -1, d: -1 };
-        for (let y = 0; y < config.years; y++) {
-            const h = state.rowHeights[y], py = state.rowY[y];
-            if (py > height || py + h < 0) continue;
-            const isActiveRow = state.isInteracting && state.pointer.y >= py && state.pointer.y < py + h;
-            if (isActiveRow) hover.y = y;
-            const drawH = Math.max(h - config.padding, 0.5);
-            ctx.fillStyle = '#1a1a1a';
-            ctx.fillRect(0, py + drawH, width, config.padding);
-
-            if (h > 12 || isActiveRow) {
-                ctx.fillStyle = '#fff';
-                ctx.font = `${Math.max(8, Math.min(h * 0.7, 18))}px Arial`;
-                ctx.fillText(config.startYear + y, 10, py + drawH * 0.75);
+        ctx.save(); ctx.translate(margin, margin);
+        for (let y = 0; y < 120; y++) {
+            const py = y * cellH;
+            for (let m = 0; m < 12; m++) {
+                const startD = ACCUM_DAYS[m];
+                const isAlive = !settings.maskEnabled || (y * 366 + startD >= birthIdxT && y * 366 + startD <= todayIdxT);
+                ctx.globalAlpha = isAlive ? settings.bgAlpha : settings.bgAlpha * 0.1;
+                ctx.fillStyle = MONTH_COLORS[m];
+                ctx.fillRect(startD * cellW, py, (m === 11 ? 366-startD : ACCUM_DAYS[m+1]-startD) * cellW, cellH - 0.2);
             }
-            if (isActiveRow && h > 20) {
-                for (let d = 0; d < config.days; d++) {
-                    const w = state.colWidths[d], px = state.colX[d];
-                    if (state.pointer.x >= px && state.pointer.x < px + w) hover.d = d;
-                    if (w > 2) {
-                        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-                        ctx.fillRect(px + w - 1, py, 1, drawH);
+            ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.fillRect(0, py + cellH - 0.5, gridW, 0.5);
+        }
+        ctx.restore();
+
+        const px = this.vPointer.x; const py = this.vPointer.y;
+        const focusD = Math.floor(Math.max(0, Math.min(365, (px - margin) / cellW)));
+        const focusY = Math.floor(Math.max(0, Math.min(119, (py - margin) / cellH)));
+        const activeInfo = this.getDateInfo(focusY, focusD);
+        const activeColor = MONTH_COLORS[activeInfo.month - 1];
+
+        ctx.save();
+        ctx.beginPath(); ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2); ctx.clip();
+        ctx.fillStyle = "#080808"; ctx.fillRect(px - settings.loupeSize, py - settings.loupeSize, settings.loupeSize*2, settings.loupeSize*2);
+
+        const zoom = settings.zoom;
+        const range = Math.ceil(settings.loupeSize / zoom) + 1;
+        for (let y = focusY - range; y <= focusY + range; y++) {
+            if (y < 0 || y >= 120) continue;
+            for (let d = focusD - range; d <= focusD + range; d++) {
+                if (d < 0 || d >= 366) continue;
+                const info = this.getDateInfo(y, d);
+                const dx = px + (d - focusD) * zoom - zoom/2; const dy = py + (y - focusY) * zoom - zoom/2;
+                const isTarget = (y === focusY && d === focusD);
+                const isAlive = !settings.maskEnabled || (y * 366 + d >= birthIdxT && y * 366 + d <= todayIdxT);
+                ctx.fillStyle = MONTH_COLORS[info.month - 1];
+                ctx.globalAlpha = isAlive ? (isTarget ? 1.0 : 0.25) : 0.05;
+                ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4);
+                if (isTarget) {
+                    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.fillStyle = isAlive ? "#000" : "#fff"; ctx.globalAlpha = isAlive ? 1.0 : 0.4;
+                    const text = this.formatDate(info.year, info.month, info.day).split(' ');
+                    if(settings.lang === 'ja') {
+                        ctx.font = `bold ${zoom * 0.09}px Arial`; ctx.fillText(text[0], px, py - zoom*0.25);
+                        ctx.font = `bold ${zoom * 0.11}px Arial`; ctx.fillText(text[1], px, py - zoom*0.06);
+                        ctx.font = `bold ${zoom * 0.24}px Arial`; ctx.fillText(text[2], px, py + zoom*0.25);
+                    } else {
+                        ctx.font = `bold ${zoom * 0.1}px Arial`; ctx.fillText(info.year, px, py - zoom*0.25);
+                        ctx.font = `bold ${zoom * 0.12}px Arial`; ctx.fillText(info.month, px, py - zoom*0.06);
+                        ctx.font = `bold ${zoom * 0.28}px Arial`; ctx.fillText(info.day, px, py + zoom*0.25);
                     }
-                    if (w > 32) {
-                        const info = this.getMonthInfo(d);
-                        ctx.fillStyle = 'rgba(255,255,255,0.8)';
-                        ctx.font = '10px Arial';
-                        ctx.fillText(`${info.month}/${info.date}`, px + 4, py + 14);
-                    }
+                } else if (d === focusD || y === focusY) {
+                    ctx.fillStyle = "#fff"; ctx.globalAlpha = isAlive ? 0.4 : 0.2;
+                    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.font = `bold ${zoom * 0.15}px Arial`;
+                    let label = d === focusD ? info.year : info.day;
+                    if(settings.lang === 'ja' && d !== focusD) label = this.toKanjiDay(info.day);
+                    ctx.fillText(label, dx + zoom/2, dy + zoom/2);
                 }
             }
         }
-        if (hover.y !== -1 && hover.d !== -1) this.drawHighlight(hover.y, hover.d);
-        else if (!state.isInteracting) {
-            this.dateDisplay.textContent = "120 YEARS VIEW";
-            this.dateDisplay.style.color = "#888";
-        }
-    }
-
-    drawHighlight(yIdx, dIdx) {
-        const x = this.state.colX[dIdx], y = this.state.rowY[yIdx];
-        const w = this.state.colWidths[dIdx], h = Math.max(this.state.rowHeights[yIdx] - this.config.padding, 0.5);
-        this.ctx.fillStyle = '#fff';
-        this.ctx.globalAlpha = 0.4;
-        this.ctx.fillRect(x, y, w, h);
-        this.ctx.strokeStyle = '#0ff';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(x, y, w, h);
-        this.ctx.globalAlpha = 1.0;
-        const info = this.getMonthInfo(dIdx);
-        this.dateDisplay.textContent = `${this.config.startYear + yIdx}年 ${info.month}月 ${info.date}日`;
-        this.dateDisplay.style.color = `rgb(${MONTH_DATA.colors[info.month-1].join(',')})`;
-    }
-
-    loop() {
-        this.update(); this.draw();
-        requestAnimationFrame(() => this.loop());
+        ctx.restore();
+        ctx.strokeStyle = activeColor; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2); ctx.stroke();
     }
 }
-window.onload = () => new HyperCalendar();
+window.onload = () => new ResearchApp();
 </script>
 </body>
 </html>
