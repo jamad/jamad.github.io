@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Time Matrix Research v16</title>
+    <title>Time Matrix Research v19</title>
     <style>
         :root {
             --accent: #0f0;
@@ -11,17 +11,15 @@
             --text-main: #eee;
             --text-mute: #666;
         }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Inter', sans-serif; color: var(--text-main); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Inter', sans-serif; color: var(--text-main); touch-action: none; }
         canvas { display: block; }
         
-        /* HUD */
         #hud-container { position: absolute; inset: 0; pointer-events: none; }
         #date-hud { position: absolute; top: 40px; left: 40px; }
         #date-hud-label { font-size: 0.7rem; letter-spacing: 6px; color: var(--text-mute); font-weight: 400; margin-bottom: 8px; text-transform: uppercase; }
         #date-display { font-size: 3.8rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -2px; transition: opacity 0.3s; }
         #date-display.hidden { opacity: 0; }
 
-        /* Buttons & Panels */
         .round-btn {
             background: var(--bg-panel); border: 1px solid var(--border);
             width: 44px; height: 44px; border-radius: 50%; display: flex;
@@ -34,28 +32,42 @@
 
         #config-trigger { position: absolute; top: 40px; right: 40px; }
         #today-btn { 
-            position: absolute; bottom: 80px; right: 40px; 
+            position: absolute; bottom: 80px; left: 40px; /* 左側に移動してスライダーと干渉回避 */
             width: auto; height: auto; border-radius: 20px; padding: 8px 20px;
             font-size: 10px; font-weight: 600; letter-spacing: 2px; color: var(--text-mute);
         }
 
+        /* Axis Sliders */
+        .axis-ui { position: absolute; pointer-events: auto; display: flex; align-items: center; gap: 10px; }
+        #x-axis-ui { bottom: 20px; left: 100px; right: 100px; }
+        #y-axis-ui { right: 20px; top: 120px; bottom: 120px; flex-direction: column; }
+        
+        .step-btn { 
+            background: none; border: 1px solid var(--border); color: var(--text-mute); 
+            width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .step-btn:hover { border-color: var(--accent); color: var(--accent); }
+        
+        input[type=range].matrix-slider { 
+            appearance: none; background: #222; height: 4px; border-radius: 2px; flex-grow: 1; 
+            accent-color: var(--accent); cursor: pointer;
+        }
+        #y-axis-ui input { transform: rotate(90deg); width: 100%; height: 4px; }
+
+        /* Config Panel */
         #config-panel {
             position: absolute; top: 95px; right: 40px; width: 300px; pointer-events: auto;
             background: var(--bg-panel); border: 1px solid var(--border); padding: 25px;
             border-radius: 12px; backdrop-filter: blur(25px); display: none;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
-        .config-group { margin-bottom: 20px; }
+        .config-group { margin-bottom: 18px; }
         .config-label { font-size: 9px; color: var(--text-mute); letter-spacing: 1.5px; margin-bottom: 10px; display: block; text-transform: uppercase; }
         .config-val { float: right; color: var(--accent); font-family: monospace; }
         
-        select, input[type=number] {
-            background: #111; border: 1px solid #333; color: #fff; padding: 6px; 
-            font-size: 11px; border-radius: 4px; width: 100%; outline: none;
-        }
-        input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; background: #333; height: 3px; appearance: none; border-radius: 2px; }
+        select, input[type=number] { background: #111; border: 1px solid #333; color: #fff; padding: 6px; font-size: 11px; border-radius: 4px; width: 100%; }
         .birthday-inputs { display: flex; gap: 5px; }
-        
         .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -69,9 +81,8 @@
             justify-content: center; align-items: center; gap: 15px;
             font-size: 10px; letter-spacing: 1.5px; color: var(--text-mute);
         }
-        footer a { color: var(--text-mute); text-decoration: none; transition: 0.3s; font-weight: 500; }
+        footer a { color: var(--text-mute); text-decoration: none; transition: 0.3s; }
         footer a:hover { color: #fff; }
-        .dot { color: #222; }
     </style>
 </head>
 <body>
@@ -88,13 +99,28 @@
 
         <div id="today-btn" class="round-btn" data-i18n="today">TODAY</div>
 
+        <!-- Axis Controls -->
+        <div id="x-axis-ui" class="axis-ui">
+            <button class="step-btn" id="x-minus">−</button>
+            <input type="range" id="slider-x" class="matrix-slider" min="0" max="1000" value="500">
+            <button class="step-btn" id="x-plus">+</button>
+        </div>
+        <div id="y-axis-ui" class="axis-ui">
+            <button class="step-btn" id="y-minus">−</button>
+            <div style="height:200px; width:4px; position:relative;">
+                <input type="range" id="slider-y" class="matrix-slider" min="0" max="1000" value="500" style="position:absolute; top:50%; left:50%; transform: translate(-50%, -50%) rotate(90deg); width:200px;">
+            </div>
+            <button class="step-btn" id="y-plus">+</button>
+        </div>
+
         <div id="config-panel">
             <div class="config-group">
                 <span class="config-label" data-i18n="lang">Language</span>
                 <select id="lang-select">
                     <option value="en">English</option>
-                    <option value="fi">Suomi</option>
                     <option value="ja" selected>日本語</option>
+                    <option value="fi">Suomi</option>
+                    <option value="da">Dansk</option>
                 </select>
             </div>
             <div class="config-group">
@@ -132,7 +158,7 @@
         <footer>
             <a href="#" data-i18n="home">HOME</a>
             <span class="dot">|</span>
-            <span style="font-family:monospace; opacity:0.4">v.research.16</span>
+            <span style="font-family:monospace; opacity:0.4">v.research.19</span>
             <span class="dot">|</span>
             <a href="#" data-i18n="bug">BUG REPORT</a>
         </footer>
@@ -143,10 +169,10 @@
 <script>
 /**
  * [CRITICAL PROTOCOL FOR AI ASSISTANTS]
- * v20260128.16: LOUPE MASK SYNC & FULL COLOR GRID & I18N.
- * - Synced Life Span Mask inside the loupe.
- * - Replaced Cross-Nav with Full adjacent grid in loupe.
- * - Added EN/FI/JA Language support and HUD toggle fix.
+ * v20260128.19: AXIS SLIDERS & TOUCH NAVIGATION.
+ * - Added X (Days) and Y (Years) sliders with step buttons.
+ * - Implemented direct canvas drag movement for iPad support.
+ * - Realigned Today button and HUD logic for better layout.
  */
 
 const MONTH_COLORS = ["#A0C8FF","#B4D2FF","#FFC8DC","#FFB4C8","#B4FFB4","#64DC64","#64C8FF","#3296FF","#FFC864","#FF9632","#C86432","#DCDDFF"];
@@ -154,8 +180,9 @@ const ACCUM_DAYS = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
 
 const I18N = {
     en: { title: "TIME MATRIX // 120 YEARS", today: "TODAY", lang: "Language", mag: "Magnification", ambient: "Ambient Brightness", birth: "Birthday", mask: "Life Span Mask", hud: "Show Date HUD", home: "HOME", bug: "BUG REPORT" },
+    ja: { title: "タイム・マトリックス // 120年", today: "今日", lang: "言語", mag: "倍率", ambient: "背景の明るさ", birth: "誕生日", mask: "ライフスパン・マスク", hud: "HUD表示", home: "ホーム", bug: "不具合報告" },
     fi: { title: "AIKAMATRIISI // 120 VUOTTA", today: "TÄNÄÄN", lang: "Kieli", mag: "Suurennus", ambient: "Ympäristön kirkkaus", birth: "Syntymäaika", mask: "Elinkaaren maski", hud: "Näytä HUD", home: "KOTI", bug: "VIKAIilmoitus" },
-    ja: { title: "タイム・マトリックス // 120年", today: "今日", lang: "言語", mag: "倍率", ambient: "背景の明るさ", birth: "誕生日", mask: "ライフスパン・マスク", hud: "HUD表示", home: "ホーム", bug: "不具合報告" }
+    da: { title: "TIDSMATRIX // 120 ÅR", today: "I DAG", lang: "Sprog", mag: "Forstørrelse", ambient: "Omgivende lysstyrke", birth: "Fødselsdag", mask: "Levetid Maske", hud: "Vis HUD", home: "HJEM", bug: "FEJLRAPPORT" }
 };
 
 class ResearchApp {
@@ -169,29 +196,64 @@ class ResearchApp {
         };
         this.speeds = [1.0, 0.25, 0.05]; 
         this.speedIdx = 0;
-        this.vPointer = { x: window.innerWidth/2, y: window.innerHeight/2 };
+        this.vPointer = { x: 0, y: 0 };
+        this.isDragging = false;
+        
         this.resize();
         this.initEvents();
         this.updateI18n();
-        this.loop();
         this.jumpToDate(new Date());
+        this.loop();
     }
 
     initEvents() {
         window.addEventListener('resize', () => this.resize());
-        window.addEventListener('mousemove', e => {
-            const ratio = this.speeds[this.speedIdx];
-            this.vPointer.x += e.movementX * ratio;
-            this.vPointer.y += e.movementY * ratio;
+
+        // Mouse/Touch Drag Movement
+        const handleStart = (e) => { 
+            if(e.target.tagName === 'CANVAS') this.isDragging = true; 
+        };
+        const handleMove = (e) => {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            if (this.isDragging) {
+                this.vPointer.x += (e.movementX || 0);
+                this.vPointer.y += (e.movementY || 0);
+            } else if (!e.touches) { // Hover movement (PC)
+                const ratio = this.speeds[this.speedIdx];
+                this.vPointer.x += (e.movementX || 0) * ratio;
+                this.vPointer.y += (e.movementY || 0) * ratio;
+            }
             this.vPointer.x = Math.max(0, Math.min(window.innerWidth, this.vPointer.x));
             this.vPointer.y = Math.max(0, Math.min(window.innerHeight, this.vPointer.y));
-        });
-
-        document.getElementById('config-trigger').onclick = (e) => {
-            e.stopPropagation();
-            const p = document.getElementById('config-panel');
-            p.style.display = p.style.display === 'block' ? 'none' : 'block';
+            this.syncSliders();
         };
+        const handleEnd = () => { this.isDragging = false; };
+
+        window.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+        window.addEventListener('touchstart', handleStart);
+        window.addEventListener('touchmove', handleMove);
+        window.addEventListener('touchend', handleEnd);
+
+        // Sliders
+        const sx = document.getElementById('slider-x');
+        const sy = document.getElementById('slider-y');
+        sx.oninput = () => { this.vPointer.x = (sx.value / 1000) * window.innerWidth; };
+        sy.oninput = () => { this.vPointer.y = (sy.value / 1000) * window.innerHeight; };
+
+        // Step Buttons
+        const stepX = (d) => { this.vPointer.x += d * ((window.innerWidth - this.settings.margin*2)/366); this.syncSliders(); };
+        const stepY = (d) => { this.vPointer.y += d * ((window.innerHeight - this.settings.margin*2)/120); this.syncSliders(); };
+        document.getElementById('x-minus').onclick = () => stepX(-1);
+        document.getElementById('x-plus').onclick = () => stepX(1);
+        document.getElementById('y-minus').onclick = () => stepY(-1);
+        document.getElementById('y-plus').onclick = () => stepY(1);
+
+        // Config Toggle & HUD
+        document.getElementById('config-trigger').onclick = (e) => { e.stopPropagation(); const p = document.getElementById('config-panel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; };
         document.getElementById('today-btn').onclick = () => this.jumpToDate(new Date());
         window.onclick = () => { document.getElementById('config-panel').style.display = 'none'; };
         document.getElementById('config-panel').onclick = (e) => e.stopPropagation();
@@ -205,8 +267,12 @@ class ResearchApp {
         document.getElementById('toggle-mask').onchange = (e) => this.settings.maskEnabled = e.target.checked;
         document.getElementById('toggle-hud').onchange = (e) => this.dateDisplay.classList.toggle('hidden', !e.target.checked);
 
-        window.addEventListener('mousedown', (e) => { if(e.target.tagName === 'CANVAS') this.speedIdx = (this.speedIdx + 1) % this.speeds.length; });
         window.addEventListener('keydown', e => { if(e.key === 'Shift') this.speedIdx = (this.speedIdx + 1) % this.speeds.length; });
+    }
+
+    syncSliders() {
+        document.getElementById('slider-x').value = (this.vPointer.x / window.innerWidth) * 1000;
+        document.getElementById('slider-y').value = (this.vPointer.y / window.innerHeight) * 1000;
     }
 
     updateI18n() {
@@ -216,17 +282,25 @@ class ResearchApp {
 
     formatDate(y, m, d) {
         if(this.settings.lang === 'ja') return `${y}年 ${m}月 ${d}日`;
-        if(this.settings.lang === 'fi') return `${d}. ${['tammikuuta','helmikuuta','maaliskuuta','huhtikuuta','toukokuuta','kesäkuuta','heinäkuuta','elokuuta','syyskuuta','lokakuuta','marraskuuta','joulukuuta'][m-1]} ${y}`;
-        return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1]} ${d}, ${y}`;
+        const months = {
+            en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+            fi: ['tammikuuta','helmikuuta','maaliskuuta','huhtikuuta','toukokuuta','kesäkuuta','heinäkuuta','elokuuta','syyskuuta','lokakuuta','marraskuuta','joulukuuta'],
+            da: ['januar','februar','marts','april','maj','juni','juli','august','september','oktober','november','december']
+        };
+        const mStr = months[this.settings.lang][m-1];
+        if(this.settings.lang === 'fi' || this.settings.lang === 'da') return `${d}. ${mStr} ${y}`;
+        return `${mStr} ${d}, ${y}`;
     }
 
     jumpToDate(date) {
         const yIdx = date.getFullYear() - 1950;
-        const dIdx = Math.floor((date - new Date(date.getFullYear(), 0, 1)) / 86400000);
+        const startOfYear = new Date(date.getFullYear(), 0, 1);
+        const dIdx = Math.floor((date - startOfYear) / 86400000);
         const gridW = this.width - this.settings.margin * 2;
         const gridH = this.height - this.settings.margin * 2;
         this.vPointer.x = this.settings.margin + (dIdx / 366) * gridW;
         this.vPointer.y = this.settings.margin + (yIdx / 120) * gridH;
+        this.syncSliders();
     }
 
     resize() {
@@ -272,7 +346,7 @@ class ResearchApp {
         }
         ctx.restore();
 
-        // 2. Full Color Loupe
+        // 2. Loupe
         const px = this.vPointer.x; const py = this.vPointer.y;
         const relX = px - margin; const relY = py - margin;
         const focusD = Math.floor(Math.max(0, Math.min(365, relX / cellW)));
@@ -293,20 +367,22 @@ class ResearchApp {
                 const dInfo = this.getDateInfo(y, d);
                 const dx = px + (d - focusD) * zoom - zoom/2; const dy = py + (y - focusY) * zoom - zoom/2;
                 const isTarget = (y === focusY && d === focusD);
-                
+                const isCross = (d === focusD || y === focusY);
                 const isAlive = !settings.maskEnabled || (y * 366 + d >= birthIdx && y * 366 + d <= todayIdx);
 
                 ctx.fillStyle = MONTH_COLORS[dInfo.month - 1];
                 ctx.globalAlpha = isAlive ? (isTarget ? 1.0 : 0.25) : 0.05;
                 ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4);
                 
-                if (isTarget && isAlive) {
-                    ctx.fillStyle = "#000"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                if (isTarget) {
+                    ctx.fillStyle = isAlive ? "#000" : "rgba(255,255,255,0.2)";
+                    ctx.textAlign = "center"; ctx.textBaseline = "middle";
                     ctx.font = `bold ${zoom * 0.1}px Arial`; ctx.fillText(`${dInfo.year}`, px, py - zoom*0.25);
-                    ctx.font = `bold ${zoom * 0.12}px Arial`; ctx.fillText(`${dInfo.month}${this.settings.lang==='ja'?'月':''}`, px, py - zoom*0.06);
+                    ctx.font = `bold ${zoom * 0.12}px Arial`; ctx.fillText(`${dInfo.month}${settings.lang==='ja'?'月':''}`, px, py - zoom*0.06);
                     ctx.font = `bold ${zoom * 0.28}px Arial`; ctx.fillText(dInfo.day, px, py + zoom*0.25);
-                } else if (isAlive && (d === focusD || y === focusY)) {
-                    ctx.fillStyle = "#fff"; ctx.globalAlpha = 0.4; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                } else if (isCross) {
+                    ctx.fillStyle = "#fff"; ctx.globalAlpha = isAlive ? 0.4 : 0.2;
+                    ctx.textAlign = "center"; ctx.textBaseline = "middle";
                     ctx.font = `bold ${zoom * 0.15}px Arial`; ctx.fillText(d === focusD ? dInfo.year : dInfo.day, dx + zoom/2, dy + zoom/2);
                 }
             }
@@ -323,8 +399,6 @@ class ResearchApp {
 
         ctx.strokeStyle = currentSpeed === 1.0 ? activeColor : accent; ctx.lineWidth = 2.5;
         ctx.beginPath(); ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2); ctx.stroke();
-        ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(px, py - 15); ctx.lineTo(px, py + 15); ctx.moveTo(px - 15, py); ctx.lineTo(px + 15, py); ctx.stroke();
 
         this.dateDisplay.textContent = this.formatDate(activeInfo.year, activeInfo.month, activeInfo.day);
         this.dateDisplay.style.color = activeColor;
