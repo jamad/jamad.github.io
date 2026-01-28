@@ -2,27 +2,27 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>120 Years Research - Mega Zoom v5</title>
+    <title>120 Years Research - Final Milestone v9</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #020202; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Helvetica Neue', Arial, sans-serif; }
         canvas { display: block; }
         #ui {
-            position: absolute; top: 20px; left: 20px; color: #fff;
-            pointer-events: none; text-shadow: 0 0 10px #000;
+            position: absolute; top: 30px; left: 30px; color: #fff;
+            pointer-events: none; text-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
-        #date-display { font-size: 3.2rem; font-weight: 800; margin-top: 5px; font-variant-numeric: tabular-nums; letter-spacing: -1.5px; }
-        #ver { position: absolute; bottom: 10px; right: 10px; color: #1a1a1a; font-size: 10px; font-family: monospace; }
-        .key-hint { color: #444; font-size: 11px; margin-top: 5px; letter-spacing: 2px; }
+        #date-display { font-size: 4rem; font-weight: 900; margin-top: 5px; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+        #ver { position: absolute; bottom: 10px; right: 10px; color: #222; font-size: 10px; font-family: monospace; }
+        .instruction { color: #666; font-size: 12px; margin-top: 10px; letter-spacing: 2px; text-transform: uppercase; }
     </style>
 </head>
 <body>
     <div id="ui">
-        <div style="font-size: 0.7rem; letter-spacing: 5px; color: #555;">RESEARCH // MEGA ZOOM 68x</div>
+        <div style="font-size: 0.8rem; letter-spacing: 8px; color: #999; font-weight: 300;">TIME MATRIX // 120 YEARS</div>
         <div id="date-display">---</div>
-        <div class="key-hint">SHIFT / CLICK : Precision Speed Cycle</div>
+        <div class="instruction">Shift or Click to cycle precision [1.00 / 0.25 / 0.05]</div>
     </div>
     
-    <div id="ver">v.research.05</div>
+    <div id="ver">v.research.09</div>
     <canvas id="researchCanvas"></canvas>
 
 <script>
@@ -30,9 +30,9 @@ const config = {
     startYear: 1950,
     years: 120,
     days: 366,
-    gridMargin: 200, 
-    loupeSize: 360,  
-    zoom: 68         // 前回の 45 から 1.5倍に拡大
+    gridMargin: 60,  // カレンダーを画面端まで拡大
+    loupeSize: 380,  
+    zoom: 100 
 };
 
 const MONTH_COLORS = [
@@ -42,13 +42,13 @@ const MONTH_COLORS = [
 ];
 const MONTH_DAYS = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
 
-class MegaZoomCalendarV5 {
+class FinalResearchCalendar {
     constructor() {
         this.canvas = document.getElementById('researchCanvas');
-        this.ctx = this.canvas.getContext('2d');
+        this.ctx = this.canvas.getContext('2d', { alpha: false });
         this.dateDisplay = document.getElementById('date-display');
         
-        this.speeds = [1.0, 0.25, 0.04]; // 超拡大に合わせて精密モードをさらに低速に
+        this.speeds = [1.0, 0.25, 0.05]; 
         this.speedIdx = 0;
         this.vPointer = { x: window.innerWidth/2, y: window.innerHeight/2 };
         
@@ -66,10 +66,7 @@ class MegaZoomCalendarV5 {
             this.vPointer.x = Math.max(0, Math.min(window.innerWidth, this.vPointer.x));
             this.vPointer.y = Math.max(0, Math.min(window.innerHeight, this.vPointer.y));
         });
-
-        const cycleSpeed = () => {
-            this.speedIdx = (this.speedIdx + 1) % this.speeds.length;
-        };
+        const cycleSpeed = () => { this.speedIdx = (this.speedIdx + 1) % this.speeds.length; };
         window.addEventListener('keydown', e => { if(e.key === 'Shift') cycleSpeed(); });
         window.addEventListener('mousedown', cycleSpeed);
     }
@@ -86,11 +83,7 @@ class MegaZoomCalendarV5 {
     getDateInfo(yIdx, dIdx) {
         let m = 0;
         for(let i=11; i>=0; i--) { if(dIdx >= MONTH_DAYS[i]) { m = i; break; } }
-        return {
-            year: config.startYear + yIdx,
-            month: m + 1,
-            day: dIdx - MONTH_DAYS[m] + 1
-        };
+        return { year: config.startYear + yIdx, month: m + 1, day: dIdx - MONTH_DAYS[m] + 1 };
     }
 
     loop() {
@@ -104,20 +97,24 @@ class MegaZoomCalendarV5 {
         const gridW = width - margin * 2;
         const gridH = height - margin * 2;
 
-        ctx.fillStyle = "#020202";
+        ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, width, height);
 
         const cellW = gridW / config.days;
         const cellH = gridH / config.years;
 
-        // 1. ベースグリッド（静止背景）
+        // 1. 背景：全データテクスチャ
         ctx.save();
         ctx.translate(margin, margin);
         for (let y = 0; y < config.years; y++) {
             const py = y * cellH;
-            ctx.fillStyle = "#fff";
-            ctx.globalAlpha = 0.03;
-            ctx.fillRect(0, py, gridW, cellH - 0.2);
+            for (let m = 0; m < 12; m++) {
+                const startDay = MONTH_DAYS[m];
+                const endDay = (m === 11) ? 366 : MONTH_DAYS[m+1];
+                ctx.fillStyle = MONTH_COLORS[m];
+                ctx.globalAlpha = 0.2; 
+                ctx.fillRect(startDay * cellW, py, (endDay - startDay) * cellW, cellH - 0.1);
+            }
         }
         ctx.restore();
 
@@ -128,6 +125,8 @@ class MegaZoomCalendarV5 {
         const relY = py - margin;
         const focusD = Math.floor(Math.max(0, Math.min(config.days - 1, relX / cellW)));
         const focusY = Math.floor(Math.max(0, Math.min(config.years - 1, relY / cellH)));
+        const activeInfo = this.getDateInfo(focusY, focusD);
+        const activeColor = MONTH_COLORS[activeInfo.month - 1];
 
         ctx.save();
         ctx.beginPath();
@@ -138,89 +137,83 @@ class MegaZoomCalendarV5 {
         ctx.fillRect(px - config.loupeSize, py - config.loupeSize, config.loupeSize*2, config.loupeSize*2);
 
         const zoom = config.zoom;
-        const rangeY = Math.ceil(config.loupeSize / (cellH * zoom)) + 1;
-        const rangeD = Math.ceil(config.loupeSize / (cellW * zoom)) + 1;
+        const range = 5;
 
-        for (let y = focusY - rangeY; y <= focusY + rangeY; y++) {
+        for (let y = focusY - range; y <= focusY + range; y++) {
             if (y < 0 || y >= config.years) continue;
-            for (let d = focusD - rangeD; d <= focusD + rangeD; d++) {
+            for (let d = focusD - range; d <= focusD + range; d++) {
                 if (d < 0 || d >= config.days) continue;
 
                 const dInfo = this.getDateInfo(y, d);
-                const dx = px + (d - (relX / cellW)) * (cellW * zoom);
-                const dy = py + (y - (relY / cellH)) * (cellH * zoom);
-                const dw = (cellW * zoom);
-                const dh = (cellH * zoom);
-
+                const dx = px + (d - (relX / cellW)) * zoom;
+                const dy = py + (y - (relY / cellH)) * zoom;
+                
                 const isTarget = (y === focusY && d === focusD);
-                ctx.fillStyle = MONTH_COLORS[dInfo.month - 1];
-                ctx.globalAlpha = isTarget ? 1.0 : 0.2;
-                ctx.fillRect(dx + 1.5, dy + 1.5, dw - 3, dh - 3);
+                const isVertical = (d === focusD && y !== focusY);
+                const isHorizontal = (y === focusY && d !== focusD);
 
-                // セル内テキスト（超巨大拡大用）
-                if (dw > 25) {
-                    ctx.fillStyle = isTarget ? "#000" : "#fff";
-                    ctx.globalAlpha = isTarget ? 1.0 : 0.4;
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    
+                if (isTarget || isVertical || isHorizontal) {
+                    ctx.fillStyle = MONTH_COLORS[dInfo.month - 1];
+                    ctx.globalAlpha = isTarget ? 1.0 : 0.2;
+                    ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4);
+
                     if (isTarget) {
-                        // ターゲットセルの詳細表示
-                        const baseY = dy + dh/2;
-                        ctx.font = `bold 10px Arial`;
-                        ctx.fillText(`${dInfo.year}`, dx + dw/2, baseY - 22);
-                        ctx.font = `bold 12px Arial`;
-                        ctx.fillText(`${dInfo.month}月`, dx + dw/2, baseY - 8);
-                        ctx.font = `bold 22px Arial`;
-                        ctx.fillText(dInfo.day, dx + dw/2, baseY + 12);
+                        ctx.fillStyle = "#000";
+                        ctx.textAlign = "center";
+                        ctx.font = "bold 13px Arial";
+                        ctx.fillText(`${dInfo.year}`, dx + zoom/2, dy + zoom/2 - 28);
+                        ctx.font = "bold 15px Arial";
+                        ctx.fillText(`${dInfo.month}月`, dx + zoom/2, dy + zoom/2 - 6);
+                        ctx.font = "bold 32px Arial";
+                        ctx.fillText(dInfo.day, dx + zoom/2, dy + zoom/2 + 30);
                     } else {
-                        // 周辺セルの日付表示
-                        ctx.font = `${Math.min(dh * 0.4, 16)}px Arial`;
-                        ctx.fillText(dInfo.day, dx + dw/2, dy + dh/2);
+                        ctx.fillStyle = "#fff";
+                        ctx.globalAlpha = 0.4;
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        if (isVertical) {
+                            ctx.font = "bold 18px Arial";
+                            ctx.fillText(dInfo.year, dx + zoom/2, dy + zoom/2);
+                        } else if (isHorizontal) {
+                            ctx.font = "bold 24px Arial";
+                            ctx.fillText(dInfo.day, dx + zoom/2, dy + zoom/2);
+                        }
                     }
                 }
             }
         }
         ctx.restore();
 
-        // 3. 密着型スピード・インジケーター
+        // 3. インジケーター
         const currentSpeed = this.speeds[this.speedIdx];
-        const indDist = config.loupeSize / 2 + 3;
-        const indAngle = Math.PI * 0.25; 
-        const indX = px + Math.cos(indAngle) * indDist;
-        const indY = py + Math.sin(indAngle) * indDist;
-
-        ctx.fillStyle = "rgba(0,0,0,0.9)";
-        ctx.beginPath();
-        ctx.roundRect(indX, indY, 46, 18, 4);
-        ctx.fill();
-        
+        const indDist = config.loupeSize / 2 + 2;
+        const indX = px + Math.cos(Math.PI/4) * indDist;
+        const indY = py + Math.sin(Math.PI/4) * indDist;
+        ctx.fillStyle = "rgba(0,0,0,0.85)";
+        ctx.beginPath(); ctx.roundRect(indX, indY, 50, 18, 4); ctx.fill();
         ctx.fillStyle = currentSpeed === 1.0 ? "#fff" : "#0f0";
-        ctx.font = "bold 10px monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(`${currentSpeed.toFixed(2)}x`, indX + 23, indY + 13);
+        ctx.font = "bold 10px monospace"; ctx.textAlign = "center";
+        ctx.fillText(`${currentSpeed.toFixed(2)}x`, indX + 25, indY + 13);
 
         // 4. 外枠と十字
-        ctx.strokeStyle = currentSpeed === 1.0 ? "rgba(255,255,255,0.7)" : "#0f0";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = currentSpeed === 1.0 ? activeColor : "#0f0";
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(px, py, config.loupeSize / 2, 0, Math.PI * 2); ctx.stroke();
+
+        ctx.strokeStyle = "rgba(255,255,255,0.3)";
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(px, py, config.loupeSize / 2, 0, Math.PI * 2);
+        ctx.moveTo(px, py - 25); ctx.lineTo(px, py + 25);
+        ctx.moveTo(px - 25, py); ctx.lineTo(px + 25, py);
         ctx.stroke();
 
-        ctx.strokeStyle = "rgba(255,255,255,0.4)";
-        ctx.beginPath();
-        ctx.moveTo(px, py - 20); ctx.lineTo(px, py + 20);
-        ctx.moveTo(px - 20, py); ctx.lineTo(px + 20, py);
-        ctx.stroke();
-
-        // UI表示
-        const activeInfo = this.getDateInfo(focusY, focusD);
+        // UI表示更新
         this.dateDisplay.textContent = `${activeInfo.year}年 ${activeInfo.month}月 ${activeInfo.day}日`;
-        this.dateDisplay.style.color = MONTH_COLORS[activeInfo.month - 1];
+        this.dateDisplay.style.color = activeColor;
     }
 }
 
-new MegaZoomCalendarV5();
+new FinalResearchCalendar();
 </script>
 </body>
 </html>
