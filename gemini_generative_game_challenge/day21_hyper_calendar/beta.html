@@ -2,39 +2,45 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Time Matrix Research v14</title>
+    <title>Time Matrix Research v16</title>
     <style>
         :root {
             --accent: #0f0;
-            --bg-panel: rgba(10, 10, 10, 0.85);
+            --bg-panel: rgba(10, 10, 10, 0.9);
             --border: rgba(255, 255, 255, 0.15);
             --text-main: #eee;
             --text-mute: #666;
         }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Inter', 'Helvetica Neue', sans-serif; color: var(--text-main); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Inter', sans-serif; color: var(--text-main); }
         canvas { display: block; }
         
-        /* HUD Layout */
+        /* HUD */
         #hud-container { position: absolute; inset: 0; pointer-events: none; }
         #date-hud { position: absolute; top: 40px; left: 40px; }
-        #date-hud-label { font-size: 0.7rem; letter-spacing: 6px; color: var(--text-mute); font-weight: 400; margin-bottom: 8px; }
+        #date-hud-label { font-size: 0.7rem; letter-spacing: 6px; color: var(--text-mute); font-weight: 400; margin-bottom: 8px; text-transform: uppercase; }
         #date-display { font-size: 3.8rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -2px; transition: opacity 0.3s; }
         #date-display.hidden { opacity: 0; }
 
-        /* Gear Config Button */
-        #config-trigger {
-            position: absolute; top: 40px; right: 40px; pointer-events: auto;
+        /* Buttons & Panels */
+        .round-btn {
             background: var(--bg-panel); border: 1px solid var(--border);
             width: 44px; height: 44px; border-radius: 50%; display: flex;
             align-items: center; justify-content: center; cursor: pointer;
-            transition: 0.3s; backdrop-filter: blur(10px);
+            transition: 0.3s; backdrop-filter: blur(10px); pointer-events: auto;
         }
-        #config-trigger:hover { border-color: var(--accent); transform: rotate(45deg); }
-        #config-trigger svg { width: 22px; height: 22px; fill: var(--text-mute); transition: 0.3s; }
-        #config-trigger:hover svg { fill: var(--accent); }
+        .round-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .round-btn svg { width: 22px; height: 22px; fill: var(--text-mute); transition: 0.3s; }
+        .round-btn:hover svg { fill: var(--accent); }
+
+        #config-trigger { position: absolute; top: 40px; right: 40px; }
+        #today-btn { 
+            position: absolute; bottom: 80px; right: 40px; 
+            width: auto; height: auto; border-radius: 20px; padding: 8px 20px;
+            font-size: 10px; font-weight: 600; letter-spacing: 2px; color: var(--text-mute);
+        }
 
         #config-panel {
-            position: absolute; top: 95px; right: 40px; width: 280px; pointer-events: auto;
+            position: absolute; top: 95px; right: 40px; width: 300px; pointer-events: auto;
             background: var(--bg-panel); border: 1px solid var(--border); padding: 25px;
             border-radius: 12px; backdrop-filter: blur(25px); display: none;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
@@ -43,8 +49,14 @@
         .config-label { font-size: 9px; color: var(--text-mute); letter-spacing: 1.5px; margin-bottom: 10px; display: block; text-transform: uppercase; }
         .config-val { float: right; color: var(--accent); font-family: monospace; }
         
+        select, input[type=number] {
+            background: #111; border: 1px solid #333; color: #fff; padding: 6px; 
+            font-size: 11px; border-radius: 4px; width: 100%; outline: none;
+        }
         input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; background: #333; height: 3px; appearance: none; border-radius: 2px; }
-        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .birthday-inputs { display: flex; gap: 5px; }
+        
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 18px; }
@@ -52,12 +64,6 @@
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        #debug-info {
-            position: absolute; bottom: 100px; left: 40px; font-family: 'Roboto Mono', monospace;
-            font-size: 10px; color: var(--accent); line-height: 1.8;
-            background: rgba(0,0,0,0.85); padding: 15px; border: 1px solid var(--border);
-            display: none; pointer-events: none; border-radius: 4px;
-        }
         footer {
             position: absolute; bottom: 35px; width: 100%; display: flex;
             justify-content: center; align-items: center; gap: 15px;
@@ -72,33 +78,50 @@
 
     <div id="hud-container">
         <div id="date-hud">
-            <div id="date-hud-label">TIME MATRIX // 120 YEARS</div>
+            <div id="date-hud-label" data-i18n="title">TIME MATRIX // 120 YEARS</div>
             <div id="date-display">---</div>
         </div>
 
-        <div id="config-trigger">
+        <div id="config-trigger" class="round-btn">
             <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
         </div>
 
+        <div id="today-btn" class="round-btn" data-i18n="today">TODAY</div>
+
         <div id="config-panel">
             <div class="config-group">
-                <span class="config-label">Magnification <span class="config-val" id="val-zoom">120</span></span>
+                <span class="config-label" data-i18n="lang">Language</span>
+                <select id="lang-select">
+                    <option value="en">English</option>
+                    <option value="fi">Suomi</option>
+                    <option value="ja" selected>日本語</option>
+                </select>
+            </div>
+            <div class="config-group">
+                <span class="config-label"><span data-i18n="mag">Magnification</span> <span class="config-val" id="val-zoom">120</span></span>
                 <input type="range" id="slider-zoom" min="40" max="250" value="120">
             </div>
             <div class="config-group">
-                <span class="config-label">Ambient Brightness <span class="config-val" id="val-bg">20%</span></span>
-                <input type="range" id="slider-bg" min="1" max="60" value="20">
+                <span class="config-label"><span data-i18n="ambient">Ambient Brightness</span> <span class="config-val" id="val-bg">20%</span></span>
+                <input type="range" id="slider-bg" min="1" max="80" value="20">
             </div>
             <div class="config-group">
-                <span class="config-label">Grid Padding Size <span class="config-val" id="val-pad">1px</span></span>
-                <input type="range" id="slider-pad-size" min="0" max="4" step="1" value="1">
-            </div>
-            <div class="config-group">
-                <span class="config-label">Grid Line Brightness <span class="config-val" id="val-pad-alpha">10%</span></span>
-                <input type="range" id="slider-pad-alpha" min="0" max="100" value="10">
+                <span class="config-label" data-i18n="birth">Birthday</span>
+                <div class="birthday-inputs">
+                    <input type="number" id="birth-y" value="1968" min="1950" max="2070">
+                    <input type="number" id="birth-m" value="6" min="1" max="12">
+                    <input type="number" id="birth-d" value="19" min="1" max="31">
+                </div>
             </div>
             <div class="config-group toggle-row">
-                <span class="config-label" style="margin-bottom:0">Show Date HUD</span>
+                <span class="config-label" style="margin-bottom:0" data-i18n="mask">Life Span Mask</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-mask">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="config-group toggle-row">
+                <span class="config-label" style="margin-bottom:0" data-i18n="hud">Show Date HUD</span>
                 <label class="switch">
                     <input type="checkbox" id="toggle-hud" checked>
                     <span class="slider"></span>
@@ -106,14 +129,12 @@
             </div>
         </div>
 
-        <div id="debug-info"></div>
-
         <footer>
-            <a href="#">HOME</a>
+            <a href="#" data-i18n="home">HOME</a>
             <span class="dot">|</span>
-            <span style="font-family:monospace; opacity:0.5">v.research.14</span>
+            <span style="font-family:monospace; opacity:0.4">v.research.16</span>
             <span class="dot">|</span>
-            <a href="#">BUG REPORT</a>
+            <a href="#" data-i18n="bug">BUG REPORT</a>
         </footer>
     </div>
     
@@ -122,41 +143,43 @@
 <script>
 /**
  * [CRITICAL PROTOCOL FOR AI ASSISTANTS]
- * v20260128.14: INTRODUCED GRID PADDING CONTROL.
- * - Added Background Padding Size (0,1,2,4px) and Alpha sliders.
- * - Optimized background texture rendering for high-density line drawing.
+ * v20260128.16: LOUPE MASK SYNC & FULL COLOR GRID & I18N.
+ * - Synced Life Span Mask inside the loupe.
+ * - Replaced Cross-Nav with Full adjacent grid in loupe.
+ * - Added EN/FI/JA Language support and HUD toggle fix.
  */
 
 const MONTH_COLORS = ["#A0C8FF","#B4D2FF","#FFC8DC","#FFB4C8","#B4FFB4","#64DC64","#64C8FF","#3296FF","#FFC864","#FF9632","#C86432","#DCDDFF"];
-const MONTH_DAYS = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
+const ACCUM_DAYS = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+
+const I18N = {
+    en: { title: "TIME MATRIX // 120 YEARS", today: "TODAY", lang: "Language", mag: "Magnification", ambient: "Ambient Brightness", birth: "Birthday", mask: "Life Span Mask", hud: "Show Date HUD", home: "HOME", bug: "BUG REPORT" },
+    fi: { title: "AIKAMATRIISI // 120 VUOTTA", today: "TÄNÄÄN", lang: "Kieli", mag: "Suurennus", ambient: "Ympäristön kirkkaus", birth: "Syntymäaika", mask: "Elinkaaren maski", hud: "Näytä HUD", home: "KOTI", bug: "VIKAIilmoitus" },
+    ja: { title: "タイム・マトリックス // 120年", today: "今日", lang: "言語", mag: "倍率", ambient: "背景の明るさ", birth: "誕生日", mask: "ライフスパン・マスク", hud: "HUD表示", home: "ホーム", bug: "不具合報告" }
+};
 
 class ResearchApp {
     constructor() {
         this.canvas = document.getElementById('researchCanvas');
         this.ctx = this.canvas.getContext('2d', { alpha: false });
         this.dateDisplay = document.getElementById('date-display');
-        this.debugPanel = document.getElementById('debug-info');
-        
         this.settings = { 
-            zoom: 120, bgAlpha: 0.2, showHUD: true, debug: false, 
-            loupeSize: 380, margin: 60,
-            padSize: 1, padAlpha: 0.1
+            zoom: 120, bgAlpha: 0.2, showHUD: true, loupeSize: 380, margin: 60,
+            birthY: 1968, birthM: 6, birthD: 19, maskEnabled: false, lang: 'ja'
         };
-
         this.speeds = [1.0, 0.25, 0.05]; 
         this.speedIdx = 0;
         this.vPointer = { x: window.innerWidth/2, y: window.innerHeight/2 };
-        this.rawMouse = { x: 0, y: 0 };
-        
         this.resize();
         this.initEvents();
+        this.updateI18n();
         this.loop();
+        this.jumpToDate(new Date());
     }
 
     initEvents() {
         window.addEventListener('resize', () => this.resize());
         window.addEventListener('mousemove', e => {
-            this.rawMouse.x = e.clientX; this.rawMouse.y = e.clientY;
             const ratio = this.speeds[this.speedIdx];
             this.vPointer.x += e.movementX * ratio;
             this.vPointer.y += e.movementY * ratio;
@@ -164,33 +187,46 @@ class ResearchApp {
             this.vPointer.y = Math.max(0, Math.min(window.innerHeight, this.vPointer.y));
         });
 
-        const btn = document.getElementById('config-trigger');
-        const panel = document.getElementById('config-panel');
-        btn.onclick = (e) => { e.stopPropagation(); panel.style.display = panel.style.display === 'block' ? 'none' : 'block'; };
-        window.onclick = () => { panel.style.display = 'none'; };
-        panel.onclick = (e) => e.stopPropagation();
-
-        // Control Bindings
-        const updateVal = (id, val) => document.getElementById(id).textContent = val;
-        
-        document.getElementById('slider-zoom').oninput = (e) => { this.settings.zoom = parseInt(e.target.value); updateVal('val-zoom', e.target.value); };
-        document.getElementById('slider-bg').oninput = (e) => { this.settings.bgAlpha = e.target.value / 100; updateVal('val-bg', e.target.value+'%'); };
-        document.getElementById('slider-pad-size').oninput = (e) => { this.settings.padSize = parseInt(e.target.value); updateVal('val-pad', e.target.value+'px'); };
-        document.getElementById('slider-pad-alpha').oninput = (e) => { this.settings.padAlpha = e.target.value / 100; updateVal('val-pad-alpha', e.target.value+'%'); };
-        
-        document.getElementById('toggle-hud').onchange = (e) => {
-            this.settings.showHUD = e.target.checked;
-            this.dateDisplay.classList.toggle('hidden', !this.settings.showHUD);
+        document.getElementById('config-trigger').onclick = (e) => {
+            e.stopPropagation();
+            const p = document.getElementById('config-panel');
+            p.style.display = p.style.display === 'block' ? 'none' : 'block';
         };
+        document.getElementById('today-btn').onclick = () => this.jumpToDate(new Date());
+        window.onclick = () => { document.getElementById('config-panel').style.display = 'none'; };
+        document.getElementById('config-panel').onclick = (e) => e.stopPropagation();
+
+        document.getElementById('lang-select').onchange = (e) => { this.settings.lang = e.target.value; this.updateI18n(); };
+        document.getElementById('slider-zoom').oninput = (e) => { this.settings.zoom = parseInt(e.target.value); document.getElementById('val-zoom').textContent = e.target.value; };
+        document.getElementById('slider-bg').oninput = (e) => { this.settings.bgAlpha = e.target.value / 100; document.getElementById('val-bg').textContent = e.target.value+'%'; };
+        document.getElementById('birth-y').onchange = (e) => this.settings.birthY = parseInt(e.target.value);
+        document.getElementById('birth-m').onchange = (e) => this.settings.birthM = parseInt(e.target.value);
+        document.getElementById('birth-d').onchange = (e) => this.settings.birthD = parseInt(e.target.value);
+        document.getElementById('toggle-mask').onchange = (e) => this.settings.maskEnabled = e.target.checked;
+        document.getElementById('toggle-hud').onchange = (e) => this.dateDisplay.classList.toggle('hidden', !e.target.checked);
 
         window.addEventListener('mousedown', (e) => { if(e.target.tagName === 'CANVAS') this.speedIdx = (this.speedIdx + 1) % this.speeds.length; });
-        window.addEventListener('keydown', e => {
-            if(e.key === 'Shift') this.speedIdx = (this.speedIdx + 1) % this.speeds.length;
-            if(e.altKey && (e.key === 'd' || e.key === 'D')) {
-                this.settings.debug = !this.settings.debug;
-                this.debugPanel.style.display = this.settings.debug ? 'block' : 'none';
-            }
-        });
+        window.addEventListener('keydown', e => { if(e.key === 'Shift') this.speedIdx = (this.speedIdx + 1) % this.speeds.length; });
+    }
+
+    updateI18n() {
+        const langData = I18N[this.settings.lang];
+        document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = langData[el.dataset.i18n]; });
+    }
+
+    formatDate(y, m, d) {
+        if(this.settings.lang === 'ja') return `${y}年 ${m}月 ${d}日`;
+        if(this.settings.lang === 'fi') return `${d}. ${['tammikuuta','helmikuuta','maaliskuuta','huhtikuuta','toukokuuta','kesäkuuta','heinäkuuta','elokuuta','syyskuuta','lokakuuta','marraskuuta','joulukuuta'][m-1]} ${y}`;
+        return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1]} ${d}, ${y}`;
+    }
+
+    jumpToDate(date) {
+        const yIdx = date.getFullYear() - 1950;
+        const dIdx = Math.floor((date - new Date(date.getFullYear(), 0, 1)) / 86400000);
+        const gridW = this.width - this.settings.margin * 2;
+        const gridH = this.height - this.settings.margin * 2;
+        this.vPointer.x = this.settings.margin + (dIdx / 366) * gridW;
+        this.vPointer.y = this.settings.margin + (yIdx / 120) * gridH;
     }
 
     resize() {
@@ -201,8 +237,8 @@ class ResearchApp {
     }
 
     getDateInfo(yIdx, dIdx) {
-        let m = 0; for(let i=11; i>=0; i--) { if(dIdx >= MONTH_DAYS[i]) { m = i; break; } }
-        return { year: 1950 + yIdx, month: m + 1, day: dIdx - MONTH_DAYS[m] + 1 };
+        let m = 0; for(let i=11; i>=0; i--) { if(dIdx >= ACCUM_DAYS[i]) { m = i; break; } }
+        return { year: 1950 + yIdx, month: m + 1, day: dIdx - ACCUM_DAYS[m] + 1 };
     }
 
     loop() { this.draw(); requestAnimationFrame(() => this.loop()); }
@@ -211,47 +247,32 @@ class ResearchApp {
         const { ctx, width, height, settings } = this;
         const margin = settings.margin;
         const gridW = width - margin * 2; const gridH = height - margin * 2;
+        const cellW = gridW / 366; const cellH = gridH / 120;
         const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
 
         ctx.fillStyle = "#000"; ctx.fillRect(0, 0, width, height);
 
-        const cellW = gridW / 366; const cellH = gridH / 120;
+        const now = new Date();
+        const todayIdx = (now.getFullYear() - 1950) * 366 + Math.floor((now - new Date(now.getFullYear(),0,1))/86400000);
+        const birthIdx = (settings.birthY - 1950) * 366 + ACCUM_DAYS[settings.birthM - 1] + (settings.birthD - 1);
 
-        // 1. Background Grid with Customizable Padding
+        // 1. Background Grid
         ctx.save();
         ctx.translate(margin, margin);
-        
-        // Month Blocks
-        ctx.globalAlpha = settings.bgAlpha;
         for (let y = 0; y < 120; y++) {
             const py = y * cellH;
             for (let m = 0; m < 12; m++) {
-                const startDay = MONTH_DAYS[m];
-                const endDay = (m === 11) ? 366 : MONTH_DAYS[m+1];
+                const startDay = ACCUM_DAYS[m];
+                const endDay = (m === 11) ? 366 : ACCUM_DAYS[m+1];
+                const isAlive = !settings.maskEnabled || (y * 366 + startDay >= birthIdx && y * 366 + startDay <= todayIdx);
+                ctx.globalAlpha = isAlive ? settings.bgAlpha : settings.bgAlpha * 0.1;
                 ctx.fillStyle = MONTH_COLORS[m];
-                // セル本体を描画
-                ctx.fillRect(startDay * cellW, py, (endDay - startDay) * cellW, cellH);
-            }
-        }
-
-        // Grid Lines (Padding Simulation)
-        if (settings.padAlpha > 0 && settings.padSize > 0) {
-            ctx.globalAlpha = settings.padAlpha;
-            ctx.fillStyle = "#000";
-            ctx.lineWidth = settings.padSize;
-            
-            // Vertical lines (Days)
-            for (let d = 0; d <= 366; d++) {
-                ctx.fillRect(d * cellW - settings.padSize/2, 0, settings.padSize, gridH);
-            }
-            // Horizontal lines (Years)
-            for (let y = 0; y <= 120; y++) {
-                ctx.fillRect(0, y * cellH - settings.padSize/2, gridW, settings.padSize);
+                ctx.fillRect(startDay * cellW, py, (endDay - startDay) * cellW, cellH - 0.1);
             }
         }
         ctx.restore();
 
-        // 2. Snapping Loupe Logic
+        // 2. Full Color Loupe
         const px = this.vPointer.x; const py = this.vPointer.y;
         const relX = px - margin; const relY = py - margin;
         const focusD = Math.floor(Math.max(0, Math.min(365, relX / cellW)));
@@ -272,27 +293,27 @@ class ResearchApp {
                 const dInfo = this.getDateInfo(y, d);
                 const dx = px + (d - focusD) * zoom - zoom/2; const dy = py + (y - focusY) * zoom - zoom/2;
                 const isTarget = (y === focusY && d === focusD);
-                const isCross = (d === focusD || y === focusY);
-                if (isCross) {
-                    ctx.fillStyle = MONTH_COLORS[dInfo.month - 1];
-                    ctx.globalAlpha = isTarget ? 1.0 : 0.25;
-                    ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4);
-                    if (isTarget) {
-                        ctx.fillStyle = "#000"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                        const fz = zoom * 0.12;
-                        ctx.font = `bold ${Math.max(10, fz)}px Arial`; ctx.fillText(`${dInfo.year}`, px, py - zoom*0.25);
-                        ctx.font = `bold ${Math.max(12, fz*1.2)}px Arial`; ctx.fillText(`${dInfo.month}月`, px, py - zoom*0.05);
-                        ctx.font = `bold ${Math.max(18, fz*2.5)}px Arial`; ctx.fillText(dInfo.day, px, py + zoom*0.28);
-                    } else {
-                        ctx.fillStyle = "#fff"; ctx.globalAlpha = 0.4; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                        ctx.font = `bold ${Math.max(10, zoom * 0.16)}px Arial`;
-                        ctx.fillText(d === focusD ? dInfo.year : dInfo.day, dx + zoom/2, dy + zoom/2);
-                    }
+                
+                const isAlive = !settings.maskEnabled || (y * 366 + d >= birthIdx && y * 366 + d <= todayIdx);
+
+                ctx.fillStyle = MONTH_COLORS[dInfo.month - 1];
+                ctx.globalAlpha = isAlive ? (isTarget ? 1.0 : 0.25) : 0.05;
+                ctx.fillRect(dx + 2, dy + 2, zoom - 4, zoom - 4);
+                
+                if (isTarget && isAlive) {
+                    ctx.fillStyle = "#000"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.font = `bold ${zoom * 0.1}px Arial`; ctx.fillText(`${dInfo.year}`, px, py - zoom*0.25);
+                    ctx.font = `bold ${zoom * 0.12}px Arial`; ctx.fillText(`${dInfo.month}${this.settings.lang==='ja'?'月':''}`, px, py - zoom*0.06);
+                    ctx.font = `bold ${zoom * 0.28}px Arial`; ctx.fillText(dInfo.day, px, py + zoom*0.25);
+                } else if (isAlive && (d === focusD || y === focusY)) {
+                    ctx.fillStyle = "#fff"; ctx.globalAlpha = 0.4; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.font = `bold ${zoom * 0.15}px Arial`; ctx.fillText(d === focusD ? dInfo.year : dInfo.day, dx + zoom/2, dy + zoom/2);
                 }
             }
         }
         ctx.restore();
 
+        // 3. Indicator
         const currentSpeed = this.speeds[this.speedIdx];
         const indDist = settings.loupeSize / 2 + 5;
         const indX = px + Math.cos(Math.PI/4) * indDist; const indY = py + Math.sin(Math.PI/4) * indDist;
@@ -302,16 +323,11 @@ class ResearchApp {
 
         ctx.strokeStyle = currentSpeed === 1.0 ? activeColor : accent; ctx.lineWidth = 2.5;
         ctx.beginPath(); ctx.arc(px, py, settings.loupeSize / 2, 0, Math.PI * 2); ctx.stroke();
-
         ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(px, py - 15); ctx.lineTo(px, py + 15); ctx.moveTo(px - 15, py); ctx.lineTo(px + 15, py); ctx.stroke();
 
-        this.dateDisplay.textContent = `${activeInfo.year}年 ${activeInfo.month}月 ${activeInfo.day}日`;
+        this.dateDisplay.textContent = this.formatDate(activeInfo.year, activeInfo.month, activeInfo.day);
         this.dateDisplay.style.color = activeColor;
-
-        if(settings.debug) {
-            this.debugPanel.innerHTML = `GRID: Pad ${settings.padSize}px / Alpha ${Math.round(settings.padAlpha*100)}%<br>INDEX: Y:${focusY} D:${focusD}<br>SCALE: ${zoom}px | FLOW: ${currentSpeed}x`;
-        }
     }
 }
 window.onload = () => new ResearchApp();
