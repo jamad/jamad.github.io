@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Urban Sprint: City Link Prototype</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; user-select: none; -webkit-user-select: none; touch-action: none; }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        
+        /* HUD */
+        #hud { position: absolute; top: 10px; left: 10px; color: white; text-shadow: 1px 1px 2px black; pointer-events: none; z-index: 10; }
+        .hud-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        #message { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            color: #fff; font-size: 24px; font-weight: bold; text-align: center; 
+            background: rgba(0,0,0,0.7); padding: 20px; border-radius: 10px; border: 2px solid #00ffff;
+            display: none; pointer-events: auto; cursor: pointer; z-index: 20;
+        }
+
+        /* Drone View Frame (Visual only, rendering is done on main canvas) */
+        #drone-view-frame {
+            position: absolute; top: 10px; right: 10px;
+            width: 30vw; height: 20vw; /* Aspect ratio matches typical screen */
+            max-width: 300px; max-height: 200px;
+            border: 2px solid #00ff00;
+            background: rgba(0, 20, 0, 0.2);
+            pointer-events: none;
+            z-index: 10;
+        }
+        #drone-label {
+            position: absolute; bottom: 2px; right: 5px;
+            color: #00ff00; font-size: 10px; font-family: monospace;
+            text-shadow: 0 0 2px #000;
+        }
+        #rec-dot {
+            position: absolute; top: 5px; left: 5px;
+            width: 8px; height: 8px; background-color: red;
+            border-radius: 50%; animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Mobile Controls */
+        #controls { position: absolute; bottom: 20px; width: 100%; height: 150px; pointer-events: none; display: flex; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 15; }
+        .control-zone { pointer-events: auto; cursor: pointer; }
+        
+        /* Joystick Area */
+        #joystick-zone { width: 120px; height: 120px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3); }
+        #joystick-knob { width: 50px; height: 50px; background: rgba(0, 255, 255, 0.5); border-radius: 50%; position: absolute; top: 35px; left: 35px; box-shadow: 0 0 10px #00ffff; }
+        
+        /* Buttons */
+        #action-zone { display: flex; gap: 20px; align-items: flex-end; }
+        .game-btn { 
+            width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 0, 100, 0.5); 
+            border: 2px solid rgba(255, 255, 255, 0.5); color: white; font-weight: bold; 
+            display: flex; justify-content: center; align-items: center; font-size: 14px;
+            box-shadow: 0 0 10px #ff0066; touch-action: manipulation;
+        }
+        .game-btn:active { background: rgba(255, 0, 100, 0.8); transform: scale(0.95); }
+
+        /* Start Overlay */
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 30; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white;
+        }
+        button.start-btn {
+            padding: 15px 40px; font-size: 20px; background: #00ffff; border: none;
+            border-radius: 30px; cursor: pointer; font-weight: bold; color: #000;
+            box-shadow: 0 0 15px #00ffff; margin-top: 20px;
+        }
+        .instruction { font-size: 14px; color: #ccc; margin-top: 10px; text-align: center; line-height: 1.5; }
+    </style>
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="hud">
+        <div class="hud-text" id="distance-display">残り距離: --- m</div>
+        <div class="hud-text" style="font-size: 12px; color: #aaa;">Drone View: Goal Area</div>
+    </div>
+
+    <!-- Drone View Decoration -->
+    <div id="drone-view-frame">
+        <div id="rec-dot"></div>
+        <div id="drone-label">DRONE-CAM: LIVE</div>
+    </div>
+
+    <div id="message">GOAL!<br><span style="font-size:16px">タップしてリトライ</span></div>
+
+    <div id="controls">
+        <div id="joystick-zone" class="control-zone">
+            <div id="joystick-knob"></div>
+        </div>
+        <div id="action-zone" class="control-zone">
+            <div class="game-btn" id="jump-btn">JUMP</div>
+        </div>
+    </div>
+
+    <div id="start-screen">
+        <h1 style="text-shadow: 0 0 10px #00ffff;">Urban Sprint</h1>
+        <p>A地点からB地点へ競走せよ</p>
+        <div class="instruction">
+            [PC]<br>移動: WASD / 視点: マウスドラッグ / ジャンプ: SPACE<br><br>
+            [Mobile/iPad]<br>移動: 左スティック / 視点: 右画面スワイプ / ジャンプ: ボタン<br>
+            <br>
+            ※右上のモニタでゴールの位置を確認できます
+        </div>
+        <button class="start-btn" onclick="startGame()">START GAME</button>
+    </div>
+
+<script>
+    // --- Audio System ---
+    const AudioSys = {
+        ctx: null,
+        init: function() {
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+        },
+        playTone: function(freq, type, duration, vol=0.1) {
+            if (!this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + duration);
+        },
+        jump: function() { this.playTone(300, 'square', 0.1, 0.05); },
+        land: function() { this.playTone(100, 'sawtooth', 0.1, 0.1); },
+        win: function() { 
+            this.playTone(440, 'sine', 0.2); 
+            setTimeout(() => this.playTone(554, 'sine', 0.2), 200);
+            setTimeout(() => this.playTone(659, 'sine', 0.4), 400);
+        },
+        boost: function() { this.playTone(800, 'triangle', 0.3, 0.05); }
+    };
+
+    // --- Game Variables ---
+    let mainCamera, droneCamera, scene, renderer;
+    let player, goal;
+    let buildings = [];
+    let trams = [];
+    let jumpPads = [];
+    
+    // Physics & Movement
+    let velocity = new THREE.Vector3();
+    let moveForward = false;
+    let moveBackward = false;
+    let moveLeft = false;
+    let moveRight = false;
+    let canJump = false;
+    
+    // Config
+    const GRAVITY = 30.0;
+    const SPEED = 50.0;
+    const JUMP_FORCE = 15.0;
+    const TRAM_SPEED = 40.0;
+    const DRONE_DURATION = 300; // 5 minutes in seconds
+    
+    // Input State
+    let inputStartPos = { x: 0, y: 0 };
+    let joyStickActive = false;
+    let lookPointerId = null;
+    let lookLastX = 0;
+    
+    // Game State
+    let prevTime = performance.now();
+    let gameStartTime = 0;
+    let isGameRunning = false;
+    let mapSize = 400;
+
+    function init() {
+        // Scene Setup
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050510);
+        scene.fog = new THREE.Fog(0x050510, 10, 200);
+
+        // --- CAMERAS ---
+        
+        // 1. Main Camera (Player View)
+        mainCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        // 2. Drone Camera (Top-right View)
+        droneCamera = new THREE.PerspectiveCamera(60, 300 / 200, 1, 2000); // Aspect ratio approx 3:2
+        
+        // Renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        // Enable scissor test for multi-viewport rendering
+        renderer.setScissorTest(true); 
+        
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0x404040, 2); 
+        scene.add(ambientLight);
+        
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(50, 100, 50);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // Player Group
+        player = new THREE.Group();
+        scene.add(player);
+        
+        // City & Objects
+        generateCity();
+
+        // Goal Beacon (High visibility)
+        const goalGeo = new THREE.CylinderGeometry(2, 2, 200, 32);
+        const goalMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.8 });
+        goal = new THREE.Mesh(goalGeo, goalMat);
+        goal.position.set(0, 0, -mapSize + 20); 
+        scene.add(goal);
+        
+        // Infinite Light Beam for Goal
+        const beamGeo = new THREE.CylinderGeometry(0.5, 0.5, 2000, 16);
+        const beamMat = new THREE.MeshBasicMaterial({ color: 0xccffff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending });
+        const beam = new THREE.Mesh(beamGeo, beamMat);
+        beam.position.y = 1000;
+        goal.add(beam);
+        
+        // Goal Light Point
+        const goalLight = new THREE.PointLight(0x00ffff, 2, 300);
+        goalLight.position.y = 10;
+        goal.add(goalLight);
+
+        // Listeners
+        document.addEventListener('keydown', onKeyDown);
+        document.addEventListener('keyup', onKeyUp);
+        window.addEventListener('resize', onWindowResize);
+        
+        setupControls();
+    }
+
+    function generateCity() {
+        // Floor
+        const floorGeo = new THREE.PlaneGeometry(2000, 2000);
+        const floorMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Buildings
+        const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+        const colors = [0x223344, 0x334455, 0x112233, 0x554466];
+
+        for (let x = -mapSize; x <= mapSize; x += 25) {
+            for (let z = -mapSize; z <= mapSize; z += 25) {
+                if (Math.random() > 0.7) continue; 
+                if (Math.abs(z) < 15) continue; // Center road
+                if (z < -mapSize + 50 && Math.abs(x) < 50) continue; // Goal area
+                if (z > mapSize - 50 && Math.abs(x) < 50) continue; // Start area
+
+                const h = Math.random() * 40 + 5;
+                const w = 15 + Math.random() * 5;
+                const d = 15 + Math.random() * 5;
+                
+                const mat = new THREE.MeshPhongMaterial({ color: colors[Math.floor(Math.random() * colors.length)] });
+                const mesh = new THREE.Mesh(boxGeo, mat);
+                
+                mesh.position.set(x, h/2, z);
+                mesh.scale.set(w, h, d);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                
+                scene.add(mesh);
+                
+                buildings.push({
+                    minX: x - w/2, maxX: x + w/2,
+                    minZ: z - d/2, maxZ: z + d/2,
+                    height: h
+                });
+            }
+        }
+
+        // Trams
+        const tramGeo = new THREE.BoxGeometry(10, 2, 20);
+        const tramMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        for(let i=0; i<4; i++) {
+            const tram = new THREE.Mesh(tramGeo, tramMat);
+            tram.position.set(-100 + i*60, 1, 0); 
+            tram.userData = { speed: TRAM_SPEED * (i%2==0 ? 1 : -1), limit: 150 };
+            scene.add(tram);
+            trams.push(tram);
+        }
+
+        // Jump Pads
+        const padGeo = new THREE.CylinderGeometry(3, 3, 1, 16);
+        const padMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        for(let i=0; i<10; i++) {
+            const pad = new THREE.Mesh(padGeo, padMat);
+            const x = (Math.random() - 0.5) * mapSize * 1.5;
+            const z = (Math.random() - 0.5) * mapSize * 1.5;
+            pad.position.set(x, 0.5, z);
+            scene.add(pad);
+            jumpPads.push(pad);
+        }
+    }
+
+    function onKeyDown(event) {
+        switch (event.code) {
+            case 'ArrowUp': case 'KeyW': moveForward = true; break;
+            case 'ArrowLeft': case 'KeyA': moveLeft = true; break;
+            case 'ArrowDown': case 'KeyS': moveBackward = true; break;
+            case 'ArrowRight': case 'KeyD': moveRight = true; break;
+            case 'Space': doJump(); break;
+        }
+    }
+
+    function onKeyUp(event) {
+        switch (event.code) {
+            case 'ArrowUp': case 'KeyW': moveForward = false; break;
+            case 'ArrowLeft': case 'KeyA': moveLeft = false; break;
+            case 'ArrowDown': case 'KeyS': moveBackward = false; break;
+            case 'ArrowRight': case 'KeyD': moveRight = false; break;
+        }
+    }
+
+    function doJump() {
+        if (canJump) {
+            velocity.y += JUMP_FORCE;
+            canJump = false;
+            AudioSys.jump();
+        }
+    }
+
+    function setupControls() {
+        const joyZone = document.getElementById('joystick-zone');
+        const joyKnob = document.getElementById('joystick-knob');
+        const jumpBtn = document.getElementById('jump-btn');
+        const canvas = document.getElementById('canvas-container');
+
+        const startJoystick = (clientX, clientY) => {
+            joyStickActive = true;
+            inputStartPos.x = clientX;
+            inputStartPos.y = clientY;
+        };
+
+        const moveJoystick = (clientX, clientY) => {
+            if(!joyStickActive) return;
+            const dx = clientX - inputStartPos.x;
+            const dy = clientY - inputStartPos.y;
+            const dist = Math.min(40, Math.sqrt(dx*dx + dy*dy));
+            const angle = Math.atan2(dy, dx);
+            const kx = Math.cos(angle) * dist;
+            const ky = Math.sin(angle) * dist;
+            joyKnob.style.transform = `translate(${kx}px, ${ky}px)`;
+            moveForward = ky < -10;
+            moveBackward = ky > 10;
+            moveLeft = kx < -10;
+            moveRight = kx > 10;
+        };
+
+        const endJoystick = () => {
+            joyStickActive = false;
+            joyKnob.style.transform = `translate(0px, 0px)`;
+            moveForward = moveBackward = moveLeft = moveRight = false;
+        };
+
+        joyZone.addEventListener('touchstart', (e) => { e.preventDefault(); startJoystick(e.changedTouches[0].clientX, e.changedTouches[0].clientY); }, {passive: false});
+        joyZone.addEventListener('touchmove', (e) => { e.preventDefault(); moveJoystick(e.changedTouches[0].clientX, e.changedTouches[0].clientY); }, {passive: false});
+        joyZone.addEventListener('touchend', endJoystick);
+        joyZone.addEventListener('touchcancel', endJoystick);
+        joyZone.addEventListener('mousedown', (e) => { e.preventDefault(); startJoystick(e.clientX, e.clientY); });
+        window.addEventListener('mousemove', (e) => { if(joyStickActive) { e.preventDefault(); moveJoystick(e.clientX, e.clientY); } });
+        window.addEventListener('mouseup', endJoystick);
+
+        const triggerJump = (e) => { e.preventDefault(); doJump(); };
+        jumpBtn.addEventListener('touchstart', triggerJump, {passive: false});
+        jumpBtn.addEventListener('mousedown', triggerJump);
+
+        // Camera Look Logic (Increased Sensitivity)
+        canvas.addEventListener('touchstart', (e) => {
+            for(let i=0; i<e.changedTouches.length; i++) {
+                const t = e.changedTouches[i];
+                if(t.clientX > window.innerWidth / 2) {
+                    lookPointerId = t.identifier;
+                    lookLastX = t.clientX;
+                    break;
+                }
+            }
+        }, {passive: false});
+
+        canvas.addEventListener('touchmove', (e) => {
+            for(let i=0; i<e.changedTouches.length; i++) {
+                const t = e.changedTouches[i];
+                if(t.identifier === lookPointerId) {
+                    const dx = t.clientX - lookLastX;
+                    mainCamera.rotation.y -= dx * 0.008; // Sensitivity Up
+                    lookLastX = t.clientX;
+                }
+            }
+        }, {passive: false});
+        
+        let isMouseDown = false;
+        canvas.addEventListener('mousedown', (e) => { if(e.target.id === 'canvas-container') isMouseDown = true; });
+        window.addEventListener('mouseup', () => isMouseDown = false);
+        window.addEventListener('mousemove', (e) => {
+            if(isMouseDown) {
+                mainCamera.rotation.y -= e.movementX * 0.004;
+            }
+        });
+    }
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        AudioSys.init();
+        isGameRunning = true;
+        gameStartTime = performance.now();
+        
+        player.position.set(0, 10, mapSize); 
+        mainCamera.position.set(0, 10, mapSize);
+        mainCamera.rotation.set(0, 0, 0); 
+        
+        prevTime = performance.now();
+        animate();
+    }
+
+    function checkCollisions(newPos) {
+        let groundHeight = 0;
+        for (let b of buildings) {
+            if (newPos.x > b.minX && newPos.x < b.maxX && newPos.z > b.minZ && newPos.z < b.maxZ) {
+                if (player.position.y >= b.height - 2) {
+                    groundHeight = Math.max(groundHeight, b.height);
+                } else {
+                    return { pos: player.position, ground: 0, hitWall: true }; 
+                }
+            }
+        }
+        for (let t of trams) {
+            if (Math.abs(newPos.x - t.position.x) < 6 && Math.abs(newPos.z - t.position.z) < 11) {
+                groundHeight = 2; 
+                newPos.x += (t.userData.speed * 0.016); 
+            }
+        }
+        return { pos: newPos, ground: groundHeight, hitWall: false };
+    }
+
+    function updateDroneCamera(elapsedTime) {
+        // Calculate progress 0.0 to 1.0 over 5 minutes (300s)
+        const progress = Math.min(elapsedTime / DRONE_DURATION, 1.0);
+        
+        // Start: Close to goal (low angle)
+        const startPos = new THREE.Vector3(0, 30, goal.position.z + 50);
+        
+        // End: High above center (Bird's eye view)
+        const endPos = new THREE.Vector3(0, 600, 0);
+        
+        // Interpolate position
+        droneCamera.position.lerpVectors(startPos, endPos, progress);
+        
+        // Always look at the goal (or shift to center as we go up)
+        // Let's keep looking at the goal to keep it in frame
+        droneCamera.lookAt(goal.position);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        if(!isGameRunning) return;
+
+        const time = performance.now();
+        const delta = (time - prevTime) / 1000;
+        const totalTime = (time - gameStartTime) / 1000;
+        prevTime = time;
+
+        // --- Game Logic ---
+        
+        // Tram
+        trams.forEach(t => {
+            t.position.x += t.userData.speed * delta;
+            if(Math.abs(t.position.x) > t.userData.limit) t.userData.speed *= -1;
+        });
+
+        // Player Move
+        velocity.y -= GRAVITY * delta;
+        const rotY = mainCamera.rotation.y;
+        let dx = 0, dz = 0;
+        if(moveForward) { dx -= Math.sin(rotY); dz -= Math.cos(rotY); }
+        if(moveBackward) { dx += Math.sin(rotY); dz += Math.cos(rotY); }
+        if(moveRight) { dx += Math.cos(rotY); dz -= Math.sin(rotY); }
+        if(moveLeft) { dx -= Math.cos(rotY); dz += Math.sin(rotY); }
+        
+        if(dx!==0 || dz!==0) {
+            const len = Math.sqrt(dx*dx + dz*dz);
+            dx /= len; dz /= len;
+        }
+
+        const nextPos = player.position.clone();
+        nextPos.x += dx * SPEED * delta;
+        nextPos.z += dz * SPEED * delta;
+        
+        const colInfo = checkCollisions(nextPos);
+        if(!colInfo.hitWall) {
+            player.position.x = colInfo.pos.x;
+            player.position.z = colInfo.pos.z;
+        }
+
+        player.position.y += velocity.y * delta;
+        if (player.position.y < colInfo.ground) {
+            velocity.y = 0;
+            player.position.y = colInfo.ground;
+            canJump = true;
+        }
+
+        jumpPads.forEach(pad => {
+            if(player.position.distanceTo(pad.position) < 4 && player.position.y < 2) {
+                velocity.y = 40; canJump = false; AudioSys.boost();
+            }
+        });
+
+        // Camera Follow
+        mainCamera.position.copy(player.position);
+        mainCamera.position.y += 2; 
+
+        // Update HUD
+        const distToGoal = Math.floor(player.position.distanceTo(goal.position));
+        document.getElementById('distance-display').innerText = `残り距離: ${distToGoal} m`;
+
+        if (distToGoal < 10) {
+            document.getElementById('message').style.display = 'block';
+            document.getElementById('message').innerHTML = "GOAL!!<br><span style='font-size:16px'>Distance: 0m</span>";
+            isGameRunning = false;
+            AudioSys.win();
+            document.getElementById('message').onclick = () => location.reload();
+        }
+
+        // --- Dual Viewport Rendering ---
+        
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        // 1. Render Main View (Full Screen)
+        renderer.setViewport(0, 0, w, h);
+        renderer.setScissor(0, 0, w, h);
+        renderer.render(scene, mainCamera);
+
+        // 2. Render Drone View (Top Right)
+        updateDroneCamera(totalTime);
+        
+        // Define mini-map size (e.g., 30% width)
+        const mapW = Math.min(w * 0.3, 300);
+        const mapH = mapW * 0.66; // 3:2 aspect
+        const padX = 10;
+        const padY = 10;
+        
+        renderer.setViewport(w - mapW - padX, h - mapH - padY, mapW, mapH);
+        renderer.setScissor(w - mapW - padX, h - mapH - padY, mapW, mapH);
+        renderer.render(scene, droneCamera);
+    }
+
+    function onWindowResize() {
+        mainCamera.aspect = window.innerWidth / window.innerHeight;
+        mainCamera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    init();
+
+</script>
+</body>
+</html>
