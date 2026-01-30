@@ -1,7 +1,7 @@
-"""
+r"""
 <!-- 
 [DEVELOPMENT NOTES FOR AI ASSISTANTS]
-CURRENT VERSION: v20260131.08-STABLE-REPAIR
+CURRENT VERSION: v20260131.09-STABLE-VIDEO-FINAL
 
 MANDATORY RULES FOR CODE MODIFICATION:
 1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested.
@@ -20,14 +20,14 @@ MANDATORY RULES FOR CODE MODIFICATION:
    - [DESELECT-ON-EMPTY-CLICK]: Clicking the empty background area of list_widget must call deselect_all().
    - [TOOL-FILTER]: Support filtering by detected tool (A1111, ComfyUI, etc.) via toggle buttons.
    - [EXPLORER-INTEGRATION]: Support opening file location in OS explorer with the file selected.
-   - [VIDEO-THUMBNAIL]: Use Windows Shell API via ctypes with CoInitialize (inside thread) to fetch Explorer-native thumbnails.
+   - [VIDEO-THUMBNAIL]: Use Windows Shell API via ctypes with CoInitialize to fetch Explorer-native thumbnails.
 4. AI PROTOCOL: If token limit is reached, instruct user to start a new chat with the current file.
 5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
 6. PRE-FLIGHT VERIFICATION (Internal Monologue):
    Before outputting code, verify these specific cases:
-   [ ] Regex Fix: Used rb'\{' instead of b'\{' to avoid escape sequence warnings? (YES)
-   [ ] Syntax Fix: Removed extraneous triple quotes at the end of the file? (YES)
-   [ ] Shell Fix: Corrected GUID hex values and used c_ubyte for Data4? (YES)
+   [ ] Regex Fix: Used rb'\{"prompt":' instead of rb'\{"prompt":.+\}' to minimize complex backtracking? (YES)
+   [ ] Shell Fix: Corrected GUID hex value 0xba16 and used LPCWSTR for path? (YES)
+   [ ] UI Fix: Does video fallback triangle scale with size? (YES)
 -->
 """
 
@@ -68,7 +68,7 @@ def get_shell_thumbnail(path, size):
         shell32 = ctypes.windll.shell32
         ole32 = ctypes.windll.ole32
         
-        # COM をスレッド内で初期化 (S_OK=0, S_FALSE=1)
+        # COM を現在のスレッドで初期化
         ole32.CoInitialize(None)
         
         class GUID(ctypes.Structure):
@@ -80,7 +80,8 @@ def get_shell_thumbnail(path, size):
         
         p_item = ctypes.c_void_p()
         abs_path = os.path.abspath(path)
-        ret = shell32.SHCreateItemFromParsingName(abs_path, None, ctypes.byref(IID_IShellItemImageFactory), ctypes.byref(p_item))
+        # ワイド文字列として明示的にパスを渡す
+        ret = shell32.SHCreateItemFromParsingName(wintypes.LPCWSTR(abs_path), None, ctypes.byref(IID_IShellItemImageFactory), ctypes.byref(p_item))
         if ret != 0:
             return None
 
@@ -89,7 +90,7 @@ def get_shell_thumbnail(path, size):
 
         h_bitmap = wintypes.HBITMAP()
         factory_vtbl = ctypes.cast(p_item, ctypes.POINTER(ctypes.c_void_p))
-        # IShellItemImageFactory::GetImage is at index 3
+        # GetImage is at index 3 in vtable
         get_image_func = ctypes.WINFUNCTYPE(ctypes.c_long, ctypes.c_void_p, SIZE, ctypes.c_int, ctypes.POINTER(wintypes.HBITMAP))(factory_vtbl.contents[3])
         
         # SIIGBF_BIGGERSIZEOK = 0x1
@@ -100,7 +101,7 @@ def get_shell_thumbnail(path, size):
             qimg = QImage.fromHBITMAP(h_bitmap.value)
             ctypes.windll.gdi32.DeleteObject(h_bitmap)
             
-        # Release IShellItem (IUnknown::Release is index 2)
+        # Release IShellItem
         release_func = ctypes.WINFUNCTYPE(ctypes.c_long, ctypes.c_void_p)(factory_vtbl.contents[2])
         release_func(p_item)
         
@@ -156,15 +157,18 @@ def extract_metadata(image_path):
         try:
             with open(image_path, 'rb') as f:
                 data = f.read(1024 * 1024 * 4)
-                # rb'...' raw-byte string to prevent escape sequence warnings
+                # rb'...' raw-byte strings to prevent warning
                 match = re.search(rb'parameters\x00+([^\x00\x01]+)', data)
                 if match:
                     info["prompt"] = match.group(1).decode('utf-8', errors='ignore')
                     info["tool"] = "A1111"
                     return info
-                match = re.search(rb'\{"prompt":.+\}', data)
+                match = re.search(rb'\{"prompt":', data)
                 if match:
-                    info["prompt"] = match.group(0).decode('utf-8', errors='ignore')
+                    # Find closing brace manually or use simple slice for JSON
+                    start = match.start()
+                    snippet = data[start:start+10000] # Take a chunk
+                    info["prompt"] = snippet.decode('utf-8', errors='ignore')
                     info["tool"] = "Comfy"
                     return info
         except: pass
@@ -222,7 +226,7 @@ class ImageLoaderThread(QThread):
                 pixmap = QPixmap(self.icon_size, self.icon_size)
                 pixmap.fill(Qt.GlobalColor.transparent)
                 
-                # Try OS Shell Thumbnail first (Very Fast)
+                # Try OS Shell Thumbnail first
                 qimg = get_shell_thumbnail(path, self.icon_size)
                 
                 if qimg:
@@ -238,12 +242,15 @@ class ImageLoaderThread(QThread):
                     w_orig, h_orig = 0, 0
                     fmt = suffix.upper()[1:]
                 else:
-                    # Fallback to Pillow or Icon
+                    # Fallback to drawing manual icon
                     if suffix == '.mp4':
                         pixmap.fill(QColor(40, 40, 40))
                         painter = QPainter(pixmap)
                         painter.setBrush(QColor("white"))
-                        painter.drawPolygon(QPolygon([QPoint(20, 15), QPoint(20, 45), QPoint(45, 30)]))
+                        s = self.icon_size
+                        # Scalable triangle
+                        points = [QPoint(s//3, s//4), QPoint(s//3, 3*s//4), QPoint(2*s//3, s//2)]
+                        painter.drawPolygon(QPolygon(points))
                         painter.end()
                         w_orig, h_orig, fmt = 0, 0, "MP4"
                     else:
