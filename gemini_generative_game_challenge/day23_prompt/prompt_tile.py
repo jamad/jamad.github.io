@@ -6,6 +6,9 @@ import wave
 import random
 import tempfile
 import re
+import json
+import base64
+from io import BytesIO
 from pathlib import Path
 
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
@@ -82,18 +85,17 @@ def create_sfx_assets():
 def extract_prompt(image_path):
     """
     画像からプロンプト情報を抽出します。
-    Stable Diffusion (PNG info 'parameters') を優先し、Exifなどもフォールバックとして確認します。
-    Pillowで取得できない場合、バイナリ直接検索による抽出も試みます（ブックマークレットと同様のロジック）。
     """
     try:
+        if not os.path.exists(image_path):
+            return "File not found (Offline Mode)"
+
         # 1. Try Pillow Metadata (Standard approach)
         with Image.open(image_path) as img:
             img.load() # データをロード
             info = img.info
             
             # 一般的なキーを順にチェック
-            # parameters: Automatic1111等
-            # Description, Comment: その他のツールや保存形式
             for key in ['parameters', 'Description', 'Comment']:
                 if key in info:
                     return info[key]
@@ -105,18 +107,13 @@ def extract_prompt(image_path):
                 if 37510 in exif:
                     return str(exif[37510])
 
-        # 2. Fallback: Binary Regex Search (Bookmarklet logic)
-        # ブックマークレットの正規表現: /(?<=Xt(?:parameters|Description|Comment)\0*)([^\0]+)/ug
-        # これをPythonのバイト列検索で再現します。
+        # 2. Fallback: Binary Regex Search
         with open(image_path, 'rb') as f:
             data = f.read()
-            # 'Xt' は 'tEXt' や 'iTXt' の末尾2文字に相当します
-            # その後にキーワード(parameters等)が続き、Null文字(\x00)を挟んでデータ本体が来ると仮定します
             pattern = re.compile(b'Xt(?:parameters|Description|Comment)\x00+([^\x00]+)')
             match = pattern.search(data)
             if match:
                 try:
-                    # 見つかったバイト列をUTF-8でデコード
                     return match.group(1).decode('utf-8', errors='ignore')
                 except:
                     pass
@@ -130,8 +127,8 @@ def extract_prompt(image_path):
 class PromptTileApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PromptTile - Metadata Viewer")
-        self.resize(1000, 700)
+        self.setWindowTitle("PromptTile - Metadata Collector")
+        self.resize(1100, 700)
         self.setAcceptDrops(True) # ドラッグ＆ドロップ許可
 
         # Generate Sounds
@@ -151,9 +148,22 @@ class PromptTileApp(QMainWindow):
         # 1. Header Area
         header_layout = QHBoxLayout()
         
-        self.btn_open = QPushButton("📂 Open Folder")
+        self.btn_open = QPushButton("📂 Add Images")
         self.btn_open.clicked.connect(self.open_folder_dialog)
-        self.btn_open.setStyleSheet("padding: 5px 15px; font-weight: bold;")
+        self.btn_open.setStyleSheet("padding: 5px 10px; font-weight: bold;")
+
+        # Save / Load Buttons
+        self.btn_save = QPushButton("💾 Save Book")
+        self.btn_save.clicked.connect(self.save_collection)
+        self.btn_save.setStyleSheet("padding: 5px 10px; background-color: #0078d7; color: white;")
+        
+        self.btn_load = QPushButton("📖 Load Book")
+        self.btn_load.clicked.connect(self.load_collection)
+        self.btn_load.setStyleSheet("padding: 5px 10px; background-color: #d7cd00; color: black;")
+
+        self.btn_clear = QPushButton("🗑️ Clear")
+        self.btn_clear.clicked.connect(self.clear_list)
+        self.btn_clear.setStyleSheet("padding: 5px 10px;")
         
         self.combo_size = QComboBox()
         self.combo_size.addItems(["32px", "64px", "128px"])
@@ -161,8 +171,11 @@ class PromptTileApp(QMainWindow):
         self.combo_size.currentIndexChanged.connect(self.change_icon_size)
         
         header_layout.addWidget(self.btn_open)
+        header_layout.addWidget(self.btn_save)
+        header_layout.addWidget(self.btn_load)
+        header_layout.addWidget(self.btn_clear)
         header_layout.addStretch()
-        header_layout.addWidget(QLabel("Thumbnail Size:"))
+        header_layout.addWidget(QLabel("Size:"))
         header_layout.addWidget(self.combo_size)
         
         main_layout.addLayout(header_layout)
@@ -174,7 +187,7 @@ class PromptTileApp(QMainWindow):
         self.list_widget = QListWidget()
         self.list_widget.setViewMode(QListWidget.ViewMode.IconMode)
         self.list_widget.setResizeMode(QListWidget.ResizeMode.Adjust)
-        self.list_widget.setSpacing(10)
+        self.list_widget.setSpacing(8)
         self.list_widget.setMovement(QListWidget.Movement.Static) # 移動不可
         self.list_widget.setIconSize(QSize(128, 128))
         self.list_widget.itemClicked.connect(self.on_item_clicked)
@@ -202,6 +215,7 @@ class PromptTileApp(QMainWindow):
         self.preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.preview_label.setMinimumHeight(200)
         self.preview_label.setStyleSheet("background-color: #1e1e1e; border: 1px dashed #555;")
+        self.preview_label.setWordWrap(True)
         
         self.text_prompt = QTextEdit()
         self.text_prompt.setReadOnly(True)
@@ -257,17 +271,22 @@ class PromptTileApp(QMainWindow):
     def dropEvent(self, event: QDropEvent):
         files = [u.toLocalFile() for u in event.mimeData().urls()]
         if files:
-            # フォルダかファイルか判定してロード
             if os.path.isdir(files[0]):
                 self.load_images_from_folder(files[0])
             else:
-                # 複数ファイルドロップの簡易対応
                 self.load_images_list(files)
 
     def open_folder_dialog(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Folder")
         if folder:
             self.load_images_from_folder(folder)
+
+    def clear_list(self):
+        self.list_widget.clear()
+        self.text_prompt.clear()
+        self.preview_label.clear()
+        self.preview_label.setText("List cleared.")
+        self.status_bar.showMessage("List cleared.")
 
     def load_images_from_folder(self, folder_path):
         extensions = {'.png', '.jpg', '.jpeg', '.webp'}
@@ -280,24 +299,35 @@ class PromptTileApp(QMainWindow):
         self.load_images_list(image_files)
 
     def load_images_list(self, image_paths):
-        self.list_widget.clear()
-        self.text_prompt.clear()
-        self.preview_label.setText("Select an image")
-        self.preview_label.setPixmap(QPixmap())
+        # 注意: 既存リストをクリアせずに追記する仕様に変更
         
         # Play Load Sound
         self.sfx_load.play()
-        self.status_bar.showMessage(f"Loading {len(image_paths)} images...")
-        QApplication.processEvents() # UI更新
+        self.status_bar.showMessage(f"Adding {len(image_paths)} images...")
+        QApplication.processEvents()
+
+        # 重複チェック用セット
+        existing_paths = set()
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            # 既存アイテムに格納されているパス、またはIDを取得
+            data = item.data(Qt.ItemDataRole.UserRole)
+            if isinstance(data, dict):
+                existing_paths.add(data.get('path', ''))
+            else:
+                existing_paths.add(data)
 
         count = 0
         for path in image_paths:
+            if path in existing_paths:
+                continue
+
             try:
-                # Pillowでサムネイル生成（プロポーション維持）
+                # Pillowでサムネイル生成
                 with Image.open(path) as img:
-                    img = ImageOps.contain(img, (256, 256)) # 少し大きめに作ってIconSizeで調整
+                    img = ImageOps.contain(img, (128, 128))
                     
-                    # PIL image to QPixmap
+                    # QPixmap変換
                     if img.mode == "RGB":
                         r, g, b = img.split()
                         img = Image.merge("RGB", (b, g, r))
@@ -312,22 +342,29 @@ class PromptTileApp(QMainWindow):
                         qim = QImage(data, img.width, img.height, QImage.Format.Format_ARGB32)
                         pixmap = QPixmap.fromImage(qim)
                     else:
-                        # Fallback for Grayscale etc
                         pixmap = QPixmap(path)
 
                 item = QListWidgetItem(QIcon(pixmap), Path(path).name)
-                item.setData(Qt.ItemDataRole.UserRole, path) # パスを保持
+                
+                # アイテムデータとして辞書を持たせる (拡張性のため)
+                item_data = {
+                    'path': path,
+                    'prompt': None, # クリック時に取得
+                    'thumbnail_b64': None # 保存時に生成
+                }
+                item.setData(Qt.ItemDataRole.UserRole, item_data)
+                
                 item.setToolTip(path)
                 self.list_widget.addItem(item)
                 count += 1
                 
                 if count % 10 == 0:
-                    QApplication.processEvents() # UIが固まらないように適度に更新
+                    QApplication.processEvents()
                     
             except Exception as e:
                 print(f"Skipped {path}: {e}")
 
-        self.status_bar.showMessage(f"Loaded {count} images.")
+        self.status_bar.showMessage(f"Added {count} new images.")
 
     def change_icon_size(self):
         size_str = self.combo_size.currentText()
@@ -337,14 +374,34 @@ class PromptTileApp(QMainWindow):
     def on_item_clicked(self, item):
         self.sfx_select.play()
         
-        path = item.data(Qt.ItemDataRole.UserRole)
+        data = item.data(Qt.ItemDataRole.UserRole)
         
-        # Extract Prompt
-        prompt = extract_prompt(path)
+        # 互換性維持（古い形式のデータが混ざっている場合）
+        if isinstance(data, str): 
+            path = data
+            prompt = extract_prompt(path)
+        else:
+            path = data.get('path')
+            # プロンプトが既にメモリにあればそれを使う
+            if data.get('prompt'):
+                prompt = data.get('prompt')
+            else:
+                # なければ抽出して保存しておく
+                prompt = extract_prompt(path)
+                data['prompt'] = prompt
+                item.setData(Qt.ItemDataRole.UserRole, data)
+
         self.text_prompt.setText(prompt)
         
-        # Show larger preview
-        pixmap = QPixmap(path)
+        # プレビュー表示
+        # 実ファイルが存在すればそれを表示、なければサムネイル（アイコン）を引き伸ばして表示
+        if os.path.exists(path):
+            pixmap = QPixmap(path)
+        else:
+            # 埋め込みデータやオフラインの場合、アイコンを拡大表示
+            pixmap = item.icon().pixmap(512, 512)
+            self.status_bar.showMessage("Original file not found. Showing thumbnail.", 3000)
+
         if not pixmap.isNull():
             scaled_pixmap = pixmap.scaled(self.preview_label.size(), 
                                           Qt.AspectRatioMode.KeepAspectRatio, 
@@ -363,6 +420,115 @@ class PromptTileApp(QMainWindow):
             self.status_bar.showMessage("Prompt copied to clipboard!", 3000)
         else:
             self.status_bar.showMessage("Nothing to copy.", 2000)
+
+    # --- Save / Load Logic ---
+
+    def save_collection(self):
+        """現在のリストをJSONファイルとして保存します。サムネイルは減色して軽量化します。"""
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save Book", "", "JSON Files (*.json)")
+        if not file_path:
+            return
+
+        self.status_bar.showMessage("Saving collection... This may take a moment.")
+        QApplication.processEvents()
+
+        collection_data = []
+        
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            data = item.data(Qt.ItemDataRole.UserRole)
+            
+            path = data['path'] if isinstance(data, dict) else data
+            
+            # プロンプト取得（まだ取得してなければ抽出）
+            prompt = data.get('prompt') if isinstance(data, dict) and data.get('prompt') else extract_prompt(path)
+            
+            # サムネイル生成（軽量化）
+            # アイコンから取得するか、オリジナルから生成するか
+            # 綺麗に残すためオリジナルから再生成を試みる
+            thumb_b64 = None
+            try:
+                if os.path.exists(path):
+                    with Image.open(path) as img:
+                        # 1. リサイズ
+                        img.thumbnail((128, 128))
+                        # 2. 減色 (Quantize) - GIFのように256色以下に
+                        img = img.convert('P', palette=Image.Palette.ADAPTIVE, colors=64)
+                        # 3. Save to buffer as PNG (P mode PNG is very small)
+                        buffered = BytesIO()
+                        img.save(buffered, format="PNG", optimize=True)
+                        thumb_b64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+                else:
+                    # オリジナルがない場合は現在のアイコンデータを使う（画質は落ちるかも）
+                    pass 
+            except Exception:
+                pass
+
+            collection_data.append({
+                'filename': Path(path).name,
+                'path': path,
+                'prompt': prompt,
+                'thumbnail': thumb_b64
+            })
+
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(collection_data, f, ensure_ascii=False, indent=2)
+            
+            self.sfx_copy.play() # Success sound
+            QMessageBox.information(self, "Success", f"Saved {len(collection_data)} items to book!")
+            self.status_bar.showMessage("Save complete.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to save: {e}")
+
+    def load_collection(self):
+        """JSONファイルからコレクションを読み込みます"""
+        file_path, _ = QFileDialog.getOpenFileName(self, "Load Book", "", "JSON Files (*.json)")
+        if not file_path:
+            return
+
+        self.list_widget.clear()
+        self.sfx_load.play()
+        self.status_bar.showMessage("Loading book...")
+        QApplication.processEvents()
+
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                collection_data = json.load(f)
+
+            for item_data in collection_data:
+                # サムネイル復元
+                pixmap = None
+                if item_data.get('thumbnail'):
+                    try:
+                        img_data = base64.b64decode(item_data['thumbnail'])
+                        qimg = QImage.fromData(img_data)
+                        pixmap = QPixmap.fromImage(qimg)
+                    except:
+                        pass
+                
+                # サムネイル復元失敗時のフォールバック
+                if pixmap is None:
+                    pixmap = QPixmap(128, 128)
+                    pixmap.fill(QColor("#444"))
+
+                list_item = QListWidgetItem(QIcon(pixmap), item_data.get('filename', 'Unknown'))
+                
+                # 内部データ構築
+                internal_data = {
+                    'path': item_data.get('path', ''),
+                    'prompt': item_data.get('prompt', ''),
+                    'thumbnail_b64': item_data.get('thumbnail')
+                }
+                list_item.setData(Qt.ItemDataRole.UserRole, internal_data)
+                list_item.setToolTip(item_data.get('path', ''))
+                
+                self.list_widget.addItem(list_item)
+
+            self.status_bar.showMessage(f"Loaded {len(collection_data)} items.")
+
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to load: {e}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
