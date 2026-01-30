@@ -1,7 +1,7 @@
 """
 <!-- 
 [DEVELOPMENT NOTES FOR AI ASSISTANTS]
-CURRENT VERSION: v20260131.03-LAYOUT-FIX
+CURRENT VERSION: v20260131.04-VIDEO-SUPPORT
 
 MANDATORY RULES FOR CODE MODIFICATION:
 1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested.
@@ -11,7 +11,7 @@ MANDATORY RULES FOR CODE MODIFICATION:
    - [COLOR CORRECTION]: QImage MUST use QImage.Format.Format_RGBA8888 with Pillow's RGBA mode to prevent blue-tint (BGR) issues.
    - [SQUARE THUMBNAILS]: Images must be pasted onto a transparent square background (padding to center).
    - [BATCH LOADING]: ImageLoaderThread MUST emit items in batches (e.g., 10 items) to prevent UI freeze.
-   - [METADATA PRIORITY]: Try A1111 parameters -> ComfyUI JSON (stringified) -> Exif -> None.
+   - [METADATA PRIORITY]: Try A1111 parameters -> ComfyUI JSON (stringified) -> Exif -> MP4 Binary Scan -> None.
    - [AUTO-TRASH]: If prompt length < 10 chars, set is_trashed=True automatically on load.
    - [SELECTION SYNC]: Right panel must clear/disable when selection is empty. Use currentItemChanged signal.
    - [COMPRESSION]: Save/Load must use GZIP + UTF-8 for the JSON structure to reduce file size.
@@ -24,8 +24,9 @@ MANDATORY RULES FOR CODE MODIFICATION:
 5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
 6. PRE-FLIGHT VERIFICATION (Internal Monologue):
    Before outputting code, verify these specific cases:
-   [ ] Layout Check: Is self.search_bar added to row2 via addWidget? (FIXED)
-   [ ] Layout Check: Is addStretch() added to row2 to prevent button gaps? (FIXED)
+   [ ] Format Check: Added .mp4 to extensions? (YES)
+   [ ] Logic Check: Does extract_metadata scan binary data for MP4? (YES)
+   [ ] Layout Check: Does Search Bar exist in row2? (YES)
 -->
 """
 
@@ -98,7 +99,32 @@ def extract_metadata(image_path):
     info = {"prompt": "", "tool": "Unknown"}
     if not os.path.exists(image_path):
         return info
+
+    suffix = Path(image_path).suffix.lower()
+
+    # --- MP4 Binary Scan ---
+    if suffix == '.mp4':
+        try:
+            with open(image_path, 'rb') as f:
+                # Read end of file or first few MBs where metadata usually resides
+                data = f.read(1024 * 1024 * 2) # Read first 2MB
+                # Search for strings like "parameters", "prompt", or JSON-like structures
+                # Look for A1111 style "parameters"
+                match = re.search(b'parameters\x00+([^\x00\x01]+)', data)
+                if match:
+                    info["prompt"] = match.group(1).decode('utf-8', errors='ignore')
+                    info["tool"] = "A1111"
+                    return info
+                # Look for general prompt/JSON
+                match = re.search(b'\{"prompt":.+\}', data)
+                if match:
+                    info["prompt"] = match.group(0).decode('utf-8', errors='ignore')
+                    info["tool"] = "Comfy"
+                    return info
+        except: pass
+        return info
     
+    # --- Standard Image Metadata (Pillow) ---
     try:
         with Image.open(image_path) as img:
             img.load()
@@ -157,23 +183,45 @@ class ImageLoaderThread(QThread):
                     continue
                 
                 meta = extract_metadata(path)
-                
-                with Image.open(path) as img:
-                    w, h = img.size
-                    fmt = img.format or "IMG"
-                    kb = os.path.getsize(path) / 1024
-                    
-                    img.thumbnail((self.icon_size, self.icon_size), Image.Resampling.LANCZOS)
-                    thumb = Image.new('RGBA', (self.icon_size, self.icon_size), (0, 0, 0, 0))
-                    offset_x = (self.icon_size - img.width) // 2
-                    offset_y = (self.icon_size - img.height) // 2
-                    thumb.paste(img, (offset_x, offset_y))
-                    
+                suffix = Path(path).suffix.lower()
+
+                if suffix == '.mp4':
+                    # For MP4, create a placeholder video icon
+                    thumb = Image.new('RGBA', (self.icon_size, self.icon_size), (40, 40, 40, 255))
+                    # Simplified "Video" visual (a triangle)
+                    # We'll just pass a flag or handle it via QIcon later to keep it simple
                     data = thumb.tobytes("raw", "RGBA")
                     qim = QImage(data, thumb.width, thumb.height, QImage.Format.Format_RGBA8888)
                     pixmap = QPixmap.fromImage(qim)
+                    # Draw a play icon over it
+                    w, h = pixmap.width(), pixmap.height()
+                    from PyQt6.QtGui import QPainter, QPolygon
+                    from PyQt6.QtCore import QPoint
+                    painter = QPainter(pixmap)
+                    painter.setBrush(QColor("white"))
+                    points = [QPoint(w//3, h//4), QPoint(w//3, 3*h//4), QPoint(2*w//3, h//2)]
+                    painter.drawPolygon(QPolygon(points))
+                    painter.end()
+                    
+                    w_orig, h_orig, fmt = 0, 0, "MP4"
+                    kb = os.path.getsize(path) / 1024
+                else:
+                    with Image.open(path) as img:
+                        w_orig, h_orig = img.size
+                        fmt = img.format or "IMG"
+                        kb = os.path.getsize(path) / 1024
+                        
+                        img.thumbnail((self.icon_size, self.icon_size), Image.Resampling.LANCZOS)
+                        thumb = Image.new('RGBA', (self.icon_size, self.icon_size), (0, 0, 0, 0))
+                        offset_x = (self.icon_size - img.width) // 2
+                        offset_y = (self.icon_size - img.height) // 2
+                        thumb.paste(img, (offset_x, offset_y))
+                        
+                        data = thumb.tobytes("raw", "RGBA")
+                        qim = QImage(data, thumb.width, thumb.height, QImage.Format.Format_RGBA8888)
+                        pixmap = QPixmap.fromImage(qim)
 
-                batch.append((path, pixmap, meta, w, h, fmt, kb))
+                batch.append((path, pixmap, meta, w_orig, h_orig, fmt, kb))
                 total += 1
                 
                 if len(batch) >= 10:
@@ -269,12 +317,15 @@ class PromptTileApp(QMainWindow):
         self.btn_add_recur.clicked.connect(lambda: self.open_folder(True))
         self.btn_add_flat = QPushButton("📂 Add (Flat)")
         self.btn_add_flat.clicked.connect(lambda: self.open_folder(False))
+        
         self.btn_save = QPushButton("💾 Save")
         self.btn_save.clicked.connect(self.save_book)
         self.btn_save.setStyleSheet("background-color: #0078d7; color: white;")
+        
         self.btn_load = QPushButton("📖 Load")
         self.btn_load.clicked.connect(self.load_book)
         self.btn_load.setStyleSheet("background-color: #d7cd00; color: black;")
+        
         self.btn_clear = QPushButton("🗑️ Clear List")
         self.btn_clear.clicked.connect(self.clear_list)
         self.btn_unselect = QPushButton("Unselect")
@@ -308,7 +359,6 @@ class PromptTileApp(QMainWindow):
         row2 = QHBoxLayout(filter_frame)
         row2.setContentsMargins(5, 2, 5, 2)
         
-        # --- FIXED: Search Bar Added to Layout ---
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("🔍 Search...")
         self.search_bar.textChanged.connect(self.apply_filters)
@@ -365,7 +415,6 @@ class PromptTileApp(QMainWindow):
         """)
         row2.addWidget(self.btn_trash_view)
         
-        # --- FIXED: Added Stretch to pull elements to the left ---
         row2.addStretch()
 
         top_layout.addLayout(row1)
@@ -507,7 +556,12 @@ class PromptTileApp(QMainWindow):
         self.btn_toggle_trash.blockSignals(True)
         self.btn_toggle_trash.setChecked(d['is_trashed'])
         self.btn_toggle_trash.blockSignals(False)
-        if os.path.exists(d['path']):
+        
+        suffix = Path(d['path']).suffix.lower()
+        if suffix == '.mp4':
+            self.preview_label.setPixmap(current.icon().pixmap(256))
+            self.preview_label.setText(f"VIDEO: {Path(d['path']).name}")
+        elif os.path.exists(d['path']):
             p = QPixmap(d['path'])
             if not p.isNull():
                 scaled = p.scaled(self.preview_label.size(), 
@@ -545,7 +599,7 @@ class PromptTileApp(QMainWindow):
         target_dir = path or QFileDialog.getExistingDirectory(self, "Select Folder")
         if not target_dir: return
         file_list = []
-        exts = {'.png', '.jpg', '.jpeg', '.webp'}
+        exts = {'.png', '.jpg', '.jpeg', '.webp', '.mp4'}
         if recursive:
             for root, _, fs in os.walk(target_dir):
                 for x in fs:
@@ -633,7 +687,7 @@ class PromptTileApp(QMainWindow):
         arr = []
         for i in range(self.list_widget.count()):
             d = self.list_widget.item(i).data(Qt.ItemDataRole.UserRole)
-            if not d.get('thumb') and os.path.exists(d['path']):
+            if not d.get('thumb') and os.path.exists(d['path']) and Path(d['path']).suffix.lower() != '.mp4':
                 try:
                     with Image.open(d['path']) as img:
                         img.thumbnail((64, 64))
@@ -658,11 +712,20 @@ class PromptTileApp(QMainWindow):
             except (OSError, gzip.BadGzipFile):
                 with open(path, 'r', encoding='utf-8') as f: arr = json.load(f)
             for d in arr:
+                suffix = Path(d['path']).suffix.lower()
                 pix = QPixmap(64, 64)
                 pix.fill(Qt.GlobalColor.transparent)
                 if d.get('thumb'):
                     try: pix.loadFromData(base64.b64decode(d['thumb']))
                     except: pass
+                elif suffix == '.mp4':
+                    pix.fill(QColor(40, 40, 40))
+                    from PyQt6.QtGui import QPainter, QPolygon
+                    from PyQt6.QtCore import QPoint
+                    painter = QPainter(pix)
+                    painter.setBrush(QColor("white"))
+                    painter.drawPolygon(QPolygon([QPoint(20, 15), QPoint(20, 45), QPoint(45, 30)]))
+                    painter.end()
                 item = QListWidgetItem(QIcon(pix), "")
                 d.setdefault('tool', 'Unknown')
                 item.setData(Qt.ItemDataRole.UserRole, d)
