@@ -3,7 +3,6 @@ import os
 import struct
 import math
 import wave
-import random
 import tempfile
 import re
 import json
@@ -14,15 +13,16 @@ from pathlib import Path
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                              QHBoxLayout, QPushButton, QFileDialog, QListWidget, 
                              QListWidgetItem, QTextEdit, QLabel, QSplitter, 
-                             QComboBox, QFrame, QMessageBox)
-from PyQt6.QtCore import Qt, QSize, QUrl, QBuffer, QIODevice
-from PyQt6.QtGui import QIcon, QPixmap, QAction, QDragEnterEvent, QDropEvent, QImage, QColor
+                             QFrame, QMessageBox, QLineEdit, QSlider, QStyle,
+                             QAbstractItemView)
+from PyQt6.QtCore import Qt, QSize, QUrl, QThread, pyqtSignal, QTimer
+from PyQt6.QtGui import (QIcon, QPixmap, QDragEnterEvent, QDropEvent, 
+                         QImage, QColor, QUndoStack, QUndoCommand, QAction, QKeySequence)
 from PyQt6.QtMultimedia import QSoundEffect
 
 from PIL import Image, ImageOps
 
-# --- Sound Generator Utilities ---
-# 外部アセットファイルなしで動作させるため、起動時にWAVファイルを動的に生成します。
+# --- Sound Generator (変更なし) ---
 def generate_tone(frequency, duration, volume=0.5, sample_rate=44100, wave_type='sine'):
     n_samples = int(sample_rate * duration)
     data = bytearray()
@@ -32,12 +32,8 @@ def generate_tone(frequency, duration, volume=0.5, sample_rate=44100, wave_type=
             value = math.sin(2.0 * math.pi * frequency * t)
         elif wave_type == 'square':
             value = 1.0 if math.sin(2.0 * math.pi * frequency * t) > 0 else -1.0
-        elif wave_type == 'saw':
-            value = 2.0 * (t * frequency - math.floor(t * frequency + 0.5))
         else:
             value = 0
-        
-        # Apply simple envelope (fade out)
         envelope = 1.0 - (i / n_samples)
         packed_value = int(value * volume * envelope * 32767.0)
         data += struct.pack('<h', max(-32768, min(32767, packed_value)))
@@ -45,289 +41,113 @@ def generate_tone(frequency, duration, volume=0.5, sample_rate=44100, wave_type=
 
 def save_wav(filename, data, sample_rate=44100):
     with wave.open(filename, 'w') as f:
-        f.setnchannels(1)
-        f.setsampwidth(2)
-        f.setframerate(sample_rate)
+        f.setnchannels(1), f.setsampwidth(2), f.setframerate(sample_rate)
         f.writeframes(data)
 
 def create_sfx_assets():
-    """効果音アセットを一時ディレクトリに生成します"""
     temp_dir = tempfile.gettempdir()
-    
-    # SFX 1: Select (Selection click)
     select_path = os.path.join(temp_dir, 'pt_select.wav')
-    save_wav(select_path, generate_tone(880, 0.05, 0.3, wave_type='square')) # High blip
-
-    # SFX 2: Load (Shaking/Opening)
+    if not os.path.exists(select_path): save_wav(select_path, generate_tone(880, 0.05, 0.3, wave_type='square'))
+    
     load_path = os.path.join(temp_dir, 'pt_load.wav')
-    # Create a sweep
-    data = bytearray()
-    for i in range(int(44100 * 0.3)):
-        freq = 440 + (i / (44100 * 0.3)) * 880 # 440Hz to 1320Hz
-        val = math.sin(2.0 * math.pi * freq * (i/44100))
-        packed = int(val * 0.3 * 32767)
-        data += struct.pack('<h', packed)
-    save_wav(load_path, data)
-
-    # SFX 3: Copy (Level Up / Success)
+    if not os.path.exists(load_path):
+        data = bytearray()
+        for i in range(int(44100 * 0.2)):
+            freq = 440 + (i / (44100 * 0.2)) * 880
+            val = math.sin(2.0 * math.pi * freq * (i/44100))
+            data += struct.pack('<h', int(val * 0.3 * 32767))
+        save_wav(load_path, data)
+        
     copy_path = os.path.join(temp_dir, 'pt_copy.wav')
-    # Major Arpeggio
-    data = generate_tone(523.25, 0.1, 0.4, wave_type='square') # C
-    data += generate_tone(659.25, 0.1, 0.4, wave_type='square') # E
-    data += generate_tone(783.99, 0.1, 0.4, wave_type='square') # G
-    data += generate_tone(1046.50, 0.2, 0.4, wave_type='square') # High C
-    save_wav(copy_path, data)
+    if not os.path.exists(copy_path): save_wav(copy_path, generate_tone(1046.5, 0.15, 0.3, wave_type='square'))
+    
+    trash_path = os.path.join(temp_dir, 'pt_trash.wav')
+    if not os.path.exists(trash_path): save_wav(trash_path, generate_tone(110, 0.2, 0.5, wave_type='sine'))
 
-    return {'select': select_path, 'load': load_path, 'copy': copy_path}
+    return {'select': select_path, 'load': load_path, 'copy': copy_path, 'trash': trash_path}
 
-
-# --- Image Processing ---
-def extract_prompt(image_path):
+# --- Metadata Extraction Logic (強化版) ---
+def extract_metadata(image_path):
     """
-    画像からプロンプト情報を抽出します。
+    画像からプロンプト情報を抽出します (A1111, ComfyUI, Civitai対応)
     """
+    info_dict = {"prompt": "No metadata found.", "tool": "Unknown"}
+    
+    if not os.path.exists(image_path):
+        return info_dict
+
     try:
-        if not os.path.exists(image_path):
-            return "File not found (Offline Mode)"
-
-        # 1. Try Pillow Metadata (Standard approach)
         with Image.open(image_path) as img:
-            img.load() # データをロード
-            info = img.info
+            img.load()
+            metadata = img.info or {}
             
-            # 一般的なキーを順にチェック
-            for key in ['parameters', 'Description', 'Comment']:
-                if key in info:
-                    return info[key]
-            
-            # JPEG Exif (UserComment)
+            # 1. A1111 / Standard
+            if 'parameters' in metadata:
+                info_dict["prompt"] = metadata['parameters']
+                info_dict["tool"] = "A1111/WebUI"
+                return info_dict
+
+            # 2. ComfyUI (workflow or prompt JSON)
+            # ComfyUI often stores the workflow in 'prompt' or 'workflow' keys
+            for key in ['prompt', 'workflow']:
+                if key in metadata:
+                    try:
+                        # JSONとしてパースを試みる
+                        json_data = json.loads(metadata[key])
+                        # 単純にJSON全体を整形して返す（Comfyは構造が複雑なため）
+                        formatted_json = json.dumps(json_data, indent=2, ensure_ascii=False)
+                        info_dict["prompt"] = f"[{key} (ComfyUI)]\n{formatted_json}"
+                        info_dict["tool"] = "ComfyUI"
+                        return info_dict
+                    except:
+                        pass
+
+            # 3. UserComment (JPEG Exif or others)
             exif = img._getexif()
-            if exif:
-                # 37510 is UserComment
-                if 37510 in exif:
-                    return str(exif[37510])
-
-        # 2. Fallback: Binary Regex Search
-        with open(image_path, 'rb') as f:
-            data = f.read()
-            pattern = re.compile(b'Xt(?:parameters|Description|Comment)\x00+([^\x00]+)')
-            match = pattern.search(data)
-            if match:
-                try:
-                    return match.group(1).decode('utf-8', errors='ignore')
-                except:
-                    pass
-
-        return "No metadata found."
+            if exif and 37510 in exif: # UserComment
+                comment = str(exif[37510])
+                # Civitai often puts JSON in UserComment with "u0000" encoding stuff
+                # Try to clean it up or detect JSON
+                if "{" in comment and "}" in comment:
+                    info_dict["tool"] = "Civitai/Exif"
+                info_dict["prompt"] = comment
+                return info_dict
 
     except Exception as e:
-        return f"Error reading metadata: {str(e)}"
+        info_dict["prompt"] = f"Error reading: {str(e)}"
+    
+    return info_dict
 
-# --- GUI Class ---
-class PromptTileApp(QMainWindow):
-    def __init__(self):
+# --- Asynchronous Loader Thread ---
+class ImageLoaderThread(QThread):
+    # Signal emits: (path, pixmap, info_dict, width, height, format, filesize)
+    item_loaded = pyqtSignal(str, QPixmap, dict, int, int, str, float)
+    finished_loading = pyqtSignal(int)
+
+    def __init__(self, paths, icon_size=128):
         super().__init__()
-        self.setWindowTitle("PromptTile - Metadata Collector")
-        self.resize(1100, 700)
-        self.setAcceptDrops(True) # ドラッグ＆ドロップ許可
+        self.paths = paths
+        self.icon_size = icon_size
+        self.is_running = True
 
-        # Generate Sounds
-        self.sfx_files = create_sfx_assets()
-        self.sfx_select = QSoundEffect()
-        self.sfx_select.setSource(QUrl.fromLocalFile(self.sfx_files['select']))
-        self.sfx_load = QSoundEffect()
-        self.sfx_load.setSource(QUrl.fromLocalFile(self.sfx_files['load']))
-        self.sfx_copy = QSoundEffect()
-        self.sfx_copy.setSource(QUrl.fromLocalFile(self.sfx_files['copy']))
-
-        # Main Layout
-        main_widget = QWidget()
-        self.setCentralWidget(main_widget)
-        main_layout = QVBoxLayout(main_widget)
-
-        # 1. Header Area
-        header_layout = QHBoxLayout()
-        
-        self.btn_open = QPushButton("📂 Add Images")
-        self.btn_open.clicked.connect(self.open_folder_dialog)
-        self.btn_open.setStyleSheet("padding: 5px 10px; font-weight: bold;")
-
-        # Save / Load Buttons
-        self.btn_save = QPushButton("💾 Save Book")
-        self.btn_save.clicked.connect(self.save_collection)
-        self.btn_save.setStyleSheet("padding: 5px 10px; background-color: #0078d7; color: white;")
-        
-        self.btn_load = QPushButton("📖 Load Book")
-        self.btn_load.clicked.connect(self.load_collection)
-        self.btn_load.setStyleSheet("padding: 5px 10px; background-color: #d7cd00; color: black;")
-
-        self.btn_clear = QPushButton("🗑️ Clear")
-        self.btn_clear.clicked.connect(self.clear_list)
-        self.btn_clear.setStyleSheet("padding: 5px 10px;")
-        
-        self.combo_size = QComboBox()
-        self.combo_size.addItems(["32px", "64px", "128px"])
-        self.combo_size.setCurrentIndex(2) # Default 128px
-        self.combo_size.currentIndexChanged.connect(self.change_icon_size)
-        
-        header_layout.addWidget(self.btn_open)
-        header_layout.addWidget(self.btn_save)
-        header_layout.addWidget(self.btn_load)
-        header_layout.addWidget(self.btn_clear)
-        header_layout.addStretch()
-        header_layout.addWidget(QLabel("Size:"))
-        header_layout.addWidget(self.combo_size)
-        
-        main_layout.addLayout(header_layout)
-
-        # 2. Main Content (Splitter)
-        splitter = QSplitter(Qt.Orientation.Horizontal)
-        
-        # Left: Thumbnail Grid
-        self.list_widget = QListWidget()
-        self.list_widget.setViewMode(QListWidget.ViewMode.IconMode)
-        self.list_widget.setResizeMode(QListWidget.ResizeMode.Adjust)
-        self.list_widget.setSpacing(8)
-        self.list_widget.setMovement(QListWidget.Movement.Static) # 移動不可
-        self.list_widget.setIconSize(QSize(128, 128))
-        self.list_widget.itemClicked.connect(self.on_item_clicked)
-        # Style for ListWidget
-        self.list_widget.setStyleSheet("""
-            QListWidget {
-                background-color: #2b2b2b;
-                border: 1px solid #3d3d3d;
-            }
-            QListWidget::item {
-                border-radius: 5px;
-                color: #e0e0e0;
-            }
-            QListWidget::item:selected {
-                background-color: #4a90e2;
-                border: 1px solid #6ab0ff;
-            }
-        """)
-
-        # Right: Details Panel
-        details_panel = QWidget()
-        details_layout = QVBoxLayout(details_panel)
-        
-        self.preview_label = QLabel("Select an image")
-        self.preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.preview_label.setMinimumHeight(200)
-        self.preview_label.setStyleSheet("background-color: #1e1e1e; border: 1px dashed #555;")
-        self.preview_label.setWordWrap(True)
-        
-        self.text_prompt = QTextEdit()
-        self.text_prompt.setReadOnly(True)
-        self.text_prompt.setPlaceholderText("Prompt will appear here...")
-        self.text_prompt.setStyleSheet("font-family: Consolas, monospace; font-size: 10pt;")
-        
-        self.btn_copy = QPushButton("📋 Copy Prompt")
-        self.btn_copy.setMinimumHeight(50)
-        self.btn_copy.setStyleSheet("""
-            QPushButton {
-                background-color: #4CAF50; 
-                color: white; 
-                font-size: 14px; 
-                font-weight: bold;
-                border-radius: 4px;
-            }
-            QPushButton:hover { background-color: #45a049; }
-            QPushButton:pressed { background-color: #3d8b40; }
-        """)
-        self.btn_copy.clicked.connect(self.copy_prompt_to_clipboard)
-
-        details_layout.addWidget(QLabel("Preview:"))
-        details_layout.addWidget(self.preview_label)
-        details_layout.addWidget(QLabel("Prompt:"))
-        details_layout.addWidget(self.text_prompt)
-        details_layout.addWidget(self.btn_copy)
-
-        splitter.addWidget(self.list_widget)
-        splitter.addWidget(details_panel)
-        splitter.setStretchFactor(0, 7) # Grid takes 70%
-        splitter.setStretchFactor(1, 3) # Details takes 30%
-
-        main_layout.addWidget(splitter)
-
-        # Status Bar
-        self.status_bar = self.statusBar()
-        self.status_bar.showMessage("Ready. Drag & Drop folder here.")
-
-        # Apply a Dark Theme
-        self.setStyleSheet("""
-            QMainWindow { background-color: #333; color: #fff; }
-            QLabel { color: #ddd; }
-        """)
-
-    # --- Logic ---
-
-    def dragEnterEvent(self, event: QDragEnterEvent):
-        if event.mimeData().hasUrls():
-            event.accept()
-        else:
-            event.ignore()
-
-    def dropEvent(self, event: QDropEvent):
-        files = [u.toLocalFile() for u in event.mimeData().urls()]
-        if files:
-            if os.path.isdir(files[0]):
-                self.load_images_from_folder(files[0])
-            else:
-                self.load_images_list(files)
-
-    def open_folder_dialog(self):
-        folder = QFileDialog.getExistingDirectory(self, "Select Folder")
-        if folder:
-            self.load_images_from_folder(folder)
-
-    def clear_list(self):
-        self.list_widget.clear()
-        self.text_prompt.clear()
-        self.preview_label.clear()
-        self.preview_label.setText("List cleared.")
-        self.status_bar.showMessage("List cleared.")
-
-    def load_images_from_folder(self, folder_path):
-        extensions = {'.png', '.jpg', '.jpeg', '.webp'}
-        image_files = []
-        for root, _, files in os.walk(folder_path):
-            for file in files:
-                if Path(file).suffix.lower() in extensions:
-                    image_files.append(os.path.join(root, file))
-        
-        self.load_images_list(image_files)
-
-    def load_images_list(self, image_paths):
-        # 注意: 既存リストをクリアせずに追記する仕様に変更
-        
-        # Play Load Sound
-        self.sfx_load.play()
-        self.status_bar.showMessage(f"Adding {len(image_paths)} images...")
-        QApplication.processEvents()
-
-        # 重複チェック用セット
-        existing_paths = set()
-        for i in range(self.list_widget.count()):
-            item = self.list_widget.item(i)
-            # 既存アイテムに格納されているパス、またはIDを取得
-            data = item.data(Qt.ItemDataRole.UserRole)
-            if isinstance(data, dict):
-                existing_paths.add(data.get('path', ''))
-            else:
-                existing_paths.add(data)
-
+    def run(self):
         count = 0
-        for path in image_paths:
-            if path in existing_paths:
-                continue
-
+        for path in self.paths:
+            if not self.is_running: break
             try:
-                # Pillowでサムネイル生成
+                if not os.path.exists(path): continue
+                
+                # Metadata extraction (Heavy I/O)
+                meta = extract_metadata(path)
+                
+                # Thumbnail generation (Heavy CPU)
                 with Image.open(path) as img:
-                    img = ImageOps.contain(img, (128, 128))
+                    width, height = img.size
+                    fmt = img.format or "IMG"
+                    file_size_kb = os.path.getsize(path) / 1024
                     
-                    # QPixmap変換
+                    img = ImageOps.contain(img, (self.icon_size, self.icon_size))
+                    
                     if img.mode == "RGB":
                         r, g, b = img.split()
                         img = Image.merge("RGB", (b, g, r))
@@ -342,193 +162,545 @@ class PromptTileApp(QMainWindow):
                         qim = QImage(data, img.width, img.height, QImage.Format.Format_ARGB32)
                         pixmap = QPixmap.fromImage(qim)
                     else:
-                        pixmap = QPixmap(path)
+                        pixmap = QPixmap(path).scaled(self.icon_size, self.icon_size, 
+                                                      Qt.AspectRatioMode.KeepAspectRatio)
 
-                item = QListWidgetItem(QIcon(pixmap), Path(path).name)
-                
-                # アイテムデータとして辞書を持たせる (拡張性のため)
-                item_data = {
-                    'path': path,
-                    'prompt': None, # クリック時に取得
-                    'thumbnail_b64': None # 保存時に生成
-                }
-                item.setData(Qt.ItemDataRole.UserRole, item_data)
-                
-                item.setToolTip(path)
-                self.list_widget.addItem(item)
+                self.item_loaded.emit(path, pixmap, meta, width, height, fmt, file_size_kb)
                 count += 1
                 
-                if count % 10 == 0:
-                    QApplication.processEvents()
-                    
+                # Small sleep to keep UI responsive
+                self.msleep(5) 
+                
             except Exception as e:
-                print(f"Skipped {path}: {e}")
+                print(f"Error loading {path}: {e}")
+        
+        self.finished_loading.emit(count)
 
-        self.status_bar.showMessage(f"Added {count} new images.")
+    def stop(self):
+        self.is_running = False
+        self.wait()
 
-    def change_icon_size(self):
-        size_str = self.combo_size.currentText()
-        size = int(size_str.replace("px", ""))
+# --- Undo/Redo Commands ---
+class ModifyItemsCommand(QUndoCommand):
+    def __init__(self, list_widget, items, new_data_dict, description):
+        super().__init__(description)
+        self.list_widget = list_widget
+        self.items = items # List of QListWidgetItem
+        self.new_data_dict = new_data_dict # Key-Value pairs to update
+        self.old_data_list = [] # Store old data for each item
+
+        # Capture old state
+        for item in self.items:
+            current_data = item.data(Qt.ItemDataRole.UserRole).copy()
+            self.old_data_list.append(current_data)
+
+    def redo(self):
+        for item in self.items:
+            data = item.data(Qt.ItemDataRole.UserRole)
+            # Update specific keys
+            for key, val in self.new_data_dict.items():
+                data[key] = val
+            
+            item.setData(Qt.ItemDataRole.UserRole, data)
+            self._update_visuals(item)
+        
+        # Trigger UI refresh if needed (handled by logic outside mostly, but visual refresh here)
+
+    def undo(self):
+        for i, item in enumerate(self.items):
+            # Restore full old dictionary
+            item.setData(Qt.ItemDataRole.UserRole, self.old_data_list[i])
+            self._update_visuals(item)
+
+    def _update_visuals(self, item):
+        data = item.data(Qt.ItemDataRole.UserRole)
+        # Trash visual (Red background)
+        if data.get('is_trashed', False):
+            item.setBackground(QColor("#550000")) # Dark Red
+        else:
+            item.setBackground(QColor("#2b2b2b")) # Default Dark
+
+# --- Main Application ---
+class PromptTileApp(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("PromptTile v2 - Smart Collector")
+        self.resize(1200, 800)
+        self.setAcceptDrops(True)
+        
+        # Data & Undo
+        self.undo_stack = QUndoStack(self)
+        self.loader_thread = None
+
+        # Sounds
+        self.sfx_files = create_sfx_assets()
+        self.sfx_select = QSoundEffect()
+        self.sfx_select.setSource(QUrl.fromLocalFile(self.sfx_files['select']))
+        self.sfx_load = QSoundEffect()
+        self.sfx_load.setSource(QUrl.fromLocalFile(self.sfx_files['load']))
+        self.sfx_copy = QSoundEffect()
+        self.sfx_copy.setSource(QUrl.fromLocalFile(self.sfx_files['copy']))
+        self.sfx_trash = QSoundEffect()
+        self.sfx_trash.setSource(QUrl.fromLocalFile(self.sfx_files['trash']))
+
+        # --- UI Setup ---
+        main_widget = QWidget()
+        self.setCentralWidget(main_widget)
+        main_layout = QVBoxLayout(main_widget)
+
+        # 1. Header (File Ops & Search)
+        header_layout = QHBoxLayout()
+        
+        self.btn_open = QPushButton("📂 Add Images")
+        self.btn_open.clicked.connect(self.open_folder_dialog)
+        
+        self.btn_save = QPushButton("💾 Save Book")
+        self.btn_save.clicked.connect(self.save_collection)
+        self.btn_save.setStyleSheet("background-color: #0078d7; color: white;")
+        
+        self.btn_load = QPushButton("📖 Load Book")
+        self.btn_load.clicked.connect(self.load_collection)
+        self.btn_load.setStyleSheet("background-color: #d7cd00; color: black;")
+        
+        self.btn_clear = QPushButton("🗑️ Clear All")
+        self.btn_clear.clicked.connect(self.clear_list)
+
+        # Size Buttons
+        size_layout = QHBoxLayout()
+        size_layout.setSpacing(0)
+        self.btn_size_s = QPushButton("S")
+        self.btn_size_m = QPushButton("M")
+        self.btn_size_l = QPushButton("L")
+        for b in [self.btn_size_s, self.btn_size_m, self.btn_size_l]:
+            b.setFixedWidth(30)
+            b.setCheckable(True)
+        self.btn_size_m.setChecked(True) # Default
+        self.size_group = [self.btn_size_s, self.btn_size_m, self.btn_size_l]
+        self.btn_size_s.clicked.connect(lambda: self.change_icon_size(64, self.btn_size_s))
+        self.btn_size_m.clicked.connect(lambda: self.change_icon_size(128, self.btn_size_m))
+        self.btn_size_l.clicked.connect(lambda: self.change_icon_size(256, self.btn_size_l))
+
+        # Search Bar
+        self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("🔍 Filter by filename or prompt...")
+        self.search_bar.textChanged.connect(self.filter_items)
+        self.search_bar.setStyleSheet("padding: 5px; border-radius: 4px; border: 1px solid #555;")
+
+        header_layout.addWidget(self.btn_open)
+        header_layout.addWidget(self.btn_save)
+        header_layout.addWidget(self.btn_load)
+        header_layout.addWidget(self.btn_clear)
+        header_layout.addSpacing(20)
+        header_layout.addWidget(QLabel("Size:"))
+        header_layout.addWidget(self.btn_size_s)
+        header_layout.addWidget(self.btn_size_m)
+        header_layout.addWidget(self.btn_size_l)
+        header_layout.addSpacing(20)
+        header_layout.addWidget(self.search_bar)
+        
+        main_layout.addLayout(header_layout)
+
+        # 2. Main Content
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        
+        # Left: Grid
+        self.list_widget = QListWidget()
+        self.list_widget.setViewMode(QListWidget.ViewMode.IconMode)
+        self.list_widget.setResizeMode(QListWidget.ResizeMode.Adjust)
+        self.list_widget.setSpacing(6)
+        self.list_widget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection) # Multi-select
+        self.list_widget.setIconSize(QSize(128, 128))
+        self.list_widget.itemClicked.connect(self.on_item_clicked)
+        self.list_widget.setStyleSheet("""
+            QListWidget { background-color: #2b2b2b; border: none; }
+            QListWidget::item { border-radius: 4px; border: 1px solid transparent; }
+            QListWidget::item:selected { background-color: #4a90e2; border: 1px solid #6ab0ff; }
+            QListWidget::item:hover { background-color: #3d3d3d; }
+        """)
+        
+        # Right: Details & Controls
+        details_panel = QFrame()
+        details_layout = QVBoxLayout(details_panel)
+        details_layout.setContentsMargins(10, 0, 0, 0)
+        
+        # Undo/Redo Buttons
+        undo_layout = QHBoxLayout()
+        self.btn_undo = QPushButton("Undo")
+        self.btn_undo.clicked.connect(self.undo_stack.undo)
+        self.btn_undo.setShortcut(QKeySequence.StandardKey.Undo)
+        
+        self.btn_redo = QPushButton("Redo")
+        self.btn_redo.clicked.connect(self.undo_stack.redo)
+        self.btn_redo.setShortcut(QKeySequence.StandardKey.Redo)
+        
+        undo_layout.addWidget(self.btn_undo)
+        undo_layout.addWidget(self.btn_redo)
+
+        # Rating & Trash Controls
+        control_group = QFrame()
+        control_group.setStyleSheet("background-color: #333; border-radius: 5px; padding: 5px;")
+        cg_layout = QVBoxLayout(control_group)
+
+        # Rating Slider
+        r_layout = QHBoxLayout()
+        self.lbl_rating_val = QLabel("Rate: -")
+        self.lbl_rating_val.setFixedWidth(50)
+        self.slider_rating = QSlider(Qt.Orientation.Horizontal)
+        self.slider_rating.setRange(0, 10)
+        self.slider_rating.setValue(0)
+        self.slider_rating.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.slider_rating.setTickInterval(1)
+        self.slider_rating.valueChanged.connect(self.update_rating_label)
+        
+        self.btn_apply_rating = QPushButton("Set ★")
+        self.btn_apply_rating.clicked.connect(self.apply_rating)
+        self.btn_apply_rating.setStyleSheet("background-color: #FFA500; color: black; font-weight: bold;")
+        
+        r_layout.addWidget(self.lbl_rating_val)
+        r_layout.addWidget(self.slider_rating)
+        r_layout.addWidget(self.btn_apply_rating)
+        
+        # Trash Button
+        self.btn_trash = QPushButton("🗑️ Mark Trash")
+        self.btn_trash.setCheckable(True)
+        self.btn_trash.clicked.connect(self.toggle_trash)
+        self.btn_trash.setStyleSheet("""
+            QPushButton { background-color: #555; color: white; padding: 5px; }
+            QPushButton:checked { background-color: #d32f2f; color: white; border: 2px solid #ff6666; }
+        """)
+
+        cg_layout.addLayout(r_layout)
+        cg_layout.addWidget(self.btn_trash)
+
+        # Preview Image
+        self.preview_label = QLabel("Select an image")
+        self.preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.preview_label.setMinimumHeight(200)
+        self.preview_label.setStyleSheet("background-color: #1e1e1e; border: 1px dashed #555;")
+        
+        # Info Text
+        self.lbl_info = QLabel("")
+        self.lbl_info.setStyleSheet("color: #aaa; font-size: 11px;")
+
+        # Prompt Text
+        self.text_prompt = QTextEdit()
+        self.text_prompt.setReadOnly(True)
+        self.text_prompt.setPlaceholderText("Prompt info...")
+        self.text_prompt.setStyleSheet("font-family: Consolas; font-size: 10pt; background-color: #222; color: #ddd;")
+
+        self.btn_copy = QPushButton("📋 Copy Prompt")
+        self.btn_copy.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold; padding: 8px;")
+        self.btn_copy.clicked.connect(self.copy_prompt_to_clipboard)
+
+        # Assemble Right Panel
+        details_layout.addLayout(undo_layout)
+        details_layout.addWidget(control_group)
+        details_layout.addSpacing(10)
+        details_layout.addWidget(self.preview_label)
+        details_layout.addWidget(self.lbl_info)
+        details_layout.addWidget(QLabel("Prompt:"))
+        details_layout.addWidget(self.text_prompt)
+        details_layout.addWidget(self.btn_copy)
+
+        splitter.addWidget(self.list_widget)
+        splitter.addWidget(details_panel)
+        splitter.setStretchFactor(0, 3)
+        splitter.setStretchFactor(1, 1)
+
+        main_layout.addWidget(splitter)
+
+        # Status Bar
+        self.status_bar = self.statusBar()
+        self.status_bar.showMessage("Ready.")
+        
+        # Style
+        self.setStyleSheet("QMainWindow { background-color: #333; color: #fff; } QLabel { color: #eee; }")
+
+    # --- Logic ---
+
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        if event.mimeData().hasUrls(): event.accept()
+        else: event.ignore()
+
+    def dropEvent(self, event: QDropEvent):
+        files = [u.toLocalFile() for u in event.mimeData().urls()]
+        if files:
+            if os.path.isdir(files[0]): self.load_folder(files[0])
+            else: self.load_files(files)
+
+    def open_folder_dialog(self):
+        folder = QFileDialog.getExistingDirectory(self, "Select Folder")
+        if folder: self.load_folder(folder)
+
+    def clear_list(self):
+        if self.loader_thread and self.loader_thread.isRunning():
+            self.loader_thread.stop()
+        self.list_widget.clear()
+        self.undo_stack.clear()
+        self.status_bar.showMessage("List cleared.")
+
+    def change_icon_size(self, size, btn):
+        for b in self.size_group: b.setChecked(False)
+        btn.setChecked(True)
         self.list_widget.setIconSize(QSize(size, size))
+
+    # --- Loading Logic (Async) ---
+
+    def load_folder(self, folder_path):
+        extensions = {'.png', '.jpg', '.jpeg', '.webp'}
+        image_files = []
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                if Path(file).suffix.lower() in extensions:
+                    image_files.append(os.path.join(root, file))
+        self.load_files(image_files)
+
+    def load_files(self, paths):
+        # Stop existing thread if running
+        if self.loader_thread and self.loader_thread.isRunning():
+            self.loader_thread.stop()
+
+        existing_paths = set()
+        for i in range(self.list_widget.count()):
+            d = self.list_widget.item(i).data(Qt.ItemDataRole.UserRole)
+            existing_paths.add(d['path'])
+        
+        new_paths = [p for p in paths if p not in existing_paths]
+        
+        if not new_paths:
+            self.status_bar.showMessage("No new images to add.")
+            return
+
+        self.sfx_load.play()
+        self.status_bar.showMessage(f"Loading {len(new_paths)} images in background...")
+        
+        # Start Thread
+        icon_size = self.list_widget.iconSize().width()
+        self.loader_thread = ImageLoaderThread(new_paths, icon_size)
+        self.loader_thread.item_loaded.connect(self.add_single_item)
+        self.loader_thread.finished_loading.connect(lambda c: self.status_bar.showMessage(f"Loaded {c} images."))
+        self.loader_thread.start()
+
+    def add_single_item(self, path, pixmap, meta, w, h, fmt, size_kb):
+        # Tooltip HTML
+        prompt_snippet = (meta['prompt'][:100] + "...") if len(meta['prompt']) > 100 else meta['prompt']
+        tooltip = (
+            f"<b>File:</b> {Path(path).name}<br>"
+            f"<b>Size:</b> {w}x{h} ({fmt})<br>"
+            f"<b>Disk:</b> {size_kb:.1f} KB<br>"
+            f"<b>Tool:</b> {meta.get('tool', '?')}<br>"
+            f"<b>Prompt:</b> {prompt_snippet}"
+        )
+
+        item = QListWidgetItem(QIcon(pixmap), "") # Name is empty
+        item.setToolTip(tooltip)
+        
+        item_data = {
+            'path': path,
+            'prompt': meta['prompt'],
+            'rating': 0,
+            'is_trashed': False,
+            'thumbnail_b64': None # Fill on save
+        }
+        item.setData(Qt.ItemDataRole.UserRole, item_data)
+        
+        self.list_widget.addItem(item)
+
+        # Apply search filter immediately if active
+        if self.search_bar.text():
+            self.check_filter_match(item, self.search_bar.text().lower())
+
+    # --- Interaction Logic ---
 
     def on_item_clicked(self, item):
         self.sfx_select.play()
-        
         data = item.data(Qt.ItemDataRole.UserRole)
         
-        # 互換性維持（古い形式のデータが混ざっている場合）
-        if isinstance(data, str): 
-            path = data
-            prompt = extract_prompt(path)
-        else:
-            path = data.get('path')
-            # プロンプトが既にメモリにあればそれを使う
-            if data.get('prompt'):
-                prompt = data.get('prompt')
-            else:
-                # なければ抽出して保存しておく
-                prompt = extract_prompt(path)
-                data['prompt'] = prompt
-                item.setData(Qt.ItemDataRole.UserRole, data)
-
-        self.text_prompt.setText(prompt)
-        
-        # プレビュー表示
-        # 実ファイルが存在すればそれを表示、なければサムネイル（アイコン）を引き伸ばして表示
+        # Update Preview
+        path = data['path']
         if os.path.exists(path):
-            pixmap = QPixmap(path)
+            full_pix = QPixmap(path)
+            if not full_pix.isNull():
+                self.preview_label.setPixmap(full_pix.scaled(
+                    self.preview_label.size(), 
+                    Qt.AspectRatioMode.KeepAspectRatio, 
+                    Qt.TransformationMode.SmoothTransformation))
         else:
-            # 埋め込みデータやオフラインの場合、アイコンを拡大表示
-            pixmap = item.icon().pixmap(512, 512)
-            self.status_bar.showMessage("Original file not found. Showing thumbnail.", 3000)
+            self.preview_label.setPixmap(item.icon().pixmap(256, 256))
+        
+        # Update Text
+        self.text_prompt.setText(data.get('prompt', ''))
+        
+        # Update Controls
+        self.slider_rating.blockSignals(True)
+        self.slider_rating.setValue(data.get('rating', 0))
+        self.lbl_rating_val.setText(f"Rate: {data.get('rating', 0)}")
+        self.slider_rating.blockSignals(False)
 
-        if not pixmap.isNull():
-            scaled_pixmap = pixmap.scaled(self.preview_label.size(), 
-                                          Qt.AspectRatioMode.KeepAspectRatio, 
-                                          Qt.TransformationMode.SmoothTransformation)
-            self.preview_label.setPixmap(scaled_pixmap)
-            self.preview_label.setText("")
+        self.btn_trash.blockSignals(True)
+        self.btn_trash.setChecked(data.get('is_trashed', False))
+        self.btn_trash.blockSignals(False)
+        
+        # Update Info Label
+        stars = "★" * data.get('rating', 0)
+        status = " [TRASHED]" if data.get('is_trashed') else ""
+        self.lbl_info.setText(f"{Path(path).name} {stars}{status}")
+
+    def update_rating_label(self, val):
+        self.lbl_rating_val.setText(f"Rate: {val}")
+
+    def apply_rating(self):
+        items = self.list_widget.selectedItems()
+        if not items: return
+        
+        val = self.slider_rating.value()
+        cmd = ModifyItemsCommand(self.list_widget, items, {'rating': val}, f"Set Rating {val}")
+        self.undo_stack.push(cmd)
+        
+        self.status_bar.showMessage(f"Set rating {val} for {len(items)} items.")
+        self.on_item_clicked(items[0]) # Refresh UI
+
+    def toggle_trash(self):
+        items = self.list_widget.selectedItems()
+        if not items: return
+        
+        new_state = self.btn_trash.isChecked()
+        cmd = ModifyItemsCommand(self.list_widget, items, {'is_trashed': new_state}, "Toggle Trash")
+        self.undo_stack.push(cmd)
+        
+        if new_state: self.sfx_trash.play()
+        self.status_bar.showMessage(f"{'Trashed' if new_state else 'Restored'} {len(items)} items.")
+        self.on_item_clicked(items[0]) # Refresh UI
+
+    # --- Search / Filter ---
+
+    def filter_items(self, text):
+        search_text = text.lower()
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            self.check_filter_match(item, search_text)
+
+    def check_filter_match(self, item, search_text):
+        if not search_text:
+            item.setHidden(False)
+            return
+
+        data = item.data(Qt.ItemDataRole.UserRole)
+        filename = Path(data['path']).name.lower()
+        prompt = data.get('prompt', '').lower()
+        
+        if search_text in filename or search_text in prompt:
+            item.setHidden(False)
         else:
-            self.preview_label.setText("Image Error")
+            item.setHidden(True)
 
     def copy_prompt_to_clipboard(self):
         text = self.text_prompt.toPlainText()
         if text:
-            clipboard = QApplication.clipboard()
-            clipboard.setText(text)
+            QApplication.clipboard().setText(text)
             self.sfx_copy.play()
-            self.status_bar.showMessage("Prompt copied to clipboard!", 3000)
-        else:
-            self.status_bar.showMessage("Nothing to copy.", 2000)
+            self.status_bar.showMessage("Prompt copied!")
 
-    # --- Save / Load Logic ---
+    # --- Save / Load ---
 
     def save_collection(self):
-        """現在のリストをJSONファイルとして保存します。サムネイルは減色して軽量化します。"""
         file_path, _ = QFileDialog.getSaveFileName(self, "Save Book", "", "JSON Files (*.json)")
-        if not file_path:
-            return
+        if not file_path: return
 
-        self.status_bar.showMessage("Saving collection... This may take a moment.")
+        self.status_bar.showMessage("Saving...")
         QApplication.processEvents()
 
-        collection_data = []
-        
+        collection = []
         for i in range(self.list_widget.count()):
             item = self.list_widget.item(i)
             data = item.data(Qt.ItemDataRole.UserRole)
             
-            path = data['path'] if isinstance(data, dict) else data
+            # Generate thumbnail only if missing (simple cache logic)
+            if not data.get('thumbnail_b64'):
+                try:
+                    if os.path.exists(data['path']):
+                        with Image.open(data['path']) as img:
+                            img.thumbnail((128, 128))
+                            img = img.convert('P', palette=Image.Palette.ADAPTIVE, colors=64)
+                            buffered = BytesIO()
+                            img.save(buffered, format="PNG", optimize=True)
+                            data['thumbnail_b64'] = base64.b64encode(buffered.getvalue()).decode('utf-8')
+                except: pass
             
-            # プロンプト取得（まだ取得してなければ抽出）
-            prompt = data.get('prompt') if isinstance(data, dict) and data.get('prompt') else extract_prompt(path)
-            
-            # サムネイル生成（軽量化）
-            # アイコンから取得するか、オリジナルから生成するか
-            # 綺麗に残すためオリジナルから再生成を試みる
-            thumb_b64 = None
-            try:
-                if os.path.exists(path):
-                    with Image.open(path) as img:
-                        # 1. リサイズ
-                        img.thumbnail((128, 128))
-                        # 2. 減色 (Quantize) - GIFのように256色以下に
-                        img = img.convert('P', palette=Image.Palette.ADAPTIVE, colors=64)
-                        # 3. Save to buffer as PNG (P mode PNG is very small)
-                        buffered = BytesIO()
-                        img.save(buffered, format="PNG", optimize=True)
-                        thumb_b64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
-                else:
-                    # オリジナルがない場合は現在のアイコンデータを使う（画質は落ちるかも）
-                    pass 
-            except Exception:
-                pass
-
-            collection_data.append({
-                'filename': Path(path).name,
-                'path': path,
-                'prompt': prompt,
-                'thumbnail': thumb_b64
-            })
+            entry = {
+                'filename': Path(data['path']).name,
+                'path': data['path'],
+                'prompt': data['prompt'],
+                'rating': data.get('rating', 0),
+                'is_trashed': data.get('is_trashed', False),
+                'thumbnail': data.get('thumbnail_b64')
+            }
+            collection.append(entry)
 
         try:
             with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(collection_data, f, ensure_ascii=False, indent=2)
-            
-            self.sfx_copy.play() # Success sound
-            QMessageBox.information(self, "Success", f"Saved {len(collection_data)} items to book!")
-            self.status_bar.showMessage("Save complete.")
+                json.dump(collection, f, ensure_ascii=False, indent=2)
+            self.sfx_copy.play()
+            QMessageBox.information(self, "Success", f"Saved {len(collection)} items.")
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to save: {e}")
+            QMessageBox.critical(self, "Error", str(e))
+        self.status_bar.showMessage("Saved.")
 
     def load_collection(self):
-        """JSONファイルからコレクションを読み込みます"""
         file_path, _ = QFileDialog.getOpenFileName(self, "Load Book", "", "JSON Files (*.json)")
-        if not file_path:
-            return
+        if not file_path: return
 
-        self.list_widget.clear()
+        self.clear_list()
         self.sfx_load.play()
-        self.status_bar.showMessage("Loading book...")
-        QApplication.processEvents()
-
+        
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
-                collection_data = json.load(f)
+                data_list = json.load(f)
 
-            for item_data in collection_data:
-                # サムネイル復元
+            for d in data_list:
                 pixmap = None
-                if item_data.get('thumbnail'):
+                if d.get('thumbnail'):
                     try:
-                        img_data = base64.b64decode(item_data['thumbnail'])
-                        qimg = QImage.fromData(img_data)
-                        pixmap = QPixmap.fromImage(qimg)
-                    except:
-                        pass
+                        b = base64.b64decode(d['thumbnail'])
+                        pixmap = QPixmap.fromImage(QImage.fromData(b))
+                    except: pass
                 
-                # サムネイル復元失敗時のフォールバック
-                if pixmap is None:
+                if not pixmap:
                     pixmap = QPixmap(128, 128)
                     pixmap.fill(QColor("#444"))
-
-                list_item = QListWidgetItem(QIcon(pixmap), item_data.get('filename', 'Unknown'))
                 
-                # 内部データ構築
-                internal_data = {
-                    'path': item_data.get('path', ''),
-                    'prompt': item_data.get('prompt', ''),
-                    'thumbnail_b64': item_data.get('thumbnail')
+                item = QListWidgetItem(QIcon(pixmap), "")
+                
+                # Tooltip for loaded items
+                short_p = (d['prompt'][:100] + "...") if len(d['prompt']) > 100 else d['prompt']
+                tooltip = (
+                    f"<b>File:</b> {d['filename']}<br>"
+                    f"<b>Prompt:</b> {short_p}<br>"
+                    f"<b>Rating:</b> {d.get('rating', 0)}/10<br>"
+                    f"{'[TRASHED]' if d.get('is_trashed') else ''}"
+                )
+                item.setToolTip(tooltip)
+
+                # Internal Data
+                internal = {
+                    'path': d.get('path', ''),
+                    'prompt': d.get('prompt', ''),
+                    'rating': d.get('rating', 0),
+                    'is_trashed': d.get('is_trashed', False),
+                    'thumbnail_b64': d.get('thumbnail')
                 }
-                list_item.setData(Qt.ItemDataRole.UserRole, internal_data)
-                list_item.setToolTip(item_data.get('path', ''))
+                item.setData(Qt.ItemDataRole.UserRole, internal)
                 
-                self.list_widget.addItem(list_item)
+                # Visuals
+                if internal['is_trashed']:
+                    item.setBackground(QColor("#550000"))
 
-            self.status_bar.showMessage(f"Loaded {len(collection_data)} items.")
+                self.list_widget.addItem(item)
+
+            self.status_bar.showMessage(f"Loaded {len(data_list)} items.")
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to load: {e}")
+            QMessageBox.critical(self, "Error", str(e))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
