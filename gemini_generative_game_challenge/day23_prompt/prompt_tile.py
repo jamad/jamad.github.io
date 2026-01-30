@@ -1,7 +1,7 @@
 """
 <!-- 
 [DEVELOPMENT NOTES FOR AI ASSISTANTS]
-CURRENT VERSION: v20260130.02-UNSELECT
+CURRENT VERSION: v20260131.01-SELECTION-FIX
 
 MANDATORY RULES FOR CODE MODIFICATION:
 1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested.
@@ -17,12 +17,13 @@ MANDATORY RULES FOR CODE MODIFICATION:
    - [COMPRESSION]: Save/Load must use GZIP + UTF-8 for the JSON structure to reduce file size.
    - [COMPATIBILITY]: Load function MUST attempt GZIP read first, falling back to plain text for legacy files.
    - [UNSELECT]: "Unselect" button must clear both visual selection AND current item focus to trigger panel reset.
+   - [DESELECT-ON-EMPTY-CLICK]: Clicking the empty background area of list_widget must call deselect_all().
 4. AI PROTOCOL: If token limit is reached, instruct user to start a new chat with the current file.
 5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
 6. PRE-FLIGHT VERIFICATION (Internal Monologue):
    Before outputting code, verify these specific cases:
-   [ ] Regression Test A: Does "Unselect" button clear the right panel (image/text)?
-   [ ] Regression Test B: Does saving still use GZIP?
+   [ ] Regression Test A: Does clicking the list widget background clear the preview panel?
+   [ ] Regression Test B: Does the preview panel use d['path'] from disk when available?
 -->
 """
 
@@ -46,7 +47,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QAbstractItemView, QGroupBox, QMenu)
 from PyQt6.QtCore import Qt, QSize, QUrl, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import (QIcon, QPixmap, QDragEnterEvent, QDropEvent, 
-                         QImage, QColor, QUndoStack, QUndoCommand, QKeySequence, QAction)
+                         QImage, QColor, QUndoStack, QUndoCommand, QKeySequence, QAction, QMouseEvent)
 from PyQt6.QtMultimedia import QSoundEffect
 
 from PIL import Image, ImageOps
@@ -222,6 +223,20 @@ class ModifyItemsCommand(QUndoCommand):
         else:
             i.setBackground(QColor("#2b2b2b"))
 
+# --- Custom ListWidget to support Deselect-on-Empty-Click ---
+class CustomListWidget(QListWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.app_ref = parent
+
+    def mousePressEvent(self, event: QMouseEvent):
+        item = self.itemAt(event.pos())
+        if not item:
+            # If parent is the window, call deselect_all
+            if hasattr(self.window(), 'deselect_all'):
+                self.window().deselect_all()
+        super().mousePressEvent(event)
+
 # --- Main Application ---
 class PromptTileApp(QMainWindow):
     def __init__(self):
@@ -269,7 +284,6 @@ class PromptTileApp(QMainWindow):
         self.btn_clear = QPushButton("🗑️ Clear List")
         self.btn_clear.clicked.connect(self.clear_list)
 
-        # --- NEW: Unselect Button ---
         self.btn_unselect = QPushButton("Unselect")
         self.btn_unselect.setToolTip("Deselect all items to clear the preview panel")
         self.btn_unselect.clicked.connect(self.deselect_all)
@@ -280,7 +294,7 @@ class PromptTileApp(QMainWindow):
         row1.addWidget(self.btn_save)
         row1.addWidget(self.btn_load)
         row1.addWidget(self.btn_clear)
-        row1.addWidget(self.btn_unselect) # Add button here
+        row1.addWidget(self.btn_unselect)
         row1.addStretch()
         
         # Grid Size
@@ -353,13 +367,12 @@ class PromptTileApp(QMainWindow):
         # 2. Main Splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
         
-        # Left: List
-        self.list_widget = QListWidget()
+        # Left: List (Using CustomListWidget)
+        self.list_widget = CustomListWidget(self)
         self.list_widget.setViewMode(QListWidget.ViewMode.IconMode)
         self.list_widget.setResizeMode(QListWidget.ResizeMode.Adjust)
         self.list_widget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.list_widget.setSpacing(1)
-        # Selection Changed Signal
         self.list_widget.currentItemChanged.connect(self.on_selection_change)
         self.list_widget.setStyleSheet("""
             QListWidget { background-color: #2b2b2b; border: none; }
@@ -448,14 +461,13 @@ class PromptTileApp(QMainWindow):
         
         # Init State
         self.set_grid_size(64, self.btn_size_64)
-        self.reset_right_panel() # 初期状態は空にする
+        self.reset_right_panel()
 
     # --- Logic ---
 
     def reset_right_panel(self):
-        """右パネルの情報をクリアし、操作を無効化する"""
         self.preview_label.setText("No Selection")
-        self.preview_label.setPixmap(QPixmap()) # Clear image
+        self.preview_label.setPixmap(QPixmap())
         self.text_prompt.clear()
         
         self.lbl_rate_val.setText("-")
@@ -474,21 +486,15 @@ class PromptTileApp(QMainWindow):
         self.btn_copy.setEnabled(False)
 
     def deselect_all(self):
-        """選択を解除し、右パネルをリセットする"""
         self.list_widget.clearSelection()
-        # カレントアイテムをNoneにすることで currentItemChanged(None) を発火させる
         self.list_widget.setCurrentItem(None)
-        # 念のため明示的にリセット
         self.reset_right_panel()
 
     def on_selection_change(self, current, previous):
-        """アイテム選択変更時の処理"""
         if not current:
-            # 選択解除された場合
             self.reset_right_panel()
             return
         
-        # 選択された場合、GUI有効化
         self.slider_rate.setEnabled(True)
         self.btn_set_rate.setEnabled(True)
         self.btn_toggle_trash.setEnabled(True)
@@ -497,21 +503,19 @@ class PromptTileApp(QMainWindow):
         self.sfx_select.play()
         d = current.data(Qt.ItemDataRole.UserRole)
         
-        # プロンプト表示
         self.text_prompt.setText(d['prompt'])
         
-        # レーティング表示
         self.slider_rate.blockSignals(True)
         self.slider_rate.setValue(d['rating'])
         self.slider_rate.blockSignals(False)
         self.lbl_rate_val.setText(str(d['rating']))
         
-        # ゴミ箱状態表示
         self.btn_toggle_trash.blockSignals(True)
         self.btn_toggle_trash.setChecked(d['is_trashed'])
         self.btn_toggle_trash.blockSignals(False)
         
-        # プレビュー画像表示
+        # --- Preview Logic ---
+        # Explicitly load from disk path d['path'] for original resolution
         if os.path.exists(d['path']):
             p = QPixmap(d['path'])
             if not p.isNull():
@@ -520,9 +524,12 @@ class PromptTileApp(QMainWindow):
                                   Qt.TransformationMode.SmoothTransformation)
                 self.preview_label.setPixmap(scaled)
                 self.preview_label.setText("")
+            else:
+                self.preview_label.setText("Error loading original file.")
         else:
-            # ファイルが見つからない場合はアイコンを拡大
-            self.preview_label.setPixmap(current.icon().pixmap(256))
+            # Fallback to icon's pixmap if original file is missing
+            self.preview_label.setPixmap(current.icon().pixmap(512))
+            self.status_bar.showMessage("Original file not found. Showing thumbnail.", 2000)
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasUrls():
@@ -566,7 +573,6 @@ class PromptTileApp(QMainWindow):
         if self.loader_thread:
             self.loader_thread.stop()
             
-        # 重複チェック
         current_paths = set()
         for i in range(self.list_widget.count()):
             d = self.list_widget.item(i).data(Qt.ItemDataRole.UserRole)
@@ -579,7 +585,6 @@ class PromptTileApp(QMainWindow):
         self.sfx_load.play()
         self.status_bar.showMessage(f"Loading {len(new_paths)} items...")
         
-        # スレッド起動
         icon_size = self.list_widget.iconSize().width()
         self.loader_thread = ImageLoaderThread(new_paths, icon_size)
         self.loader_thread.batch_loaded.connect(self.add_batch)
@@ -589,8 +594,6 @@ class PromptTileApp(QMainWindow):
     def add_batch(self, batch):
         for path, pix, meta, w, h, fmt, kb in batch:
             item = QListWidgetItem(QIcon(pix), "")
-            
-            # 自動ゴミ箱判定 (プロンプトが空または10文字未満)
             p_text = meta['prompt'] or ""
             is_auto_trashed = len(p_text.strip()) < 10
             
@@ -621,7 +624,6 @@ class PromptTileApp(QMainWindow):
         for b in self.size_group:
             b.setChecked(False)
         btn.setChecked(True)
-        # グリッドサイズをアイコンより少し大きくして余白確保
         self.list_widget.setIconSize(QSize(size, size))
         self.list_widget.setGridSize(QSize(size + 4, size + 4))
 
@@ -635,19 +637,15 @@ class PromptTileApp(QMainWindow):
             d = item.data(Qt.ItemDataRole.UserRole)
             
             should_hide = False
-            
-            # 1. 検索フィルタ
             if txt and (txt not in Path(d['path']).name.lower() and txt not in d['prompt'].lower()):
                 should_hide = True
             
             if not should_hide:
                 is_trashed = d.get('is_trashed')
                 if is_trashed:
-                    # ゴミ箱アイテムは、ゴミ箱表示ボタンがONの時だけ表示
                     if not show_trash:
                         should_hide = True
                 else:
-                    # 通常アイテムはレーティングフィルタに従う
                     if d.get('rating') not in active_rates:
                         should_hide = True
             
@@ -687,12 +685,10 @@ class PromptTileApp(QMainWindow):
         for i in range(self.list_widget.count()):
             d = self.list_widget.item(i).data(Qt.ItemDataRole.UserRole)
             
-            # サムネイル軽量化 (64px PNG)
             if not d.get('thumb') and os.path.exists(d['path']):
                 try:
                     with Image.open(d['path']) as img:
                         img.thumbnail((64, 64))
-                        # 減色してPNG化
                         img = img.convert('P', palette=Image.Palette.ADAPTIVE, colors=64)
                         b = BytesIO()
                         img.save(b, "PNG", optimize=True)
@@ -708,7 +704,6 @@ class PromptTileApp(QMainWindow):
                 'thumb': d['thumb']
             })
             
-        # GZIP圧縮して保存
         try:
             with gzip.open(path, 'wt', encoding='utf-8') as f:
                 json.dump(arr, f, ensure_ascii=False)
@@ -725,20 +720,16 @@ class PromptTileApp(QMainWindow):
         self.clear_list()
         
         try:
-            # まずGZIPとして読み込みを試みる
             try:
                 with gzip.open(path, 'rt', encoding='utf-8') as f:
                     arr = json.load(f)
             except (OSError, gzip.BadGzipFile):
-                # 失敗したら通常のJSONとして読み込む（後方互換性）
                 with open(path, 'r', encoding='utf-8') as f:
                     arr = json.load(f)
                 
             for d in arr:
-                # サムネイル復元 (透明背景)
                 pix = QPixmap(64, 64)
                 pix.fill(Qt.GlobalColor.transparent)
-                
                 if d.get('thumb'):
                     try:
                         pix.loadFromData(base64.b64decode(d['thumb']))
@@ -746,17 +737,12 @@ class PromptTileApp(QMainWindow):
                         pass
                 
                 item = QListWidgetItem(QIcon(pix), "")
-                
-                # 古いデータ形式対策
                 d.setdefault('thumb', d.get('thumb'))
                 d.setdefault('is_trashed', False)
                 d.setdefault('rating', 0)
-                
                 item.setData(Qt.ItemDataRole.UserRole, d)
-                
                 if d.get('is_trashed'):
                     item.setBackground(QColor("#550000"))
-                    
                 self.list_widget.addItem(item)
                 
             self.apply_filters()
@@ -771,7 +757,7 @@ class PromptTileApp(QMainWindow):
             self.loader_thread.stop()
         self.list_widget.clear()
         self.undo_stack.clear()
-        self.reset_right_panel() # 表示クリア
+        self.reset_right_panel()
         self.status_bar.showMessage("List cleared.")
 
 if __name__ == "__main__":
