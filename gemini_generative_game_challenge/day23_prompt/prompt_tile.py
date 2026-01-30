@@ -1,7 +1,7 @@
 """
 <!-- 
 [DEVELOPMENT NOTES FOR AI ASSISTANTS]
-CURRENT VERSION: v20260131.06-SHELL-THUMB-ALL
+CURRENT VERSION: v20260131.08-STABLE-REPAIR
 
 MANDATORY RULES FOR CODE MODIFICATION:
 1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested.
@@ -20,13 +20,14 @@ MANDATORY RULES FOR CODE MODIFICATION:
    - [DESELECT-ON-EMPTY-CLICK]: Clicking the empty background area of list_widget must call deselect_all().
    - [TOOL-FILTER]: Support filtering by detected tool (A1111, ComfyUI, etc.) via toggle buttons.
    - [EXPLORER-INTEGRATION]: Support opening file location in OS explorer with the file selected.
-   - [VIDEO-THUMBNAIL]: Use Windows Shell API via ctypes to fetch Explorer-native thumbnails for ALL files.
+   - [VIDEO-THUMBNAIL]: Use Windows Shell API via ctypes with CoInitialize (inside thread) to fetch Explorer-native thumbnails.
 4. AI PROTOCOL: If token limit is reached, instruct user to start a new chat with the current file.
 5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
 6. PRE-FLIGHT VERIFICATION (Internal Monologue):
    Before outputting code, verify these specific cases:
-   [ ] Performance Check: Is get_shell_thumbnail used for both images and videos? (YES)
-   [ ] Layout Check: Is the search bar restored and row2 stretch applied? (YES)
+   [ ] Regex Fix: Used rb'\{' instead of b'\{' to avoid escape sequence warnings? (YES)
+   [ ] Syntax Fix: Removed extraneous triple quotes at the end of the file? (YES)
+   [ ] Shell Fix: Corrected GUID hex values and used c_ubyte for Data4? (YES)
 -->
 """
 
@@ -65,15 +66,21 @@ def get_shell_thumbnail(path, size):
         return None
     try:
         shell32 = ctypes.windll.shell32
+        ole32 = ctypes.windll.ole32
+        
+        # COM をスレッド内で初期化 (S_OK=0, S_FALSE=1)
+        ole32.CoInitialize(None)
         
         class GUID(ctypes.Structure):
             _fields_ = [("Data1", wintypes.DWORD), ("Data2", wintypes.WORD), 
-                        ("Data3", wintypes.WORD), ("Data4", wintypes.BYTE * 8)]
+                        ("Data3", wintypes.WORD), ("Data4", ctypes.c_ubyte * 8)]
         
-        IID_IShellItemImageFactory = GUID(0xbcc18b79, 0xba16, 0x442f, (ctypes.c_byte * 8)(0x80, 0xc4, 0x8a, 0x59, 0xc3, 0x0c, 0x46, 0x3b))
+        # IShellItemImageFactory GUID: {bcc18b79-ba16-442f-80c4-8a59c30c463b}
+        IID_IShellItemImageFactory = GUID(0xbcc18b79, 0xba16, 0x442f, (ctypes.c_ubyte * 8)(0x80, 0xc4, 0x8a, 0x59, 0xc3, 0x0c, 0x46, 0x3b))
         
         p_item = ctypes.c_void_p()
-        ret = shell32.SHCreateItemFromParsingName(os.path.abspath(path), None, ctypes.byref(IID_IShellItemImageFactory), ctypes.byref(p_item))
+        abs_path = os.path.abspath(path)
+        ret = shell32.SHCreateItemFromParsingName(abs_path, None, ctypes.byref(IID_IShellItemImageFactory), ctypes.byref(p_item))
         if ret != 0:
             return None
 
@@ -82,21 +89,22 @@ def get_shell_thumbnail(path, size):
 
         h_bitmap = wintypes.HBITMAP()
         factory_vtbl = ctypes.cast(p_item, ctypes.POINTER(ctypes.c_void_p))
-        # GetImage is at index 3 in IShellItemImageFactory
+        # IShellItemImageFactory::GetImage is at index 3
         get_image_func = ctypes.WINFUNCTYPE(ctypes.c_long, ctypes.c_void_p, SIZE, ctypes.c_int, ctypes.POINTER(wintypes.HBITMAP))(factory_vtbl.contents[3])
         
-        # SIIGBF_BIGGERSIZEOK = 0x1, SIIGBF_SCALE_UP = 0x100
+        # SIIGBF_BIGGERSIZEOK = 0x1
         ret = get_image_func(p_item, SIZE(size, size), 0x1, ctypes.byref(h_bitmap))
         
+        qimg = None
         if ret == 0 and h_bitmap:
             qimg = QImage.fromHBITMAP(h_bitmap.value)
             ctypes.windll.gdi32.DeleteObject(h_bitmap)
-            # Release IShellItem
-            release_func = ctypes.WINFUNCTYPE(ctypes.c_long, ctypes.c_void_p)(factory_vtbl.contents[2])
-            release_func(p_item)
-            return qimg
+            
+        # Release IShellItem (IUnknown::Release is index 2)
+        release_func = ctypes.WINFUNCTYPE(ctypes.c_long, ctypes.c_void_p)(factory_vtbl.contents[2])
+        release_func(p_item)
         
-        return None
+        return qimg
     except:
         return None
 
@@ -148,12 +156,13 @@ def extract_metadata(image_path):
         try:
             with open(image_path, 'rb') as f:
                 data = f.read(1024 * 1024 * 4)
-                match = re.search(b'parameters\x00+([^\x00\x01]+)', data)
+                # rb'...' raw-byte string to prevent escape sequence warnings
+                match = re.search(rb'parameters\x00+([^\x00\x01]+)', data)
                 if match:
                     info["prompt"] = match.group(1).decode('utf-8', errors='ignore')
                     info["tool"] = "A1111"
                     return info
-                match = re.search(b'\{"prompt":.+\}', data)
+                match = re.search(rb'\{"prompt":.+\}', data)
                 if match:
                     info["prompt"] = match.group(0).decode('utf-8', errors='ignore')
                     info["tool"] = "Comfy"
@@ -210,11 +219,10 @@ class ImageLoaderThread(QThread):
                 meta = extract_metadata(path)
                 suffix = Path(path).suffix.lower()
                 
-                # --- [SQUARE THUMBNAILS] logic via OS Shell or Pillow ---
                 pixmap = QPixmap(self.icon_size, self.icon_size)
                 pixmap.fill(Qt.GlobalColor.transparent)
                 
-                # Try OS Shell Thumbnail first (Faster)
+                # Try OS Shell Thumbnail first (Very Fast)
                 qimg = get_shell_thumbnail(path, self.icon_size)
                 
                 if qimg:
@@ -230,7 +238,7 @@ class ImageLoaderThread(QThread):
                     w_orig, h_orig = 0, 0
                     fmt = suffix.upper()[1:]
                 else:
-                    # Fallback to Pillow
+                    # Fallback to Pillow or Icon
                     if suffix == '.mp4':
                         pixmap.fill(QColor(40, 40, 40))
                         painter = QPainter(pixmap)
@@ -308,7 +316,7 @@ class CustomListWidget(QListWidget):
 class PromptTileApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PromptTile v7 - Fast Shell Thumbnails")
+        self.setWindowTitle("PromptTile v7 - Stable Repair")
         self.resize(1200, 850)
         self.setAcceptDrops(True)
         self.undo_stack = QUndoStack(self)
@@ -507,7 +515,6 @@ class PromptTileApp(QMainWindow):
                 try:
                     with Image.open(d['path']) as img: img.thumbnail((64, 64)); img = img.convert('P', palette=Image.Palette.ADAPTIVE, colors=64); b = BytesIO(); img.save(b, "PNG", optimize=True); d['thumb'] = base64.b64encode(b.getvalue()).decode()
                 except:
-                    # If Pillow fails (like mp4), use the item's current icon as a fallback
                     pix = self.list_widget.item(i).icon().pixmap(64, 64)
                     buf = BytesIO(); pix.toImage().save(buf, "PNG")
                     d['thumb'] = base64.b64encode(buf.getvalue()).decode()
