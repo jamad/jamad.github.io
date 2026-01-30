@@ -1,7 +1,7 @@
 """
 <!-- 
 [DEVELOPMENT NOTES FOR AI ASSISTANTS]
-CURRENT VERSION: v20260131.01-SELECTION-FIX
+CURRENT VERSION: v20260131.02-TOOL-FILTER-EXPLORER
 
 MANDATORY RULES FOR CODE MODIFICATION:
 1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested.
@@ -18,12 +18,15 @@ MANDATORY RULES FOR CODE MODIFICATION:
    - [COMPATIBILITY]: Load function MUST attempt GZIP read first, falling back to plain text for legacy files.
    - [UNSELECT]: "Unselect" button must clear both visual selection AND current item focus to trigger panel reset.
    - [DESELECT-ON-EMPTY-CLICK]: Clicking the empty background area of list_widget must call deselect_all().
+   - [TOOL-FILTER]: Support filtering by detected tool (A1111, ComfyUI, etc.) via toggle buttons.
+   - [EXPLORER-INTEGRATION]: Support opening file location in OS explorer with the file selected.
 4. AI PROTOCOL: If token limit is reached, instruct user to start a new chat with the current file.
 5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
 6. PRE-FLIGHT VERIFICATION (Internal Monologue):
    Before outputting code, verify these specific cases:
-   [ ] Regression Test A: Does clicking the list widget background clear the preview panel?
-   [ ] Regression Test B: Does the preview panel use d['path'] from disk when available?
+   [ ] Regression Test A: Does the Search bar still filter in real-time?
+   [ ] Regression Test B: Does the "Open Folder" button highlight the specific file?
+   [ ] Logic Check: Is "tool" data being saved to and loaded from the compressed JSON?
 -->
 """
 
@@ -37,6 +40,7 @@ import re
 import json
 import base64
 import gzip
+import subprocess
 from io import BytesIO
 from pathlib import Path
 
@@ -113,7 +117,7 @@ def extract_metadata(image_path):
                         try:
                             json_str = json.dumps(json.loads(meta[k]), indent=2, ensure_ascii=False)
                             info["prompt"] = f"[{k}]\n{json_str}"
-                            info["tool"] = "ComfyUI"
+                            info["tool"] = "Comfy"
                             found_comfy = True
                             break
                         except:
@@ -225,14 +229,9 @@ class ModifyItemsCommand(QUndoCommand):
 
 # --- Custom ListWidget to support Deselect-on-Empty-Click ---
 class CustomListWidget(QListWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.app_ref = parent
-
     def mousePressEvent(self, event: QMouseEvent):
         item = self.itemAt(event.pos())
         if not item:
-            # If parent is the window, call deselect_all
             if hasattr(self.window(), 'deselect_all'):
                 self.window().deselect_all()
         super().mousePressEvent(event)
@@ -320,18 +319,33 @@ class PromptTileApp(QMainWindow):
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("🔍 Search...")
         self.search_bar.textChanged.connect(self.apply_filters)
-        self.search_bar.setFixedWidth(200)
+        self.search_bar.setFixedWidth(180)
+
+        # Tool Filter Buttons
+        self.tool_btns = {}
+        for t_name in ["A1111", "Comfy", "Exif", "Unknown"]:
+            t_btn = QPushButton(t_name)
+            t_btn.setCheckable(True)
+            t_btn.setChecked(True)
+            t_btn.setFixedWidth(55)
+            t_btn.clicked.connect(self.apply_filters)
+            t_btn.setStyleSheet("""
+                QPushButton { background-color: #333; color: #aaa; border: none; font-size: 10px; }
+                QPushButton:checked { background-color: #4a90e2; color: white; }
+            """)
+            self.tool_btns[t_name] = t_btn
+            row2.addWidget(t_btn)
+
+        row2.addSpacing(5)
         
         self.btn_all = QPushButton("ALL")
-        self.btn_all.setFixedWidth(40)
+        self.btn_all.setFixedWidth(35)
         self.btn_all.clicked.connect(lambda: self.toggle_rates(True))
         
         self.btn_none = QPushButton("NONE")
-        self.btn_none.setFixedWidth(40)
+        self.btn_none.setFixedWidth(35)
         self.btn_none.clicked.connect(lambda: self.toggle_rates(False))
         
-        row2.addWidget(self.search_bar)
-        row2.addWidget(QLabel("Filter:"))
         row2.addWidget(self.btn_all)
         row2.addWidget(self.btn_none)
         
@@ -340,7 +354,7 @@ class PromptTileApp(QMainWindow):
             btn = QPushButton(str(i))
             btn.setCheckable(True)
             btn.setChecked(True)
-            btn.setFixedWidth(25)
+            btn.setFixedWidth(22)
             btn.clicked.connect(self.apply_filters)
             btn.setStyleSheet("""
                 QPushButton { background-color: #444; color: #aaa; border: none; }
@@ -367,7 +381,7 @@ class PromptTileApp(QMainWindow):
         # 2. Main Splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
         
-        # Left: List (Using CustomListWidget)
+        # Left: List
         self.list_widget = CustomListWidget(self)
         self.list_widget.setViewMode(QListWidget.ViewMode.IconMode)
         self.list_widget.setResizeMode(QListWidget.ResizeMode.Adjust)
@@ -388,11 +402,9 @@ class PromptTileApp(QMainWindow):
         self.btn_undo = QPushButton("Undo")
         self.btn_undo.setShortcut(QKeySequence.StandardKey.Undo)
         self.btn_undo.clicked.connect(self.undo_stack.undo)
-        
         self.btn_redo = QPushButton("Redo")
         self.btn_redo.setShortcut(QKeySequence.StandardKey.Redo)
         self.btn_redo.clicked.connect(self.undo_stack.redo)
-        
         undo_layout.addWidget(self.btn_undo)
         undo_layout.addWidget(self.btn_redo)
 
@@ -406,11 +418,9 @@ class PromptTileApp(QMainWindow):
         self.slider_rate = QSlider(Qt.Orientation.Horizontal)
         self.slider_rate.setRange(0, 10)
         self.slider_rate.valueChanged.connect(lambda v: self.lbl_rate_val.setText(str(v)))
-        
         self.btn_set_rate = QPushButton("Set ★")
         self.btn_set_rate.setStyleSheet("background-color: #FFA500; color: black; font-weight: bold;")
         self.btn_set_rate.clicked.connect(self.set_rating)
-        
         r_row.addWidget(QLabel("Rate:"))
         r_row.addWidget(self.lbl_rate_val)
         r_row.addWidget(self.slider_rate)
@@ -423,16 +433,19 @@ class PromptTileApp(QMainWindow):
             QPushButton { background-color: #555; padding: 6px; }
             QPushButton:checked { background-color: #d32f2f; }
         """)
-        
         ctl_layout.addLayout(r_row)
         ctl_layout.addWidget(self.btn_toggle_trash)
 
-        # Preview
+        # Preview Area
         self.preview_label = QLabel("No Selection")
         self.preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.preview_label.setMinimumHeight(200)
         self.preview_label.setStyleSheet("background-color: #1e1e1e; border: 1px dashed #555;")
         
+        self.btn_open_folder = QPushButton("📂 Open Folder (Highlight File)")
+        self.btn_open_folder.clicked.connect(self.open_in_explorer)
+        self.btn_open_folder.setStyleSheet("background-color: #444; color: white; padding: 5px;")
+
         self.text_prompt = QTextEdit()
         self.text_prompt.setReadOnly(True)
         self.text_prompt.setStyleSheet("background-color: #222; font-family: Consolas; font-size: 10pt;")
@@ -444,6 +457,7 @@ class PromptTileApp(QMainWindow):
         details_layout.addLayout(undo_layout)
         details_layout.addWidget(ctl_frame)
         details_layout.addWidget(self.preview_label)
+        details_layout.addWidget(self.btn_open_folder) # Explorer button
         details_layout.addWidget(QLabel("Prompt:"))
         details_layout.addWidget(self.text_prompt)
         details_layout.addWidget(self.btn_copy)
@@ -459,7 +473,6 @@ class PromptTileApp(QMainWindow):
         self.status_bar.showMessage("Ready.")
         self.setStyleSheet("QMainWindow { background-color: #333; color: white; } QLabel { color: #ddd; }")
         
-        # Init State
         self.set_grid_size(64, self.btn_size_64)
         self.reset_right_panel()
 
@@ -469,21 +482,18 @@ class PromptTileApp(QMainWindow):
         self.preview_label.setText("No Selection")
         self.preview_label.setPixmap(QPixmap())
         self.text_prompt.clear()
-        
         self.lbl_rate_val.setText("-")
         self.slider_rate.blockSignals(True)
         self.slider_rate.setValue(0)
         self.slider_rate.blockSignals(False)
         self.slider_rate.setEnabled(False)
-        
         self.btn_set_rate.setEnabled(False)
-        
         self.btn_toggle_trash.blockSignals(True)
         self.btn_toggle_trash.setChecked(False)
         self.btn_toggle_trash.blockSignals(False)
         self.btn_toggle_trash.setEnabled(False)
-        
         self.btn_copy.setEnabled(False)
+        self.btn_open_folder.setEnabled(False)
 
     def deselect_all(self):
         self.list_widget.clearSelection()
@@ -499,10 +509,10 @@ class PromptTileApp(QMainWindow):
         self.btn_set_rate.setEnabled(True)
         self.btn_toggle_trash.setEnabled(True)
         self.btn_copy.setEnabled(True)
+        self.btn_open_folder.setEnabled(True)
         
         self.sfx_select.play()
         d = current.data(Qt.ItemDataRole.UserRole)
-        
         self.text_prompt.setText(d['prompt'])
         
         self.slider_rate.blockSignals(True)
@@ -514,8 +524,6 @@ class PromptTileApp(QMainWindow):
         self.btn_toggle_trash.setChecked(d['is_trashed'])
         self.btn_toggle_trash.blockSignals(False)
         
-        # --- Preview Logic ---
-        # Explicitly load from disk path d['path'] for original resolution
         if os.path.exists(d['path']):
             p = QPixmap(d['path'])
             if not p.isNull():
@@ -524,69 +532,60 @@ class PromptTileApp(QMainWindow):
                                   Qt.TransformationMode.SmoothTransformation)
                 self.preview_label.setPixmap(scaled)
                 self.preview_label.setText("")
-            else:
-                self.preview_label.setText("Error loading original file.")
         else:
-            # Fallback to icon's pixmap if original file is missing
             self.preview_label.setPixmap(current.icon().pixmap(512))
             self.status_bar.showMessage("Original file not found. Showing thumbnail.", 2000)
 
-    def dragEnterEvent(self, e):
-        if e.mimeData().hasUrls():
-            e.accept()
+    def open_in_explorer(self):
+        item = self.list_widget.currentItem()
+        if not item: return
+        path = item.data(Qt.ItemDataRole.UserRole)['path']
+        if os.path.exists(path):
+            if sys.platform == 'win32':
+                subprocess.run(['explorer', '/select,', os.path.normpath(path)])
+            elif sys.platform == 'darwin':
+                subprocess.run(['open', '-R', path])
+            else:
+                subprocess.run(['xdg-open', os.path.dirname(path)])
         else:
-            e.ignore()
+            QMessageBox.warning(self, "Error", "File does not exist on disk.")
+
+    def dragEnterEvent(self, e):
+        if e.mimeData().hasUrls(): e.accept()
+        else: e.ignore()
 
     def dropEvent(self, e):
         files = [u.toLocalFile() for u in e.mimeData().urls()]
         if files:
-            if os.path.isdir(files[0]):
-                self.open_folder(True, files[0])
-            else:
-                self.load_files(files)
+            if os.path.isdir(files[0]): self.open_folder(True, files[0])
+            else: self.load_files(files)
 
     def open_folder(self, recursive, path=None):
         target_dir = path or QFileDialog.getExistingDirectory(self, "Select Folder")
-        if not target_dir:
-            return
-            
+        if not target_dir: return
         file_list = []
-        extensions = {'.png', '.jpg', '.jpeg', '.webp'}
-        
+        exts = {'.png', '.jpg', '.jpeg', '.webp'}
         if recursive:
             for root, _, fs in os.walk(target_dir):
                 for x in fs:
-                    if Path(x).suffix.lower() in extensions:
-                        file_list.append(os.path.join(root, x))
+                    if Path(x).suffix.lower() in exts: file_list.append(os.path.join(root, x))
         else:
             try:
                 for x in os.listdir(target_dir):
                     full = os.path.join(target_dir, x)
-                    if os.path.isfile(full) and Path(x).suffix.lower() in extensions:
-                        file_list.append(full)
-            except Exception:
-                pass
-                
+                    if os.path.isfile(full) and Path(x).suffix.lower() in exts: file_list.append(full)
+            except Exception: pass
         self.load_files(file_list)
 
     def load_files(self, paths):
-        if self.loader_thread:
-            self.loader_thread.stop()
-            
-        current_paths = set()
-        for i in range(self.list_widget.count()):
-            d = self.list_widget.item(i).data(Qt.ItemDataRole.UserRole)
-            current_paths.add(d['path'])
-            
-        new_paths = [p for p in paths if p not in current_paths]
-        if not new_paths:
-            return
-            
+        if self.loader_thread: self.loader_thread.stop()
+        curr_p = {self.list_widget.item(i).data(Qt.ItemDataRole.UserRole)['path'] for i in range(self.list_widget.count())}
+        new_p = [p for p in paths if p not in curr_p]
+        if not new_p: return
         self.sfx_load.play()
-        self.status_bar.showMessage(f"Loading {len(new_paths)} items...")
-        
-        icon_size = self.list_widget.iconSize().width()
-        self.loader_thread = ImageLoaderThread(new_paths, icon_size)
+        self.status_bar.showMessage(f"Loading {len(new_p)} items...")
+        icon_sz = self.list_widget.iconSize().width()
+        self.loader_thread = ImageLoaderThread(new_p, icon_sz)
         self.loader_thread.batch_loaded.connect(self.add_batch)
         self.loader_thread.finished_loading.connect(lambda c: (self.status_bar.showMessage(f"Loaded {c} images."), self.apply_filters()))
         self.loader_thread.start()
@@ -596,33 +595,16 @@ class PromptTileApp(QMainWindow):
             item = QListWidgetItem(QIcon(pix), "")
             p_text = meta['prompt'] or ""
             is_auto_trashed = len(p_text.strip()) < 10
-            
-            tooltip = (f"<b>{Path(path).name}</b><br>"
-                       f"{w}x{h} ({fmt})<br>"
-                       f"{kb:.1f} KB<br>"
-                       f"{'TRASHED (Auto)' if is_auto_trashed else ''}<br>"
-                       f"Prompt: {p_text[:100]}...")
-            item.setToolTip(tooltip)
-            
-            data = {
-                'path': path, 
-                'prompt': p_text, 
-                'rating': 0, 
-                'is_trashed': is_auto_trashed, 
-                'thumb': None
-            }
+            tip = (f"<b>{Path(path).name}</b><br>{w}x{h} ({fmt})<br>{kb:.1f} KB<br>Tool: {meta['tool']}<br>Prompt: {p_text[:100]}...")
+            item.setToolTip(tip)
+            data = {'path': path, 'prompt': p_text, 'rating': 0, 'is_trashed': is_auto_trashed, 'thumb': None, 'tool': meta['tool']}
             item.setData(Qt.ItemDataRole.UserRole, data)
-            
-            if is_auto_trashed:
-                item.setBackground(QColor("#550000"))
-                
+            if is_auto_trashed: item.setBackground(QColor("#550000"))
             self.list_widget.addItem(item)
-            
         self.apply_filters()
 
     def set_grid_size(self, size, btn):
-        for b in self.size_group:
-            b.setChecked(False)
+        for b in self.size_group: b.setChecked(False)
         btn.setChecked(True)
         self.list_widget.setIconSize(QSize(size, size))
         self.list_widget.setGridSize(QSize(size + 4, size + 4))
@@ -630,47 +612,37 @@ class PromptTileApp(QMainWindow):
     def apply_filters(self):
         txt = self.search_bar.text().lower()
         active_rates = {r for r, b in self.rate_btns.items() if b.isChecked()}
+        active_tools = {t for t, b in self.tool_btns.items() if b.isChecked()}
         show_trash = self.btn_trash_view.isChecked()
-        
         for i in range(self.list_widget.count()):
             item = self.list_widget.item(i)
             d = item.data(Qt.ItemDataRole.UserRole)
-            
-            should_hide = False
-            if txt and (txt not in Path(d['path']).name.lower() and txt not in d['prompt'].lower()):
-                should_hide = True
-            
-            if not should_hide:
-                is_trashed = d.get('is_trashed')
-                if is_trashed:
-                    if not show_trash:
-                        should_hide = True
+            hide = False
+            if txt and (txt not in Path(d['path']).name.lower() and txt not in d['prompt'].lower()): hide = True
+            if not hide:
+                if d.get('is_trashed'):
+                    if not show_trash: hide = True
                 else:
-                    if d.get('rating') not in active_rates:
-                        should_hide = True
-            
-            item.setHidden(should_hide)
+                    if d.get('rating') not in active_rates: hide = True
+                    if not hide and d.get('tool') not in active_tools: hide = True
+            item.setHidden(hide)
 
     def toggle_rates(self, state):
-        for b in self.rate_btns.values():
-            b.setChecked(state)
+        for b in self.rate_btns.values(): b.setChecked(state)
         self.apply_filters()
 
     def set_rating(self):
         items = self.list_widget.selectedItems()
-        if not items:
-            return
+        if not items: return
         val = self.slider_rate.value()
         self.undo_stack.push(ModifyItemsCommand(items, {'rating': val}, f"Rate {val}", self))
 
     def toggle_trash_state(self):
         items = self.list_widget.selectedItems()
-        if not items:
-            return
+        if not items: return
         val = self.btn_toggle_trash.isChecked()
         self.undo_stack.push(ModifyItemsCommand(items, {'is_trashed': val}, "Trash Toggle", self))
-        if val:
-            self.sfx_trash.play()
+        if val: self.sfx_trash.play()
 
     def copy_prompt(self):
         QApplication.clipboard().setText(self.text_prompt.toPlainText())
@@ -678,13 +650,10 @@ class PromptTileApp(QMainWindow):
 
     def save_book(self):
         path, _ = QFileDialog.getSaveFileName(self, "Save Book", "", "JSON (*.json)")
-        if not path:
-            return
-            
+        if not path: return
         arr = []
         for i in range(self.list_widget.count()):
             d = self.list_widget.item(i).data(Qt.ItemDataRole.UserRole)
-            
             if not d.get('thumb') and os.path.exists(d['path']):
                 try:
                     with Image.open(d['path']) as img:
@@ -693,68 +662,43 @@ class PromptTileApp(QMainWindow):
                         b = BytesIO()
                         img.save(b, "PNG", optimize=True)
                         d['thumb'] = base64.b64encode(b.getvalue()).decode()
-                except:
-                    pass
-            
-            arr.append({
-                'path': d['path'], 
-                'prompt': d['prompt'], 
-                'rating': d['rating'], 
-                'is_trashed': d['is_trashed'], 
-                'thumb': d['thumb']
-            })
-            
+                except: pass
+            arr.append({'path': d['path'], 'prompt': d['prompt'], 'rating': d['rating'], 'is_trashed': d['is_trashed'], 'thumb': d['thumb'], 'tool': d.get('tool', 'Unknown')})
         try:
-            with gzip.open(path, 'wt', encoding='utf-8') as f:
-                json.dump(arr, f, ensure_ascii=False)
+            with gzip.open(path, 'wt', encoding='utf-8') as f: json.dump(arr, f, ensure_ascii=False)
             self.sfx_copy.play()
             self.status_bar.showMessage(f"Saved {len(arr)} items (Compressed).")
-        except Exception as e:
-            QMessageBox.critical(self, "Save Error", str(e))
+        except Exception as e: QMessageBox.critical(self, "Save Error", str(e))
 
     def load_book(self):
         path, _ = QFileDialog.getOpenFileName(self, "Load Book", "", "JSON (*.json)")
-        if not path:
-            return
-            
+        if not path: return
         self.clear_list()
-        
         try:
             try:
-                with gzip.open(path, 'rt', encoding='utf-8') as f:
-                    arr = json.load(f)
+                with gzip.open(path, 'rt', encoding='utf-8') as f: arr = json.load(f)
             except (OSError, gzip.BadGzipFile):
-                with open(path, 'r', encoding='utf-8') as f:
-                    arr = json.load(f)
-                
+                with open(path, 'r', encoding='utf-8') as f: arr = json.load(f)
             for d in arr:
                 pix = QPixmap(64, 64)
                 pix.fill(Qt.GlobalColor.transparent)
                 if d.get('thumb'):
-                    try:
-                        pix.loadFromData(base64.b64decode(d['thumb']))
-                    except:
-                        pass
-                
+                    try: pix.loadFromData(base64.b64decode(d['thumb']))
+                    except: pass
                 item = QListWidgetItem(QIcon(pix), "")
-                d.setdefault('thumb', d.get('thumb'))
                 d.setdefault('is_trashed', False)
                 d.setdefault('rating', 0)
+                d.setdefault('tool', 'Unknown')
                 item.setData(Qt.ItemDataRole.UserRole, d)
-                if d.get('is_trashed'):
-                    item.setBackground(QColor("#550000"))
+                if d.get('is_trashed'): item.setBackground(QColor("#550000"))
                 self.list_widget.addItem(item)
-                
             self.apply_filters()
             self.sfx_load.play()
             self.status_bar.showMessage(f"Loaded {len(arr)} items.")
-            
-        except Exception as e:
-            QMessageBox.critical(self, "Load Error", str(e))
+        except Exception as e: QMessageBox.critical(self, "Load Error", str(e))
 
     def clear_list(self):
-        if self.loader_thread:
-            self.loader_thread.stop()
+        if self.loader_thread: self.loader_thread.stop()
         self.list_widget.clear()
         self.undo_stack.clear()
         self.reset_right_panel()
