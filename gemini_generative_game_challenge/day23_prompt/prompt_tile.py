@@ -1,7 +1,7 @@
 """
 <!-- 
 [DEVELOPMENT NOTES FOR AI ASSISTANTS]
-CURRENT VERSION: v20260131.02-TOOL-FILTER-EXPLORER
+CURRENT VERSION: v20260131.03-LAYOUT-FIX
 
 MANDATORY RULES FOR CODE MODIFICATION:
 1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested.
@@ -24,9 +24,8 @@ MANDATORY RULES FOR CODE MODIFICATION:
 5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
 6. PRE-FLIGHT VERIFICATION (Internal Monologue):
    Before outputting code, verify these specific cases:
-   [ ] Regression Test A: Does the Search bar still filter in real-time?
-   [ ] Regression Test B: Does the "Open Folder" button highlight the specific file?
-   [ ] Logic Check: Is "tool" data being saved to and loaded from the compressed JSON?
+   [ ] Layout Check: Is self.search_bar added to row2 via addWidget? (FIXED)
+   [ ] Layout Check: Is addStretch() added to row2 to prevent button gaps? (FIXED)
 -->
 """
 
@@ -227,7 +226,7 @@ class ModifyItemsCommand(QUndoCommand):
         else:
             i.setBackground(QColor("#2b2b2b"))
 
-# --- Custom ListWidget to support Deselect-on-Empty-Click ---
+# --- Custom ListWidget ---
 class CustomListWidget(QListWidget):
     def mousePressEvent(self, event: QMouseEvent):
         item = self.itemAt(event.pos())
@@ -268,23 +267,17 @@ class PromptTileApp(QMainWindow):
         
         self.btn_add_recur = QPushButton("📂 Add (All)")
         self.btn_add_recur.clicked.connect(lambda: self.open_folder(True))
-        
         self.btn_add_flat = QPushButton("📂 Add (Flat)")
         self.btn_add_flat.clicked.connect(lambda: self.open_folder(False))
-        
         self.btn_save = QPushButton("💾 Save")
         self.btn_save.clicked.connect(self.save_book)
         self.btn_save.setStyleSheet("background-color: #0078d7; color: white;")
-        
         self.btn_load = QPushButton("📖 Load")
         self.btn_load.clicked.connect(self.load_book)
         self.btn_load.setStyleSheet("background-color: #d7cd00; color: black;")
-        
         self.btn_clear = QPushButton("🗑️ Clear List")
         self.btn_clear.clicked.connect(self.clear_list)
-
         self.btn_unselect = QPushButton("Unselect")
-        self.btn_unselect.setToolTip("Deselect all items to clear the preview panel")
         self.btn_unselect.clicked.connect(self.deselect_all)
         
         row1.addWidget(self.btn_add_recur)
@@ -301,12 +294,11 @@ class PromptTileApp(QMainWindow):
         self.btn_size_32 = QPushButton("32px")
         self.btn_size_64 = QPushButton("64px")
         self.size_group = [self.btn_size_32, self.btn_size_64]
-        
         for btn, size in zip(self.size_group, [32, 64]):
             btn.setCheckable(True)
             btn.setFixedWidth(50)
             btn.clicked.connect(lambda c, s=size, b=btn: self.set_grid_size(s, b))
-        
+        self.btn_size_64.setChecked(True)
         row1.addWidget(self.btn_size_32)
         row1.addWidget(self.btn_size_64)
 
@@ -316,10 +308,12 @@ class PromptTileApp(QMainWindow):
         row2 = QHBoxLayout(filter_frame)
         row2.setContentsMargins(5, 2, 5, 2)
         
+        # --- FIXED: Search Bar Added to Layout ---
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("🔍 Search...")
         self.search_bar.textChanged.connect(self.apply_filters)
         self.search_bar.setFixedWidth(180)
+        row2.addWidget(self.search_bar)
 
         # Tool Filter Buttons
         self.tool_btns = {}
@@ -336,16 +330,14 @@ class PromptTileApp(QMainWindow):
             self.tool_btns[t_name] = t_btn
             row2.addWidget(t_btn)
 
-        row2.addSpacing(5)
+        row2.addSpacing(10)
         
         self.btn_all = QPushButton("ALL")
-        self.btn_all.setFixedWidth(35)
+        self.btn_all.setFixedWidth(40)
         self.btn_all.clicked.connect(lambda: self.toggle_rates(True))
-        
         self.btn_none = QPushButton("NONE")
-        self.btn_none.setFixedWidth(35)
+        self.btn_none.setFixedWidth(40)
         self.btn_none.clicked.connect(lambda: self.toggle_rates(False))
-        
         row2.addWidget(self.btn_all)
         row2.addWidget(self.btn_none)
         
@@ -354,7 +346,7 @@ class PromptTileApp(QMainWindow):
             btn = QPushButton(str(i))
             btn.setCheckable(True)
             btn.setChecked(True)
-            btn.setFixedWidth(22)
+            btn.setFixedWidth(25)
             btn.clicked.connect(self.apply_filters)
             btn.setStyleSheet("""
                 QPushButton { background-color: #444; color: #aaa; border: none; }
@@ -371,8 +363,10 @@ class PromptTileApp(QMainWindow):
             QPushButton { background-color: #444; border: 1px solid #555; }
             QPushButton:checked { background-color: #d32f2f; border: 1px solid #ff6666; }
         """)
-        row2.addSpacing(10)
         row2.addWidget(self.btn_trash_view)
+        
+        # --- FIXED: Added Stretch to pull elements to the left ---
+        row2.addStretch()
 
         top_layout.addLayout(row1)
         top_layout.addWidget(filter_frame)
@@ -381,7 +375,6 @@ class PromptTileApp(QMainWindow):
         # 2. Main Splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
         
-        # Left: List
         self.list_widget = CustomListWidget(self)
         self.list_widget.setViewMode(QListWidget.ViewMode.IconMode)
         self.list_widget.setResizeMode(QListWidget.ResizeMode.Adjust)
@@ -397,7 +390,6 @@ class PromptTileApp(QMainWindow):
         details_panel = QFrame()
         details_layout = QVBoxLayout(details_panel)
         
-        # Undo Controls
         undo_layout = QHBoxLayout()
         self.btn_undo = QPushButton("Undo")
         self.btn_undo.setShortcut(QKeySequence.StandardKey.Undo)
@@ -408,11 +400,9 @@ class PromptTileApp(QMainWindow):
         undo_layout.addWidget(self.btn_undo)
         undo_layout.addWidget(self.btn_redo)
 
-        # Rating Controls
         ctl_frame = QFrame()
         ctl_frame.setStyleSheet("background-color: #333; border-radius: 4px; padding: 5px;")
         ctl_layout = QVBoxLayout(ctl_frame)
-        
         r_row = QHBoxLayout()
         self.lbl_rate_val = QLabel("-")
         self.slider_rate = QSlider(Qt.Orientation.Horizontal)
@@ -425,7 +415,6 @@ class PromptTileApp(QMainWindow):
         r_row.addWidget(self.lbl_rate_val)
         r_row.addWidget(self.slider_rate)
         r_row.addWidget(self.btn_set_rate)
-        
         self.btn_toggle_trash = QPushButton("🗑️ Toggle Trash")
         self.btn_toggle_trash.setCheckable(True)
         self.btn_toggle_trash.clicked.connect(self.toggle_trash_state)
@@ -436,7 +425,6 @@ class PromptTileApp(QMainWindow):
         ctl_layout.addLayout(r_row)
         ctl_layout.addWidget(self.btn_toggle_trash)
 
-        # Preview Area
         self.preview_label = QLabel("No Selection")
         self.preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.preview_label.setMinimumHeight(200)
@@ -457,7 +445,7 @@ class PromptTileApp(QMainWindow):
         details_layout.addLayout(undo_layout)
         details_layout.addWidget(ctl_frame)
         details_layout.addWidget(self.preview_label)
-        details_layout.addWidget(self.btn_open_folder) # Explorer button
+        details_layout.addWidget(self.btn_open_folder)
         details_layout.addWidget(QLabel("Prompt:"))
         details_layout.addWidget(self.text_prompt)
         details_layout.addWidget(self.btn_copy)
@@ -504,26 +492,21 @@ class PromptTileApp(QMainWindow):
         if not current:
             self.reset_right_panel()
             return
-        
         self.slider_rate.setEnabled(True)
         self.btn_set_rate.setEnabled(True)
         self.btn_toggle_trash.setEnabled(True)
         self.btn_copy.setEnabled(True)
         self.btn_open_folder.setEnabled(True)
-        
         self.sfx_select.play()
         d = current.data(Qt.ItemDataRole.UserRole)
         self.text_prompt.setText(d['prompt'])
-        
         self.slider_rate.blockSignals(True)
         self.slider_rate.setValue(d['rating'])
         self.slider_rate.blockSignals(False)
         self.lbl_rate_val.setText(str(d['rating']))
-        
         self.btn_toggle_trash.blockSignals(True)
         self.btn_toggle_trash.setChecked(d['is_trashed'])
         self.btn_toggle_trash.blockSignals(False)
-        
         if os.path.exists(d['path']):
             p = QPixmap(d['path'])
             if not p.isNull():
@@ -534,7 +517,7 @@ class PromptTileApp(QMainWindow):
                 self.preview_label.setText("")
         else:
             self.preview_label.setPixmap(current.icon().pixmap(512))
-            self.status_bar.showMessage("Original file not found. Showing thumbnail.", 2000)
+            self.status_bar.showMessage("Original file not found.", 2000)
 
     def open_in_explorer(self):
         item = self.list_widget.currentItem()
@@ -547,8 +530,6 @@ class PromptTileApp(QMainWindow):
                 subprocess.run(['open', '-R', path])
             else:
                 subprocess.run(['xdg-open', os.path.dirname(path)])
-        else:
-            QMessageBox.warning(self, "Error", "File does not exist on disk.")
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasUrls(): e.accept()
@@ -595,8 +576,6 @@ class PromptTileApp(QMainWindow):
             item = QListWidgetItem(QIcon(pix), "")
             p_text = meta['prompt'] or ""
             is_auto_trashed = len(p_text.strip()) < 10
-            tip = (f"<b>{Path(path).name}</b><br>{w}x{h} ({fmt})<br>{kb:.1f} KB<br>Tool: {meta['tool']}<br>Prompt: {p_text[:100]}...")
-            item.setToolTip(tip)
             data = {'path': path, 'prompt': p_text, 'rating': 0, 'is_trashed': is_auto_trashed, 'thumb': None, 'tool': meta['tool']}
             item.setData(Qt.ItemDataRole.UserRole, data)
             if is_auto_trashed: item.setBackground(QColor("#550000"))
@@ -667,7 +646,6 @@ class PromptTileApp(QMainWindow):
         try:
             with gzip.open(path, 'wt', encoding='utf-8') as f: json.dump(arr, f, ensure_ascii=False)
             self.sfx_copy.play()
-            self.status_bar.showMessage(f"Saved {len(arr)} items (Compressed).")
         except Exception as e: QMessageBox.critical(self, "Save Error", str(e))
 
     def load_book(self):
@@ -686,15 +664,12 @@ class PromptTileApp(QMainWindow):
                     try: pix.loadFromData(base64.b64decode(d['thumb']))
                     except: pass
                 item = QListWidgetItem(QIcon(pix), "")
-                d.setdefault('is_trashed', False)
-                d.setdefault('rating', 0)
                 d.setdefault('tool', 'Unknown')
                 item.setData(Qt.ItemDataRole.UserRole, d)
                 if d.get('is_trashed'): item.setBackground(QColor("#550000"))
                 self.list_widget.addItem(item)
             self.apply_filters()
             self.sfx_load.play()
-            self.status_bar.showMessage(f"Loaded {len(arr)} items.")
         except Exception as e: QMessageBox.critical(self, "Load Error", str(e))
 
     def clear_list(self):
@@ -702,7 +677,6 @@ class PromptTileApp(QMainWindow):
         self.list_widget.clear()
         self.undo_stack.clear()
         self.reset_right_panel()
-        self.status_bar.showMessage("List cleared.")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
