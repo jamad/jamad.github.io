@@ -1,6 +1,7 @@
 """
+<!-- 
 [DEVELOPMENT NOTES FOR AI ASSISTANTS]
-CURRENT VERSION: v20260130.01-GZIP
+CURRENT VERSION: v20260130.02-UNSELECT
 
 MANDATORY RULES FOR CODE MODIFICATION:
 1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested.
@@ -15,14 +16,14 @@ MANDATORY RULES FOR CODE MODIFICATION:
    - [SELECTION SYNC]: Right panel must clear/disable when selection is empty. Use currentItemChanged signal.
    - [COMPRESSION]: Save/Load must use GZIP + UTF-8 for the JSON structure to reduce file size.
    - [COMPATIBILITY]: Load function MUST attempt GZIP read first, falling back to plain text for legacy files.
+   - [UNSELECT]: "Unselect" button must clear both visual selection AND current item focus to trigger panel reset.
 4. AI PROTOCOL: If token limit is reached, instruct user to start a new chat with the current file.
 5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
 6. PRE-FLIGHT VERIFICATION (Internal Monologue):
    Before outputting code, verify these specific cases:
-   [ ] Regression Test A: Does load_book handle both .json (plain) and .json.gz (compressed)?
-   [ ] Regression Test B: Is QImage format explicitly RGBA8888?
-   [ ] Logic Check: Is the < 10 char auto-trash logic present in the loader thread?
-
+   [ ] Regression Test A: Does "Unselect" button clear the right panel (image/text)?
+   [ ] Regression Test B: Does saving still use GZIP?
+-->
 """
 
 import sys
@@ -34,7 +35,7 @@ import tempfile
 import re
 import json
 import base64
-import gzip  # Added for compression
+import gzip
 from io import BytesIO
 from pathlib import Path
 
@@ -131,7 +132,6 @@ def extract_metadata(image_path):
 
 # --- Loader Thread (Batched for Speed) ---
 class ImageLoaderThread(QThread):
-    # Sends a list of items at once to reduce GUI overhead
     batch_loaded = pyqtSignal(list)
     finished_loading = pyqtSignal(int)
 
@@ -159,19 +159,12 @@ class ImageLoaderThread(QThread):
                     fmt = img.format or "IMG"
                     kb = os.path.getsize(path) / 1024
                     
-                    # --- 正方形サムネイル生成 ---
-                    # 画像を縮小
                     img.thumbnail((self.icon_size, self.icon_size), Image.Resampling.LANCZOS)
-                    
-                    # 透明な台紙を作成
                     thumb = Image.new('RGBA', (self.icon_size, self.icon_size), (0, 0, 0, 0))
-                    
-                    # 中央に配置
                     offset_x = (self.icon_size - img.width) // 2
                     offset_y = (self.icon_size - img.height) // 2
                     thumb.paste(img, (offset_x, offset_y))
                     
-                    # QPixmap作成 (RGBA8888で色化け防止)
                     data = thumb.tobytes("raw", "RGBA")
                     qim = QImage(data, thumb.width, thumb.height, QImage.Format.Format_RGBA8888)
                     pixmap = QPixmap.fromImage(qim)
@@ -179,7 +172,6 @@ class ImageLoaderThread(QThread):
                 batch.append((path, pixmap, meta, w, h, fmt, kb))
                 total += 1
                 
-                # 10枚ごとにGUIへ送信
                 if len(batch) >= 10:
                     self.batch_loaded.emit(batch)
                     batch = []
@@ -212,7 +204,6 @@ class ModifyItemsCommand(QUndoCommand):
             i.setData(Qt.ItemDataRole.UserRole, d)
             self._visuals(i)
         self.app.apply_filters()
-        # 選択中のアイテムが変更された場合、右パネルも更新
         if self.items and self.items[0].isSelected():
             self.app.on_selection_change(self.items[0], None)
 
@@ -277,6 +268,11 @@ class PromptTileApp(QMainWindow):
         
         self.btn_clear = QPushButton("🗑️ Clear List")
         self.btn_clear.clicked.connect(self.clear_list)
+
+        # --- NEW: Unselect Button ---
+        self.btn_unselect = QPushButton("Unselect")
+        self.btn_unselect.setToolTip("Deselect all items to clear the preview panel")
+        self.btn_unselect.clicked.connect(self.deselect_all)
         
         row1.addWidget(self.btn_add_recur)
         row1.addWidget(self.btn_add_flat)
@@ -284,6 +280,7 @@ class PromptTileApp(QMainWindow):
         row1.addWidget(self.btn_save)
         row1.addWidget(self.btn_load)
         row1.addWidget(self.btn_clear)
+        row1.addWidget(self.btn_unselect) # Add button here
         row1.addStretch()
         
         # Grid Size
@@ -475,6 +472,14 @@ class PromptTileApp(QMainWindow):
         self.btn_toggle_trash.setEnabled(False)
         
         self.btn_copy.setEnabled(False)
+
+    def deselect_all(self):
+        """選択を解除し、右パネルをリセットする"""
+        self.list_widget.clearSelection()
+        # カレントアイテムをNoneにすることで currentItemChanged(None) を発火させる
+        self.list_widget.setCurrentItem(None)
+        # 念のため明示的にリセット
+        self.reset_right_panel()
 
     def on_selection_change(self, current, previous):
         """アイテム選択変更時の処理"""
