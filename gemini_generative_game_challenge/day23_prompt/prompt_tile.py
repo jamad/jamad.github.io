@@ -1,3 +1,30 @@
+"""
+[DEVELOPMENT NOTES FOR AI ASSISTANTS]
+CURRENT VERSION: v20260130.01-GZIP
+
+MANDATORY RULES FOR CODE MODIFICATION:
+1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested.
+   Maintain the exact indentation (4 spaces) and spacing found in this file.
+2. PINPOINT MODIFICATIONS: Change only the specific lines or functions related to the user's request.
+3. MAINTAIN STABLE LOGICS (PROMPT-TILE-SPECIFIC):
+   - [COLOR CORRECTION]: QImage MUST use QImage.Format.Format_RGBA8888 with Pillow's RGBA mode to prevent blue-tint (BGR) issues.
+   - [SQUARE THUMBNAILS]: Images must be pasted onto a transparent square background (padding to center).
+   - [BATCH LOADING]: ImageLoaderThread MUST emit items in batches (e.g., 10 items) to prevent UI freeze.
+   - [METADATA PRIORITY]: Try A1111 parameters -> ComfyUI JSON (stringified) -> Exif -> None.
+   - [AUTO-TRASH]: If prompt length < 10 chars, set is_trashed=True automatically on load.
+   - [SELECTION SYNC]: Right panel must clear/disable when selection is empty. Use currentItemChanged signal.
+   - [COMPRESSION]: Save/Load must use GZIP + UTF-8 for the JSON structure to reduce file size.
+   - [COMPATIBILITY]: Load function MUST attempt GZIP read first, falling back to plain text for legacy files.
+4. AI PROTOCOL: If token limit is reached, instruct user to start a new chat with the current file.
+5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
+6. PRE-FLIGHT VERIFICATION (Internal Monologue):
+   Before outputting code, verify these specific cases:
+   [ ] Regression Test A: Does load_book handle both .json (plain) and .json.gz (compressed)?
+   [ ] Regression Test B: Is QImage format explicitly RGBA8888?
+   [ ] Logic Check: Is the < 10 char auto-trash logic present in the loader thread?
+
+"""
+
 import sys
 import os
 import struct
@@ -7,6 +34,7 @@ import tempfile
 import re
 import json
 import base64
+import gzip  # Added for compression
 from io import BytesIO
 from pathlib import Path
 
@@ -32,7 +60,7 @@ def generate_tone(frequency, duration, volume=0.5, sample_rate=44100, wave_type=
         if wave_type == 'square':
             val = 1.0 if val > 0 else -1.0
         envelope = 1.0 - (i / n_samples)
-        packed_value = int(value * volume * envelope * 32767.0)
+        packed_value = int(val * volume * envelope * 32767.0)
         data += struct.pack('<h', max(-32768, min(32767, packed_value)))
     return data
 
@@ -207,7 +235,7 @@ class ModifyItemsCommand(QUndoCommand):
 class PromptTileApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PromptTile v6 - Stable & Clean")
+        self.setWindowTitle("PromptTile v7 - Compressed Save")
         self.resize(1200, 850)
         self.setAcceptDrops(True)
         self.undo_stack = QUndoStack(self)
@@ -675,10 +703,14 @@ class PromptTileApp(QMainWindow):
                 'thumb': d['thumb']
             })
             
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(arr, f, ensure_ascii=False)
-        self.sfx_copy.play()
-        self.status_bar.showMessage(f"Saved {len(arr)} items.")
+        # GZIP圧縮して保存
+        try:
+            with gzip.open(path, 'wt', encoding='utf-8') as f:
+                json.dump(arr, f, ensure_ascii=False)
+            self.sfx_copy.play()
+            self.status_bar.showMessage(f"Saved {len(arr)} items (Compressed).")
+        except Exception as e:
+            QMessageBox.critical(self, "Save Error", str(e))
 
     def load_book(self):
         path, _ = QFileDialog.getOpenFileName(self, "Load Book", "", "JSON (*.json)")
@@ -688,8 +720,14 @@ class PromptTileApp(QMainWindow):
         self.clear_list()
         
         try:
-            with open(path, 'r', encoding='utf-8') as f:
-                arr = json.load(f)
+            # まずGZIPとして読み込みを試みる
+            try:
+                with gzip.open(path, 'rt', encoding='utf-8') as f:
+                    arr = json.load(f)
+            except (OSError, gzip.BadGzipFile):
+                # 失敗したら通常のJSONとして読み込む（後方互換性）
+                with open(path, 'r', encoding='utf-8') as f:
+                    arr = json.load(f)
                 
             for d in arr:
                 # サムネイル復元 (透明背景)
@@ -721,7 +759,7 @@ class PromptTileApp(QMainWindow):
             self.status_bar.showMessage(f"Loaded {len(arr)} items.")
             
         except Exception as e:
-            QMessageBox.critical(self, "Error", str(e))
+            QMessageBox.critical(self, "Load Error", str(e))
 
     def clear_list(self):
         if self.loader_thread:
