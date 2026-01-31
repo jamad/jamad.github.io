@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GEOMETRIC VORTEX - TYPE S (v20260114.14)</title>
+    <title>GEOMETRIC VORTEX - TYPE S (v20260114.23)</title>
     <style>
         body {
             margin: 0;
@@ -24,12 +24,24 @@
             z-index: 1;
         }
 
+        #radar-divider {
+            position: absolute;
+            bottom: 15%; 
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #0ff;
+            box-shadow: 0 0 10px #0ff;
+            z-index: 4;
+            pointer-events: none;
+        }
+
         #ui-layer {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 85%;
             z-index: 2;
             pointer-events: none;
             display: flex;
@@ -48,7 +60,6 @@
             padding: 5px;
         }
 
-        /* レティクル: 45px維持 */
         #reticle {
             position: absolute;
             top: 50%;
@@ -157,15 +168,28 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 85%; 
             background: red;
             opacity: 0;
             pointer-events: none;
             z-index: 5;
             transition: opacity 0.05s;
         }
+
+        #debug-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: #0f0;
+            padding: 5px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 100;
+            display: none;
+            pointer-events: none;
+        }
     </style>
-    <!-- ES Modules -->
     <script type="importmap">
         {
             "imports": {
@@ -180,6 +204,8 @@
 
     <div id="canvas-container"></div>
     <div id="damage-overlay"></div>
+    <div id="radar-divider"></div>
+    <div id="debug-panel">FPS: 0</div>
 
     <div id="ui-layer">
         <div class="hud-text">SHIELD: <span id="health-val">100</span>%</div>
@@ -189,11 +215,11 @@
 
     <div id="start-screen">
         <h1>GEOMETRIC<br>VORTEX</h1>
-        <p>TYPE-S: V2026.14</p>
+        <p>TYPE-S: V2026.23</p>
         <div class="instruction">
-            CLOSE RANGE COMBAT<br>
-            敵を引きつけてロックオン<br>
-            WAIT FOR CLOSE RANGE
+            CONTROLS FIXED<br>
+            Aiming Restored<br>
+            Radar Range Extended
         </div>
         <button id="start-btn">SYSTEM BOOT</button>
     </div>
@@ -210,25 +236,20 @@
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-        /**
-         * CONFIGURATION
-         */
         const CONFIG = {
             gridSpeed: 12.5,      
             spawnRate: 20,
             fireRate: 4,
             playerSensitivity: 1.8,
-            groundY: -20,
-            ceilingY: 20,
+            groundY: -40,
+            ceilingY: 40,
             fogDensity: 0.0012,
             spawnZ: -900,
             maxLockDistance: 300, 
-            reticlePixelRadius: 22.5 
+            reticlePixelRadius: 22.5,
+            radarHeightRatio: 0.15 
         };
 
-        /**
-         * AUDIO SYSTEM
-         */
         class SoundGen {
             constructor() {
                 this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -275,9 +296,6 @@
             }
         }
 
-        /**
-         * OBJECT POOLING SYSTEM
-         */
         class SimplePool {
             constructor(createFn, initialSize = 50) {
                 this.createFn = createFn;
@@ -288,11 +306,13 @@
             get() {
                 let obj = (this.pool.length > 0) ? this.pool.pop() : this.createFn();
                 obj.mesh.visible = true;
+                if (obj.radarMesh) obj.radarMesh.visible = true;
                 this.active.push(obj);
                 return obj;
             }
             release(obj) {
                 obj.mesh.visible = false;
+                if (obj.radarMesh) obj.radarMesh.visible = false;
                 const index = this.active.indexOf(obj);
                 if (index > -1) this.active.splice(index, 1);
                 this.pool.push(obj);
@@ -301,7 +321,26 @@
             getActive() { return this.active; }
         }
 
+        class DebugStats {
+            constructor() {
+                this.dom = document.getElementById('debug-panel');
+                this.frames = 0;
+                this.prevTime = performance.now();
+            }
+            update() {
+                this.frames++;
+                const time = performance.now();
+                if (time >= this.prevTime + 1000) {
+                    this.dom.innerText = `FPS: ${Math.round((this.frames * 1000) / (time - this.prevTime))}`;
+                    this.prevTime = time;
+                    this.frames = 0;
+                }
+            }
+        }
+
         let scene, camera, renderer, composer;
+        let orthoCamera, playerHitbox;
+        let debugStats; 
         let soundGen;
         let isPlaying = false;
         let score = 0;
@@ -309,7 +348,8 @@
         let frameCount = 0;
 
         let enemyPool, particlePool, laserBeamPool;
-        let gridTop, gridBottom;
+        let gridTop, gridBottom, radarGrid;
+        let raycaster;
 
         let aimX = 0;
         let aimY = 0;
@@ -331,13 +371,24 @@
 
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1500);
             camera.position.set(0, 0, 0);
+
+            orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1000);
+            orthoCamera.position.set(0, 200, 0);
+            orthoCamera.up.set(0, 0, -1); 
+            orthoCamera.lookAt(0, 0, 0);
+            orthoCamera.layers.disable(0);
+            orthoCamera.layers.enable(1); 
             
+            raycaster = new THREE.Raycaster();
+            raycaster.params.Points.threshold = 1.0; 
+
             renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.toneMapping = THREE.ReinhardToneMapping;
+            renderer.autoClear = false;
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
             const renderScene = new RenderPass(scene, camera);
@@ -349,15 +400,14 @@
 
             scene.add(new THREE.AmbientLight(0x404040, 0.4));
             
-            // 【修正点】光源を真上に配置
             const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
-            sunLight.position.set(0, 200, 0); // 真上 (Y軸のみ)
+            sunLight.position.set(0, 200, 0);
             sunLight.castShadow = true;
-            sunLight.shadow.mapSize.width = 2048;
-            sunLight.shadow.mapSize.height = 2048;
+            sunLight.shadow.mapSize.width = 4096;
+            sunLight.shadow.mapSize.height = 4096;
             sunLight.shadow.camera.near = 0.5;
             sunLight.shadow.camera.far = 1500;
-            const d = 500;
+            const d = 1000; 
             sunLight.shadow.camera.left = -d;
             sunLight.shadow.camera.right = d;
             sunLight.shadow.camera.top = d;
@@ -365,10 +415,21 @@
             sunLight.shadow.bias = -0.0005;
             scene.add(sunLight);
 
+            debugStats = new DebugStats();
+            window.addEventListener('keydown', (e) => {
+                if (e.altKey && (e.key === 'd' || e.key === 'D')) {
+                    const panel = document.getElementById('debug-panel');
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                }
+            });
+
             createEnvironment();
+            createPlayerHitbox();
             initPools();
 
             window.addEventListener('resize', onWindowResize, false);
+            onWindowResize();
+
             const container = document.getElementById('canvas-container');
             container.addEventListener('mousedown', onTouchStart);
             document.addEventListener('mousemove', onTouchMove);
@@ -384,9 +445,33 @@
             animate();
         }
 
+        function createPlayerHitbox() {
+            const geo = new THREE.PlaneGeometry(1, 100); 
+            geo.translate(0, 50, 0);
+            geo.rotateX(-Math.PI / 2);
+            
+            const mat = new THREE.MeshBasicMaterial({ 
+                color: 0x00ff00, 
+                transparent: true,
+                opacity: 0.2,
+                side: THREE.DoubleSide
+            });
+            
+            playerHitbox = new THREE.Mesh(geo, mat);
+            
+            const edges = new THREE.EdgesGeometry(geo);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x00ff00 }));
+            playerHitbox.add(line);
+
+            playerHitbox.layers.set(1);
+            line.layers.set(1);
+
+            scene.add(playerHitbox);
+        }
+
         function initPools() {
             enemyPool = new SimplePool(() => {
-                const geo = new THREE.OctahedronGeometry(2.0); 
+                const geo = new THREE.OctahedronGeometry(4.0); 
                 const mat = new THREE.MeshPhongMaterial({
                     color: 0xffaa00,
                     emissive: 0xff0000,
@@ -396,17 +481,30 @@
                 });
                 const mesh = new THREE.Mesh(geo, mat);
                 mesh.castShadow = true;
-                mesh.renderOrder = 1; 
+                mesh.layers.set(0); 
                 scene.add(mesh);
-                mesh.visible = false;
-                return { mesh, velocity: new THREE.Vector3(), state: 'dead', type: 'normal', radius: 2.5 };
+
+                const radarGeo = new THREE.CircleGeometry(50, 8); 
+                radarGeo.rotateX(-Math.PI / 2);
+                const radarMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                const radarMesh = new THREE.Mesh(radarGeo, radarMat);
+                radarMesh.layers.set(1);
+                scene.add(radarMesh);
+
+                return { 
+                    mesh, 
+                    radarMesh, 
+                    velocity: new THREE.Vector3(), 
+                    state: 'dead', 
+                    type: 'normal', 
+                    radius: 5.0 
+                };
             }, 60);
 
             laserBeamPool = new SimplePool(() => {
                 const geo = new THREE.CylinderGeometry(0.06, 0.06, 1.0, 6);
                 geo.translate(0, 0.5, 0); 
                 geo.rotateX(Math.PI / 2); 
-                
                 const mat = new THREE.MeshBasicMaterial({ 
                     color: 0x00ffff, 
                     transparent: true, 
@@ -414,8 +512,8 @@
                     blending: THREE.AdditiveBlending 
                 });
                 const mesh = new THREE.Mesh(geo, mat);
+                mesh.layers.set(0); 
                 scene.add(mesh);
-                mesh.visible = false;
                 return { mesh, life: 0 };
             }, 30);
 
@@ -423,8 +521,8 @@
                 const geo = new THREE.TetrahedronGeometry(1.5);
                 const mat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
                 const mesh = new THREE.Mesh(geo, mat);
+                mesh.layers.set(0); 
                 scene.add(mesh);
-                mesh.visible = false;
                 return { mesh, velocity: new THREE.Vector3(), life: 0, gravity: true, type: 'shard' };
             }, 150);
         }
@@ -434,7 +532,7 @@
             gridHelper1.position.y = CONFIG.groundY;
             gridHelper1.position.z = -200;
             gridHelper1.scale.z = 10;
-            gridHelper1.renderOrder = 0; 
+            gridHelper1.layers.set(0);
             scene.add(gridHelper1);
             gridBottom = gridHelper1;
 
@@ -448,31 +546,62 @@
             floor.rotation.x = -Math.PI / 2;
             floor.position.y = CONFIG.groundY - 0.5;
             floor.receiveShadow = true;
-            floor.renderOrder = 0;
+            floor.layers.set(0);
             scene.add(floor);
 
             const gridHelper2 = new THREE.GridHelper(800, 40, 0x00ffff, 0x002222);
-            gridHelper2.position.y = -CONFIG.groundY + 40;
+            gridHelper2.position.y = CONFIG.ceilingY + 20;
             gridHelper2.position.z = -200;
             gridHelper2.scale.z = 10;
-            gridHelper2.renderOrder = 0;
+            gridHelper2.layers.set(0);
             scene.add(gridHelper2);
             gridTop = gridHelper2;
+
+            radarGrid = new THREE.GridHelper(4000, 100, 0x004444, 0x001111);
+            radarGrid.position.y = 0; 
+            radarGrid.layers.set(1);
+            scene.add(radarGrid);
         }
 
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            
+            const mainH = h * (1.0 - CONFIG.radarHeightRatio);
+            camera.aspect = w / mainH;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            composer.setSize(window.innerWidth, window.innerHeight);
+            
+            renderer.setSize(w, h);
+            composer.setSize(w, h);
+
+            // Radar View: 500 (Zoom Out)
+            const viewHeight = 500; 
+            const radarAspectRatio = w / (h * CONFIG.radarHeightRatio);
+            const viewWidth = viewHeight * radarAspectRatio;
+
+            orthoCamera.left = -viewWidth / 2;
+            orthoCamera.right = viewWidth / 2;
+            orthoCamera.top = viewHeight / 2;    
+            orthoCamera.bottom = -viewHeight / 2; 
+            orthoCamera.updateProjectionMatrix();
+
+            if (playerHitbox) {
+                const boxWidth = viewWidth * 0.25;
+                playerHitbox.scale.set(boxWidth, 1, 1); 
+            }
         }
 
+        // 【重要修正】マウス/タッチ座標取得
         function onTouchStart(e) {
             if (!isPlaying) return;
-            e.preventDefault();
-            isTouching = true;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            // レーダー部分除外
+            if (clientY > window.innerHeight * (1.0 - CONFIG.radarHeightRatio)) return;
+
+            e.preventDefault();
+            isTouching = true;
             touchStartX = clientX;
             touchStartY = clientY;
         }
@@ -482,8 +611,11 @@
             e.preventDefault();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const mainHeight = window.innerHeight * (1.0 - CONFIG.radarHeightRatio);
             const deltaX = (clientX - touchStartX) / window.innerWidth;
-            const deltaY = (clientY - touchStartY) / window.innerHeight;
+            const deltaY = (clientY - touchStartY) / mainHeight;
+            
             aimX += deltaX * CONFIG.playerSensitivity * 2.5;
             aimY -= deltaY * CONFIG.playerSensitivity * 2.5;
             aimX = Math.max(-1.3, Math.min(1.3, aimX));
@@ -537,10 +669,10 @@
 
             const isDodeca = Math.random() > 0.6;
             if (isDodeca && enemy.geometry.type !== 'DodecahedronGeometry') {
-                enemy.geometry = new THREE.DodecahedronGeometry(2.5);
+                enemy.geometry = new THREE.DodecahedronGeometry(4.0);
                 enemy.material.color.setHex(0xff3333);
             } else if (!isDodeca && enemy.geometry.type !== 'OctahedronGeometry') {
-                enemy.geometry = new THREE.OctahedronGeometry(2.0);
+                enemy.geometry = new THREE.OctahedronGeometry(4.0);
                 enemy.material.color.setHex(0xffaa00);
             }
 
@@ -550,10 +682,11 @@
             const sectorY = Math.floor(Math.random() * 3) - 1;
             
             const startX = (Math.random() - 0.5) * 3200;
-            const startY = (Math.random() - 0.5) * 150;
+            const startY = (Math.random() - 0.5) * 60;
             const startZ = CONFIG.spawnZ;
 
             enemy.position.set(startX, startY, startZ);
+            if(enemyObj.radarMesh) enemyObj.radarMesh.position.copy(enemy.position);
 
             const targetX = sectorX * gridWidth + (Math.random()-0.5) * 20;
             const targetY = sectorY * gridHeight + (Math.random()-0.5) * 15;
@@ -570,8 +703,7 @@
             enemyObj.velocity = direction.multiplyScalar(speed);
             enemyObj.state = 'alive';
             enemyObj.rotSpeed = { x: Math.random() * 0.05, y: Math.random() * 0.05 };
-            
-            enemyObj.radius = 2.5; 
+            enemyObj.radius = 5.0; 
         }
 
         function createBeamVisual(targetPos) {
@@ -579,29 +711,24 @@
             sides.forEach(side => {
                 const beamObj = laserBeamPool.get();
                 const beam = beamObj.mesh;
-                
                 const origin = new THREE.Vector3(side * 6.0, -5.0, -2.0);
                 origin.applyMatrix4(camera.matrixWorld);
-
                 beam.position.copy(origin);
                 beam.lookAt(targetPos);
-                
                 const dist = origin.distanceTo(targetPos);
                 beam.scale.set(1, 1, dist);
-
                 beamObj.life = 4;
             });
         }
 
         function updateWeapons() {
+            const mainHeight = window.innerHeight * (1.0 - CONFIG.radarHeightRatio);
             const reticleScreenX = window.innerWidth * (0.5 + aimX * 0.4);
-            const reticleScreenY = window.innerHeight * (0.5 - aimY * 0.4);
+            const reticleScreenY = mainHeight * (0.5 - aimY * 0.4); 
 
             const activeEnemies = enemyPool.getActive().filter(e => e.state === 'alive');
-            
             let lockedEnemy = null;
             let closestDist = Infinity;
-
             const screenPos = new THREE.Vector3();
 
             for (let enemy of activeEnemies) {
@@ -611,7 +738,7 @@
                 screenPos.copy(enemy.mesh.position).project(camera);
 
                 const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
-                const y = (-(screenPos.y) * 0.5 + 0.5) * window.innerHeight;
+                const y = (-(screenPos.y) * 0.5 + 0.5) * mainHeight;
 
                 const dx = x - reticleScreenX;
                 const dy = y - reticleScreenY;
@@ -627,16 +754,13 @@
 
             if (lockedEnemy) {
                 uiReticle.classList.add('locked');
-
                 if (frameCount % CONFIG.fireRate === 0) {
                     soundGen.playShot();
                     createBeamVisual(lockedEnemy.mesh.position);
-
                     lockedEnemy.state = 'crashing';
                     lockedEnemy.velocity.multiplyScalar(0.3);
                     lockedEnemy.velocity.y += 0.5;
                     lockedEnemy.rotSpeed = { x: Math.random()*0.5, y: Math.random()*0.5 };
-                    
                     score += 100;
                     updateUI();
                     createGroundExplosion(lockedEnemy.mesh.position, lockedEnemy.mesh.material.color);
@@ -651,6 +775,18 @@
             soundGen.playExplosion();
             damageOverlay.style.opacity = 0.7;
             setTimeout(() => { damageOverlay.style.opacity = 0; }, 100);
+            
+            if (playerHitbox) {
+                playerHitbox.material.color.setHex(0xff0000);
+                playerHitbox.children[0].material.color.setHex(0xff0000);
+                setTimeout(() => {
+                    if(playerHitbox) {
+                        playerHitbox.material.color.setHex(0x00ff00);
+                        playerHitbox.children[0].material.color.setHex(0x00ff00);
+                    }
+                }, 200);
+            }
+
             const shake = 2.5;
             camera.position.x += (Math.random()-0.5) * shake;
             camera.position.y += (Math.random()-0.5) * shake;
@@ -680,15 +816,18 @@
         }
 
         function animate() {
+            debugStats.update(); 
             requestAnimationFrame(animate);
 
             if (isPlaying) {
                 const currentGridSpeed = CONFIG.gridSpeed; 
-                
                 gridTop.position.z += currentGridSpeed;
                 gridBottom.position.z += currentGridSpeed;
                 if (gridTop.position.z > -50) gridTop.position.z = -200;
                 if (gridBottom.position.z > -50) gridBottom.position.z = -200;
+                
+                radarGrid.position.z += currentGridSpeed;
+                if(radarGrid.position.z > 200) radarGrid.position.z = 0;
 
                 const targetRotZ = -aimX * 0.2;
                 const targetRotX = aimY * 0.2;
@@ -699,9 +838,13 @@
                 camera.position.x += (targetPosX - camera.position.x) * 0.08;
                 camera.position.y += (targetPosY - camera.position.y) * 0.08;
 
+                if (playerHitbox) {
+                    playerHitbox.position.copy(camera.position);
+                    playerHitbox.position.y = 0; 
+                }
+
                 frameCount++;
                 if (frameCount % CONFIG.spawnRate === 0) spawnEnemy();
-                
                 updateWeapons();
             }
 
@@ -722,13 +865,18 @@
                     e.mesh.position.add(e.velocity);
                     e.mesh.rotation.x += e.rotSpeed.x;
                     e.mesh.rotation.y += e.rotSpeed.y;
+                    
+                    if(e.radarMesh) {
+                        e.radarMesh.position.copy(e.mesh.position);
+                        e.radarMesh.position.y = 0; 
+                    }
 
-                    if (e.mesh.position.y < CONFIG.groundY) {
-                        e.mesh.position.y = CONFIG.groundY;
+                    if (e.mesh.position.y - e.radius < CONFIG.groundY) {
+                        e.mesh.position.y = CONFIG.groundY + e.radius;
                         e.velocity.y *= -1;
                     }
-                    if (e.mesh.position.y > CONFIG.ceilingY) {
-                        e.mesh.position.y = CONFIG.ceilingY;
+                    if (e.mesh.position.y + e.radius > CONFIG.ceilingY) {
+                        e.mesh.position.y = CONFIG.ceilingY - e.radius;
                         e.velocity.y *= -1;
                     }
 
@@ -743,6 +891,12 @@
                     e.mesh.position.add(e.velocity);
                     e.mesh.rotation.x += e.rotSpeed.x;
                     e.mesh.rotation.y += e.rotSpeed.y;
+                    
+                    if(e.radarMesh) {
+                        e.radarMesh.position.copy(e.mesh.position);
+                        e.radarMesh.position.y = 0;
+                    }
+
                     if (e.mesh.position.y < CONFIG.groundY) {
                         createGroundExplosion(e.mesh.position, e.mesh.material.color);
                         enemyPool.release(e);
@@ -761,7 +915,28 @@
                 if (p.life <= 0 || p.mesh.position.y < CONFIG.groundY - 10) particlePool.release(p);
             }
 
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const mainH = Math.floor(h * (1.0 - CONFIG.radarHeightRatio));
+            const radarH = h - mainH;
+
+            camera.layers.set(0); 
+            renderer.setViewport(0, radarH, w, mainH);
+            renderer.setScissor(0, radarH, w, mainH);
+            renderer.setScissorTest(true);
+            renderer.clear();
             composer.render();
+
+            renderer.setViewport(0, 0, w, radarH);
+            renderer.setScissor(0, 0, w, radarH);
+            renderer.setScissorTest(true);
+            
+            renderer.setClearColor(0x001428, 1);
+            renderer.clearColor(); 
+            renderer.clearDepth();
+
+            renderer.render(scene, orthoCamera);
+            renderer.setClearColor(0x000000, 0);
         }
 
         init();
