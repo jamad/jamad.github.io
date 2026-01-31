@@ -1,10 +1,41 @@
 <!DOCTYPE html>
+<!-- 
+[DEVELOPMENT NOTES FOR AI ASSISTANTS]
+CURRENT VERSION: v20260131.1-STABLE
+
+MANDATORY RULES FOR CODE MODIFICATION:
+1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested. 
+   Maintain the exact indentation (4 spaces) and spacing found in this file.
+2. PINPOINT MODIFICATIONS: Change only the specific lines or functions related to the user's request.
+3. MAINTAIN STABLE LOGICS (GEOMETRIC VORTEX-SPECIFIC):
+   - [RETICLE AIMING]: Auto-fire triggers ONLY when enemy is within the pixel-radius (Screen Space) of the reticle.
+   - [RADAR LOGIC]: Radar is a bottom viewport (OrthoCamera), separate from Main View (PerspectiveCamera).
+   - [HITBOX VISUALIZATION]: Player hitbox is a green rectangle on the radar plane (Y=0), visible only on Radar.
+   - [GRID SPEED]: Background grid speed is constant (12.5), independent of enemy speed to prevent visual strobing.
+   - [ENEMY POOLING]: Use object pooling for enemies, bullets, and particles to maintain performance.
+   - [Z-COORDINATE SPAWN]: Enemies spawn at Z=-900 and move towards Z=100.
+   - [RAYCASTING]: Shooting uses Raycaster from camera to reticle position (Hitscan), not physical projectiles.
+   - [VIEWPORT MANAGEMENT]: Always ensure setScissor/setViewport are correctly reset for Main View to avoid black screens.
+4. AI PROTOCOL: If token limit (approx 1M) is reached, instruct user to start a new chat with the current file.
+5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
+6. PRE-FLIGHT VERIFICATION (Internal Monologue):
+   Before outputting code, verify these specific cases:
+   [ ] Regression Test A: Does the Reticle move correctly with mouse/touch? (Check event listeners).
+   [ ] Regression Test B: Is the Main View visible? (Check renderer.setScissorTest logic).
+   [ ] Logic Check: Is the Radar correctly displaying red blips for enemies?
+   [ ] Layout Check: Is the Score centered at the top?
+   [ ] DOM Integrity Check: Are all JS-referenced IDs (reticle, score-val, etc.) present in HTML?
+
+CHANGELOG:
+- v20260114.23: CONTROLS FIXED. Fixed mouse Y-axis reference bug. Extended Radar range.
+- v20260131.1: REVERT & UPDATE. Reverted to v23 base. Moved Score to Top-Center. Added Dev Protocol.
+-->
 <html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GEOMETRIC VORTEX - TYPE S (v20260114.23)</title>
+    <title>GEOMETRIC VORTEX - TYPE S (v20260131.1)</title>
     <style>
         body {
             margin: 0;
@@ -44,11 +75,7 @@
             height: 85%;
             z-index: 2;
             pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-            box-sizing: border-box;
+            /* Flexbox removed to allow absolute positioning of HUD elements */
         }
 
         .hud-text {
@@ -58,6 +85,22 @@
             font-weight: bold;
             background: rgba(0, 0, 0, 0.3);
             padding: 5px;
+        }
+
+        /* Shield: Top Left */
+        #shield-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        /* Score: Top Center (Updated) */
+        #score-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
         }
 
         #reticle {
@@ -159,10 +202,6 @@
             display: none !important;
         }
 
-        #score-display {
-            text-align: right;
-        }
-
         #damage-overlay {
             position: absolute;
             top: 0;
@@ -208,18 +247,18 @@
     <div id="debug-panel">FPS: 0</div>
 
     <div id="ui-layer">
-        <div class="hud-text">SHIELD: <span id="health-val">100</span>%</div>
+        <div class="hud-text" id="shield-display">SHIELD: <span id="health-val">100</span>%</div>
         <div id="reticle"></div>
         <div class="hud-text" id="score-display">SCORE: <span id="score-val">0</span></div>
     </div>
 
     <div id="start-screen">
         <h1>GEOMETRIC<br>VORTEX</h1>
-        <p>TYPE-S: V2026.23</p>
+        <p>TYPE-S: V2026.31.1</p>
         <div class="instruction">
-            CONTROLS FIXED<br>
-            Aiming Restored<br>
-            Radar Range Extended
+            CONTROLS RESTORED<br>
+            Aiming Fixed<br>
+            Radar Optimized
         </div>
         <button id="start-btn">SYSTEM BOOT</button>
     </div>
@@ -591,13 +630,13 @@
             }
         }
 
-        // 【重要修正】マウス/タッチ座標取得
+        // Mouse/Touch Input Fixed Logic
         function onTouchStart(e) {
             if (!isPlaying) return;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-            // レーダー部分除外
+            // Ignore Radar Area
             if (clientY > window.innerHeight * (1.0 - CONFIG.radarHeightRatio)) return;
 
             e.preventDefault();
@@ -920,12 +959,21 @@
             const mainH = Math.floor(h * (1.0 - CONFIG.radarHeightRatio));
             const radarH = h - mainH;
 
+            // 1. Main View (Layer 0 visible, Layer 1 hidden)
             camera.layers.set(0); 
+            // IMPORTANT: Explicitly hide Layer 1 objects for main view
+            if(playerHitbox) playerHitbox.visible = false;
+            activeEnemies.forEach(e => { if(e.radarMesh) e.radarMesh.visible = false; });
+
             renderer.setViewport(0, radarH, w, mainH);
             renderer.setScissor(0, radarH, w, mainH);
             renderer.setScissorTest(true);
             renderer.clear();
             composer.render();
+
+            // 2. Radar View (Layer 1 visible, Layer 0 hidden)
+            if(playerHitbox) playerHitbox.visible = true;
+            activeEnemies.forEach(e => { if(e.radarMesh) e.radarMesh.visible = true; });
 
             renderer.setViewport(0, 0, w, radarH);
             renderer.setScissor(0, 0, w, radarH);
