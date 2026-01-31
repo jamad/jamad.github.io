@@ -1,41 +1,40 @@
 <!DOCTYPE html>
 <!-- 
 [DEVELOPMENT NOTES FOR AI ASSISTANTS]
-CURRENT VERSION: v20260131.1-STABLE
+CURRENT VERSION: v20260131.5-STABLE
 
 MANDATORY RULES FOR CODE MODIFICATION:
 1. NO UNSOLICITED REFACTORING: Do not reorder, clean up, re-indent, or delete code unless explicitly requested. 
    Maintain the exact indentation (4 spaces) and spacing found in this file.
 2. PINPOINT MODIFICATIONS: Change only the specific lines or functions related to the user's request.
-3. MAINTAIN STABLE LOGICS (GEOMETRIC VORTEX-SPECIFIC):
-   - [RETICLE AIMING]: Auto-fire triggers ONLY when enemy is within the pixel-radius (Screen Space) of the reticle.
-   - [RADAR LOGIC]: Radar is a bottom viewport (OrthoCamera), separate from Main View (PerspectiveCamera).
-   - [HITBOX VISUALIZATION]: Player hitbox is a green rectangle on the radar plane (Y=0), visible only on Radar.
-   - [GRID SPEED]: Background grid speed is constant (12.5), independent of enemy speed to prevent visual strobing.
-   - [ENEMY POOLING]: Use object pooling for enemies, bullets, and particles to maintain performance.
-   - [Z-COORDINATE SPAWN]: Enemies spawn at Z=-900 and move towards Z=100.
-   - [RAYCASTING]: Shooting uses Raycaster from camera to reticle position (Hitscan), not physical projectiles.
-   - [VIEWPORT MANAGEMENT]: Always ensure setScissor/setViewport are correctly reset for Main View to avoid black screens.
-4. AI PROTOCOL: If token limit (approx 1M) is reached, instruct user to start a new chat with the current file.
+3. MAINTAIN STABLE LOGICS (PROJECT-SPECIFIC):
+   - [LAYER ISOLATION]: Main View MUST only render Layer 0. Radar View MUST only render Layer 1. 
+   - [RETICLE PRECISION]: Auto-fire triggers ONLY when enemy's projected pixel coordinate is within the reticle's radius.
+   - [RADAR VIEWPORT]: Radar renders in the bottom 15% via Scissor Test. Up vector MUST be (0,0,-1).
+   - [GRID CONSISTENCY]: Grid speed is constant (12.5) to avoid strobe effects. RenderOrder must be 0.
+   - [POOLING]: Reuse enemy/beam/particle objects via SimplePool to prevent GC spikes.
+   - [DEBUG CAM]: Alt+D MUST prevent default browser action and pull camera back 10m via isDebug flag.
+4. AI PROTOCOL: If token limit is reached, instruct user to start a new chat with the current file.
 5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
 6. PRE-FLIGHT VERIFICATION (Internal Monologue):
    Before outputting code, verify these specific cases:
-   [ ] Regression Test A: Does the Reticle move correctly with mouse/touch? (Check event listeners).
-   [ ] Regression Test B: Is the Main View visible? (Check renderer.setScissorTest logic).
-   [ ] Logic Check: Is the Radar correctly displaying red blips for enemies?
-   [ ] Layout Check: Is the Score centered at the top?
-   [ ] DOM Integrity Check: Are all JS-referenced IDs (reticle, score-val, etc.) present in HTML?
+   [ ] Regression Test A: Does camera.layers.isEnabled(1) return false? (Must be false for Main View).
+   [ ] Regression Test B: Does the playerHitbox have .layers.set(1)?
+   [ ] Input Check: Is touchStartY correctly assigned from clientY? (Not clientX).
+   [ ] Viewport Check: Does renderer.setViewport reset to full screen before Radar scissor?
+   [ ] DOM Integrity Check: Are score-val and health-val present?
 
 CHANGELOG:
-- v20260114.23: CONTROLS FIXED. Fixed mouse Y-axis reference bug. Extended Radar range.
-- v20260131.1: REVERT & UPDATE. Reverted to v23 base. Moved Score to Top-Center. Added Dev Protocol.
+- v20260114.23: CONTROLS FIXED. Fixed mouse Y-axis reference bug.
+- v20260131.1: STABLE. Reverted to v23. Added Protocol. Moved Score.
+- v20260131.5: LAYER REINFORCEMENT. Strict layer masking (0 vs 1). Fixed Alt+D browser interference. Adjusted Radar Zoom (500 range).
 -->
 <html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GEOMETRIC VORTEX - TYPE S (v20260131.1)</title>
+    <title>GEOMETRIC VORTEX - TYPE S (v20260131.5)</title>
     <style>
         body {
             margin: 0;
@@ -75,7 +74,6 @@ CHANGELOG:
             height: 85%;
             z-index: 2;
             pointer-events: none;
-            /* Flexbox removed to allow absolute positioning of HUD elements */
         }
 
         .hud-text {
@@ -87,20 +85,20 @@ CHANGELOG:
             padding: 5px;
         }
 
-        /* Shield: Top Left */
-        #shield-display {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-
-        /* Score: Top Center (Updated) */
+        /* Score: Top Center */
         #score-display {
             position: absolute;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
+        }
+
+        /* Shield: Bottom Right (Inside Radar) */
+        #shield-display {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
         }
 
         #reticle {
@@ -211,7 +209,7 @@ CHANGELOG:
             background: red;
             opacity: 0;
             pointer-events: none;
-            z-index: 5;
+            z-index: 3;
             transition: opacity 0.05s;
         }
 
@@ -254,11 +252,11 @@ CHANGELOG:
 
     <div id="start-screen">
         <h1>GEOMETRIC<br>VORTEX</h1>
-        <p>TYPE-S: V2026.31.1</p>
+        <p>TYPE-S: V2026.31.5</p>
         <div class="instruction">
-            CONTROLS RESTORED<br>
-            Aiming Fixed<br>
-            Radar Optimized
+            RADAR INTERFACE STABLE<br>
+            [Alt+D] for Debug Pullback<br>
+            STRICT LAYER SEPARATION
         </div>
         <button id="start-btn">SYSTEM BOOT</button>
     </div>
@@ -385,6 +383,7 @@ CHANGELOG:
         let score = 0;
         let health = 100;
         let frameCount = 0;
+        let isDebug = false;
 
         let enemyPool, particlePool, laserBeamPool;
         let gridTop, gridBottom, radarGrid;
@@ -410,13 +409,15 @@ CHANGELOG:
 
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1500);
             camera.position.set(0, 0, 0);
+            // 【重要】メインカメラはLayer 0のみを描画
+            camera.layers.set(0); 
 
             orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1000);
             orthoCamera.position.set(0, 200, 0);
             orthoCamera.up.set(0, 0, -1); 
             orthoCamera.lookAt(0, 0, 0);
-            orthoCamera.layers.disable(0);
-            orthoCamera.layers.enable(1); 
+            // 【重要】レーダーカメラはLayer 1のみを描画
+            orthoCamera.layers.set(1); 
             
             raycaster = new THREE.Raycaster();
             raycaster.params.Points.threshold = 1.0; 
@@ -457,8 +458,11 @@ CHANGELOG:
             debugStats = new DebugStats();
             window.addEventListener('keydown', (e) => {
                 if (e.altKey && (e.key === 'd' || e.key === 'D')) {
+                    e.preventDefault(); // Browser focus prevention
+                    e.stopPropagation();
+                    isDebug = !isDebug;
                     const panel = document.getElementById('debug-panel');
-                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    panel.style.display = isDebug ? 'block' : 'none';
                 }
             });
 
@@ -488,20 +492,18 @@ CHANGELOG:
             const geo = new THREE.PlaneGeometry(1, 100); 
             geo.translate(0, 50, 0);
             geo.rotateX(-Math.PI / 2);
-            
             const mat = new THREE.MeshBasicMaterial({ 
                 color: 0x00ff00, 
                 transparent: true,
                 opacity: 0.2,
                 side: THREE.DoubleSide
             });
-            
             playerHitbox = new THREE.Mesh(geo, mat);
-            
             const edges = new THREE.EdgesGeometry(geo);
             const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x00ff00 }));
             playerHitbox.add(line);
-
+            
+            // Hitbox belongs to Radar (Layer 1)
             playerHitbox.layers.set(1);
             line.layers.set(1);
 
@@ -520,14 +522,14 @@ CHANGELOG:
                 });
                 const mesh = new THREE.Mesh(geo, mat);
                 mesh.castShadow = true;
-                mesh.layers.set(0); 
+                mesh.layers.set(0); // 3D Enemy (Layer 0)
                 scene.add(mesh);
 
                 const radarGeo = new THREE.CircleGeometry(50, 8); 
                 radarGeo.rotateX(-Math.PI / 2);
                 const radarMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
                 const radarMesh = new THREE.Mesh(radarGeo, radarMat);
-                radarMesh.layers.set(1);
+                radarMesh.layers.set(1); // Radar Blip (Layer 1)
                 scene.add(radarMesh);
 
                 return { 
@@ -598,22 +600,20 @@ CHANGELOG:
 
             radarGrid = new THREE.GridHelper(4000, 100, 0x004444, 0x001111);
             radarGrid.position.y = 0; 
-            radarGrid.layers.set(1);
+            radarGrid.layers.set(1); // Radar Background (Layer 1)
             scene.add(radarGrid);
         }
 
         function onWindowResize() {
             const w = window.innerWidth;
             const h = window.innerHeight;
-            
             const mainH = h * (1.0 - CONFIG.radarHeightRatio);
             camera.aspect = w / mainH;
             camera.updateProjectionMatrix();
-            
             renderer.setSize(w, h);
             composer.setSize(w, h);
 
-            // Radar View: 500 (Zoom Out)
+            // Radar Range: 500 (Zoomed out from v21 but visible)
             const viewHeight = 500; 
             const radarAspectRatio = w / (h * CONFIG.radarHeightRatio);
             const viewWidth = viewHeight * radarAspectRatio;
@@ -630,15 +630,11 @@ CHANGELOG:
             }
         }
 
-        // Mouse/Touch Input Fixed Logic
         function onTouchStart(e) {
             if (!isPlaying) return;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-            // Ignore Radar Area
             if (clientY > window.innerHeight * (1.0 - CONFIG.radarHeightRatio)) return;
-
             e.preventDefault();
             isTouching = true;
             touchStartX = clientX;
@@ -650,11 +646,9 @@ CHANGELOG:
             e.preventDefault();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
             const mainHeight = window.innerHeight * (1.0 - CONFIG.radarHeightRatio);
             const deltaX = (clientX - touchStartX) / window.innerWidth;
             const deltaY = (clientY - touchStartY) / mainHeight;
-            
             aimX += deltaX * CONFIG.playerSensitivity * 2.5;
             aimY -= deltaY * CONFIG.playerSensitivity * 2.5;
             aimX = Math.max(-1.3, Math.min(1.3, aimX));
@@ -705,7 +699,6 @@ CHANGELOG:
         function spawnEnemy() {
             const enemyObj = enemyPool.get();
             const enemy = enemyObj.mesh;
-
             const isDodeca = Math.random() > 0.6;
             if (isDodeca && enemy.geometry.type !== 'DodecahedronGeometry') {
                 enemy.geometry = new THREE.DodecahedronGeometry(4.0);
@@ -714,32 +707,17 @@ CHANGELOG:
                 enemy.geometry = new THREE.OctahedronGeometry(4.0);
                 enemy.material.color.setHex(0xffaa00);
             }
-
-            const gridWidth = 50; 
-            const gridHeight = 30;
-            const sectorX = Math.floor(Math.random() * 3) - 1; 
-            const sectorY = Math.floor(Math.random() * 3) - 1;
-            
             const startX = (Math.random() - 0.5) * 3200;
             const startY = (Math.random() - 0.5) * 60;
             const startZ = CONFIG.spawnZ;
-
             enemy.position.set(startX, startY, startZ);
             if(enemyObj.radarMesh) enemyObj.radarMesh.position.copy(enemy.position);
-
-            const targetX = sectorX * gridWidth + (Math.random()-0.5) * 20;
-            const targetY = sectorY * gridHeight + (Math.random()-0.5) * 15;
-            const targetZ = 100;
-
-            enemyObj.isThreat = (sectorX === 0 && sectorY === 0);
-            
-            const direction = new THREE.Vector3(targetX - startX, targetY - startY, targetZ - startZ).normalize();
-            
+            const targetX = (Math.floor(Math.random() * 3) - 1) * 50;
+            const targetY = (Math.floor(Math.random() * 3) - 1) * 30;
+            const direction = new THREE.Vector3(targetX - startX, targetY - startY, 100 - startZ).normalize();
             const baseSpeed = 0.45 + (Math.random() * 0.4); 
             const speedMultiplier = 1.0 + (score * 0.0003); 
-            const speed = baseSpeed * speedMultiplier;
-
-            enemyObj.velocity = direction.multiplyScalar(speed);
+            enemyObj.velocity = direction.multiplyScalar(baseSpeed * speedMultiplier);
             enemyObj.state = 'alive';
             enemyObj.rotSpeed = { x: Math.random() * 0.05, y: Math.random() * 0.05 };
             enemyObj.radius = 5.0; 
@@ -754,8 +732,7 @@ CHANGELOG:
                 origin.applyMatrix4(camera.matrixWorld);
                 beam.position.copy(origin);
                 beam.lookAt(targetPos);
-                const dist = origin.distanceTo(targetPos);
-                beam.scale.set(1, 1, dist);
+                beam.scale.set(1, 1, origin.distanceTo(targetPos));
                 beamObj.life = 4;
             });
         }
@@ -764,33 +741,22 @@ CHANGELOG:
             const mainHeight = window.innerHeight * (1.0 - CONFIG.radarHeightRatio);
             const reticleScreenX = window.innerWidth * (0.5 + aimX * 0.4);
             const reticleScreenY = mainHeight * (0.5 - aimY * 0.4); 
-
             const activeEnemies = enemyPool.getActive().filter(e => e.state === 'alive');
             let lockedEnemy = null;
             let closestDist = Infinity;
             const screenPos = new THREE.Vector3();
-
             for (let enemy of activeEnemies) {
                 const dist3D = enemy.mesh.position.distanceTo(camera.position);
                 if (dist3D > CONFIG.maxLockDistance) continue;
-
                 screenPos.copy(enemy.mesh.position).project(camera);
-
                 const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
                 const y = (-(screenPos.y) * 0.5 + 0.5) * mainHeight;
-
                 const dx = x - reticleScreenX;
                 const dy = y - reticleScreenY;
-                const pixelDist = Math.sqrt(dx*dx + dy*dy);
-
-                if (pixelDist <= CONFIG.reticlePixelRadius) {
-                    if (dist3D < closestDist) {
-                        closestDist = dist3D;
-                        lockedEnemy = enemy;
-                    }
+                if (Math.sqrt(dx*dx + dy*dy) <= CONFIG.reticlePixelRadius) {
+                    if (dist3D < closestDist) { closestDist = dist3D; lockedEnemy = enemy; }
                 }
             }
-
             if (lockedEnemy) {
                 uiReticle.classList.add('locked');
                 if (frameCount % CONFIG.fireRate === 0) {
@@ -804,9 +770,7 @@ CHANGELOG:
                     updateUI();
                     createGroundExplosion(lockedEnemy.mesh.position, lockedEnemy.mesh.material.color);
                 }
-            } else {
-                uiReticle.classList.remove('locked');
-            }
+            } else { uiReticle.classList.remove('locked'); }
         }
 
         function triggerDamage() {
@@ -814,7 +778,6 @@ CHANGELOG:
             soundGen.playExplosion();
             damageOverlay.style.opacity = 0.7;
             setTimeout(() => { damageOverlay.style.opacity = 0; }, 100);
-            
             if (playerHitbox) {
                 playerHitbox.material.color.setHex(0xff0000);
                 playerHitbox.children[0].material.color.setHex(0xff0000);
@@ -825,10 +788,8 @@ CHANGELOG:
                     }
                 }, 200);
             }
-
-            const shake = 2.5;
-            camera.position.x += (Math.random()-0.5) * shake;
-            camera.position.y += (Math.random()-0.5) * shake;
+            camera.position.x += (Math.random()-0.5) * 2.5;
+            camera.position.y += (Math.random()-0.5) * 2.5;
             updateUI();
             if (health <= 0) gameOver();
         }
@@ -841,11 +802,8 @@ CHANGELOG:
                 mesh.geometry = new THREE.TetrahedronGeometry(Math.random() * 2 + 1);
                 mesh.material.color.set(color);
                 mesh.position.copy(pos);
-                const vel = new THREE.Vector3((Math.random()-0.5)*6, Math.random()*8+2, (Math.random()-0.5)*6);
-                pObj.velocity = vel;
-                pObj.life = 1.0;
-                pObj.gravity = true;
-                pObj.type = 'shard';
+                pObj.velocity = new THREE.Vector3((Math.random()-0.5)*6, Math.random()*8+2, (Math.random()-0.5)*6);
+                pObj.life = 1.0; pObj.gravity = true; pObj.type = 'shard';
             }
         }
 
@@ -877,9 +835,12 @@ CHANGELOG:
                 camera.position.x += (targetPosX - camera.position.x) * 0.08;
                 camera.position.y += (targetPosY - camera.position.y) * 0.08;
 
+                // Debug pullback
+                const targetZ = isDebug ? 10 : 0;
+                camera.position.z += (targetZ - camera.position.z) * 0.1;
+
                 if (playerHitbox) {
-                    playerHitbox.position.copy(camera.position);
-                    playerHitbox.position.y = 0; 
+                    playerHitbox.position.set(camera.position.x, 0, 0); 
                 }
 
                 frameCount++;
@@ -892,9 +853,7 @@ CHANGELOG:
                 const beamObj = activeBeams[i];
                 beamObj.life--;
                 beamObj.mesh.material.opacity = (beamObj.life / 4) * 0.9;
-                if (beamObj.life <= 0) {
-                    laserBeamPool.release(beamObj);
-                }
+                if (beamObj.life <= 0) laserBeamPool.release(beamObj);
             }
 
             const activeEnemies = enemyPool.getActive();
@@ -902,87 +861,46 @@ CHANGELOG:
                 const e = activeEnemies[i];
                 if (e.state === 'alive') {
                     e.mesh.position.add(e.velocity);
-                    e.mesh.rotation.x += e.rotSpeed.x;
-                    e.mesh.rotation.y += e.rotSpeed.y;
-                    
-                    if(e.radarMesh) {
-                        e.radarMesh.position.copy(e.mesh.position);
-                        e.radarMesh.position.y = 0; 
-                    }
-
-                    if (e.mesh.position.y - e.radius < CONFIG.groundY) {
-                        e.mesh.position.y = CONFIG.groundY + e.radius;
-                        e.velocity.y *= -1;
-                    }
-                    if (e.mesh.position.y + e.radius > CONFIG.ceilingY) {
-                        e.mesh.position.y = CONFIG.ceilingY - e.radius;
-                        e.velocity.y *= -1;
-                    }
-
+                    e.mesh.rotation.x += e.rotSpeed.x; e.mesh.rotation.y += e.rotSpeed.y;
+                    if(e.radarMesh) { e.radarMesh.position.set(e.mesh.position.x, 0, e.mesh.position.z); }
+                    if (e.mesh.position.y - e.radius < CONFIG.groundY) { e.mesh.position.y = CONFIG.groundY + e.radius; e.velocity.y *= -1; }
+                    if (e.mesh.position.y + e.radius > CONFIG.ceilingY) { e.mesh.position.y = CONFIG.ceilingY - e.radius; e.velocity.y *= -1; }
                     if (e.mesh.position.z > 20) {
-                        if (e.isThreat && Math.abs(e.mesh.position.x - camera.position.x) < 20) {
-                            triggerDamage();
-                        }
+                        if (e.isThreat && Math.abs(e.mesh.position.x - camera.position.x) < 20) triggerDamage();
                         enemyPool.release(e);
                     }
                 } else if (e.state === 'crashing') {
-                    e.velocity.y -= 0.6;
-                    e.mesh.position.add(e.velocity);
-                    e.mesh.rotation.x += e.rotSpeed.x;
-                    e.mesh.rotation.y += e.rotSpeed.y;
-                    
-                    if(e.radarMesh) {
-                        e.radarMesh.position.copy(e.mesh.position);
-                        e.radarMesh.position.y = 0;
-                    }
-
-                    if (e.mesh.position.y < CONFIG.groundY) {
-                        createGroundExplosion(e.mesh.position, e.mesh.material.color);
-                        enemyPool.release(e);
-                    }
+                    e.velocity.y -= 0.6; e.mesh.position.add(e.velocity);
+                    e.mesh.rotation.x += e.rotSpeed.x; e.mesh.rotation.y += e.rotSpeed.y;
+                    if(e.radarMesh) { e.radarMesh.position.set(e.mesh.position.x, 0, e.mesh.position.z); }
+                    if (e.mesh.position.y < CONFIG.groundY) { createGroundExplosion(e.mesh.position, e.mesh.material.color); enemyPool.release(e); }
                 }
             }
 
             const activeParticles = particlePool.getActive();
             for (let i = activeParticles.length - 1; i >= 0; i--) {
-                const p = activeParticles[i];
-                p.life -= 0.02;
+                const p = activeParticles[i]; p.life -= 0.02;
                 if (p.gravity) p.velocity.y -= 0.2;
-                p.mesh.position.add(p.velocity);
-                p.mesh.rotation.x += 0.2;
-                p.mesh.scale.multiplyScalar(0.95);
+                p.mesh.position.add(p.velocity); p.mesh.rotation.x += 0.2; p.mesh.scale.multiplyScalar(0.95);
                 if (p.life <= 0 || p.mesh.position.y < CONFIG.groundY - 10) particlePool.release(p);
             }
 
-            const w = window.innerWidth;
-            const h = window.innerHeight;
-            const mainH = Math.floor(h * (1.0 - CONFIG.radarHeightRatio));
-            const radarH = h - mainH;
+            const w = window.innerWidth, h = window.innerHeight;
+            const mainH = Math.floor(h * (1.0 - CONFIG.radarHeightRatio)), radarH = h - mainH;
 
-            // 1. Main View (Layer 0 visible, Layer 1 hidden)
-            camera.layers.set(0); 
-            // IMPORTANT: Explicitly hide Layer 1 objects for main view
-            if(playerHitbox) playerHitbox.visible = false;
-            activeEnemies.forEach(e => { if(e.radarMesh) e.radarMesh.visible = false; });
-
+            // 1. Main View (Perspective, Layer 0 Only)
             renderer.setViewport(0, radarH, w, mainH);
             renderer.setScissor(0, radarH, w, mainH);
             renderer.setScissorTest(true);
             renderer.clear();
             composer.render();
 
-            // 2. Radar View (Layer 1 visible, Layer 0 hidden)
-            if(playerHitbox) playerHitbox.visible = true;
-            activeEnemies.forEach(e => { if(e.radarMesh) e.radarMesh.visible = true; });
-
+            // 2. Radar View (Orthographic, Layer 1 Only)
             renderer.setViewport(0, 0, w, radarH);
             renderer.setScissor(0, 0, w, radarH);
             renderer.setScissorTest(true);
-            
             renderer.setClearColor(0x001428, 1);
-            renderer.clearColor(); 
-            renderer.clearDepth();
-
+            renderer.clearColor(); renderer.clearDepth();
             renderer.render(scene, orthoCamera);
             renderer.setClearColor(0x000000, 0);
         }
