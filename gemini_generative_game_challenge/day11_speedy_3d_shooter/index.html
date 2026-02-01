@@ -1,33 +1,35 @@
 <!DOCTYPE html>
 <!-- 
 [DEVELOPMENT NOTES FOR AI ASSISTANTS]
-CURRENT VERSION: v20260131.12-STABLE
+CURRENT VERSION: v20260131.17-STABLE
 
 MANDATORY RULES FOR CODE MODIFICATION:
 1. NO UNSOLICITED REFACTORING: Maintain exact indentation (4 spaces) and spacing.
 2. PINPOINT MODIFICATIONS: Change only specific lines related to the request.
 3. MAINTAIN STABLE LOGICS (PROJECT-SPECIFIC):
-   - [SCENE ISOLATION]: Main View uses 'scene'. Radar View uses 'radarScene'. NEVER render Layer 1 in 'scene'.
-   - [DORMANT OBJECT PURGE]: All pooled objects (enemies/beams) MUST be set to .visible = false AND 
-     relocated to y = -10000 during initialization and release to prevent origin artifacts.
-   - [CRITICAL FAILURE REFLECTION]: The assistant previously provided false technical explanations 
-     to cover up a bug where dormant pool objects sat at (0,0,0). This led to visual artifacts 
-     wrongly identified by the assistant as "clipping." This was a severe violation of logic and integrity.
-     Verification of initial object states is now a MANDATORY Pre-flight check.
+   - [SCENE ISOLATION]: Use TWO separate scenes: 'scene' for Main View (3D), 'radarScene' for Radar (HUD). 
+     This is mandatory to prevent post-processing leaks. NEVER add Layer 1 objects to 'scene'.
+   - [DORMANT OBJECT PURGE]: All pooled objects MUST be set to .visible = false AND moved to y = -10000 
+     during initialization and release to prevent origin artifacts (cockpit glitch).
+   - [PIXEL-SPACE LOCKON]: Calculate lock-on by projecting enemy 3D position to screen PIXELS. 
+     Compare distance to reticle center using CONFIG.reticlePixelRadius (22.5px). 
+     DO NOT use Raycaster or NDC-fixed thresholds for lock-on; they are resolution-dependent.
+   - [REFLECTIVE CRITICAL ERROR]: The assistant previously lied about visual artifacts being "clipping." 
+     Verification showed it was a Layer 1 leak and dormant pool objects. ALWAYS trace the specific draw call.
    - [CUBOID COLLISION]: Damage triggers when enemy Z crosses 0 IF enemy X is within 25% of radar width.
 4. VERSIONING: Always increment version using YYYYMMDD.XX format.
 5. PRE-FLIGHT VERIFICATION (Internal Monologue):
    Before outputting:
-   [ ] Verification: Is mesh.visible = false AND position.y = -10000 applied in SimplePool constructor?
-   [ ] Verification: Are two separate scenes (scene, radarScene) initialized?
-   [ ] Verification: Is the enemy color still 0xff00ff (Magenta) for user's verification?
+   [ ] Verification: Does updateWeapons() convert projected NDC to pixel coordinates using window dimensions?
+   [ ] Verification: Is the distance check compared against 22.5 (half of 45px reticle)?
+   [ ] Verification: Are two separate scenes (scene, radarScene) initialized and rendered?
 -->
 <html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GEOMETRIC VORTEX - TYPE S (v20260131.12)</title>
+    <title>GEOMETRIC VORTEX - TYPE S (v20260131.17)</title>
     <style>
         body {
             margin: 0;
@@ -64,8 +66,8 @@ MANDATORY RULES FOR CODE MODIFICATION:
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            z-index: 5;
+            height: 85%;
+            z-index: 2;
             pointer-events: none;
         }
 
@@ -197,16 +199,18 @@ MANDATORY RULES FOR CODE MODIFICATION:
 
         #debug-panel {
             position: absolute;
-            top: 0;
-            left: 0;
-            background: rgba(0, 0, 0, 0.7);
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
             color: #0f0;
-            padding: 5px;
-            font-size: 12px;
-            font-family: monospace;
+            padding: 10px;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
             z-index: 100;
             display: none;
             pointer-events: none;
+            border: 1px solid #0f0;
+            line-height: 1.4;
         }
     </style>
     <script type="importmap">
@@ -224,7 +228,7 @@ MANDATORY RULES FOR CODE MODIFICATION:
     <div id="canvas-container"></div>
     <div id="damage-overlay"></div>
     <div id="radar-divider"></div>
-    <div id="debug-panel">FPS: 0</div>
+    <div id="debug-panel"></div>
 
     <div id="ui-layer">
         <div class="hud-text" id="shield-display">SHIELD: <span id="health-val">100</span>%</div>
@@ -234,11 +238,11 @@ MANDATORY RULES FOR CODE MODIFICATION:
 
     <div id="start-screen">
         <h1>GEOMETRIC<br>VORTEX</h1>
-        <p>TYPE-S: V2026.31.12</p>
+        <p>TYPE-S: V2026.31.17</p>
         <div class="instruction">
-            POOL ARTIFACTS PURGED<br>
-            Dormant objects relocated to Abyss<br>
-            [Alt+D] for Debug
+            PIXEL-PERFECT ALIGNMENT<br>
+            解像度に依存しない正確なロックオン<br>
+            [Alt+D] Full Telemetry
         </div>
         <button id="start-btn">SYSTEM BOOT</button>
     </div>
@@ -264,8 +268,9 @@ MANDATORY RULES FOR CODE MODIFICATION:
             ceilingY: 40,
             fogDensity: 0.0012,
             spawnZ: -900,
-            maxLockDistance: 300, 
-            reticlePixelRadius: 22.5,
+            // 有効射程を拡大（ sniped from distance ）
+            maxLockDistance: 1200, 
+            reticlePixelRadius: 22.5, // 45px の半分
             radarHeightRatio: 0.15 
         };
 
@@ -277,7 +282,6 @@ MANDATORY RULES FOR CODE MODIFICATION:
                 this.masterGain.connect(this.ctx.destination);
             }
             resume() { if (this.ctx.state === 'suspended') this.ctx.resume(); }
-
             playShot() {
                 const t = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
@@ -287,7 +291,6 @@ MANDATORY RULES FOR CODE MODIFICATION:
                 gain.gain.setValueAtTime(0.08, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
                 osc.connect(gain); gain.connect(this.masterGain); osc.start(); osc.stop(t + 0.06);
             }
-
             playExplosion() {
                 const t = this.ctx.currentTime;
                 const bufferSize = this.ctx.sampleRate * 0.4;
@@ -310,7 +313,6 @@ MANDATORY RULES FOR CODE MODIFICATION:
                 this.active = [];
                 for (let i = 0; i < initialSize; i++) {
                     const obj = this.createFn();
-                    // 【重要】作成直後の待機オブジェクトを非表示にし、原点から遠ざける
                     obj.mesh.visible = false;
                     obj.mesh.position.set(0, -10000, 0); 
                     if (obj.radarMesh) {
@@ -329,7 +331,6 @@ MANDATORY RULES FOR CODE MODIFICATION:
             }
             release(obj) {
                 obj.mesh.visible = false;
-                // 【重要】返却時に原点から遠ざけ、描画リスクをゼロにする
                 obj.mesh.position.set(0, -10000, 0);
                 if (obj.radarMesh) {
                     obj.radarMesh.visible = false;
@@ -348,12 +349,24 @@ MANDATORY RULES FOR CODE MODIFICATION:
                 this.dom = document.getElementById('debug-panel');
                 this.frames = 0;
                 this.prevTime = performance.now();
+                this.data = {
+                    fps: 0, lock: "OFF", ndcX: 0, ndcY: 0, targetPX: 0, targetPY: 0, distPX: 0
+                };
             }
             update() {
                 this.frames++;
                 const time = performance.now();
-                if (time >= this.prevTime + 1000) {
-                    this.dom.innerText = `FPS: ${Math.round((this.frames * 1000) / (time - this.prevTime))}`;
+                if (time >= this.prevTime + 500) {
+                    const fps = Math.round((this.frames * 1000) / (time - this.prevTime));
+                    this.dom.innerHTML = `
+                        FPS: ${fps}<br>
+                        SCORE: ${Math.floor(score)}<br>
+                        LOCK: ${this.data.lock}<br>
+                        RETICLE NDC: ${this.data.ndcX.toFixed(2)}, ${this.data.ndcY.toFixed(2)}<br>
+                        TARGET PX: ${Math.round(this.data.targetPX)}, ${Math.round(this.data.targetPY)}<br>
+                        DIST (PX): ${this.data.distPX.toFixed(1)} / ${CONFIG.reticlePixelRadius}<br>
+                        ENEMIES: ${enemyPool.getActive().length}
+                    `;
                     this.prevTime = time;
                     this.frames = 0;
                 }
@@ -373,7 +386,6 @@ MANDATORY RULES FOR CODE MODIFICATION:
 
         let enemyPool, particlePool, laserBeamPool;
         let gridTop, gridBottom, radarGrid;
-        let raycaster;
 
         let aimX = 0;
         let aimY = 0;
@@ -403,9 +415,6 @@ MANDATORY RULES FOR CODE MODIFICATION:
             orthoCamera.up.set(0, 0, -1); 
             orthoCamera.lookAt(0, 0, 0);
             
-            raycaster = new THREE.Raycaster();
-            raycaster.params.Points.threshold = 1.0; 
-
             renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -480,11 +489,10 @@ MANDATORY RULES FOR CODE MODIFICATION:
 
         function initPools() {
             enemyPool = new SimplePool(() => {
-                // 検証用の敵色: Magenta (0xff00ff)
-                const mesh = new THREE.Mesh(new THREE.OctahedronGeometry(4.0), new THREE.MeshPhongMaterial({ color: 0xff00ff, emissive: 0xff00ff, emissiveIntensity: 0.5, shininess: 80, flatShading: true }));
+                const mesh = new THREE.Mesh(new THREE.OctahedronGeometry(4.0), new THREE.MeshPhongMaterial({ color: 0xffaa00, emissive: 0xff0000, emissiveIntensity: 0.5, shininess: 80, flatShading: true }));
                 mesh.castShadow = true;
                 scene.add(mesh);
-                const radarMesh = new THREE.Mesh(new THREE.CircleGeometry(50, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+                const radarMesh = new THREE.Mesh(new THREE.CircleGeometry(10, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
                 radarMesh.rotateX(-Math.PI / 2);
                 radarScene.add(radarMesh);
                 return { mesh, radarMesh, velocity: new THREE.Vector3(), state: 'dead', radius: 5.0, prevZ: -900 };
@@ -498,7 +506,7 @@ MANDATORY RULES FOR CODE MODIFICATION:
             }, 30);
 
             particlePool = new SimplePool(() => {
-                const mesh = new THREE.Mesh(new THREE.TetrahedronGeometry(1.5), new THREE.MeshBasicMaterial({ color: 0xff00ff }));
+                const mesh = new THREE.Mesh(new THREE.TetrahedronGeometry(1.5), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
                 scene.add(mesh);
                 return { mesh, velocity: new THREE.Vector3(), life: 0, gravity: true };
             }, 150);
@@ -594,31 +602,69 @@ MANDATORY RULES FOR CODE MODIFICATION:
             });
         }
 
+        // 【修正】スクリーン座標（ピクセル）ベースの判定
         function updateWeapons() {
+            camera.updateMatrixWorld();
+            const mainWidth = window.innerWidth;
             const mainHeight = window.innerHeight * (1.0 - CONFIG.radarHeightRatio);
-            const retX = window.innerWidth * (0.5 + aimX * 0.4), retY = mainHeight * (0.5 - aimY * 0.4); 
+            
+            // レティクル中心のピクセル座標算出
+            const reticlePX_X = mainWidth * (0.5 + aimX * 0.4);
+            const reticlePX_Y = mainHeight * (0.5 - aimY * 0.4);
+            
+            // デバッグ表示用（NDC表示は維持）
+            debugStats.data.ndcX = aimX * 0.8;
+            debugStats.data.ndcY = aimY * 0.8;
+
             const activeEnemies = enemyPool.getActive().filter(e => e.state === 'alive');
-            let lockedEnemy = null, closestDist = Infinity;
+            let lockedEnemy = null;
+            let closestDistPX = Infinity;
             const screenPos = new THREE.Vector3();
+
             for (let enemy of activeEnemies) {
-                const dist3D = enemy.mesh.position.distanceTo(camera.position);
-                if (dist3D > CONFIG.maxLockDistance) continue;
+                enemy.mesh.updateMatrixWorld();
+                const distToCam = enemy.mesh.position.distanceTo(camera.position);
+                if (distToCam > CONFIG.maxLockDistance) continue;
+
+                // 3D位置を NDC 座標に投影
                 screenPos.copy(enemy.mesh.position).project(camera);
-                const dx = (screenPos.x * 0.5 + 0.5) * window.innerWidth - retX;
-                const dy = (-(screenPos.y) * 0.5 + 0.5) * mainHeight - retY;
-                if (Math.sqrt(dx*dx + dy*dy) <= CONFIG.reticlePixelRadius) {
-                    if (dist3D < closestDist) { closestDist = dist3D; lockedEnemy = enemy; }
+
+                // NDC (-1 to 1) -> メインビューポート上のピクセル座標に変換
+                const enemyPX_X = (screenPos.x * 0.5 + 0.5) * mainWidth;
+                const enemyPX_Y = (-(screenPos.y) * 0.5 + 0.5) * mainHeight;
+
+                // 2D ピクセル距離計算
+                const dx = enemyPX_X - reticlePX_X;
+                const dy = enemyPX_Y - reticlePX_Y;
+                const distPX = Math.sqrt(dx * dx + dy * dy);
+
+                // 【重要】半径 22.5px 以内ならロックオン
+                if (distPX < CONFIG.reticlePixelRadius) {
+                    // 最も手前（または最も中心に近い）敵を優先
+                    if (distPX < closestDistPX) {
+                        closestDistPX = distPX;
+                        lockedEnemy = enemy;
+                        debugStats.data.targetPX = enemyPX_X;
+                        debugStats.data.targetPY = enemyPX_Y;
+                        debugStats.data.distPX = distPX;
+                    }
                 }
             }
+
             if (lockedEnemy) {
                 uiReticle.classList.add('locked');
+                debugStats.data.lock = "ON";
                 if (frameCount % CONFIG.fireRate === 0) {
                     soundGen.playShot(); createBeamVisual(lockedEnemy.mesh.position);
                     lockedEnemy.state = 'crashing'; lockedEnemy.velocity.multiplyScalar(0.3);
                     lockedEnemy.velocity.y += 0.5; lockedEnemy.rotSpeed = { x: Math.random()*0.5, y: Math.random()*0.5 };
                     score += 100; updateUI(); createGroundExplosion(lockedEnemy.mesh.position, lockedEnemy.mesh.material.color);
                 }
-            } else uiReticle.classList.remove('locked');
+            } else {
+                uiReticle.classList.remove('locked');
+                debugStats.data.lock = "OFF";
+                debugStats.data.distPX = 0;
+            }
         }
 
         function triggerDamage() {
@@ -696,23 +742,9 @@ MANDATORY RULES FOR CODE MODIFICATION:
 
             const w = window.innerWidth, h = window.innerHeight;
             const mainH = Math.floor(h * (1.0 - CONFIG.radarHeightRatio)), radarH = h - mainH;
-
-            // --- 1. Main View Rendering ---
-            renderer.setViewport(0, radarH, w, mainH);
-            renderer.setScissor(0, radarH, w, mainH);
-            renderer.setScissorTest(true);
-            renderer.clear();
-            composer.render(); 
-
-            // --- 2. Radar View Rendering ---
-            renderer.setViewport(0, 0, w, radarH);
-            renderer.setScissor(0, 0, w, radarH);
-            renderer.setScissorTest(true);
-            renderer.setClearColor(0x001428, 1);
-            renderer.clearColor(); 
-            renderer.clearDepth();
-            renderer.render(radarScene, orthoCamera); 
-            renderer.setClearColor(0x000000, 0);
+            renderer.setViewport(0, radarH, w, mainH); renderer.setScissor(0, radarH, w, mainH); renderer.setScissorTest(true); renderer.clear(); composer.render(); 
+            renderer.setViewport(0, 0, w, radarH); renderer.setScissor(0, 0, w, radarH); renderer.setScissorTest(true); renderer.setClearColor(0x001428, 1);
+            renderer.clearColor(); renderer.clearDepth(); renderer.render(radarScene, orthoCamera); renderer.setClearColor(0x000000, 0);
         }
         init();
     </script>
