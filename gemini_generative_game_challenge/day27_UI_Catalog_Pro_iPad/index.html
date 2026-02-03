@@ -109,6 +109,32 @@
                 width: 100vw;
             }
         }
+
+        /* --- コピーボタンのスタイル --- */
+        .copy-trigger {
+            position: absolute; 
+            top: 8px; 
+            right: 55px; /* IDタグの左隣 */
+            width: 28px; 
+            height: 28px; 
+            border-radius: 6px;
+            background: #334155; 
+            color: #94a3b8;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            cursor: pointer; 
+            z-index: 20; 
+            transition: all 0.2s;
+        }
+        .copy-trigger:hover { 
+            background: #475569; 
+            color: #fff; 
+            border-color: #3b82f6; 
+        }
+        .copy-trigger:active { 
+            transform: scale(0.9); 
+        }
     </style>
 </head>
 <body>
@@ -140,6 +166,9 @@
             <!-- #W-01 Scrollable Frame (CTkScrollableFrame) -->
             <div class="ui-card p-4 col-span-1 md:col-span-2" data-id="#W-01">
                 <span class="id-tag">#W-01</span>
+
+                <div class="copy-trigger" onclick="copyComponentCode('#W-01', event)"><i class="far fa-copy text-xs"></i></div>
+
                 <h3 class="text-sm font-semibold text-slate-300 mb-3">Scrollable Frame</h3>
                 <div class="h-32 bg-slate-900 rounded-lg border border-slate-700 p-2 overflow-y-auto custom-scrollbar space-y-2">
                     <div class="p-3 bg-slate-800 rounded border border-slate-700 text-xs">Item 1: Analysis Report</div>
@@ -151,8 +180,9 @@
             </div>
 
             <!-- #W-02 Tabview (CTkTabview) -->
-            <div class="ui-card p-4 col-span-1 md:col-span-2">
+            <div class="ui-card p-4 col-span-1 md:col-span-2" data-id="#W-02">
                 <span class="id-tag">#W-02</span>
+                <div class="copy-trigger" onclick="copyComponentCode('#W-02', event)"><i class="far fa-copy text-xs"></i></div>
                 <h3 class="text-sm font-semibold text-slate-300 mb-3">Tabview</h3>
                 <div class="bg-slate-900 rounded-xl overflow-hidden border border-slate-700">
                     <div class="flex border-b border-slate-700">
@@ -174,6 +204,7 @@
             <!-- #W-03 Combobox / OptionMenu (CTkOptionMenu/CTkComboBox) -->
             <div class="ui-card p-5 space-y-4">
                 <span class="id-tag">#W-03</span>
+                <div class="copy-trigger" onclick="copyComponentCode('#W-03', event)"><i class="far fa-copy text-xs"></i></div>
                 <h3 class="text-sm font-semibold text-slate-300">OptionMenu & Combo</h3>
                 
                 <!-- Option Menu -->
@@ -200,6 +231,7 @@
             <!-- #W-04 Checkbox & Radio (CTkCheckBox/CTkRadioButton) -->
             <div class="ui-card p-5 space-y-4">
                 <span class="id-tag">#W-04</span>
+                <div class="copy-trigger" onclick="copyComponentCode('#W-04', event)"><i class="far fa-copy text-xs"></i></div>
                 <h3 class="text-sm font-semibold text-slate-300">Selection Controls</h3>
                 
                 <!-- Radio Buttons -->
@@ -228,6 +260,7 @@
             <!-- #W-05 Textbox (CTkTextbox) -->
             <div class="ui-card p-5 col-span-1 md:col-span-2">
                 <span class="id-tag">#W-05</span>
+                <div class="copy-trigger" onclick="copyComponentCode('#W-05', event)"><i class="far fa-copy text-xs"></i></div>
                 <h3 class="text-sm font-semibold text-slate-300 mb-3">Multi-line Textbox</h3>
                 <textarea class="dark-input w-full rounded-lg p-3 text-sm h-24 resize-none custom-scrollbar font-mono text-slate-300" placeholder="Enter detailed description here..." oninput="playSound('hover')"></textarea>
             </div>
@@ -235,6 +268,7 @@
             <!-- #W-06 Segmented Control (CTkSegmentedControl) -->
             <div class="ui-card p-5 col-span-1 md:col-span-2">
                 <span class="id-tag">#W-06</span>
+                <div class="copy-trigger" onclick="copyComponentCode('#W-06', event)"><i class="far fa-copy text-xs"></i></div>
                 <h3 class="text-sm font-semibold text-slate-300 mb-3">Segmented Control</h3>
                 <div class="bg-slate-900 p-1 rounded-lg flex">
                     <button class="flex-1 py-1.5 px-4 rounded-md bg-slate-600 text-white shadow-sm text-xs font-medium transition-all" onclick="switchSegment(this)">Value 1</button>
@@ -252,6 +286,7 @@
             <!-- #W-07 Progress Bar (CTkProgressBar) -->
             <div class="ui-card p-6 space-y-6">
                 <span class="id-tag">#W-07</span>
+                <div class="copy-trigger" onclick="copyComponentCode('#W-07', event)"><i class="far fa-copy text-xs"></i></div>
                 
                 <!-- Slider (CTkSlider) -->
                 <div class="space-y-2">
@@ -279,6 +314,7 @@
             <!-- #W-08 Dialog/Alert (CTkButton to trigger CTkToplevel) -->
             <div class="ui-card p-5 flex flex-wrap gap-3 items-center justify-between">
                 <span class="id-tag">#W-08</span>
+                <div class="copy-trigger" onclick="copyComponentCode('#W-08', event)"><i class="far fa-copy text-xs"></i></div>
                 <div class="text-sm font-semibold text-slate-300">Dialog Triggers</div>
                 <div class="flex gap-2">
                     <button onclick="showAlert('Info', 'System is operational.')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-lg transition border border-slate-600">
@@ -297,6 +333,7 @@
             <!-- #W-09 Switch (Toggle) -->
             <div class="ui-card p-5 flex items-center justify-between">
                 <span class="id-tag">#W-09</span>
+                <div class="copy-trigger" onclick="copyComponentCode('#W-09', event)"><i class="far fa-copy text-xs"></i></div>
                 <span class="text-sm font-semibold text-slate-300">Toggle Switch</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" class="sr-only peer" onchange="logInteraction('#W-09', this.checked ? 'ON' : 'OFF')">
@@ -307,6 +344,7 @@
             <!-- #W-10 Stats Card (Data Display) -->
             <div class="ui-card p-5">
                 <span class="id-tag">#W-10</span>
+                <div class="copy-trigger" onclick="copyComponentCode('#W-10', event)"><i class="far fa-copy text-xs"></i></div>
                 <p class="text-xs text-slate-400 mb-1">Active Sessions</p>
                 <div class="flex items-end justify-between">
                     <h4 class="text-2xl font-bold text-white">1,284</h4>
@@ -510,12 +548,22 @@
     }
 
     // 各カードにコピーボタンを動的に配置、または特定のボタンに割り当て
-    function copyComponentCode(id) {
+    function copyComponentCode(id, event) {
+        if (event) event.stopPropagation(); // カード側のonclick発動を防止
         const element = document.querySelector(`[data-id="${id}"]`);
-        // タグなどを除外して純粋なUI構造だけを抽出するロジック
-        const cleanCode = element.innerHTML.replace(/<span class="id-tag">.*?<\/span>/g, '').trim();
-        navigator.clipboard.writeText(cleanCode);
-        showAlert('Copied!', `${id} のコードをクリップボードにコピーしました。`);
+        if (!element) return;
+
+        // クローンを作成して、コピーしたくない要素（タグとボタン）を消してからテキスト化
+        const clone = element.cloneNode(true);
+        const meta = clone.querySelectorAll('.id-tag, .copy-trigger');
+        meta.forEach(el => el.remove());
+        
+        const cleanCode = clone.innerHTML.trim();
+        navigator.clipboard.writeText(cleanCode).then(() => {
+            playSound('success');
+            logInteraction(id, 'Code copied to clipboard');
+            showAlert('Copied!', `${id} のコードをコピーしました。AIに貼り付けてください。`);
+        });
     }
 </script>
 </body>
