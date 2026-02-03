@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI-Ready UI Catalog Pro (Dark)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0f172a; /* Outer background dark */
+            color: #e2e8f0;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden; /* Prevent body scroll, handle inside container */
+        }
+
+        /* Hide scrollbar for cleaner UI */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Custom Scrollbar for scrollable frames */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        /* Base Card Style (Dark Mode Default) */
+        .ui-card {
+            background: #1e293b; /* slate-800 */
+            border-radius: 16px;
+            border: 1px solid #334155; /* slate-700 */
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .ui-card:active {
+            transform: scale(0.995);
+        }
+
+        /* ID Tag Style */
+        .id-tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            background: #334155;
+            color: #94a3b8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Custom Form Elements for Dark Mode */
+        .dark-input {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+        }
+        .dark-input:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Radio & Checkbox Customization */
+        .custom-radio:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
+        }
+        .custom-checkbox:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+        }
+
+        /* Mobile/iPad Optimization */
+        @media (min-width: 768px) {
+            .ipad-container {
+                max-width: 768px; /* iPad Mini Width */
+                margin: 20px auto;
+                border-radius: 24px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                height: calc(100vh - 40px);
+                border: 8px solid #334155;
+                position: relative;
+                background: #0f172a;
+            }
+        }
+        @media (max-width: 767px) {
+            .ipad-container {
+                height: 100vh;
+                width: 100vw;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Device Container -->
+<div class="ipad-container flex flex-col relative overflow-hidden dark-mode">
+    
+    <!-- Header -->
+    <header class="flex-none bg-slate-900/90 backdrop-blur-lg border-b border-slate-700 px-6 py-4 flex justify-between items-center z-30">
+        <div>
+            <h1 class="font-bold text-lg text-white">UI Components <span class="text-xs bg-blue-900 text-blue-200 px-2 py-0.5 rounded-full ml-1">v2.0</span></h1>
+            <p class="text-xs text-slate-400">Dark Mode • iPad Optimized</p>
+        </div>
+        <div class="flex gap-3">
+             <button onclick="playSound('click')" class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition">
+                <i class="fas fa-cog text-xs"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Scrollable Content -->
+    <!-- pb-32 ensures content is not hidden behind bottom nav -->
+    <main class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-6 pb-40" id="main-content">
+
+        <!-- SECTION: LAYOUT & CONTAINERS -->
+        <div class="text-xs font-bold text-blue-400 uppercase tracking-wider pl-2 mt-2">1. Layout & Containers</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- #W-01 Scrollable Frame (CTkScrollableFrame) -->
+            <div class="ui-card p-4 col-span-1 md:col-span-2" onclick="logInteraction('#W-01', 'Scroll Frame')">
+                <span class="id-tag">#W-01</span>
+                <h3 class="text-sm font-semibold text-slate-300 mb-3">Scrollable Frame</h3>
+                <div class="h-32 bg-slate-900 rounded-lg border border-slate-700 p-2 overflow-y-auto custom-scrollbar space-y-2">
+                    <div class="p-3 bg-slate-800 rounded border border-slate-700 text-xs">Item 1: Analysis Report</div>
+                    <div class="p-3 bg-slate-800 rounded border border-slate-700 text-xs">Item 2: User Metrics</div>
+                    <div class="p-3 bg-slate-800 rounded border border-slate-700 text-xs">Item 3: System Logs</div>
+                    <div class="p-3 bg-slate-800 rounded border border-slate-700 text-xs">Item 4: API Responses</div>
+                    <div class="p-3 bg-slate-800 rounded border border-slate-700 text-xs">Item 5: Database Query</div>
+                </div>
+            </div>
+
+            <!-- #W-02 Tabview (CTkTabview) -->
+            <div class="ui-card p-4 col-span-1 md:col-span-2">
+                <span class="id-tag">#W-02</span>
+                <h3 class="text-sm font-semibold text-slate-300 mb-3">Tabview</h3>
+                <div class="bg-slate-900 rounded-xl overflow-hidden border border-slate-700">
+                    <div class="flex border-b border-slate-700">
+                        <button onclick="switchTabContent('tab1')" class="flex-1 py-2 text-xs font-medium bg-slate-800 text-white border-b-2 border-blue-500 transition-colors hover:bg-slate-800">Tab 1</button>
+                        <button onclick="switchTabContent('tab2')" class="flex-1 py-2 text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Tab 2</button>
+                        <button onclick="switchTabContent('tab3')" class="flex-1 py-2 text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Tab 3</button>
+                    </div>
+                    <div class="p-4 h-24 flex items-center justify-center text-slate-400 text-sm bg-slate-900/50" id="tab-content-area">
+                        Tab 1 Content Area
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: INPUT WIDGETS -->
+        <div class="text-xs font-bold text-blue-400 uppercase tracking-wider pl-2 mt-4">2. Input Widgets</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <!-- #W-03 Combobox / OptionMenu (CTkOptionMenu/CTkComboBox) -->
+            <div class="ui-card p-5 space-y-4">
+                <span class="id-tag">#W-03</span>
+                <h3 class="text-sm font-semibold text-slate-300">OptionMenu & Combo</h3>
+                
+                <!-- Option Menu -->
+                <div class="relative">
+                    <select onchange="logInteraction('#W-03a', this.value)" class="w-full appearance-none bg-slate-900 border border-slate-600 text-white text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                        <option>Option 1</option>
+                        <option>Option 2</option>
+                        <option>Option 3</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Editable Combo Mock -->
+                <div class="relative">
+                    <input type="text" placeholder="Type or Select..." class="dark-input w-full rounded-lg p-2.5 text-sm pr-8" onfocus="logInteraction('#W-03b', 'Combo Focused')">
+                    <div class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 cursor-pointer hover:text-white">
+                        <i class="fas fa-caret-down"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- #W-04 Checkbox & Radio (CTkCheckBox/CTkRadioButton) -->
+            <div class="ui-card p-5 space-y-4">
+                <span class="id-tag">#W-04</span>
+                <h3 class="text-sm font-semibold text-slate-300">Selection Controls</h3>
+                
+                <!-- Radio Buttons -->
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-3 cursor-pointer group">
+                        <input type="radio" name="radio-group" class="custom-radio appearance-none w-4 h-4 border-2 border-slate-500 rounded-full bg-slate-900 transition checked:border-blue-500 checked:bg-blue-500" onclick="playSound('click')">
+                        <span class="text-sm text-slate-400 group-hover:text-white transition">Radio Option A</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer group">
+                        <input type="radio" name="radio-group" class="custom-radio appearance-none w-4 h-4 border-2 border-slate-500 rounded-full bg-slate-900 transition checked:border-blue-500 checked:bg-blue-500" onclick="playSound('click')">
+                        <span class="text-sm text-slate-400 group-hover:text-white transition">Radio Option B</span>
+                    </label>
+                </div>
+
+                <div class="w-full h-px bg-slate-700"></div>
+
+                <!-- Checkboxes -->
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-3 cursor-pointer group">
+                        <input type="checkbox" class="custom-checkbox appearance-none w-4 h-4 border-2 border-slate-500 rounded bg-slate-900 transition checked:border-blue-500 checked:bg-blue-500" onclick="playSound('click')">
+                        <span class="text-sm text-slate-400 group-hover:text-white transition">Enable Feature</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- #W-05 Textbox (CTkTextbox) -->
+            <div class="ui-card p-5 col-span-1 md:col-span-2">
+                <span class="id-tag">#W-05</span>
+                <h3 class="text-sm font-semibold text-slate-300 mb-3">Multi-line Textbox</h3>
+                <textarea class="dark-input w-full rounded-lg p-3 text-sm h-24 resize-none custom-scrollbar font-mono text-slate-300" placeholder="Enter detailed description here..." oninput="playSound('hover')"></textarea>
+            </div>
+
+            <!-- #W-06 Segmented Control (CTkSegmentedControl) -->
+            <div class="ui-card p-5 col-span-1 md:col-span-2">
+                <span class="id-tag">#W-06</span>
+                <h3 class="text-sm font-semibold text-slate-300 mb-3">Segmented Control</h3>
+                <div class="bg-slate-900 p-1 rounded-lg flex">
+                    <button class="flex-1 py-1.5 px-4 rounded-md bg-slate-600 text-white shadow-sm text-xs font-medium transition-all" onclick="switchSegment(this)">Value 1</button>
+                    <button class="flex-1 py-1.5 px-4 rounded-md text-slate-500 hover:text-slate-300 text-xs font-medium transition-all" onclick="switchSegment(this)">Value 2</button>
+                    <button class="flex-1 py-1.5 px-4 rounded-md text-slate-500 hover:text-slate-300 text-xs font-medium transition-all" onclick="switchSegment(this)">Value 3</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION: STATUS & FEEDBACK -->
+        <div class="text-xs font-bold text-blue-400 uppercase tracking-wider pl-2 mt-4">3. Status & Feedback</div>
+        <div class="grid grid-cols-1 gap-4">
+
+            <!-- #W-07 Progress Bar (CTkProgressBar) -->
+            <div class="ui-card p-6 space-y-6">
+                <span class="id-tag">#W-07</span>
+                
+                <!-- Slider (CTkSlider) -->
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs text-slate-400">
+                        <span>Input Level</span>
+                        <span id="slider-val">75%</span>
+                    </div>
+                    <input type="range" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="document.getElementById('slider-val').innerText = this.value + '%'; playSound('hover')">
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs text-slate-400">
+                        <span>Processing Status</span>
+                        <span class="animate-pulse text-blue-400">Downloading...</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 45%; transition: width 0.5s;">
+                            <div class="w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" style="background-size: 200% 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- #W-08 Dialog/Alert (CTkButton to trigger CTkToplevel) -->
+            <div class="ui-card p-5 flex flex-wrap gap-3 items-center justify-between">
+                <span class="id-tag">#W-08</span>
+                <div class="text-sm font-semibold text-slate-300">Dialog Triggers</div>
+                <div class="flex gap-2">
+                    <button onclick="showAlert('Info', 'System is operational.')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-lg transition border border-slate-600">
+                        Info
+                    </button>
+                    <button onclick="showAlert('Warning', 'Check connection settings.')" class="px-4 py-2 bg-amber-900/50 hover:bg-amber-800/50 text-amber-200 border border-amber-800 text-xs rounded-lg transition">
+                        Warning
+                    </button>
+                    <button onclick="showAlert('Error', 'Critical failure detected.')" class="px-4 py-2 bg-red-900/50 hover:bg-red-800/50 text-red-200 border border-red-800 text-xs rounded-lg transition">
+                        Error
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Spacer to ensure content scrolls above Fab/Nav -->
+        <div class="h-24"></div>
+
+    </main>
+
+    <!-- FLOATING CONSOLE (Log) -->
+    <div id="console-log" class="absolute bottom-24 left-4 right-4 bg-black/80 backdrop-blur-md text-white p-3 rounded-xl border border-slate-700 z-40 transform transition-transform duration-300 translate-y-0 text-[10px] font-mono shadow-2xl">
+        <div class="flex justify-between items-center mb-1 border-b border-slate-700 pb-1">
+            <span class="text-green-400">● AI_Interaction_Log</span>
+            <button onclick="document.getElementById('console-log').classList.toggle('translate-y-[150%]')" class="text-slate-500 hover:text-white p-1"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="log-content" class="h-16 overflow-y-auto custom-scrollbar space-y-1 text-slate-300">
+            <div class="opacity-50">> Waiting for input...</div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION (Fixed) -->
+    <!-- Added z-50 and background blur to ensure it sits on top -->
+    <nav class="absolute bottom-0 w-full bg-slate-900/95 backdrop-blur-xl border-t border-slate-700 px-6 py-2 flex justify-between items-center z-50 safe-area-bottom h-20">
+        <span class="id-tag" style="top: -15px; right: 10px; background: #1e293b;">#NAV</span>
+        
+        <button onclick="playSound('click'); setActiveTab(this)" class="group flex flex-col items-center gap-1 text-blue-500 w-16 p-2 rounded-lg transition">
+            <i class="fas fa-home text-xl group-active:scale-90 transition"></i>
+            <span class="text-[10px] font-medium">Home</span>
+        </button>
+        
+        <button onclick="playSound('click'); setActiveTab(this)" class="group flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 w-16 p-2 rounded-lg transition">
+            <i class="fas fa-search text-xl group-active:scale-90 transition"></i>
+            <span class="text-[10px] font-medium">Search</span>
+        </button>
+        
+        <!-- FAB Middle -->
+        <button onclick="playSound('success'); logInteraction('#FAB', 'Action Triggered')" class="relative -top-6 bg-blue-600 text-white w-14 h-14 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.5)] flex items-center justify-center text-xl hover:scale-110 transition active:scale-95 border-4 border-slate-900">
+            <i class="fas fa-plus"></i>
+        </button>
+        
+        <button onclick="playSound('click'); setActiveTab(this)" class="group flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 w-16 p-2 rounded-lg transition">
+            <i class="fas fa-bell text-xl group-active:scale-90 transition"></i>
+            <span class="text-[10px] font-medium">Alerts</span>
+        </button>
+        
+        <button onclick="playSound('click'); setActiveTab(this)" class="group flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 w-16 p-2 rounded-lg transition">
+            <i class="fas fa-user text-xl group-active:scale-90 transition"></i>
+            <span class="text-[10px] font-medium">Profile</span>
+        </button>
+    </nav>
+
+    <!-- Overlay Dialog (Hidden by default) -->
+    <div id="custom-alert" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-6 opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300" id="alert-box">
+            <h3 class="text-lg font-bold text-white mb-2" id="alert-title">Title</h3>
+            <p class="text-slate-300 text-sm mb-6" id="alert-msg">Message goes here.</p>
+            <div class="flex justify-end">
+                <button onclick="closeAlert()" class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-500 active:scale-95 transition">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- Audio Engine ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+
+        if (type === 'click') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.1);
+            osc.start(); osc.stop(now + 0.1);
+        } else if (type === 'success') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.setValueAtTime(554, now + 0.1);
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.linearRampToValueAtTime(0.05, now + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            osc.start(); osc.stop(now + 0.3);
+        } else if (type === 'hover') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.01, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.03);
+            osc.start(); osc.stop(now + 0.03);
+        }
+    }
+
+    // --- Tabview Logic ---
+    function switchTabContent(tabId) {
+        playSound('click');
+        const contentArea = document.getElementById('tab-content-area');
+        const buttons = event.target.parentElement.querySelectorAll('button');
+        
+        // Reset styles
+        buttons.forEach(btn => {
+            btn.classList.remove('text-white', 'border-b-2', 'border-blue-500', 'bg-slate-800');
+            btn.classList.add('text-slate-400');
+        });
+
+        // Set active style
+        event.target.classList.remove('text-slate-400');
+        event.target.classList.add('text-white', 'border-b-2', 'border-blue-500', 'bg-slate-800');
+
+        // Change content
+        logInteraction('#W-02', `Tab Changed to ${tabId}`);
+        if(tabId === 'tab1') contentArea.innerHTML = '<div class="animate-pulse">Dashboard Overview Loaded</div>';
+        if(tabId === 'tab2') contentArea.innerHTML = '<div class="text-blue-400">User Settings Panel</div>';
+        if(tabId === 'tab3') contentArea.innerHTML = '<div class="text-green-400">System Logs Ready</div>';
+    }
+
+    // --- Segmented Control Logic ---
+    function switchSegment(el) {
+        playSound('click');
+        const parent = el.parentElement;
+        Array.from(parent.children).forEach(child => {
+            child.classList.remove('bg-slate-600', 'text-white', 'shadow-sm');
+            child.classList.add('text-slate-500', 'hover:text-slate-300');
+        });
+        el.classList.remove('text-slate-500', 'hover:text-slate-300');
+        el.classList.add('bg-slate-600', 'text-white', 'shadow-sm');
+        logInteraction('#W-06', `Segment: ${el.innerText}`);
+    }
+
+    // --- Bottom Nav Logic ---
+    function setActiveTab(el) {
+        const parent = el.parentElement;
+        Array.from(parent.children).forEach(child => {
+            if(child.tagName === 'BUTTON' && !child.classList.contains('absolute')) {
+                child.classList.remove('text-blue-500');
+                child.classList.add('text-slate-500');
+            }
+        });
+        el.classList.remove('text-slate-500');
+        el.classList.add('text-blue-500');
+        logInteraction('#NAV', `Switched View`);
+    }
+
+    // --- Alert System ---
+    function showAlert(title, msg) {
+        playSound('success'); // Reusing success sound for alert trigger
+        const overlay = document.getElementById('custom-alert');
+        const box = document.getElementById('alert-box');
+        document.getElementById('alert-title').innerText = title;
+        document.getElementById('alert-msg').innerText = msg;
+        
+        overlay.classList.remove('hidden');
+        // Small delay to allow display:block to apply before opacity transition
+        setTimeout(() => {
+            overlay.classList.remove('opacity-0');
+            box.classList.remove('scale-95');
+            box.classList.add('scale-100');
+        }, 10);
+        logInteraction('#W-08', `Dialog Opened: ${title}`);
+    }
+
+    function closeAlert() {
+        playSound('click');
+        const overlay = document.getElementById('custom-alert');
+        const box = document.getElementById('alert-box');
+        
+        overlay.classList.add('opacity-0');
+        box.classList.remove('scale-100');
+        box.classList.add('scale-95');
+        
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 300);
+    }
+
+    // --- Logger ---
+    function logInteraction(id, action) {
+        const logContainer = document.getElementById('log-content');
+        if (!logContainer) return;
+        
+        const entry = document.createElement('div');
+        const time = new Date().toLocaleTimeString('ja-JP', { hour12: false });
+        entry.innerHTML = `<span class="text-blue-400">[${time}]</span> <span class="text-yellow-400">${id}</span>: ${action}`;
+        entry.className = "border-l-2 border-slate-600 pl-2 animate-pulse text-xs";
+        setTimeout(() => entry.classList.remove('animate-pulse'), 1000);
+        logContainer.prepend(entry);
+    }
+</script>
+</body>
+</html>
