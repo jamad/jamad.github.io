@@ -138,7 +138,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             
             <!-- #W-01 Scrollable Frame (CTkScrollableFrame) -->
-            <div class="ui-card p-4 col-span-1 md:col-span-2" onclick="logInteraction('#W-01', 'Scroll Frame')">
+            <div class="ui-card p-4 col-span-1 md:col-span-2" data-id="#W-01">
                 <span class="id-tag">#W-01</span>
                 <h3 class="text-sm font-semibold text-slate-300 mb-3">Scrollable Frame</h3>
                 <div class="h-32 bg-slate-900 rounded-lg border border-slate-700 p-2 overflow-y-auto custom-scrollbar space-y-2">
@@ -290,6 +290,30 @@
                     <button onclick="showAlert('Error', 'Critical failure detected.')" class="px-4 py-2 bg-red-900/50 hover:bg-red-800/50 text-red-200 border border-red-800 text-xs rounded-lg transition">
                         Error
                     </button>
+                </div>
+            </div>
+
+
+            <!-- #W-09 Switch (Toggle) -->
+            <div class="ui-card p-5 flex items-center justify-between">
+                <span class="id-tag">#W-09</span>
+                <span class="text-sm font-semibold text-slate-300">Toggle Switch</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer" onchange="logInteraction('#W-09', this.checked ? 'ON' : 'OFF')">
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+
+            <!-- #W-10 Stats Card (Data Display) -->
+            <div class="ui-card p-5">
+                <span class="id-tag">#W-10</span>
+                <p class="text-xs text-slate-400 mb-1">Active Sessions</p>
+                <div class="flex items-end justify-between">
+                    <h4 class="text-2xl font-bold text-white">1,284</h4>
+                    <span class="text-xs text-green-400 mb-1"><i class="fas fa-caret-up"></i> 12%</span>
+                </div>
+                <div class="mt-3 w-full bg-slate-700 h-1 rounded-full overflow-hidden">
+                    <div class="bg-blue-500 h-full w-2/3"></div>
                 </div>
             </div>
         </div>
@@ -483,6 +507,15 @@
         entry.className = "border-l-2 border-slate-600 pl-2 animate-pulse text-xs";
         setTimeout(() => entry.classList.remove('animate-pulse'), 1000);
         logContainer.prepend(entry);
+    }
+
+    // 各カードにコピーボタンを動的に配置、または特定のボタンに割り当て
+    function copyComponentCode(id) {
+        const element = document.querySelector(`[data-id="${id}"]`);
+        // タグなどを除外して純粋なUI構造だけを抽出するロジック
+        const cleanCode = element.innerHTML.replace(/<span class="id-tag">.*?<\/span>/g, '').trim();
+        navigator.clipboard.writeText(cleanCode);
+        showAlert('Copied!', `${id} のコードをクリップボードにコピーしました。`);
     }
 </script>
 </body>
