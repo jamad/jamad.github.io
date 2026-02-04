@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ポートフォリオ差分チェッカー</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- SheetJS (xlsx) for reading Excel/CSV -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f3f4f6;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        /* Mobile touch optimization */
+        .touch-btn {
+            min-height: 48px;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Sound Engine (No external files needed) ---
+        const playSound = (type) => {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+
+                if (type === 'success') {
+                    // Ding!
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.1); // C6
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'upload') {
+                    // Blip
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'error') {
+                    // Buzz
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch (e) {
+                console.error("Audio error", e);
+            }
+        };
+
+        // --- File Upload Component ---
+        const FileDrop = ({ label, file, setFile, color }) => {
+            const inputRef = useRef(null);
+
+            const handleFile = (e) => {
+                const selected = e.target.files[0];
+                if (selected) {
+                    setFile(selected);
+                    playSound('upload');
+                }
+            };
+
+            return (
+                <div 
+                    onClick={() => inputRef.current.click()}
+                    className={`
+                        relative overflow-hidden cursor-pointer touch-btn
+                        rounded-xl border-2 border-dashed transition-all duration-200
+                        flex flex-col items-center justify-center p-6 text-center
+                        active:scale-95 hover:bg-gray-50
+                        ${file ? `border-${color}-500 bg-${color}-50` : 'border-gray-300 bg-white'}
+                    `}
+                >
+                    <input 
+                        type="file" 
+                        accept=".xlsx,.xls,.csv" 
+                        className="hidden" 
+                        ref={inputRef}
+                        onChange={handleFile}
+                    />
+                    {file ? (
+                        <>
+                            <div className={`text-${color}-600 mb-2`}>
+                                <i data-lucide="check-circle" width="32" height="32"></i>
+                            </div>
+                            <span className="font-bold text-gray-700 text-sm truncate w-full px-2">
+                                {file.name}
+                            </span>
+                            <span className="text-xs text-gray-400 mt-1">タップして変更</span>
+                        </>
+                    ) : (
+                        <>
+                            <div className="text-gray-400 mb-2">
+                                <i data-lucide="upload-cloud" width="32" height="32"></i>
+                            </div>
+                            <span className="font-bold text-gray-500">{label}</span>
+                            <span className="text-xs text-gray-400 mt-1">タップして選択</span>
+                        </>
+                    )}
+                </div>
+            );
+        };
+
+        // --- Main Application ---
+        const App = () => {
+            const [oldFile, setOldFile] = useState(null);
+            const [newFile, setNewFile] = useState(null);
+            const [differences, setDifferences] = useState([]);
+            const [isAnalyzing, setIsAnalyzing] = useState(false);
+            const [analyzed, setAnalyzed] = useState(false);
+
+            useEffect(() => {
+                lucide.createIcons();
+            }, [oldFile, newFile, analyzed]);
+
+            // Helper: Find the header row index
+            const findHeaderRow = (data) => {
+                for (let i = 0; i < Math.min(data.length, 10); i++) {
+                    const row = data[i];
+                    // Look for common keywords in headers based on user sample
+                    const rowStr = row.join(' ').toUpperCase();
+                    if (rowStr.includes('ISIN') && rowStr.includes('NAME') && rowStr.includes('PRICE')) {
+                        return i;
+                    }
+                }
+                return 0; // Default to first row if not found
+            };
+
+            // Helper: Parse file to JSON
+            const parseFile = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = e.target.result;
+                            const workbook = XLSX.read(data, { type: 'binary' });
+                            const sheetName = workbook.SheetNames[0]; // Assume first sheet
+                            const sheet = workbook.Sheets[sheetName];
+                            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                            resolve(jsonData);
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    reader.readAsBinaryString(file);
+                });
+            };
+
+            const handleAnalyze = async () => {
+                if (!oldFile || !newFile) {
+                    playSound('error');
+                    alert("新旧両方のファイルを選択してください。");
+                    return;
+                }
+
+                setIsAnalyzing(true);
+                setAnalyzed(false);
+
+                try {
+                    const [oldDataRaw, newDataRaw] = await Promise.all([parseFile(oldFile), parseFile(newFile)]);
+
+                    // Process Data
+                    const processData = (rawData) => {
+                        const headerIndex = findHeaderRow(rawData);
+                        const headers = rawData[headerIndex].map(h => String(h).trim().toUpperCase());
+                        
+                        // Map column indices
+                        const idxName = headers.indexOf('NAME');
+                        const idxIsin = headers.indexOf('ISIN'); // Unique ID preferred
+                        const idxPrice = headers.indexOf('PRICE');
+
+                        const result = {};
+
+                        // Start reading from row after header
+                        for (let i = headerIndex + 1; i < rawData.length; i++) {
+                            const row = rawData[i];
+                            const name = row[idxName];
+                            const isin = row[idxIsin];
+                            const price = parseFloat(row[idxPrice]);
+
+                            // Valid row check
+                            if ((name || isin) && !isNaN(price)) {
+                                const key = isin || name; // Prefer ISIN as key, fallback to name
+                                result[key] = {
+                                    name: name || "Unknown",
+                                    price: price,
+                                    isin: isin
+                                };
+                            }
+                        }
+                        return result;
+                    };
+
+                    const oldMap = processData(oldDataRaw);
+                    const newMap = processData(newDataRaw);
+
+                    const diffList = [];
+
+                    // Compare
+                    Object.keys(newMap).forEach(key => {
+                        const newItem = newMap[key];
+                        const oldItem = oldMap[key];
+
+                        if (oldItem) {
+                            const diff = newItem.price - oldItem.price;
+                            // Only include if there is a difference (or optionally 0 diffs)
+                            if (Math.abs(diff) > 0.0001) { 
+                                diffList.push({
+                                    name: newItem.name,
+                                    isin: key,
+                                    oldPrice: oldItem.price,
+                                    newPrice: newItem.price,
+                                    diff: diff,
+                                    percent: (diff / oldItem.price) * 100
+                                });
+                            }
+                        } else {
+                            // New Entry (Optional: handle as 100% gain or separate category)
+                            diffList.push({
+                                name: newItem.name,
+                                isin: key,
+                                oldPrice: 0,
+                                newPrice: newItem.price,
+                                diff: newItem.price,
+                                percent: 100,
+                                isNew: true
+                            });
+                        }
+                    });
+
+                    // Sort: Descending by Difference (Largest increase first)
+                    diffList.sort((a, b) => b.diff - a.diff);
+
+                    setDifferences(diffList);
+                    setAnalyzed(true);
+                    playSound('success');
+
+                } catch (error) {
+                    console.error(error);
+                    playSound('error');
+                    alert("ファイルの読み込みに失敗しました。形式を確認してください。");
+                } finally {
+                    setIsAnalyzing(false);
+                }
+            };
+
+            const formatCurrency = (num) => {
+                return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'EUR' }).format(num);
+            };
+
+            return (
+                <div className="min-h-screen pb-12">
+                    {/* Header */}
+                    <div className="bg-white shadow-sm sticky top-0 z-10 px-4 py-4 flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                            <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
+                                <i data-lucide="bar-chart-2"></i>
+                            </div>
+                            <h1 className="text-lg font-bold text-gray-800">差分チェッカー</h1>
+                        </div>
+                        {analyzed && (
+                             <button 
+                                onClick={() => { setAnalyzed(false); setOldFile(null); setNewFile(null); }}
+                                className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full"
+                            >
+                                リセット
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="container mx-auto max-w-2xl p-4 space-y-6">
+                        
+                        {/* Upload Section */}
+                        {!analyzed && (
+                            <div className="space-y-4 animate-slide-in">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FileDrop 
+                                        label="旧ファイル (Old)" 
+                                        file={oldFile} 
+                                        setFile={setOldFile} 
+                                        color="blue"
+                                    />
+                                    <FileDrop 
+                                        label="新ファイル (New)" 
+                                        file={newFile} 
+                                        setFile={setNewFile} 
+                                        color="indigo"
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={handleAnalyze}
+                                    disabled={!oldFile || !newFile || isAnalyzing}
+                                    className={`
+                                        w-full py-4 rounded-xl font-bold text-lg shadow-lg touch-btn
+                                        flex items-center justify-center space-x-2
+                                        transition-all duration-200
+                                        ${(!oldFile || !newFile) 
+                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                            : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 shadow-indigo-200'}
+                                    `}
+                                >
+                                    {isAnalyzing ? (
+                                        <>
+                                            <i data-lucide="loader-2" className="animate-spin mr-2"></i>
+                                            解析中...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i data-lucide="search" className="mr-2"></i>
+                                            比較を開始
+                                        </>
+                                    )}
+                                </button>
+                                
+                                <div className="text-center text-xs text-gray-400 mt-4">
+                                    <p>Excel (.xlsx) または CSV ファイルをアップロード</p>
+                                    <p>「NAME」と「PRICE」カラムを自動検出します</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Results Section */}
+                        {analyzed && (
+                            <div className="space-y-4 animate-slide-in">
+                                <div className="flex items-center justify-between px-2">
+                                    <h2 className="text-gray-600 font-bold">
+                                        分析結果: {differences.length}件の変動
+                                    </h2>
+                                    <span className="text-xs text-indigo-500 font-medium bg-indigo-50 px-2 py-1 rounded">
+                                        上昇幅が大きい順
+                                    </span>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {differences.map((item, idx) => (
+                                        <div 
+                                            key={idx} 
+                                            className="glass-panel p-4 rounded-xl shadow-sm flex items-center justify-between active:bg-gray-50 transition-colors"
+                                        >
+                                            <div className="flex-1 min-w-0 pr-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <h3 className="font-bold text-gray-800 truncate">
+                                                        {item.name}
+                                                    </h3>
+                                                    {item.isNew && (
+                                                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded uppercase font-bold">NEW</span>
+                                                    )}
+                                                </div>
+                                                <div className="text-xs text-gray-400 mt-1 flex items-center space-x-2">
+                                                    <span>旧: {formatCurrency(item.oldPrice)}</span>
+                                                    <i data-lucide="arrow-right" width="12" height="12"></i>
+                                                    <span>新: {formatCurrency(item.newPrice)}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className={`text-right ${item.diff > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                                <div className="text-lg font-bold flex items-center justify-end">
+                                                    {item.diff > 0 ? '+' : ''}{item.diff.toFixed(2)}
+                                                </div>
+                                                <div className="text-xs font-medium bg-opacity-10 px-1 rounded inline-block">
+                                                    {item.diff > 0 ? '▲' : '▼'} {Math.abs(item.percent).toFixed(2)}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {differences.length === 0 && (
+                                        <div className="text-center py-12 text-gray-400">
+                                            <i data-lucide="check-circle-2" className="mx-auto mb-2 opacity-50" width="48" height="48"></i>
+                                            <p>価格の変動は見つかりませんでした</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
