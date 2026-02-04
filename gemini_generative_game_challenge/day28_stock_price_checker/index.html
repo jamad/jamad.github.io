@@ -24,13 +24,14 @@
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f3f4f6;
+            background-color: #111827; /* Dark background */
+            color: #e5e7eb;
             -webkit-tap-highlight-color: transparent;
         }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         /* Mobile touch optimization */
         .touch-btn {
@@ -43,6 +44,21 @@
         .animate-slide-in {
             animation: slideIn 0.3s ease-out forwards;
         }
+        
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; 
+        }
     </style>
 </head>
 <body>
@@ -51,7 +67,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- Sound Engine (No external files needed) ---
+        // --- Sound Engine ---
         const playSound = (type) => {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -67,28 +83,28 @@
                 const now = ctx.currentTime;
 
                 if (type === 'success') {
-                    // Ding!
+                    // Futuristic Ping
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, now); // C5
-                    osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.1); // C6
-                    gain.gain.setValueAtTime(0.3, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-                    osc.start(now);
-                    osc.stop(now + 0.5);
-                } else if (type === 'upload') {
-                    // Blip
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(440, now);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-                    osc.start(now);
-                    osc.stop(now + 0.1);
-                } else if (type === 'error') {
-                    // Buzz
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(150, now);
-                    osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
                     gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                } else if (type === 'upload') {
+                    // Soft Click
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'error') {
+                    // Low Buzz
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, now);
+                    osc.frequency.linearRampToValueAtTime(80, now + 0.3);
+                    gain.gain.setValueAtTime(0.15, now);
                     gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
                     osc.start(now);
                     osc.stop(now + 0.3);
@@ -98,7 +114,7 @@
             }
         };
 
-        // --- File Upload Component ---
+        // --- File Upload Component (Dark Mode) ---
         const FileDrop = ({ label, file, setFile, color }) => {
             const inputRef = useRef(null);
 
@@ -110,6 +126,10 @@
                 }
             };
 
+            const borderColor = file ? (color === 'blue' ? 'border-blue-500' : 'border-indigo-500') : 'border-gray-700';
+            const bgColor = file ? (color === 'blue' ? 'bg-blue-900/20' : 'bg-indigo-900/20') : 'bg-gray-800/50';
+            const iconColor = file ? (color === 'blue' ? 'text-blue-400' : 'text-indigo-400') : 'text-gray-500';
+
             return (
                 <div 
                     onClick={() => inputRef.current.click()}
@@ -117,8 +137,8 @@
                         relative overflow-hidden cursor-pointer touch-btn
                         rounded-xl border-2 border-dashed transition-all duration-200
                         flex flex-col items-center justify-center p-6 text-center
-                        active:scale-95 hover:bg-gray-50
-                        ${file ? `border-${color}-500 bg-${color}-50` : 'border-gray-300 bg-white'}
+                        active:scale-95 hover:bg-gray-800
+                        ${borderColor} ${bgColor}
                     `}
                 >
                     <input 
@@ -130,21 +150,21 @@
                     />
                     {file ? (
                         <>
-                            <div className={`text-${color}-600 mb-2`}>
+                            <div className={`${iconColor} mb-2`}>
                                 <i data-lucide="check-circle" width="32" height="32"></i>
                             </div>
-                            <span className="font-bold text-gray-700 text-sm truncate w-full px-2">
+                            <span className="font-bold text-gray-200 text-sm truncate w-full px-2">
                                 {file.name}
                             </span>
                             <span className="text-xs text-gray-400 mt-1">タップして変更</span>
                         </>
                     ) : (
                         <>
-                            <div className="text-gray-400 mb-2">
+                            <div className="text-gray-600 mb-2">
                                 <i data-lucide="upload-cloud" width="32" height="32"></i>
                             </div>
-                            <span className="font-bold text-gray-500">{label}</span>
-                            <span className="text-xs text-gray-400 mt-1">タップして選択</span>
+                            <span className="font-bold text-gray-400">{label}</span>
+                            <span className="text-xs text-gray-600 mt-1">タップして選択</span>
                         </>
                     )}
                 </div>
@@ -165,15 +185,16 @@
 
             // Helper: Find the header row index
             const findHeaderRow = (data) => {
-                for (let i = 0; i < Math.min(data.length, 10); i++) {
+                for (let i = 0; i < Math.min(data.length, 15); i++) {
                     const row = data[i];
-                    // Look for common keywords in headers based on user sample
+                    if (!row) continue;
                     const rowStr = row.join(' ').toUpperCase();
-                    if (rowStr.includes('ISIN') && rowStr.includes('NAME') && rowStr.includes('PRICE')) {
+                    // Look for key columns
+                    if (rowStr.includes('NAME') && (rowStr.includes('PRICE') || rowStr.includes('MARKET_VALUE'))) {
                         return i;
                     }
                 }
-                return 0; // Default to first row if not found
+                return 0;
             };
 
             // Helper: Parse file to JSON
@@ -184,7 +205,7 @@
                         try {
                             const data = e.target.result;
                             const workbook = XLSX.read(data, { type: 'binary' });
-                            const sheetName = workbook.SheetNames[0]; // Assume first sheet
+                            const sheetName = workbook.SheetNames[0];
                             const sheet = workbook.Sheets[sheetName];
                             const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
                             resolve(jsonData);
@@ -209,31 +230,52 @@
                 try {
                     const [oldDataRaw, newDataRaw] = await Promise.all([parseFile(oldFile), parseFile(newFile)]);
 
-                    // Process Data
+                    // Process Data with holdings support
                     const processData = (rawData) => {
                         const headerIndex = findHeaderRow(rawData);
+                        if (!rawData[headerIndex]) return {};
+                        
                         const headers = rawData[headerIndex].map(h => String(h).trim().toUpperCase());
                         
-                        // Map column indices
+                        // Map column indices flexibly
                         const idxName = headers.indexOf('NAME');
-                        const idxIsin = headers.indexOf('ISIN'); // Unique ID preferred
+                        // Try multiple variations for ID
+                        let idxIsin = headers.indexOf('ISIN');
+                        if (idxIsin === -1) idxIsin = headers.indexOf('ID');
+
+                        // Try multiple variations for Price
                         const idxPrice = headers.indexOf('PRICE');
+
+                        // Try multiple variations for Holdings/Quantity
+                        let idxHoldings = headers.indexOf('HOLDINGS');
+                        if (idxHoldings === -1) idxHoldings = headers.indexOf('SHARE');
+                        if (idxHoldings === -1) idxHoldings = headers.indexOf('QUANTITY');
+                        if (idxHoldings === -1) idxHoldings = headers.indexOf('QTY');
+                        if (idxHoldings === -1) idxHoldings = headers.indexOf('AMOUNT');
 
                         const result = {};
 
-                        // Start reading from row after header
                         for (let i = headerIndex + 1; i < rawData.length; i++) {
                             const row = rawData[i];
                             const name = row[idxName];
                             const isin = row[idxIsin];
-                            const price = parseFloat(row[idxPrice]);
+                            
+                            // If price is missing, try to calculate from MarketValue / Holdings if available? 
+                            // For now, assume PRICE exists based on user sample
+                            let price = parseFloat(row[idxPrice]);
+                            
+                            // Get Holdings (default to 1 if not found, so diff still works as price diff)
+                            let holdings = 0;
+                            if (idxHoldings !== -1) {
+                                holdings = parseFloat(row[idxHoldings]);
+                            }
 
-                            // Valid row check
                             if ((name || isin) && !isNaN(price)) {
-                                const key = isin || name; // Prefer ISIN as key, fallback to name
+                                const key = isin || name;
                                 result[key] = {
                                     name: name || "Unknown",
                                     price: price,
+                                    holdings: isNaN(holdings) ? 0 : holdings,
                                     isin: isin
                                 };
                             }
@@ -252,33 +294,41 @@
                         const oldItem = oldMap[key];
 
                         if (oldItem) {
-                            const diff = newItem.price - oldItem.price;
-                            // Only include if there is a difference (or optionally 0 diffs)
-                            if (Math.abs(diff) > 0.0001) { 
+                            const priceDiff = newItem.price - oldItem.price;
+                            
+                            // Calculate Profit/Loss: Price Diff * Current Holdings
+                            const totalProfit = priceDiff * newItem.holdings;
+
+                            // Filter small noise
+                            if (Math.abs(priceDiff) > 0.0001) { 
                                 diffList.push({
                                     name: newItem.name,
                                     isin: key,
                                     oldPrice: oldItem.price,
                                     newPrice: newItem.price,
-                                    diff: diff,
-                                    percent: (diff / oldItem.price) * 100
+                                    holdings: newItem.holdings,
+                                    diff: priceDiff, // Unit price diff
+                                    totalProfit: totalProfit, // Total value diff
+                                    percent: (priceDiff / oldItem.price) * 100
                                 });
                             }
                         } else {
-                            // New Entry (Optional: handle as 100% gain or separate category)
+                            // New Entry
                             diffList.push({
                                 name: newItem.name,
                                 isin: key,
                                 oldPrice: 0,
                                 newPrice: newItem.price,
+                                holdings: newItem.holdings,
                                 diff: newItem.price,
+                                totalProfit: 0, 
                                 percent: 100,
                                 isNew: true
                             });
                         }
                     });
 
-                    // Sort: Descending by Difference (Largest increase first)
+                    // Sort: Descending by Price Difference (Largest unit price jump first)
                     diffList.sort((a, b) => b.diff - a.diff);
 
                     setDifferences(diffList);
@@ -297,21 +347,25 @@
             const formatCurrency = (num) => {
                 return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'EUR' }).format(num);
             };
+            
+            const formatNumber = (num) => {
+                return new Intl.NumberFormat('ja-JP').format(num);
+            };
 
             return (
-                <div className="min-h-screen pb-12">
+                <div className="min-h-screen pb-12 bg-gray-900 text-gray-100">
                     {/* Header */}
-                    <div className="bg-white shadow-sm sticky top-0 z-10 px-4 py-4 flex items-center justify-between">
+                    <div className="bg-gray-800/80 backdrop-blur-md shadow-lg sticky top-0 z-10 px-4 py-4 border-b border-gray-700 flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                            <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
+                            <div className="p-2 bg-indigo-900/50 rounded-lg text-indigo-400">
                                 <i data-lucide="bar-chart-2"></i>
                             </div>
-                            <h1 className="text-lg font-bold text-gray-800">差分チェッカー</h1>
+                            <h1 className="text-lg font-bold text-gray-100">ポートフォリオ・チェッカー</h1>
                         </div>
                         {analyzed && (
                              <button 
                                 onClick={() => { setAnalyzed(false); setOldFile(null); setNewFile(null); }}
-                                className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full"
+                                className="text-xs font-medium text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-full transition-colors"
                             >
                                 リセット
                             </button>
@@ -344,10 +398,10 @@
                                     className={`
                                         w-full py-4 rounded-xl font-bold text-lg shadow-lg touch-btn
                                         flex items-center justify-center space-x-2
-                                        transition-all duration-200
+                                        transition-all duration-200 border border-transparent
                                         ${(!oldFile || !newFile) 
-                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                            : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 shadow-indigo-200'}
+                                            ? 'bg-gray-800 text-gray-600 cursor-not-allowed border-gray-700' 
+                                            : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:scale-[1.02] shadow-indigo-900/50'}
                                     `}
                                 >
                                     {isAnalyzing ? (
@@ -363,9 +417,9 @@
                                     )}
                                 </button>
                                 
-                                <div className="text-center text-xs text-gray-400 mt-4">
+                                <div className="text-center text-xs text-gray-500 mt-4">
                                     <p>Excel (.xlsx) または CSV ファイルをアップロード</p>
-                                    <p>「NAME」と「PRICE」カラムを自動検出します</p>
+                                    <p>「NAME」「PRICE」「HOLDINGS」列を自動検出します</p>
                                 </div>
                             </div>
                         )}
@@ -374,11 +428,11 @@
                         {analyzed && (
                             <div className="space-y-4 animate-slide-in">
                                 <div className="flex items-center justify-between px-2">
-                                    <h2 className="text-gray-600 font-bold">
-                                        分析結果: {differences.length}件の変動
+                                    <h2 className="text-gray-400 font-bold text-sm uppercase tracking-wider">
+                                        分析結果: {differences.length}件
                                     </h2>
-                                    <span className="text-xs text-indigo-500 font-medium bg-indigo-50 px-2 py-1 rounded">
-                                        上昇幅が大きい順
+                                    <span className="text-xs text-indigo-400 font-medium bg-indigo-900/30 px-2 py-1 rounded border border-indigo-500/20">
+                                        株価変動額 順
                                     </span>
                                 </div>
 
@@ -386,38 +440,61 @@
                                     {differences.map((item, idx) => (
                                         <div 
                                             key={idx} 
-                                            className="glass-panel p-4 rounded-xl shadow-sm flex items-center justify-between active:bg-gray-50 transition-colors"
+                                            className="glass-panel p-4 rounded-xl shadow-lg flex flex-col space-y-3 active:bg-gray-800 transition-colors"
                                         >
-                                            <div className="flex-1 min-w-0 pr-4">
-                                                <div className="flex items-center space-x-2">
-                                                    <h3 className="font-bold text-gray-800 truncate">
-                                                        {item.name}
-                                                    </h3>
-                                                    {item.isNew && (
-                                                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded uppercase font-bold">NEW</span>
-                                                    )}
-                                                </div>
-                                                <div className="text-xs text-gray-400 mt-1 flex items-center space-x-2">
-                                                    <span>旧: {formatCurrency(item.oldPrice)}</span>
-                                                    <i data-lucide="arrow-right" width="12" height="12"></i>
-                                                    <span>新: {formatCurrency(item.newPrice)}</span>
-                                                </div>
+                                            {/* Row 1: 銘柄 (Name) */}
+                                            <div className="flex items-center space-x-2 overflow-hidden border-b border-gray-700/50 pb-2">
+                                                <h3 className="font-bold text-gray-200 truncate text-base flex-1">
+                                                    {item.name}
+                                                </h3>
+                                                {item.isNew && (
+                                                    <span className="text-[10px] bg-emerald-900 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-700 uppercase font-bold">NEW</span>
+                                                )}
                                             </div>
 
-                                            <div className={`text-right ${item.diff > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                                                <div className="text-lg font-bold flex items-center justify-end">
-                                                    {item.diff > 0 ? '+' : ''}{item.diff.toFixed(2)}
+                                            {/* Row 2: メインデータ (3カラム) */}
+                                            <div className="grid grid-cols-3 gap-2 text-sm items-center">
+                                                
+                                                {/* 1. 株の変動 (Price Diff) */}
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] text-gray-500 uppercase">株の変動</span>
+                                                    <div className={`text-base font-bold ${item.diff > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                                        {item.diff > 0 ? '+' : ''}{item.diff.toFixed(2)}
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-400">
+                                                        {item.oldPrice.toFixed(2)} <span className="text-gray-600">→</span> {item.newPrice.toFixed(2)}
+                                                    </div>
                                                 </div>
-                                                <div className="text-xs font-medium bg-opacity-10 px-1 rounded inline-block">
-                                                    {item.diff > 0 ? '▲' : '▼'} {Math.abs(item.percent).toFixed(2)}%
+
+                                                {/* 2. 保有数 (Holdings) */}
+                                                <div className="flex flex-col text-center border-l border-gray-700/50 border-r">
+                                                    <span className="text-[10px] text-gray-500 uppercase">保有数</span>
+                                                    <div className="text-base font-medium text-gray-200">
+                                                        {formatNumber(item.holdings)}
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-500">
+                                                        SHARES
+                                                    </div>
                                                 </div>
+
+                                                {/* 3. 株の損益 (Total Profit) */}
+                                                <div className="flex flex-col text-right">
+                                                    <span className="text-[10px] text-gray-500 uppercase">株の損益</span>
+                                                    <div className={`text-base font-medium ${item.totalProfit > 0 ? 'text-emerald-300' : (item.totalProfit < 0 ? 'text-rose-300' : 'text-gray-400')}`}>
+                                                        {item.totalProfit > 0 ? '+' : ''}{formatCurrency(item.totalProfit)}
+                                                    </div>
+                                                    <div className={`text-[10px] ${item.percent > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                        {item.percent > 0 ? '▲' : '▼'}{Math.abs(item.percent).toFixed(2)}%
+                                                    </div>
+                                                </div>
+
                                             </div>
                                         </div>
                                     ))}
 
                                     {differences.length === 0 && (
-                                        <div className="text-center py-12 text-gray-400">
-                                            <i data-lucide="check-circle-2" className="mx-auto mb-2 opacity-50" width="48" height="48"></i>
+                                        <div className="text-center py-12 text-gray-600">
+                                            <i data-lucide="check-circle-2" className="mx-auto mb-2 opacity-30" width="48" height="48"></i>
                                             <p>価格の変動は見つかりませんでした</p>
                                         </div>
                                     )}
