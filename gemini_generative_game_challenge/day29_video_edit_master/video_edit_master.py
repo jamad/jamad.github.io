@@ -107,7 +107,12 @@ class VideoProcessorApp(ctk.CTk):
         frame.pack(pady=10, fill="x", padx=50)
         lbl = ctk.CTkLabel(frame, text=label_text, width=150, anchor="w", font=("Arial", 14))
         lbl.pack(side="left")
-        entry = ctk.CTkEntry(frame, placeholder_text=default_val)
+        
+        # 修正: placeholderではなく初期値として入力済みにする (空文字エラー防止)
+        entry = ctk.CTkEntry(frame)
+        if default_val:
+            entry.insert(0, default_val)
+            
         entry.pack(side="left", fill="x", expand=True)
         return entry
 
@@ -118,8 +123,8 @@ class VideoProcessorApp(ctk.CTk):
         lbl = ctk.CTkLabel(self.tab_crop, text="画面上の指定した範囲を切り抜きます (例: 4Kから特定部分のみ)", font=("Arial", 16))
         lbl.pack(pady=20)
         
-        self.entry_crop_w = self.create_input_row(self.tab_crop, "幅 (Width):", "480")
-        self.entry_crop_h = self.create_input_row(self.tab_crop, "高さ (Height):", "256")
+        self.entry_crop_w = self.create_input_row(self.tab_crop, "幅 (Width):", "640")
+        self.entry_crop_h = self.create_input_row(self.tab_crop, "高さ (Height):", "480")
         self.entry_crop_x = self.create_input_row(self.tab_crop, "X座標 (左から):", "0")
         self.entry_crop_y = self.create_input_row(self.tab_crop, "Y座標 (上から):", "0")
 
@@ -197,23 +202,25 @@ class VideoProcessorApp(ctk.CTk):
         
         try:
             if current_tab == "画面トリミング":
-                w = self.entry_crop_w.get()
-                h = self.entry_crop_h.get()
-                x = self.entry_crop_x.get()
-                y = self.entry_crop_y.get()
+                # 入力が空の場合はデフォルト値を使用する安全策を追加
+                w = self.entry_crop_w.get() or "640"
+                h = self.entry_crop_h.get() or "480"
+                x = self.entry_crop_x.get() or "0"
+                y = self.entry_crop_y.get() or "0"
+                
                 # ffmpeg filter: crop=w:h:x:y
                 filter_cmd = f"crop={w}:{h}:{x}:{y}"
                 command = ["ffmpeg", "-i", self.input_path, "-vf", filter_cmd, "-c:a", "copy", output_path]
 
             elif current_tab == "時間カット":
-                start = self.entry_trim_start.get()
-                duration = self.entry_trim_duration.get()
+                start = self.entry_trim_start.get() or "00:00:00"
+                duration = self.entry_trim_duration.get() or "20"
                 # -ss (開始) -t (期間)
                 # 再エンコードなしで高速カットするために -c copy を使用(精度重視なら外す)
                 command = ["ffmpeg", "-ss", start, "-i", self.input_path, "-t", duration, "-c", "copy", output_path]
 
             elif current_tab == "リサイズ":
-                w = self.entry_resize_w.get()
+                w = self.entry_resize_w.get() or "320"
                 # scale=w:-1 (-1でアスペクト比維持)
                 filter_cmd = f"scale={w}:-2" # -2 is safer for codec divisibility
                 command = ["ffmpeg", "-i", self.input_path, "-vf", filter_cmd, output_path]
