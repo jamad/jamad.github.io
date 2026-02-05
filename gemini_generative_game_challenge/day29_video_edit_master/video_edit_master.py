@@ -123,8 +123,8 @@ class VideoProcessorApp(ctk.CTk):
         lbl = ctk.CTkLabel(self.tab_crop, text="画面上の指定した範囲を切り抜きます (例: 4Kから特定部分のみ)", font=("Arial", 16))
         lbl.pack(pady=20)
         
-        self.entry_crop_w = self.create_input_row(self.tab_crop, "幅 (Width):", "640")
-        self.entry_crop_h = self.create_input_row(self.tab_crop, "高さ (Height):", "480")
+        self.entry_crop_w = self.create_input_row(self.tab_crop, "幅 (Width):", "1920")
+        self.entry_crop_h = self.create_input_row(self.tab_crop, "高さ (Height):", "1080")
         self.entry_crop_x = self.create_input_row(self.tab_crop, "X座標 (左から):", "0")
         self.entry_crop_y = self.create_input_row(self.tab_crop, "Y座標 (上から):", "0")
 
@@ -203,8 +203,8 @@ class VideoProcessorApp(ctk.CTk):
         try:
             if current_tab == "画面トリミング":
                 # 入力が空の場合はデフォルト値を使用する安全策を追加
-                w = self.entry_crop_w.get() or "640"
-                h = self.entry_crop_h.get() or "480"
+                w = self.entry_crop_w.get() or "1920"
+                h = self.entry_crop_h.get() or "1080"
                 x = self.entry_crop_x.get() or "0"
                 y = self.entry_crop_y.get() or "0"
                 
