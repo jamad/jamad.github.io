@@ -196,9 +196,14 @@ class VideoProcessorApp(ctk.CTk):
         output_path = filedialog.asksaveasfilename(defaultextension=".mp4", filetypes=[("MP4 file", "*.mp4")])
         if not output_path:
             return
+        
+        # --- GPU設定 ---
+        # NVIDIA用エンコーダーを指定。Intelなら 'h264_qsv', Macなら 'h264_videotoolbox'
+        v_encoder = "h264_nvenc" 
 
-        # コマンド構築
-        command = []
+        # 基本コマンド（-hwaccel cuda を入れると読み込みも高速化しますが、環境依存が強いためまずはエンコードのみGPU化）
+        # 常に上書き許可 "-y"  
+        command = ["ffmpeg", "-y", "-i", self.input_path]                      
         
         try:
             if current_tab == "画面トリミング":
@@ -209,36 +214,30 @@ class VideoProcessorApp(ctk.CTk):
                 y = self.entry_crop_y.get() or "0"
                 
                 # ffmpeg filter: crop=w:h:x:y
-                filter_cmd = f"crop={w}:{h}:{x}:{y}"
-                command = ["ffmpeg", "-i", self.input_path, "-vf", filter_cmd, "-c:a", "copy", output_path]
+                command += ["-vf", f"crop={w}:{h}:{x}:{y}", "-c:v", v_encoder, "-c:a", "copy", output_path]
 
             elif current_tab == "時間カット":
                 start = self.entry_trim_start.get() or "00:00:00"
                 duration = self.entry_trim_duration.get() or "20"
                 # -ss (開始) -t (期間)
-                # 再エンコードなしで高速カットするために -c copy を使用(精度重視なら外す)
-                command = ["ffmpeg", "-ss", start, "-i", self.input_path, "-t", duration, "-c", "copy", output_path]
+                # 時間カットはエンコードせず「copy」するのが最速（GPU不要）
+                command = ["ffmpeg", "-y", "-ss", start, "-i", self.input_path, "-t", duration, "-c", "copy", output_path]
 
             elif current_tab == "リサイズ":
                 w = self.entry_resize_w.get() or "320"
                 # scale=w:-1 (-1でアスペクト比維持)
-                filter_cmd = f"scale={w}:-2" # -2 is safer for codec divisibility
-                command = ["ffmpeg", "-i", self.input_path, "-vf", filter_cmd, output_path]
+                command += ["-vf", f"scale={w}:-2", "-c:v", v_encoder, output_path]
 
             elif current_tab == "再生速度":
                 speed = float(self.speed_var.get())
                 # 映像: setpts=PTS/SPEED
                 # 音声: atempo=SPEED
                 filter_complex = f"[0:v]setpts=PTS/{speed}[v];[0:a]atempo={speed}[a]"
-                command = ["ffmpeg", "-i", self.input_path, "-filter_complex", filter_complex, "-map", "[v]", "-map", "[a]", output_path]
+                command += ["-filter_complex", filter_complex, "-map", "[v]", "-map", "[a]", "-c:v", v_encoder, output_path]
 
             elif current_tab == "回転":
                 # transpose=1 (90度時計回り)
-                filter_cmd = "transpose=1"
-                command = ["ffmpeg", "-i", self.input_path, "-vf", filter_cmd, "-c:a", "copy", output_path]
-
-            # 常に上書き許可
-            command.insert(1, "-y")
+                command += ["-vf", "transpose=1", "-c:v", v_encoder, "-c:a", "copy", output_path]
 
             # 別スレッドで実行
             threading.Thread(target=self.execute_ffmpeg, args=(command,)).start()
