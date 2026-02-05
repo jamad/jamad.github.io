@@ -248,10 +248,11 @@ class VideoProcessorApp(ctk.CTk):
             self.log(f"コマンド生成エラー: {str(e)}")
 
     def execute_ffmpeg(self, command):
-        """FFmpegコマンドをバックグラウンドで実行"""
+        """FFmpegコマンドをバックグラウンドで実行（リアルタイムログ表示付き）"""
         self.sound.play("start")
-        self.log("処理を開始しました... お待ちください")
-        self.btn_process.configure(state="disabled", text="処理中...")
+        # ログメッセージをメインスレッドで追加
+        self.after(0, lambda: self.log("処理を開始しました... 進捗を以下に表示します"))
+        self.after(0, lambda: self.btn_process.configure(state="disabled", text="処理中..."))
 
         try:
             # コンソールウィンドウを非表示にする設定 (Windows用)
@@ -260,33 +261,49 @@ class VideoProcessorApp(ctk.CTk):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
+            # Popenを使用してリアルタイムでstderrを読み取る
             process = subprocess.Popen(
                 command, 
                 stdout=subprocess.PIPE, 
                 stderr=subprocess.PIPE,
                 startupinfo=startupinfo,
-                text=True
+                text=True,
+                encoding='utf-8', # エンコーディングを明示
+                errors='replace'  # デコードエラーで落ちないようにする
             )
             
-            stdout, stderr = process.communicate()
+            # リアルタイムでstderrを読み取るループ
+            while True:
+                line = process.stderr.readline()
+                if not line and process.poll() is not None:
+                    break
+                
+                if line:
+                    clean_line = line.strip()
+                    if clean_line:
+                        # スレッドセーフにUIを更新するためにafterを使用
+                        self.after(0, lambda msg=clean_line: self.log(msg))
+
+            # 終了を待機
+            process.wait()
 
             if process.returncode == 0:
                 self.sound.play("success")
-                self.log("完了しました！")
+                self.after(0, lambda: self.log("完了しました！"))
                 self.after(0, lambda: messagebox.showinfo("成功", "動画の加工が完了しました"))
             else:
                 self.sound.play("error")
-                self.log(f"エラーが発生しました:\n{stderr}")
+                self.after(0, lambda: self.log(f"処理がエラーコード {process.returncode} で終了しました"))
         
         except FileNotFoundError:
             self.sound.play("error")
-            self.log("エラー: FFmpegが見つかりません。インストールされているか確認してください。")
+            self.after(0, lambda: self.log("エラー: FFmpegが見つかりません。インストールされているか確認してください。"))
         except Exception as e:
             self.sound.play("error")
-            self.log(f"予期せぬエラー: {str(e)}")
+            self.after(0, lambda: self.log(f"予期せぬエラー: {str(e)}"))
         
         finally:
-            self.btn_process.configure(state="normal", text="加工を実行する")
+            self.after(0, lambda: self.btn_process.configure(state="normal", text="加工を実行する"))
 
 if __name__ == "__main__":
     app = VideoProcessorApp()
