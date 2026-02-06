@@ -61,13 +61,13 @@ class VideoProcessorApp(ctk.CTk):
         self.file_frame = ctk.CTkFrame(self, corner_radius=10)
         self.file_frame.grid(row=0, column=0, columnspan=2, padx=20, pady=20, sticky="ew")
         
-        self.btn_file = ctk.CTkButton(self.file_frame, text="動画ファイルを選択 (Input)", command=self.select_file, height=40, font=("Arial", 14, "bold"))
+        self.btn_file = ctk.CTkButton(self.file_frame, text="動画ファイルを選択 (複数可)", command=self.select_file, height=40, font=("Arial", 14, "bold"))
         self.btn_file.pack(side="left", padx=20, pady=20)
         
         self.lbl_filepath = ctk.CTkLabel(self.file_frame, text="ファイルが選択されていません", text_color="gray")
         self.lbl_filepath.pack(side="left", padx=10, pady=20, fill="x", expand=True)
 
-        self.input_path = ""
+        self.input_paths = [] # 修正：単数から複数保持へ
 
         # === 2. 機能タブエリア (メイン) ===
         self.tabview = ctk.CTkTabview(self, width=800)
@@ -172,11 +172,12 @@ class VideoProcessorApp(ctk.CTk):
 
     def select_file(self):
         self.sound.play("click")
-        file_path = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4 *.mov *.avi *.mkv")])
-        if file_path:
-            self.input_path = file_path
-            self.lbl_filepath.configure(text=os.path.basename(file_path), text_color="white")
-            self.log(f"ファイルを選択しました: {file_path}")
+        # 修正：複数選択を許可する askopenfilenames に変更
+        file_paths = filedialog.askopenfilenames(filetypes=[("Video files", "*.mp4 *.mov *.avi *.mkv")])
+        if file_paths:
+            self.input_paths = list(file_paths)
+            self.lbl_filepath.configure(text=f"{len(self.input_paths)} 個のファイルを選択中", text_color="white")
+            self.log(f"{len(self.input_paths)} 個のファイルを選択しました。")
 
     def log(self, message):
         self.textbox_log.insert("end", f"> {message}\n")
@@ -184,7 +185,7 @@ class VideoProcessorApp(ctk.CTk):
 
     def run_process(self):
         self.sound.play("click")
-        if not self.input_path:
+        if not self.input_paths:
             self.sound.play("error")
             messagebox.showerror("エラー", "動画ファイルを選択してください")
             return
@@ -192,111 +193,111 @@ class VideoProcessorApp(ctk.CTk):
         # 現在選択されているタブを取得
         current_tab = self.tabview.get()
         
-        # 保存先ダイアログ
-        output_path = filedialog.asksaveasfilename(defaultextension=".mp4", filetypes=[("MP4 file", "*.mp4")])
-        if not output_path:
-            return
-        
-        # --- GPU設定 ---
-        # NVIDIA用エンコーダーを指定。Intelなら 'h264_qsv', Macなら 'h264_videotoolbox'
+        # GPU設定
         v_encoder = "h264_nvenc" 
 
-        # 基本コマンド（-hwaccel cuda を入れると読み込みも高速化しますが、環境依存が強いためまずはエンコードのみGPU化）
-        # 常に上書き許可 "-y"  
-        command = ["ffmpeg", "-y", "-i", self.input_path]                      
+        # 複数ファイル分、コマンドのリストを作成する
+        commands = []
         
+        suffix_dict = {
+            "画面トリミング": "_crop",
+            "時間カット": "_trim",
+            "リサイズ": "_resize",
+            "再生速度": "_speed",
+            "回転": "_rotate"
+        }
+        suffix = suffix_dict.get(current_tab, "_edit")
+
         try:
-            if current_tab == "画面トリミング":
-                # 入力が空の場合はデフォルト値を使用する安全策を追加
-                w = self.entry_crop_w.get() or "1920"
-                h = self.entry_crop_h.get() or "1080"
-                x = self.entry_crop_x.get() or "0"
-                y = self.entry_crop_y.get() or "0"
+            for input_path in self.input_paths:
+                p = Path(input_path)
+                # 自動的に A_trim.mp4 のような名前を生成
+                output_path = str(p.parent / f"{p.stem}{suffix}{p.suffix}")
                 
-                # ffmpeg filter: crop=w:h:x:y
-                command += ["-vf", f"crop={w}:{h}:{x}:{y}", "-c:v", v_encoder, "-c:a", "copy", output_path]
+                command = ["ffmpeg", "-y", "-i", input_path]
 
-            elif current_tab == "時間カット":
-                start = self.entry_trim_start.get() or "00:00:00"
-                duration = self.entry_trim_duration.get() or "20"
-                # -ss (開始) -t (期間)
-                # 時間カットはエンコードせず「copy」するのが最速（GPU不要）
-                command = ["ffmpeg", "-y", "-ss", start, "-i", self.input_path, "-t", duration, "-c", "copy", output_path]
+                if current_tab == "画面トリミング":
+                    w = self.entry_crop_w.get() or "1920"
+                    h = self.entry_crop_h.get() or "1080"
+                    x = self.entry_crop_x.get() or "0"
+                    y = self.entry_crop_y.get() or "0"
+                    command += ["-vf", f"crop={w}:{h}:{x}:{y}", "-c:v", v_encoder, "-c:a", "copy", output_path]
 
-            elif current_tab == "リサイズ":
-                w = self.entry_resize_w.get() or "320"
-                # scale=w:-1 (-1でアスペクト比維持)
-                command += ["-vf", f"scale={w}:-2", "-c:v", v_encoder, output_path]
+                elif current_tab == "時間カット":
+                    start = self.entry_trim_start.get() or "00:00:00"
+                    duration = self.entry_trim_duration.get() or "20"
+                    command = ["ffmpeg", "-y", "-ss", start, "-i", input_path, "-t", duration, "-c", "copy", output_path]
 
-            elif current_tab == "再生速度":
-                speed = float(self.speed_var.get())
-                # 映像: setpts=PTS/SPEED
-                # 音声: atempo=SPEED
-                filter_complex = f"[0:v]setpts=PTS/{speed}[v];[0:a]atempo={speed}[a]"
-                command += ["-filter_complex", filter_complex, "-map", "[v]", "-map", "[a]", "-c:v", v_encoder, output_path]
+                elif current_tab == "リサイズ":
+                    w = self.entry_resize_w.get() or "320"
+                    command += ["-vf", f"scale={w}:-2", "-c:v", v_encoder, output_path]
 
-            elif current_tab == "回転":
-                # transpose=1 (90度時計回り)
-                command += ["-vf", "transpose=1", "-c:v", v_encoder, "-c:a", "copy", output_path]
+                elif current_tab == "再生速度":
+                    speed = float(self.speed_var.get())
+                    filter_complex = f"[0:v]setpts=PTS/{speed}[v];[0:a]atempo={speed}[a]"
+                    command += ["-filter_complex", filter_complex, "-map", "[v]", "-map", "[a]", "-c:v", v_encoder, output_path]
 
-            # 別スレッドで実行
-            threading.Thread(target=self.execute_ffmpeg, args=(command,)).start()
+                elif current_tab == "回転":
+                    command += ["-vf", "transpose=1", "-c:v", v_encoder, "-c:a", "copy", output_path]
+
+                commands.append(command)
+
+            # 別スレッドで順次実行を開始
+            threading.Thread(target=self.execute_ffmpeg, args=(commands,)).start()
 
         except Exception as e:
             self.sound.play("error")
             self.log(f"コマンド生成エラー: {str(e)}")
 
-    def execute_ffmpeg(self, command):
-        """FFmpegコマンドをバックグラウンドで実行（リアルタイムログ表示付き）"""
+    def execute_ffmpeg(self, commands):
+        """FFmpegコマンドのリストを順次実行（リアルタイムログ表示付き）"""
         self.sound.play("start")
-        # ログメッセージをメインスレッドで追加
-        self.after(0, lambda: self.log("処理を開始しました... 進捗を以下に表示します"))
         self.after(0, lambda: self.btn_process.configure(state="disabled", text="処理中..."))
 
         try:
-            # コンソールウィンドウを非表示にする設定 (Windows用)
-            startupinfo = None
-            if sys.platform == "win32":
-                startupinfo = subprocess.STARTUPINFO()
-                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-
-            # Popenを使用してリアルタイムでstderrを読み取る
-            process = subprocess.Popen(
-                command, 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.PIPE,
-                startupinfo=startupinfo,
-                text=True,
-                encoding='utf-8', # エンコーディングを明示
-                errors='replace'  # デコードエラーで落ちないようにする
-            )
-            
-            # リアルタイムでstderrを読み取るループ
-            while True:
-                line = process.stderr.readline()
-                if not line and process.poll() is not None:
-                    break
+            for i, command in enumerate(commands):
+                self.after(0, lambda idx=i+1: self.log(f"--- ファイル [{idx}/{len(commands)}] の処理を開始 ---"))
                 
-                if line:
-                    clean_line = line.strip()
-                    if clean_line:
-                        # スレッドセーフにUIを更新するためにafterを使用
-                        self.after(0, lambda msg=clean_line: self.log(msg))
+                # Windows用設定
+                startupinfo = None
+                if sys.platform == "win32":
+                    startupinfo = subprocess.STARTUPINFO()
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
-            # 終了を待機
-            process.wait()
+                # Popenを使用してリアルタイムでstderrを読み取る
+                process = subprocess.Popen(
+                    command, 
+                    stdout=subprocess.PIPE, 
+                    stderr=subprocess.PIPE,
+                    startupinfo=startupinfo,
+                    text=True,
+                    encoding='utf-8', 
+                    errors='replace'
+                )
+                
+                # ログ表示ループ
+                while True:
+                    line = process.stderr.readline()
+                    if not line and process.poll() is not None:
+                        break
+                    
+                    if line:
+                        clean_line = line.strip()
+                        if clean_line:
+                            self.after(0, lambda msg=clean_line: self.log(msg))
+
+                process.wait()
+
+                if process.returncode != 0:
+                    self.after(0, lambda: self.log(f"エラーが発生したため中断しました (コード: {process.returncode})"))
+                    self.sound.play("error")
+                    break
 
             if process.returncode == 0:
                 self.sound.play("success")
-                self.after(0, lambda: self.log("完了しました！"))
-                self.after(0, lambda: messagebox.showinfo("成功", "動画の加工が完了しました"))
-            else:
-                self.sound.play("error")
-                self.after(0, lambda: self.log(f"処理がエラーコード {process.returncode} で終了しました"))
+                self.after(0, lambda: self.log("すべての処理が完了しました！"))
+                self.after(0, lambda: messagebox.showinfo("成功", "全動画の加工が完了しました"))
         
-        except FileNotFoundError:
-            self.sound.play("error")
-            self.after(0, lambda: self.log("エラー: FFmpegが見つかりません。インストールされているか確認してください。"))
         except Exception as e:
             self.sound.play("error")
             self.after(0, lambda: self.log(f"予期せぬエラー: {str(e)}"))
