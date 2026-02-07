@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys v3.5 - Perfect Logic & Navigation</title>
+    <title>JamadKeys v3.6 - Perfect History & Navigation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -77,10 +77,10 @@
 
     <div class="flex-none p-4 bg-black border-b border-gray-900 shadow-2xl">
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[10px] text-blue-900 font-black tracking-[0.2em]">JAMADKEYS v3.5</span>
+            <span class="text-[10px] text-blue-900 font-black tracking-[0.2em]">JAMADKEYS NEXT v3.6</span>
             <div class="flex gap-4 text-[9px] text-gray-800 mr-auto ml-6 hidden md:flex uppercase font-bold">
                 <span>WASD: Cyclic Snake Move</span>
-                <span>Space / Enter: Type</span>
+                <span>Enter to Type / ^Z to Undo</span>
             </div>
             <div class="flex gap-2">
                 <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">UNDO</button>
@@ -101,8 +101,8 @@
     <script>
         const editor = document.getElementById('editor');
         const keypad = document.getElementById('keypad');
-        let history = [''];
-        let redoStack = [];
+        let history = []; // 履歴スタック
+        let redoStack = []; // やり直しスタック
         let buttonsLogical = []; 
         let buttonsVertical = []; 
 
@@ -139,7 +139,8 @@
             { label: '€', val: '€', type: 'btn-symbol' }, { label: '→', val: '→', type: 'btn-symbol' }
         ];
 
-        keys.forEach((key, index) => {
+        // 描画 & 配列化
+        keys.forEach((key) => {
             const btn = document.createElement('button');
             btn.className = key.type;
             if (key.id) btn.id = key.id;
@@ -157,27 +158,34 @@
             buttonsLogical.push(btn);
         });
 
-        // ナビゲーション用のパス構築
+        // 垂直移動パス構築 (厳密なoffsetLeft判定)
         function buildNavPaths() {
-            // 垂直パス（コラムベース）
+            const colWidth = keypad.offsetWidth / 6;
             const colGroups = [[], [], [], [], [], []];
+            
             buttonsLogical.forEach(btn => {
-                const rect = btn.getBoundingClientRect();
-                const colIdx = Math.floor((btn.offsetLeft - keypad.offsetLeft + 10) / (keypad.offsetWidth / 6));
-                if (colIdx >= 0 && colIdx < 6) colGroups[colIdx].push(btn);
+                const offset = btn.offsetLeft - keypad.offsetLeft;
+                // 10pxの遊びを持たせて列番号を判定
+                const colIdx = Math.floor((offset + 10) / colWidth);
+                if (colIdx >= 0 && colIdx < 6) {
+                    colGroups[colIdx].push(btn);
+                }
             });
-            buttonsVertical = colGroups.flat();
+            // 空の列をスキップして平滑化
+            buttonsVertical = colGroups.flat().filter(b => b);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 buildNavPaths();
                 document.getElementById('btn-start').focus();
-            }, 100);
+            }, 200);
         });
 
+        // テキスト挿入
         function insertText(text, offset) {
-            saveHistory();
+            saveHistory(); // 挿入前に現在の状態を保存
+            redoStack = []; 
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
             editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
@@ -185,22 +193,21 @@
             editor.setSelectionRange(newPos, newPos);
         }
 
+        // ユーティリティ
         function handleUtil(type) {
             if (type === 'undo') {
-                if (history.length > 1) {
-                    redoStack.push(history.pop());
-                    editor.value = history[history.length - 1];
+                if (history.length > 0) {
+                    redoStack.push(editor.value); // 今の状態をRedoへ
+                    editor.value = history.pop(); // 前の状態に戻す
                 }
             } else if (type === 'redo') {
                 if (redoStack.length > 0) {
-                    const val = redoStack.pop();
-                    history.push(val);
-                    editor.value = val;
+                    history.push(editor.value); // 今の状態をHistoryへ
+                    editor.value = redoStack.pop(); // Redoから戻す
                 }
             } else if (type === 'clear') {
-                saveHistory(); // 現在の状態を保存
+                saveHistory(); // 消す前の状態を保存
                 editor.value = '';
-                saveHistory(); // 空の状態も保存
                 redoStack = [];
                 flashButton(document.getElementById('btn-clear'));
             } else if (type === 'copy') {
@@ -210,9 +217,11 @@
             }
         }
 
+        // 履歴保存 (重複チェック付き)
         function saveHistory() {
-            if (history[history.length - 1] !== editor.value) {
-                history.push(editor.value);
+            const current = editor.value;
+            if (history.length === 0 || history[history.length - 1] !== current) {
+                history.push(current);
                 if (history.length > 50) history.shift();
             }
         }
@@ -223,6 +232,7 @@
             setTimeout(() => el.classList.remove('btn-active-sim'), 100);
         }
 
+        // ナビゲーション
         function navigate(dir) {
             const active = document.activeElement;
             if (!active || active.tagName !== 'BUTTON') return;
@@ -249,7 +259,10 @@
                 if (key === 'a' || key === 'arrowleft') { e.preventDefault(); navigate('left'); }
                 if (key === 's' || key === 'arrowdown') { e.preventDefault(); navigate('down'); }
                 if (key === 'w' || key === 'arrowup') { e.preventDefault(); navigate('up'); }
-                if (e.key === 'Enter' || e.key === ' ') { flashButton(document.activeElement); }
+                if (e.key === 'Enter' || e.key === ' ') { 
+                    e.preventDefault();
+                    document.activeElement.click(); 
+                }
             }
 
             if (ctrl) {
