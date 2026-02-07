@@ -50,7 +50,6 @@
             box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
         }
 
-        /* 1080pモニタ（タスクバーあり）最適化サイズ */
         .btn-macro { 
             grid-column: span 2; 
             background-color: #000a1f; 
@@ -73,7 +72,6 @@
 
         textarea:focus { outline: none; border: 1px solid #111; }
 
-        /* ナビゲーションリンク */
         .nav-link {
             font-size: 9px;
             color: #555;
@@ -93,12 +91,11 @@
 </head>
 <body class="flex flex-col h-screen">
 
-    <!-- ヘッダーエリア -->
     <div class="flex-none p-4 bg-black border-b border-gray-900 shadow-2xl">
         <div class="flex justify-between items-center mb-3">
             <div class="flex items-center gap-4">
                 <div class="flex flex-col">
-                    <span class="text-[12px] text-blue-400 font-black tracking-[0.1em] uppercase">Jamad Onyx <span class="text-blue-900 text-[10px] ml-1">v4.1</span></span>
+                    <span class="text-[12px] text-blue-400 font-black tracking-[0.1em] uppercase">Jamad Ony <span class="text-blue-900 text-[10px] ml-1">v4.2</span></span>
                     <span class="subtitle uppercase">[ Nordic Input Surface ]</span>
                 </div>
                 <div class="flex items-center border-l border-gray-800 pl-4 h-6">
@@ -114,13 +111,12 @@
                 <button id="btn-copy" onclick="handleUtil('copy')" class="px-4 py-1 bg-[#000a1f] text-[9px] rounded text-white h-8 font-bold border-[#001a4d]">COPY<span class="label-hint">^C</span></button>
             </div>
         </div>
-        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Focus here... (Tab / WASD to navigate)"></textarea>
+        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Tab to navigate / Enter to type..."></textarea>
     </div>
 
-    <!-- キーパッドエリア -->
     <div class="flex-1 overflow-y-auto pt-2 bg-black">
         <div id="keypad" class="key-grid">
-            <!-- JSで動的生成 -->
+            <!-- JS生成 -->
         </div>
     </div>
 
@@ -133,10 +129,10 @@
         let buttonsVertical = []; 
 
         const keys = [
-            // Row 1-4: Macros
-            { id: 'btn-start', label: 'Table 1col', sub: '|-|', val: '|  |\n|---|\n|  |', offset: -11, type: 'btn-macro' },
-            { label: 'Table 2col', sub: '|--|', val: '|  |  |\n|---|---|\n|  |  |', offset: -15, type: 'btn-macro' },
-            { label: 'Table 3col', sub: '|---|', val: '|  |  |  |\n|---|---|---|\n|  |  |  |', offset: -19, type: 'btn-macro' },
+            // Row 1-4: Macros (Tableの区切りを -- に変更)
+            { id: 'btn-start', label: 'Table 1col', sub: '|-|', val: '|  |\n|--|\n|  |', offset: -10, type: 'btn-macro' },
+            { label: 'Table 2col', sub: '|--|', val: '|  |  |\n|--|--|\n|  |  |', offset: -13, type: 'btn-macro' },
+            { label: 'Table 3col', sub: '|---|', val: '|  |  |  |\n|--|--|--|\n|  |  |  |', offset: -16, type: 'btn-macro' },
             { label: 'Bold', sub: '****', val: '****', offset: -2, type: 'btn-macro' },
             { label: 'Link', sub: '[]()', val: '[]()', offset: -3, type: 'btn-macro' },
             { label: 'Code', sub: '```', val: '```\n\n```', offset: -4, type: 'btn-macro' },
@@ -146,7 +142,7 @@
             { label: 'Comment', sub: '<!-- -->', val: '<!--  -->', offset: -4, type: 'btn-macro' },
             { label: 'Task List', sub: '- [ ]', val: '- [ ] ', type: 'btn-macro' },
             { label: 'HR Line', sub: '---', val: '\n---\n', type: 'btn-macro' },
-            // Rows 5-10: Symbols & Nordic
+            // Rows 5-10: Symbols
             { label: '[', val: '[', type: 'btn-symbol' }, { label: ']', val: ']', type: 'btn-symbol' },
             { label: '{', val: '{', type: 'btn-symbol' }, { label: '}', val: '}', type: 'btn-symbol' },
             { label: '(', val: '(', type: 'btn-symbol' }, { label: ')', val: ')', type: 'btn-symbol' },
@@ -206,12 +202,9 @@
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
             editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
-            
             const newPos = start + text.length + offset;
             editor.focus();
             editor.setSelectionRange(newPos, newPos);
-            
-            // 物理キーボード操作を継続するため、ボタンにフォーカスを戻す
             const currentBtn = document.activeElement;
             if (currentBtn && currentBtn.tagName === 'BUTTON') {
                 setTimeout(() => currentBtn.focus(), 0);
@@ -248,11 +241,6 @@
                     document.execCommand('copy');
                 }
                 flashButton(document.getElementById('btn-copy'));
-            } else if (type === 'paste') {
-                try {
-                    const text = await navigator.clipboard.readText();
-                    insertText(text, 0);
-                } catch (err) { /* standard paste used by browser */ }
             }
         }
 
