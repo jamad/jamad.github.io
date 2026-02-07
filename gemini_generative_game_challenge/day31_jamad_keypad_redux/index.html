@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys Next v2</title>
+    <title>JamadKeys Next v2.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -17,8 +17,8 @@
         .key-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 4px;
-            padding: 8px;
+            gap: 6px;
+            padding: 10px;
             padding-bottom: 40px;
         }
 
@@ -28,75 +28,64 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
             transition: transform 0.05s, background-color 0.1s;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-            box-shadow: 0 2px 0 rgba(255,255,255,0.1);
         }
         
         button:active {
             transform: translateY(2px);
-            box-shadow: none;
-            background-color: #555 !important;
+            filter: brightness(1.2);
         }
 
+        /* マクロ系：青（2列分） */
         .macro-key { 
             background-color: #2c5282; 
             color: #ebf8ff; 
             grid-column: span 2; 
+            height: 54px;
             font-size: 0.85rem;
-            height: 60px;
         }
 
+        /* サブマクロ系：濃いグレー（2列分） */
         .sub-macro-key {
             background-color: #2d3748; 
             color: #cbd5e0;
             grid-column: span 2;
-            font-size: 0.8rem;
             height: 54px;
+            font-size: 0.85rem;
         }
 
+        /* 文字・記号キー：黒/グレー（1列分） */
         .symbol-key { 
             background-color: #1a202c; 
             border: 1px solid #4a5568;
-            font-family: monospace;
+            height: 50px;
             font-size: 1.1rem;
-            height: 50px;
         }
 
-        .util-key { 
-            background-color: #4a5568; 
-            font-size: 0.8rem;
-            height: 50px;
-        }
-
-        .btn-label-main { font-size: 0.9em; pointer-events: none; }
-        .btn-label-sub { font-size: 0.65em; opacity: 0.7; font-family: monospace; pointer-events: none; }
-
+        .btn-label-sub { font-size: 0.6em; opacity: 0.6; font-family: monospace; }
         textarea:focus { outline: none; }
-        
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <!-- ヘッダー＆ディスプレイエリア -->
     <div class="flex-none p-3 bg-gray-900 border-b border-gray-700">
         <div class="flex justify-between items-center mb-2">
-            <span class="text-xs text-gray-400 font-mono tracking-widest">JamadKeys v2</span>
+            <span class="text-xs text-gray-400 font-mono">JamadKeys v2.1</span>
             <div class="flex gap-2">
-                <button onclick="handleUtil('undo')" class="px-3 py-1 bg-gray-700 text-xs rounded h-8 w-16 shadow-none">UNDO</button>
-                <button onclick="handleUtil('clear')" class="px-3 py-1 bg-red-900 text-xs rounded h-8 w-16 shadow-none">CLEAR</button>
-                <button onclick="handleUtil('copy')" class="px-3 py-1 bg-blue-700 text-xs rounded h-8 w-16 shadow-none">COPY</button>
+                <button onclick="handleUtil('undo')" class="px-3 py-1 bg-gray-700 text-xs rounded h-8 w-16">UNDO</button>
+                <button onclick="handleUtil('clear')" class="px-3 py-1 bg-red-900 text-xs rounded h-8 w-16">CLEAR</button>
+                <button onclick="handleUtil('copy')" class="px-3 py-1 bg-blue-700 text-xs rounded h-8 w-16">COPY</button>
             </div>
         </div>
-        <textarea id="editor" class="w-full h-32 p-3 bg-gray-100 text-gray-900 rounded text-lg font-mono resize-none shadow-inner" placeholder="Markdown..."></textarea>
+        <textarea id="editor" class="w-full h-40 p-3 bg-gray-100 text-gray-900 rounded text-lg font-mono resize-none shadow-inner" placeholder="Type here..."></textarea>
     </div>
 
-    <!-- キーパッドエリア -->
     <div class="flex-1 overflow-y-auto bg-black custom-scrollbar">
         <div id="keypad" class="key-grid">
             <!-- JavaScriptでボタンを生成 -->
@@ -106,51 +95,64 @@
     <script>
         const editor = document.getElementById('editor');
         const keypad = document.getElementById('keypad');
-        
         let history = [''];
 
-        // キー定義
+        /**
+         * keys定義
+         * val: 挿入する文字列
+         * offset: 挿入後のカーソル位置移動（負の数は後ろに戻る）
+         */
         const keys = [
-            // Row 1: Table Macros
-            { label: 'Table 2col', sub: '|---|---|', val: '|  |  |\n|---|---|\n|  |  |', type: 'macro' },
-            { label: 'Table 3col', sub: '|---|---|---|', val: '|  |  |  |\n|---|---|---|\n|  |  |  |', type: 'macro' },
-            { label: 'Table 1col', sub: '|---|', val: '|  |\n|---|\n|  |', type: 'macro' },
+            // Row: Tables (1 -> 2 -> 3)
+            { label: 'Table 1col', val: '|  |\n|---|\n|  |', offset: -11, type: 'macro' },
+            { label: 'Table 2col', val: '|  |  |\n|---|---|\n|  |  |', offset: -15, type: 'macro' },
+            { label: 'Table 3col', val: '|  |  |  |\n|---|---|---|\n|  |  |  |', offset: -19, type: 'macro' },
 
-            // Row 2: Basic Macros
-            { label: 'Link', sub: '[]()', val: '[]()', type: 'sub-macro' },
-            { label: 'Code', sub: '```', val: '```\n\n```', type: 'sub-macro' },
-            { label: 'Bold', sub: '****', val: '****', type: 'sub-macro' },
+            // Row: Markdown Macros (2列消費スタイルに統一)
+            { label: 'Bold', sub: '****', val: '****', offset: -2, type: 'sub-macro' },
+            { label: 'Link', sub: '[]()', val: '[]()', offset: -3, type: 'sub-macro' },
+            { label: 'Code', sub: '```', val: '```\n\n```', offset: -4, type: 'sub-macro' },
+            
+            { label: 'H1 Header', sub: '# ', val: '# ', type: 'sub-macro' },
+            { label: 'List', sub: '- ', val: '- ', type: 'sub-macro' },
+            { label: 'Quote', sub: '> ', val: '> ', type: 'sub-macro' },
 
-            // Symbols & Utils
-            { label: '#', val: '# ', type: 'symbol-key' },
-            { label: '-', val: '- ', type: 'symbol-key' },
-            { label: '>', val: '> ', type: 'symbol-key' },
-            { label: '*', val: '*', type: 'symbol-key' },
-            { label: '`', val: '`', type: 'symbol-key' },
-            { label: 'BS', val: 'BACKSPACE', type: 'util-key' },
+            // Row: Special Characters (ä, ö, ü, etc.)
+            { label: 'ä', val: 'ä', type: 'symbol-key' },
+            { label: 'ö', val: 'ö', type: 'symbol-key' },
+            { label: 'ü', val: 'ü', type: 'symbol-key' },
+            { label: 'ß', val: 'ß', type: 'symbol-key' },
+            { label: 'Ä', val: 'Ä', type: 'symbol-key' },
+            { label: 'Ö', val: 'Ö', type: 'symbol-key' },
 
+            // Row: Symbols
             { label: '[', val: '[', type: 'symbol-key' },
             { label: ']', val: ']', type: 'symbol-key' },
             { label: '(', val: '(', type: 'symbol-key' },
             { label: ')', val: ')', type: 'symbol-key' },
-            { label: '|', val: '|', type: 'symbol-key' },
-            { label: 'Enter', val: '\n', type: 'util-key' },
-            
-            { label: ':', val: ':', type: 'symbol-key' },
-            { label: '/', val: '/', type: 'symbol-key' },
             { label: '!', val: '!', type: 'symbol-key' },
             { label: '?', val: '?', type: 'symbol-key' },
+
+            { label: '|', val: '|', type: 'symbol-key' },
+            { label: '/', val: '/', type: 'symbol-key' },
+            { label: ':', val: ':', type: 'symbol-key' },
+            { label: ';', val: ';', type: 'symbol-key' },
+            { label: '*', val: '*', type: 'symbol-key' },
             { label: '_', val: '_', type: 'symbol-key' },
-            { label: 'Space', val: ' ', type: 'util-key' }
+
+            { label: '<', val: '<', type: 'symbol-key' },
+            { label: '>', val: '>', type: 'symbol-key' },
+            { label: '#', val: '#', type: 'symbol-key' },
+            { label: '-', val: '-', type: 'symbol-key' },
+            { label: '`', val: '`', type: 'symbol-key' },
+            { label: '\\', val: '\\', type: 'symbol-key' }
         ];
 
-        // ボタンの生成
         keys.forEach(key => {
             const btn = document.createElement('button');
             btn.className = key.type;
             
             const labelMain = document.createElement('span');
-            labelMain.className = 'btn-label-main';
             labelMain.textContent = key.label;
             btn.appendChild(labelMain);
 
@@ -161,51 +163,29 @@
                 btn.appendChild(labelSub);
             }
 
-            btn.onclick = () => {
-                if (key.val === 'BACKSPACE') {
-                    handleBackspace();
-                } else {
-                    insertText(key.val);
-                }
-            };
+            btn.onclick = () => insertText(key.val, key.offset || 0);
             keypad.appendChild(btn);
         });
 
-        // テキスト挿入
-        function insertText(text) {
+        function insertText(text, offset) {
             saveHistory();
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
-            const currentVal = editor.value;
+            const val = editor.value;
             
-            editor.value = currentVal.substring(0, start) + text + currentVal.substring(end);
+            editor.value = val.substring(0, start) + text + val.substring(end);
             
-            // カーソル位置を挿入した文字の直後に移動
-            const newCursorPos = start + text.length;
-            editor.setSelectionRange(newCursorPos, newCursorPos);
+            // カーソル位置の計算
+            const newPos = start + text.length + offset;
+            editor.setSelectionRange(newPos, newPos);
             editor.focus();
         }
 
-        // バックスペース処理
-        function handleBackspace() {
-            saveHistory();
-            const start = editor.selectionStart;
-            const end = editor.selectionEnd;
-            if (start === end && start > 0) {
-                editor.value = editor.value.substring(0, start - 1) + editor.value.substring(end);
-                editor.setSelectionRange(start - 1, start - 1);
-            } else {
-                editor.value = editor.value.substring(0, start) + editor.value.substring(end);
-                editor.setSelectionRange(start, start);
-            }
-            editor.focus();
-        }
-
-        // ユーティリティ操作
         function handleUtil(type) {
             if (type === 'undo') {
-                if (history.length > 0) {
-                    editor.value = history.pop();
+                if (history.length > 1) {
+                    history.pop(); // 現在の状態を捨てる
+                    editor.value = history[history.length - 1];
                 }
             } else if (type === 'clear') {
                 saveHistory();
@@ -213,16 +193,14 @@
             } else if (type === 'copy') {
                 editor.select();
                 document.execCommand('copy');
-                alert('コピーしました！');
             }
             editor.focus();
         }
 
-        // 履歴保存
         function saveHistory() {
             if (history[history.length - 1] !== editor.value) {
                 history.push(editor.value);
-                if (history.length > 30) history.shift();
+                if (history.length > 50) history.shift();
             }
         }
     </script>
