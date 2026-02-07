@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys v3.6 - Perfect History & Navigation</title>
+    <title>JamadKeys v3.7 - High Visibility & Optimized Shortcuts</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -70,28 +70,28 @@
         .btn-highlight { background-color: #041404; }
 
         .label-sub { font-size: 0.55em; opacity: 0.6; margin-top: 1px; font-family: monospace; }
+        .label-hint { font-size: 0.55em; color: #3b82f6; margin-top: 2px; font-weight: 400; }
+
         textarea:focus { outline: none; border: 1px solid #111; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
+    <!-- 操作パネル -->
     <div class="flex-none p-4 bg-black border-b border-gray-900 shadow-2xl">
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[10px] text-blue-900 font-black tracking-[0.2em]">JAMADKEYS NEXT v3.6</span>
-            <div class="flex gap-4 text-[9px] text-gray-800 mr-auto ml-6 hidden md:flex uppercase font-bold">
-                <span>WASD: Cyclic Snake Move</span>
-                <span>Enter to Type / ^Z to Undo</span>
-            </div>
+            <span class="text-[11px] text-blue-400 font-black tracking-[0.2em] uppercase">JamadKeys Next v3.7</span>
             <div class="flex gap-2">
-                <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">UNDO</button>
-                <button id="btn-redo" onclick="handleUtil('redo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">REDO</button>
-                <button id="btn-clear" onclick="handleUtil('clear')" class="px-3 py-1 bg-black text-[9px] rounded text-red-950 h-7 border-[#222]">CLEAR</button>
-                <button id="btn-copy" onclick="handleUtil('copy')" class="px-5 py-1 bg-[#000a1f] text-[9px] rounded text-white h-7 font-bold border-[#001a4d]">COPY</button>
+                <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-8 border-[#222]">UNDO<span class="label-hint">^Z</span></button>
+                <button id="btn-redo" onclick="handleUtil('redo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-8 border-[#222]">REDO<span class="label-hint">^Y</span></button>
+                <button id="btn-clear" onclick="handleUtil('clear')" class="px-3 py-1 bg-black text-[9px] rounded text-red-900 h-8 border-[#222]">CLEAR<span class="label-hint">^X</span></button>
+                <button id="btn-copy" onclick="handleUtil('copy')" class="px-4 py-1 bg-[#000a1f] text-[9px] rounded text-white h-8 font-bold border-[#001a4d]">COPY<span class="label-hint text-blue-300">^C</span></button>
             </div>
         </div>
         <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Focus here..."></textarea>
     </div>
 
+    <!-- キーパッド -->
     <div class="flex-1 overflow-y-auto pt-2 bg-black">
         <div id="keypad" class="key-grid">
             <!-- JS生成 -->
@@ -101,8 +101,8 @@
     <script>
         const editor = document.getElementById('editor');
         const keypad = document.getElementById('keypad');
-        let history = []; // 履歴スタック
-        let redoStack = []; // やり直しスタック
+        let history = []; 
+        let redoStack = []; 
         let buttonsLogical = []; 
         let buttonsVertical = []; 
 
@@ -139,7 +139,6 @@
             { label: '€', val: '€', type: 'btn-symbol' }, { label: '→', val: '→', type: 'btn-symbol' }
         ];
 
-        // 描画 & 配列化
         keys.forEach((key) => {
             const btn = document.createElement('button');
             btn.className = key.type;
@@ -158,20 +157,14 @@
             buttonsLogical.push(btn);
         });
 
-        // 垂直移動パス構築 (厳密なoffsetLeft判定)
         function buildNavPaths() {
             const colWidth = keypad.offsetWidth / 6;
             const colGroups = [[], [], [], [], [], []];
-            
             buttonsLogical.forEach(btn => {
                 const offset = btn.offsetLeft - keypad.offsetLeft;
-                // 10pxの遊びを持たせて列番号を判定
                 const colIdx = Math.floor((offset + 10) / colWidth);
-                if (colIdx >= 0 && colIdx < 6) {
-                    colGroups[colIdx].push(btn);
-                }
+                if (colIdx >= 0 && colIdx < 6) colGroups[colIdx].push(btn);
             });
-            // 空の列をスキップして平滑化
             buttonsVertical = colGroups.flat().filter(b => b);
         }
 
@@ -182,9 +175,8 @@
             }, 200);
         });
 
-        // テキスト挿入
         function insertText(text, offset) {
-            saveHistory(); // 挿入前に現在の状態を保存
+            saveHistory();
             redoStack = []; 
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
@@ -193,20 +185,19 @@
             editor.setSelectionRange(newPos, newPos);
         }
 
-        // ユーティリティ
         function handleUtil(type) {
             if (type === 'undo') {
                 if (history.length > 0) {
-                    redoStack.push(editor.value); // 今の状態をRedoへ
-                    editor.value = history.pop(); // 前の状態に戻す
+                    redoStack.push(editor.value);
+                    editor.value = history.pop();
                 }
             } else if (type === 'redo') {
                 if (redoStack.length > 0) {
-                    history.push(editor.value); // 今の状態をHistoryへ
-                    editor.value = redoStack.pop(); // Redoから戻す
+                    history.push(editor.value);
+                    editor.value = redoStack.pop();
                 }
             } else if (type === 'clear') {
-                saveHistory(); // 消す前の状態を保存
+                saveHistory();
                 editor.value = '';
                 redoStack = [];
                 flashButton(document.getElementById('btn-clear'));
@@ -217,7 +208,6 @@
             }
         }
 
-        // 履歴保存 (重複チェック付き)
         function saveHistory() {
             const current = editor.value;
             if (history.length === 0 || history[history.length - 1] !== current) {
@@ -232,11 +222,9 @@
             setTimeout(() => el.classList.remove('btn-active-sim'), 100);
         }
 
-        // ナビゲーション
         function navigate(dir) {
             const active = document.activeElement;
             if (!active || active.tagName !== 'BUTTON') return;
-
             if (dir === 'right' || dir === 'left') {
                 let idx = buttonsLogical.indexOf(active);
                 if (dir === 'right') idx = (idx + 1) % buttonsLogical.length;
@@ -268,7 +256,8 @@
             if (ctrl) {
                 if (key === 'z') { e.preventDefault(); flashButton(document.getElementById('btn-undo')); handleUtil('undo'); }
                 if (key === 'y') { e.preventDefault(); flashButton(document.getElementById('btn-redo')); handleUtil('redo'); }
-                if (key === 'k') { e.preventDefault(); handleUtil('clear'); }
+                if (key === 'x') { e.preventDefault(); flashButton(document.getElementById('btn-clear')); handleUtil('clear'); }
+                if (key === 'a') { e.preventDefault(); editor.focus(); editor.select(); }
                 if (key === 'c' && document.activeElement !== editor) { e.preventDefault(); handleUtil('copy'); }
             }
         });
