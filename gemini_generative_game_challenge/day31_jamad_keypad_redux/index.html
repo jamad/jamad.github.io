@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys v3.7 - High Visibility & Optimized Shortcuts</title>
+    <title>JamadKeys v3.9 - Nordic Pro Layout</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -34,7 +34,8 @@
             user-select: none;
             transition: all 0.08s ease;
             -webkit-tap-highlight-color: transparent;
-            border: 1px solid #333; 
+            /* 枠線を少し明るく */
+            border: 1px solid #444; 
         }
 
         .btn-active-sim {
@@ -50,19 +51,18 @@
             box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
         }
 
+        /* 絶妙な高さ調整 */
         .btn-macro { 
             grid-column: span 2; 
             background-color: #000a1f; 
-            color: #ffffff;
-            height: 64px;
+            height: 62px; 
             font-size: 0.9rem;
         }
 
         .btn-symbol { 
             grid-column: span 1;
             background-color: #050505;
-            color: #ffffff;
-            height: 58px;
+            height: 56px;
             font-size: 1.2rem;
         }
 
@@ -70,7 +70,7 @@
         .btn-highlight { background-color: #041404; }
 
         .label-sub { font-size: 0.55em; opacity: 0.6; margin-top: 1px; font-family: monospace; }
-        .label-hint { font-size: 0.55em; color: #3b82f6; margin-top: 2px; font-weight: 400; }
+        .label-hint { font-size: 0.5em; color: #3b82f6; margin-top: 2px; font-weight: 400; }
 
         textarea:focus { outline: none; border: 1px solid #111; }
     </style>
@@ -80,15 +80,16 @@
     <!-- 操作パネル -->
     <div class="flex-none p-4 bg-black border-b border-gray-900 shadow-2xl">
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[11px] text-blue-400 font-black tracking-[0.2em] uppercase">JamadKeys Next v3.7</span>
+            <span class="text-[11px] text-blue-400 font-black tracking-[0.2em] uppercase">JamadKeys Next v3.9</span>
             <div class="flex gap-2">
-                <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-8 border-[#222]">UNDO<span class="label-hint">^Z</span></button>
-                <button id="btn-redo" onclick="handleUtil('redo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-8 border-[#222]">REDO<span class="label-hint">^Y</span></button>
-                <button id="btn-clear" onclick="handleUtil('clear')" class="px-3 py-1 bg-black text-[9px] rounded text-red-900 h-8 border-[#222]">CLEAR<span class="label-hint">^X</span></button>
-                <button id="btn-copy" onclick="handleUtil('copy')" class="px-4 py-1 bg-[#000a1f] text-[9px] rounded text-white h-8 font-bold border-[#001a4d]">COPY<span class="label-hint text-blue-300">^C</span></button>
+                <button id="btn-undo" onclick="handleUtil('undo')" class="px-2 py-1 bg-black text-[9px] rounded text-gray-400 h-8 border-[#222]">UNDO<span class="label-hint">^Z</span></button>
+                <button id="btn-redo" onclick="handleUtil('redo')" class="px-2 py-1 bg-black text-[9px] rounded text-gray-400 h-8 border-[#222]">REDO<span class="label-hint">^Y</span></button>
+                <button id="btn-cut" onclick="handleUtil('cut')" class="px-3 py-1 bg-black text-[9px] rounded text-red-900 h-8 border-[#222]">CUT<span class="label-hint">^X</span></button>
+                <button id="btn-copy" onclick="handleUtil('copy')" class="px-3 py-1 bg-[#000a1f] text-[9px] rounded text-white h-8 font-bold border-[#001a4d]">COPY<span class="label-hint">^C</span></button>
+                <button id="btn-paste" onclick="handleUtil('paste')" class="px-3 py-1 bg-[#001f0a] text-[9px] rounded text-white h-8 font-bold border-[#004d1a]">PASTE<span class="label-hint text-green-400">^V</span></button>
             </div>
         </div>
-        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Focus here..."></textarea>
+        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Tab to navigate / Enter to type..."></textarea>
     </div>
 
     <!-- キーパッド -->
@@ -107,6 +108,7 @@
         let buttonsVertical = []; 
 
         const keys = [
+            // Rows 1-4: Macros
             { id: 'btn-start', label: 'Table 1col', sub: '|-|', val: '|  |\n|---|\n|  |', offset: -11, type: 'btn-macro' },
             { label: 'Table 2col', sub: '|--|', val: '|  |  |\n|---|---|\n|  |  |', offset: -15, type: 'btn-macro' },
             { label: 'Table 3col', sub: '|---|', val: '|  |  |  |\n|---|---|---|\n|  |  |  |', offset: -19, type: 'btn-macro' },
@@ -119,24 +121,32 @@
             { label: 'Comment', sub: '<!-- -->', val: '<!--  -->', offset: -4, type: 'btn-macro' },
             { label: 'Task List', sub: '- [ ]', val: '- [ ] ', type: 'btn-macro' },
             { label: 'HR Line', sub: '---', val: '\n---\n', type: 'btn-macro' },
+            // Row 5: Brackets
             { label: '[', val: '[', type: 'btn-symbol' }, { label: ']', val: ']', type: 'btn-symbol' },
             { label: '{', val: '{', type: 'btn-symbol' }, { label: '}', val: '}', type: 'btn-symbol' },
             { label: '(', val: '(', type: 'btn-symbol' }, { label: ')', val: ')', type: 'btn-symbol' },
+            // Row 6: Nordic & Quotes
             { label: 'ä', val: 'ä', type: 'btn-symbol btn-special' }, { label: 'ö', val: 'ö', type: 'btn-symbol btn-special' },
             { label: 'å', val: 'å', type: 'btn-symbol btn-special' }, { label: "'", val: "'", type: 'btn-symbol' },
             { label: '"', val: '"', type: 'btn-symbol' }, { label: '`', val: '`', type: 'btn-symbol btn-highlight' },
+            // Row 7: Math
             { label: '+', val: '+', type: 'btn-symbol' }, { label: '-', val: '-', type: 'btn-symbol' },
             { label: '*', val: '*', type: 'btn-symbol' }, { label: '/', val: '/', type: 'btn-symbol' },
             { label: '=', val: '=', type: 'btn-symbol' }, { label: '_', val: '_', type: 'btn-symbol' },
+            // Row 8: Symbols
             { label: '!', val: '!', type: 'btn-symbol' }, { label: '@', val: '@', type: 'btn-symbol' },
             { label: '#', val: '#', type: 'btn-symbol' }, { label: '$', val: '$', type: 'btn-symbol' },
             { label: '%', val: '%', type: 'btn-symbol' }, { label: '&', val: '&', type: 'btn-symbol' },
+            // Row 9: Punctuations
             { label: ':', val: ':', type: 'btn-symbol' }, { label: ';', val: ';' , type: 'btn-symbol' },
             { label: '<', val: '<', type: 'btn-symbol' }, { label: '>', val: '>', type: 'btn-symbol' },
             { label: '|', val: '|', type: 'btn-symbol btn-highlight' }, { label: '\\', val: '\\', type: 'btn-symbol btn-highlight' },
+            // Row 10: Final (Custom Request: € æ ø)
             { label: '?', val: '?', type: 'btn-symbol' }, { label: '~', val: '~', type: 'btn-symbol btn-highlight' },
-            { label: '^', val: '^', type: 'btn-symbol btn-highlight' }, { label: '§', val: '§', type: 'btn-symbol btn-special' },
-            { label: '€', val: '€', type: 'btn-symbol' }, { label: '→', val: '→', type: 'btn-symbol' }
+            { label: '^', val: '^', type: 'btn-symbol btn-highlight' }, 
+            { label: '€', val: '€', type: 'btn-symbol' },
+            { label: 'æ', val: 'æ', type: 'btn-symbol btn-special' },
+            { label: 'ø', val: 'ø', type: 'btn-symbol btn-special' }
         ];
 
         keys.forEach((key) => {
@@ -169,10 +179,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                buildNavPaths();
-                document.getElementById('btn-start').focus();
-            }, 200);
+            setTimeout(() => { buildNavPaths(); document.getElementById('btn-start').focus(); }, 200);
         });
 
         function insertText(text, offset) {
@@ -185,26 +192,28 @@
             editor.setSelectionRange(newPos, newPos);
         }
 
-        function handleUtil(type) {
+        async function handleUtil(type) {
             if (type === 'undo') {
-                if (history.length > 0) {
-                    redoStack.push(editor.value);
-                    editor.value = history.pop();
-                }
+                if (history.length > 0) { redoStack.push(editor.value); editor.value = history.pop(); }
             } else if (type === 'redo') {
-                if (redoStack.length > 0) {
-                    history.push(editor.value);
-                    editor.value = redoStack.pop();
-                }
-            } else if (type === 'clear') {
+                if (redoStack.length > 0) { history.push(editor.value); editor.value = redoStack.pop(); }
+            } else if (type === 'cut') {
                 saveHistory();
+                editor.select();
+                document.execCommand('copy');
                 editor.value = '';
                 redoStack = [];
-                flashButton(document.getElementById('btn-clear'));
+                flashButton(document.getElementById('btn-cut'));
             } else if (type === 'copy') {
                 editor.select();
                 document.execCommand('copy');
                 flashButton(document.getElementById('btn-copy'));
+            } else if (type === 'paste') {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    insertText(text, 0);
+                    flashButton(document.getElementById('btn-paste'));
+                } catch (err) { alert("Paste blocked. Use ^V."); }
             }
         }
 
@@ -248,7 +257,8 @@
                 if (key === 's' || key === 'arrowdown') { e.preventDefault(); navigate('down'); }
                 if (key === 'w' || key === 'arrowup') { e.preventDefault(); navigate('up'); }
                 if (e.key === 'Enter' || e.key === ' ') { 
-                    e.preventDefault();
+                    e.preventDefault(); 
+                    flashButton(document.activeElement);
                     document.activeElement.click(); 
                 }
             }
@@ -256,7 +266,8 @@
             if (ctrl) {
                 if (key === 'z') { e.preventDefault(); flashButton(document.getElementById('btn-undo')); handleUtil('undo'); }
                 if (key === 'y') { e.preventDefault(); flashButton(document.getElementById('btn-redo')); handleUtil('redo'); }
-                if (key === 'x') { e.preventDefault(); flashButton(document.getElementById('btn-clear')); handleUtil('clear'); }
+                if (key === 'x') { e.preventDefault(); handleUtil('cut'); }
+                if (key === 'v') { flashButton(document.getElementById('btn-paste')); }
                 if (key === 'a') { e.preventDefault(); editor.focus(); editor.select(); }
                 if (key === 'c' && document.activeElement !== editor) { e.preventDefault(); handleUtil('copy'); }
             }
