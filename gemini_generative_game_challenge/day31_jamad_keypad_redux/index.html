@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys v3.0 - High Contrast & Full Keyboard</title>
+    <title>JamadKeys v3.1 - Deep Contrast</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -29,80 +29,89 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 6px;
+            border-radius: 4px;
             font-weight: 700;
             user-select: none;
-            transition: background-color 0.1s, transform 0.05s, border-color 0.2s;
+            transition: all 0.1s ease;
             -webkit-tap-highlight-color: transparent;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.03);
         }
 
-        /* Tab選択時の視認性向上 */
+        /* ショートカット実行時のアニメーション用クラス */
+        .btn-active-sim {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            transform: translateY(2px);
+        }
+
         button:focus {
             outline: none;
-            border: 2px solid #3b82f6;
-            z-index: 10;
+            border: 1px solid #3b82f6;
+            background-color: #001030 !important;
         }
 
         button:active {
             transform: translateY(1px);
-            filter: brightness(1.5);
+            filter: brightness(2);
         }
 
-        /* マクロ（非常に暗い青） */
+        /* マクロ（極暗ネイビー） */
         .btn-macro { 
             grid-column: span 2; 
-            background-color: #001a4d;
+            background-color: #00081a;
             color: #ffffff;
             height: 64px;
             font-size: 0.9rem;
         }
 
-        /* 記号（ほぼ黒） */
+        /* 記号（極暗グレー） */
         .btn-symbol { 
             grid-column: span 1;
-            background-color: #0c0c0c;
+            background-color: #050505;
             color: #ffffff;
             height: 58px;
             font-size: 1.2rem;
         }
 
-        /* 特殊ボタン（少し明るいグレー） */
+        /* 特殊ボタン（少しだけ明度上げ） */
         .btn-special {
-            background-color: #1a1c23;
+            background-color: #0d0d0d;
         }
 
-        /* グリーン・ハイライト（彩度を落とした極暗緑） */
+        /* グリーン・ハイライト（極暗フォレストグリーン） */
         .btn-highlight {
-            background-color: #0a1a0f; 
+            background-color: #040d04; 
             color: #ffffff;
         }
 
-        .label-sub { font-size: 0.55em; opacity: 0.8; margin-top: 2px; font-family: monospace; }
-        textarea:focus { outline: none; border: 1px solid #3b82f6; }
+        .label-sub { font-size: 0.5em; opacity: 0.6; margin-top: 1px; font-family: monospace; letter-spacing: 0.05em; }
+        .label-kb { font-size: 0.5em; color: #3b82f6; margin-top: 2px; }
+
+        textarea:focus { outline: none; border: 1px solid #111; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <div class="flex-none p-4 bg-[#050505] border-b border-gray-900">
+    <div class="flex-none p-4 bg-black border-b border-gray-900 shadow-2xl">
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[10px] text-blue-600 font-black tracking-[0.2em]">JAMADKEYS v3.0</span>
-            <div class="flex gap-2 text-[9px] text-gray-500 mr-auto ml-4 hidden md:block uppercase tracking-widest">
-                Z:Undo | Y:Redo | K:Clear | C:Copy
+            <span class="text-[10px] text-blue-800 font-black tracking-[0.2em]">JAMADKEYS v3.1</span>
+            <div class="flex gap-4 text-[9px] text-gray-700 mr-auto ml-6 hidden md:flex uppercase font-bold">
+                <span>Tab: Navigate</span>
+                <span>Enter: Type</span>
             </div>
             <div class="flex gap-2">
-                <button onclick="handleUtil('undo')" class="px-3 py-1 bg-gray-900 text-[10px] rounded text-white h-7 border-none shadow-none focus:border-blue-500">UNDO</button>
-                <button onclick="handleUtil('redo')" class="px-3 py-1 bg-gray-900 text-[10px] rounded text-white h-7 border-none shadow-none focus:border-blue-500">REDO</button>
-                <button onclick="handleUtil('clear')" class="px-3 py-1 bg-red-950 text-[10px] rounded text-white h-7 border-none shadow-none focus:border-blue-500">CLEAR</button>
-                <button id="copy-btn" onclick="handleUtil('copy')" class="px-5 py-1 bg-blue-900 text-[10px] rounded text-white h-7 font-bold border-none shadow-none focus:border-blue-500">COPY</button>
+                <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-[#050505] text-[9px] rounded text-gray-400 h-7">UNDO <span class="label-kb ml-1">^Z</span></button>
+                <button id="btn-redo" onclick="handleUtil('redo')" class="px-3 py-1 bg-[#050505] text-[9px] rounded text-gray-400 h-7">REDO <span class="label-kb ml-1">^Y</span></button>
+                <button id="btn-clear" onclick="handleUtil('clear')" class="px-3 py-1 bg-[#1a0000] text-[9px] rounded text-gray-400 h-7">CLEAR <span class="label-kb ml-1">^K</span></button>
+                <button id="btn-copy" onclick="handleUtil('copy')" class="px-5 py-1 bg-[#001030] text-[9px] rounded text-white h-7 font-bold">COPY <span class="label-kb ml-1">^C</span></button>
             </div>
         </div>
-        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-900" placeholder="Focus here or use Tab..."></textarea>
+        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Tab to navigate / Enter to type..."></textarea>
     </div>
 
     <div class="flex-1 overflow-y-auto pt-2 bg-black">
         <div id="keypad" class="key-grid">
-            <!-- JSで配置 -->
+            <!-- JS生成 -->
         </div>
     </div>
 
@@ -113,11 +122,11 @@
         let redoStack = [];
 
         const keys = [
-            { id: 't1', label: 'Table 1col', sub: '|-|', val: '|  |\n|---|\n|  |', offset: -11, type: 'btn-macro' },
+            { id: 'btn-t1', label: 'Table 1col', sub: '|-|', kb: '^⇧T', val: '|  |\n|---|\n|  |', offset: -11, type: 'btn-macro' },
             { label: 'Table 2col', sub: '|--|', val: '|  |  |\n|---|---|\n|  |  |', offset: -15, type: 'btn-macro' },
             { label: 'Table 3col', sub: '|---|', val: '|  |  |  |\n|---|---|---|\n|  |  |  |', offset: -19, type: 'btn-macro' },
-            { label: 'Bold', sub: '****', val: '****', offset: -2, type: 'btn-macro' },
-            { label: 'Link', sub: '[]()', val: '[]()', offset: -3, type: 'btn-macro' },
+            { id: 'btn-bold', label: 'Bold', sub: '****', kb: '^B', val: '****', offset: -2, type: 'btn-macro' },
+            { id: 'btn-link', label: 'Link', sub: '[]()', kb: '^L', val: '[]()', offset: -3, type: 'btn-macro' },
             { label: 'Code', sub: '```', val: '```\n\n```', offset: -4, type: 'btn-macro' },
             { label: 'H1 Header', sub: '# ', val: '# ', type: 'btn-macro' },
             { label: 'List', sub: '- ', val: '- ', type: 'btn-macro' },
@@ -163,8 +172,7 @@
             { label: '→', val: '→', type: 'btn-symbol' }
         ];
 
-        // UI生成
-        keys.forEach((key, index) => {
+        keys.forEach(key => {
             const btn = document.createElement('button');
             btn.className = key.type;
             if (key.id) btn.id = key.id;
@@ -173,31 +181,39 @@
             spanMain.textContent = key.label;
             btn.appendChild(spanMain);
             
+            const bottomRow = document.createElement('div');
+            bottomRow.className = 'flex gap-2 items-center';
+            
             if (key.sub) {
                 const spanSub = document.createElement('span');
                 spanSub.className = 'label-sub';
                 spanSub.textContent = key.sub;
-                btn.appendChild(spanSub);
+                bottomRow.appendChild(spanSub);
             }
+            if (key.kb) {
+                const spanKb = document.createElement('span');
+                spanKb.className = 'label-kb';
+                spanKb.textContent = key.kb;
+                bottomRow.appendChild(spanKb);
+            }
+            btn.appendChild(bottomRow);
             
             btn.onclick = () => insertText(key.val, key.offset || 0);
             keypad.appendChild(btn);
         });
 
-        // ページロード時に最初のボタンにフォーカス
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('t1').focus();
+            document.getElementById('btn-t1').focus();
         });
 
         function insertText(text, offset) {
             saveHistory();
-            redoStack = []; // 新しい入力があったらRedoをクリア
+            redoStack = [];
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
             editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
             const newPos = start + text.length + offset;
             editor.setSelectionRange(newPos, newPos);
-            // フォーカスはあえて移動させず、ボタンに残す（Tab操作のため）
         }
 
         function handleUtil(type) {
@@ -221,9 +237,9 @@
             } else if (type === 'copy') {
                 editor.select();
                 document.execCommand('copy');
-                const btn = document.getElementById('copy-btn');
-                btn.textContent = 'COPIED';
-                setTimeout(() => btn.textContent = 'COPY', 1000);
+                const btn = document.getElementById('btn-copy');
+                btn.classList.add('btn-active-sim');
+                setTimeout(() => btn.classList.remove('btn-active-sim'), 200);
             }
         }
 
@@ -234,25 +250,49 @@
             }
         }
 
-        // キーボードショートカット
+        // ビジュアルフィードバック関数
+        function flashButton(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('btn-active-sim');
+                setTimeout(() => el.classList.remove('btn-active-sim'), 150);
+            }
+        }
+
+        // ショートカット制御
         window.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                const key = e.key.toLowerCase();
+            const key = e.key.toLowerCase();
+            const ctrl = e.ctrlKey || e.metaKey;
+            const shift = e.shiftKey;
+
+            if (ctrl) {
                 if (key === 'z') {
                     e.preventDefault();
+                    flashButton('btn-undo');
                     handleUtil('undo');
                 } else if (key === 'y') {
                     e.preventDefault();
+                    flashButton('btn-redo');
                     handleUtil('redo');
-                } else if (key === 'k' || e.key === 'Delete') {
+                } else if (key === 'k') {
                     e.preventDefault();
+                    flashButton('btn-clear');
                     handleUtil('clear');
-                } else if (key === 'c') {
-                    // 標準のコピー動作を尊重しつつ、フォーカスがエディタ外なら全コピー発動
-                    if (document.activeElement !== editor) {
-                        e.preventDefault();
-                        handleUtil('copy');
-                    }
+                } else if (key === 'c' && document.activeElement !== editor) {
+                    e.preventDefault();
+                    handleUtil('copy');
+                } else if (key === 'b') {
+                    e.preventDefault();
+                    flashButton('btn-bold');
+                    insertText('****', -2);
+                } else if (key === 'l') {
+                    e.preventDefault();
+                    flashButton('btn-link');
+                    insertText('[]()', -3);
+                } else if (key === 't' && shift) {
+                    e.preventDefault();
+                    flashButton('btn-t1');
+                    insertText('|  |\n|---|\n|  |', -11);
                 }
             }
         });
