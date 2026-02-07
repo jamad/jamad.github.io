@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys v2.3</title>
+    <title>JamadKeys v2.5 - Professional Keyboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
-            background-color: #000; 
-            color: #fff; 
+            background-color: #05070a; 
+            color: #d1d5db; 
             touch-action: manipulation; 
             overflow: hidden; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
-        /* 6カラム固定のグリッド */
+        /* 厳密な6カラムグリッド */
         .key-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 6px;
-            padding: 10px;
-            padding-bottom: 50px;
+            gap: 8px;
+            padding: 12px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         button {
@@ -30,63 +31,71 @@
             align-items: center;
             justify-content: center;
             border-radius: 8px;
-            font-weight: bold;
+            font-weight: 700;
             user-select: none;
+            transition: all 0.05s ease;
             -webkit-tap-highlight-color: transparent;
-            box-shadow: 0 3px 0 rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        button:active {
-            transform: translateY(2px);
-            box-shadow: none;
-            filter: brightness(1.2);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.4);
         }
 
-        /* マクロボタン（青）: 2列分使用 */
-        .macro-key { 
-            background-color: #1e3a8a; /* Dark Blue */
-            color: #ffffff; 
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.4);
+            filter: brightness(1.3);
+        }
+
+        /* マクロボタン（青）: 2列分を確実に占有 */
+        .btn-macro { 
             grid-column: span 2; 
-            height: 58px;
+            background: linear-gradient(135deg, #1e40af, #1e3a8a);
+            color: #ffffff;
+            height: 64px;
             font-size: 0.9rem;
             border: 1px solid #3b82f6;
         }
 
-        /* 記号キー（グレー）: 1列分使用 */
-        .symbol-key { 
-            background-color: #262626; 
+        /* 記号キー（グレー）: 1列分 */
+        .btn-symbol { 
+            grid-column: span 1;
+            background: linear-gradient(135deg, #374151, #1f2937);
             color: #ffffff;
-            height: 52px;
+            height: 58px;
             font-size: 1.2rem;
-            border: 1px solid #404040;
+            border: 1px solid #4b5563;
         }
 
-        .btn-label-sub { font-size: 0.6em; opacity: 0.5; font-family: monospace; margin-top: 2px; }
-        textarea:focus { outline: none; }
+        /* フィンランド語・重要記号: 少し色を変える */
+        .btn-special {
+            background: linear-gradient(135deg, #4b5563, #374151);
+            border-color: #9ca3af;
+        }
+
+        .label-sub { font-size: 0.6em; opacity: 0.6; margin-top: 2px; font-family: monospace; }
+        
+        textarea:focus { outline: none; border-color: #3b82f6; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <!-- ヘッダーエリア -->
-    <div class="flex-none p-3 bg-gray-900 border-b border-gray-700">
-        <div class="flex justify-between items-center mb-2">
-            <span class="text-xs text-gray-500 font-mono">JAMADKEYS v2.3</span>
+    <!-- 操作パネル -->
+    <div class="flex-none p-4 bg-[#0a0f18] border-b border-gray-800 shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+            <span class="text-[10px] text-blue-500 font-black tracking-[0.2em]">JAMADKEYS NEXT v2.5</span>
             <div class="flex gap-2">
-                <button onclick="handleUtil('undo')" class="px-3 py-1 bg-gray-700 text-xs rounded h-8 w-14 border-none shadow-none">UNDO</button>
-                <button onclick="handleUtil('clear')" class="px-3 py-1 bg-red-900 text-xs rounded h-8 w-14 border-none shadow-none">CLR</button>
-                <button onclick="handleUtil('copy')" class="px-3 py-1 bg-blue-600 text-xs rounded h-8 w-14 border-none shadow-none text-white">COPY</button>
+                <button onclick="handleUtil('undo')" class="px-3 py-1 bg-gray-700 text-[10px] rounded text-white border-none h-7 shadow-none">UNDO</button>
+                <button onclick="handleUtil('clear')" class="px-3 py-1 bg-red-900 text-[10px] rounded text-white border-none h-7 shadow-none">CLEAR</button>
+                <button onclick="handleUtil('copy')" class="px-5 py-1 bg-blue-600 text-[10px] rounded text-white border-none h-7 shadow-none font-bold">COPY</button>
             </div>
         </div>
-        <textarea id="editor" class="w-full h-40 p-3 bg-gray-100 text-black rounded text-lg font-mono resize-none shadow-inner" placeholder="Ready for input..."></textarea>
+        <textarea id="editor" class="w-full h-44 p-4 bg-[#020408] text-blue-50 rounded-lg text-xl font-mono border border-gray-800 shadow-inner" placeholder="Enter text..."></textarea>
     </div>
 
-    <!-- キーパッドエリア -->
-    <div class="flex-1 overflow-y-auto bg-black custom-scrollbar">
+    <!-- キーパッド -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar pt-2 bg-[#05070a]">
         <div id="keypad" class="key-grid">
-            <!-- JavaScriptで生成 -->
+            <!-- JSで動的に配置 -->
         </div>
     </div>
 
@@ -95,87 +104,82 @@
         const keypad = document.getElementById('keypad');
         let history = [''];
 
-        // キー定義。6個(スロット)単位で1行になるよう配置
+        // 1行 = 6スロット
         const keys = [
-            // Row 1: Tables (各2スロット × 3 = 6)
-            { label: 'Table 1col', val: '|  |\n|---|\n|  |', offset: -11, type: 'macro' },
-            { label: 'Table 2col', val: '|  |  |\n|---|---|\n|  |  |', offset: -15, type: 'macro' },
-            { label: 'Table 3col', val: '|  |  |  |\n|---|---|---|\n|  |  |  |', offset: -19, type: 'macro' },
+            // Row 1 & 2 & 3: Macros (2スロット x 3 = 6)
+            { label: 'Table 1col', val: '|  |\n|---|\n|  |', offset: -11, type: 'btn-macro' },
+            { label: 'Table 2col', val: '|  |  |\n|---|---|\n|  |  |', offset: -15, type: 'btn-macro' },
+            { label: 'Table 3col', val: '|  |  |  |\n|---|---|---|\n|  |  |  |', offset: -19, type: 'btn-macro' },
 
-            // Row 2: Basic Style (各2スロット × 3 = 6)
-            { label: 'Bold', sub: '****', val: '****', offset: -2, type: 'macro' },
-            { label: 'Link', sub: '[]()', val: '[]()', offset: -3, type: 'macro' },
-            { label: 'Code', sub: '```', val: '```\n\n```', offset: -4, type: 'macro' },
+            { label: 'Bold', sub: '****', val: '****', offset: -2, type: 'btn-macro' },
+            { label: 'Link', sub: '[]()', val: '[]()', offset: -3, type: 'btn-macro' },
+            { label: 'Code', sub: '```', val: '```\n\n```', offset: -4, type: 'btn-macro' },
 
-            // Row 3: Structure (各2スロット × 3 = 6)
-            { label: 'H1 Header', sub: '# ', val: '# ', type: 'macro' },
-            { label: 'List', sub: '- ', val: '- ', type: 'macro' },
-            { label: 'Quote', sub: '> ', val: '> ', type: 'macro' },
+            { label: 'H1 Header', sub: '# ', val: '# ', type: 'btn-macro' },
+            { label: 'List', sub: '- ', val: '- ', type: 'btn-macro' },
+            { label: 'Quote', sub: '> ', val: '> ', type: 'btn-macro' },
 
-            // Row 4: Brackets (各1スロット × 6 = 6) 一列に並びます
-            { label: '[', val: '[', type: 'symbol-key' },
-            { label: ']', val: ']', type: 'symbol-key' },
-            { label: '{', val: '{', type: 'symbol-key' },
-            { label: '}', val: '}', type: 'symbol-key' },
-            { label: '(', val: '(', type: 'symbol-key' },
-            { label: ')', val: ')', type: 'symbol-key' },
+            // Row 4: Brackets (1スロット x 6 = 6)
+            { label: '[', val: '[', type: 'btn-symbol' },
+            { label: ']', val: ']', type: 'btn-symbol' },
+            { label: '{', val: '{', type: 'btn-symbol' },
+            { label: '}', val: '}', type: 'btn-symbol' },
+            { label: '(', val: '(', type: 'btn-symbol' },
+            { label: ')', val: ')', type: 'btn-symbol' },
 
-            // Row 5: Quotes & Finnish (各1スロット × 6 = 6)
-            { label: '"', val: '"', type: 'symbol-key' },
-            { label: "'", val: "'", type: 'symbol-key' },
-            { label: '`', val: '`', type: 'symbol-key' },
-            { label: 'å', val: 'å', type: 'symbol-key' },
-            { label: 'ä', val: 'ä', type: 'symbol-key' },
-            { label: 'ö', val: 'ö', type: 'symbol-key' },
+            // Row 5: Finnish & Quotes (1x6)
+            { label: 'å', val: 'å', type: 'btn-symbol btn-special' },
+            { label: 'ä', val: 'ä', type: 'btn-symbol btn-special' },
+            { label: 'ö', val: 'ö', type: 'btn-symbol btn-special' },
+            { label: '"', val: '"', type: 'btn-symbol' },
+            { label: "'", val: "'", type: 'btn-symbol' },
+            { label: '`', val: '`', type: 'btn-symbol' },
 
-            // Row 6: Math & Connectors (各1スロット × 6 = 6)
-            { label: '=', val: '=', type: 'symbol-key' },
-            { label: '+', val: '+', type: 'symbol-key' },
-            { label: '-', val: '-', type: 'symbol-key' },
-            { label: '_', val: '_', type: 'symbol-key' },
-            { label: '*', val: '*', type: 'symbol-key' },
-            { label: '/', val: '/', type: 'symbol-key' },
+            // Row 6: Math (1x6)
+            { label: '=', val: '=', type: 'btn-symbol' },
+            { label: '+', val: '+', type: 'btn-symbol' },
+            { label: '-', val: '-', type: 'btn-symbol' },
+            { label: '_', val: '_', type: 'btn-symbol' },
+            { label: '*', val: '*', type: 'btn-symbol' },
+            { label: '/', val: '/', type: 'btn-symbol' },
 
-            // Row 7: Punctuation (各1スロット × 6 = 6)
-            { label: ':', val: ':', type: 'symbol-key' },
-            { label: ';', val: ';', type: 'symbol-key' },
-            { label: '\\', val: '\\', type: 'symbol-key' },
-            { label: '|', val: '|', type: 'symbol-key' },
-            { label: '@', val: '@', type: 'symbol-key' },
-            { label: '^', val: '^', type: 'symbol-key' },
+            // Row 7: Language-sensitive (1x6)
+            { label: '@', val: '@', type: 'btn-symbol btn-special' },
+            { label: '^', val: '^', type: 'btn-symbol btn-special' },
+            { label: '\\', val: '\\', type: 'btn-symbol btn-special' },
+            { label: '|', val: '|', type: 'btn-symbol btn-special' },
+            { label: ':', val: ':', type: 'btn-symbol' },
+            { label: ';', val: ';' , type: 'btn-symbol' },
 
-            // Row 8: Symbols (各1スロット × 6 = 6) - 拡充
-            { label: '<', val: '<', type: 'symbol-key' },
-            { label: '>', val: '>', type: 'symbol-key' },
-            { label: '~', val: '~', type: 'symbol-key' },
-            { label: '%', val: '%', type: 'symbol-key' },
-            { label: '&', val: '&', type: 'symbol-key' },
-            { label: '$', val: '$', type: 'symbol-key' },
+            // Row 8: Logic & Symbols (1x6)
+            { label: '<', val: '<', type: 'btn-symbol' },
+            { label: '>', val: '>', type: 'btn-symbol' },
+            { label: '~', val: '~', type: 'btn-symbol' },
+            { label: '%', val: '%', type: 'btn-symbol' },
+            { label: '&', val: '&', type: 'btn-symbol' },
+            { label: '$', val: '$', type: 'btn-symbol' },
 
-            // Row 9: Extra (各1スロット × 6 = 6)
-            { label: '!', val: '!', type: 'symbol-key' },
-            { label: '?', val: '?', type: 'symbol-key' },
-            { label: '#', val: '#', type: 'symbol-key' },
-            { label: '§', val: '§', type: 'symbol-key' },
-            { label: '€', val: '€', type: 'symbol-key' },
-            { label: '£', val: '£', type: 'symbol-key' }
+            // Row 9: Extra (1x6)
+            { label: '!', val: '!', type: 'btn-symbol' },
+            { label: '?', val: '?', type: 'btn-symbol' },
+            { label: '#', val: '#', type: 'btn-symbol' },
+            { label: '§', val: '§', type: 'btn-symbol btn-special' },
+            { label: '€', val: '€', type: 'btn-symbol' },
+            { label: '£', val: '£', type: 'btn-symbol' }
         ];
 
         keys.forEach(key => {
             const btn = document.createElement('button');
             btn.className = key.type;
-            
-            const labelMain = document.createElement('span');
-            labelMain.textContent = key.label;
-            btn.appendChild(labelMain);
-
+            const spanMain = document.createElement('span');
+            spanMain.textContent = key.label;
+            btn.appendChild(spanMain);
             if (key.sub) {
-                const labelSub = document.createElement('span');
-                labelSub.className = 'btn-label-sub';
-                labelSub.textContent = key.sub;
-                btn.appendChild(labelSub);
+                const spanSub = document.createElement('span');
+                spanSub.className = 'label-sub';
+                spanSub.textContent = key.sub;
+                btn.appendChild(spanSub);
             }
-
             btn.onclick = () => insertText(key.val, key.offset || 0);
             keypad.appendChild(btn);
         });
@@ -184,8 +188,7 @@
             saveHistory();
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
-            const val = editor.value;
-            editor.value = val.substring(0, start) + text + val.substring(end);
+            editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
             const newPos = start + text.length + offset;
             editor.setSelectionRange(newPos, newPos);
             editor.focus();
@@ -198,16 +201,10 @@
                     editor.value = history[history.length - 1];
                 }
             } else if (type === 'clear') {
-                if(confirm("すべて消去しますか？")) {
-                    saveHistory();
-                    editor.value = '';
-                }
+                if(confirm("Clear all?")) { saveHistory(); editor.value = ''; }
             } else if (type === 'copy') {
                 editor.select();
                 document.execCommand('copy');
-                const btn = event.target;
-                btn.textContent = 'DONE!';
-                setTimeout(() => btn.textContent = 'COPY', 1000);
             }
             editor.focus();
         }
