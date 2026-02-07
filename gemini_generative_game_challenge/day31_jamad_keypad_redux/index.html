@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys v3.3 - Flat Contrast & Cyclic Nav</title>
+    <title>JamadKeys v3.4 - Cyclic Snake Navigation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -34,27 +34,25 @@
             user-select: none;
             transition: all 0.08s ease;
             -webkit-tap-highlight-color: transparent;
-            border: 1px solid #333; 
+            border: 1px solid #333; /* 明るめの枠線 */
         }
 
-        /* 実行時のフラッシュ効果 */
         .btn-active-sim {
             background-color: #ffffff !important;
             color: #000000 !important;
             transform: translateY(2px);
         }
 
-        /* フォーカス時のデザイン（青い枠） */
         button:focus {
             outline: none;
             border: 1px solid #3b82f6;
+            background-color: #001030 !important;
             box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
         }
 
-        /* マクロ背景（復活） */
         .btn-macro { 
             grid-column: span 2; 
-            background-color: #000a1f; /* 深いネイビー */
+            background-color: #000a1f; 
             color: #ffffff;
             height: 64px;
             font-size: 0.9rem;
@@ -69,11 +67,7 @@
         }
 
         .btn-special { background-color: #0d0d0d; }
-        
-        /* ハイライト背景（復活） */
-        .btn-highlight { 
-            background-color: #041404; /* 深いフォレストグリーン */
-        }
+        .btn-highlight { background-color: #041404; }
 
         .label-sub { font-size: 0.55em; opacity: 0.6; margin-top: 1px; font-family: monospace; }
         textarea:focus { outline: none; border: 1px solid #111; }
@@ -83,10 +77,10 @@
 
     <div class="flex-none p-4 bg-black border-b border-gray-900 shadow-2xl">
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[10px] text-blue-900 font-black tracking-[0.2em]">JAMADKEYS v3.3</span>
+            <span class="text-[10px] text-blue-900 font-black tracking-[0.2em]">JAMADKEYS v3.4</span>
             <div class="flex gap-4 text-[9px] text-gray-800 mr-auto ml-6 hidden md:flex uppercase font-bold">
-                <span>WASD: Move (Cyclic)</span>
-                <span>Enter / Space: Type</span>
+                <span>WASD / Arrows: Cyclic Move</span>
+                <span>Space / Enter: Type / Flash</span>
             </div>
             <div class="flex gap-2">
                 <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">UNDO</button>
@@ -95,7 +89,7 @@
                 <button id="btn-copy" onclick="handleUtil('copy')" class="px-5 py-1 bg-[#000a1f] text-[9px] rounded text-white h-7 font-bold border-[#001a4d]">COPY</button>
             </div>
         </div>
-        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="WASD to navigate / Enter to type..."></textarea>
+        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Tab / WASD to navigate..."></textarea>
     </div>
 
     <div class="flex-1 overflow-y-auto pt-2 bg-black">
@@ -109,7 +103,8 @@
         const keypad = document.getElementById('keypad');
         let history = [''];
         let redoStack = [];
-        let buttonMap = []; 
+        let buttons = []; // 論理的な全ボタン配列
+        let verticalPath = []; // 縦移動用の並び順
 
         const keys = [
             { id: 'btn-start', label: 'Table 1col', sub: '|-|', val: '|  |\n|---|\n|  |', offset: -11, type: 'btn-macro' },
@@ -124,70 +119,63 @@
             { label: 'Comment', sub: '<!-- -->', val: '<!--  -->', offset: -4, type: 'btn-macro' },
             { label: 'Task List', sub: '- [ ]', val: '- [ ] ', type: 'btn-macro' },
             { label: 'HR Line', sub: '---', val: '\n---\n', type: 'btn-macro' },
-            { label: '[', val: '[', type: 'btn-symbol' },
-            { label: ']', val: ']', type: 'btn-symbol' },
-            { label: '{', val: '{', type: 'btn-symbol' },
-            { label: '}', val: '}', type: 'btn-symbol' },
-            { label: '(', val: '(', type: 'btn-symbol' },
-            { label: ')', val: ')', type: 'btn-symbol' },
-            { label: 'ä', val: 'ä', type: 'btn-symbol btn-special' },
-            { label: 'ö', val: 'ö', type: 'btn-symbol btn-special' },
-            { label: 'å', val: 'å', type: 'btn-symbol btn-special' },
-            { label: "'", val: "'", type: 'btn-symbol' },
-            { label: '"', val: '"', type: 'btn-symbol' },
-            { label: '`', val: '`', type: 'btn-symbol btn-highlight' },
-            { label: '+', val: '+', type: 'btn-symbol' },
-            { label: '-', val: '-', type: 'btn-symbol' },
-            { label: '*', val: '*', type: 'btn-symbol' },
-            { label: '/', val: '/', type: 'btn-symbol' },
-            { label: '=', val: '=', type: 'btn-symbol' },
-            { label: '_', val: '_', type: 'btn-symbol' },
-            { label: '!', val: '!', type: 'btn-symbol' },
-            { label: '@', val: '@', type: 'btn-symbol' },
-            { label: '#', val: '#', type: 'btn-symbol' },
-            { label: '$', val: '$', type: 'btn-symbol' },
-            { label: '%', val: '%', type: 'btn-symbol' },
-            { label: '&', val: '&', type: 'btn-symbol' },
-            { label: ':', val: ':', type: 'btn-symbol' },
-            { label: ';', val: ';' , type: 'btn-symbol' },
-            { label: '<', val: '<', type: 'btn-symbol' },
-            { label: '>', val: '>', type: 'btn-symbol' },
-            { label: '|', val: '|', type: 'btn-symbol btn-highlight' },
-            { label: '\\', val: '\\', type: 'btn-symbol btn-highlight' },
-            { label: '?', val: '?', type: 'btn-symbol' },
-            { label: '~', val: '~', type: 'btn-symbol btn-highlight' },
-            { label: '^', val: '^', type: 'btn-symbol btn-highlight' },
-            { label: '§', val: '§', type: 'btn-symbol btn-special' },
-            { label: '€', val: '€', type: 'btn-symbol' },
-            { label: '→', val: '→', type: 'btn-symbol' }
+            // Symbols (1-col)
+            { label: '[', val: '[', type: 'btn-symbol' }, { label: ']', val: ']', type: 'btn-symbol' },
+            { label: '{', val: '{', type: 'btn-symbol' }, { label: '}', val: '}', type: 'btn-symbol' },
+            { label: '(', val: '(', type: 'btn-symbol' }, { label: ')', val: ')', type: 'btn-symbol' },
+            { label: 'ä', val: 'ä', type: 'btn-symbol btn-special' }, { label: 'ö', val: 'ö', type: 'btn-symbol btn-special' },
+            { label: 'å', val: 'å', type: 'btn-symbol btn-special' }, { label: "'", val: "'", type: 'btn-symbol' },
+            { label: '"', val: '"', type: 'btn-symbol' }, { label: '`', val: '`', type: 'btn-symbol btn-highlight' },
+            { label: '+', val: '+', type: 'btn-symbol' }, { label: '-', val: '-', type: 'btn-symbol' },
+            { label: '*', val: '*', type: 'btn-symbol' }, { label: '/', val: '/', type: 'btn-symbol' },
+            { label: '=', val: '=', type: 'btn-symbol' }, { label: '_', val: '_', type: 'btn-symbol' },
+            { label: '!', val: '!', type: 'btn-symbol' }, { label: '@', val: '@', type: 'btn-symbol' },
+            { label: '#', val: '#', type: 'btn-symbol' }, { label: '$', val: '$', type: 'btn-symbol' },
+            { label: '%', val: '%', type: 'btn-symbol' }, { label: '&', val: '&', type: 'btn-symbol' },
+            { label: ':', val: ':', type: 'btn-symbol' }, { label: ';', val: ';' , type: 'btn-symbol' },
+            { label: '<', val: '<', type: 'btn-symbol' }, { label: '>', val: '>', type: 'btn-symbol' },
+            { label: '|', val: '|', type: 'btn-symbol btn-highlight' }, { label: '\\', val: '\\', type: 'btn-symbol btn-highlight' },
+            { label: '?', val: '?', type: 'btn-symbol' }, { label: '~', val: '~', type: 'btn-symbol btn-highlight' },
+            { label: '^', val: '^', type: 'btn-symbol btn-highlight' }, { label: '§', val: '§', type: 'btn-symbol btn-special' },
+            { label: '€', val: '€', type: 'btn-symbol' }, { label: '→', val: '→', type: 'btn-symbol' }
         ];
 
+        // UI生成
         keys.forEach((key, index) => {
             const btn = document.createElement('button');
             btn.className = key.type;
             if (key.id) btn.id = key.id;
-            
             const spanMain = document.createElement('span');
             spanMain.textContent = key.label;
             btn.appendChild(spanMain);
-            
             if (key.sub) {
                 const spanSub = document.createElement('span');
                 spanSub.className = 'label-sub';
                 spanSub.textContent = key.sub;
                 btn.appendChild(spanSub);
             }
-            
-            btn.onclick = () => {
-                flashButton(btn);
-                insertText(key.val, key.offset || 0);
-            };
+            btn.onclick = () => { flashButton(btn); insertText(key.val, key.offset || 0); };
             keypad.appendChild(btn);
-            buttonMap.push(btn);
+            buttons.push(btn);
         });
 
+        // 垂直移動用のパス（コラム走査）を構築
+        function buildVerticalPath() {
+            const cols = [[], [], [], [], [], []];
+            buttons.forEach(btn => {
+                const rect = btn.getBoundingClientRect();
+                const colIndex = Math.floor((btn.offsetLeft - keypad.offsetLeft) / (keypad.offsetWidth / 6));
+                // マクロは2列分にまたがるが、開始列に所属させる
+                cols[colIndex].push(btn);
+            });
+            verticalPath = cols.flat();
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('btn-start').focus();
+            setTimeout(() => {
+                buildVerticalPath();
+                document.getElementById('btn-start').focus();
+            }, 100);
         });
 
         function insertText(text, offset) {
@@ -201,26 +189,13 @@
 
         function handleUtil(type) {
             if (type === 'undo') {
-                if (history.length > 1) {
-                    redoStack.push(history.pop());
-                    editor.value = history[history.length - 1];
-                }
+                if (history.length > 1) { redoStack.push(history.pop()); editor.value = history[history.length - 1]; }
             } else if (type === 'redo') {
-                if (redoStack.length > 0) {
-                    const val = redoStack.pop();
-                    history.push(val);
-                    editor.value = val;
-                }
+                if (redoStack.length > 0) { const val = redoStack.pop(); history.push(val); editor.value = val; }
             } else if (type === 'clear') {
-                if(confirm("Clear all?")) {
-                    saveHistory();
-                    editor.value = '';
-                    redoStack = [];
-                }
+                if(confirm("Clear all?")) { saveHistory(); editor.value = ''; redoStack = []; }
             } else if (type === 'copy') {
-                editor.select();
-                document.execCommand('copy');
-                flashButton(document.getElementById('btn-copy'));
+                editor.select(); document.execCommand('copy'); flashButton(document.getElementById('btn-copy'));
             }
         }
 
@@ -237,56 +212,24 @@
             setTimeout(() => el.classList.remove('btn-active-sim'), 100);
         }
 
-        function moveFocus(dir) {
+        // ナビゲーションロジック
+        function navigate(dir) {
             const active = document.activeElement;
             if (!active || active.tagName !== 'BUTTON') return;
-            
-            const rect = active.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
 
-            let closest = null;
-            let minDistance = Infinity;
-
-            // 1. 通常の移動先を探す
-            buttonMap.forEach(btn => {
-                if (btn === active) return;
-                const r = btn.getBoundingClientRect();
-                const cX = r.left + r.width / 2;
-                const cY = r.top + r.height / 2;
-                const dx = cX - centerX;
-                const dy = cY - centerY;
-
-                let match = false;
-                if (dir === 'up' && dy < -10 && Math.abs(dx) < r.width * 1.5) match = true;
-                if (dir === 'down' && dy > 10 && Math.abs(dx) < r.width * 1.5) match = true;
-                if (dir === 'left' && dx < -10 && Math.abs(dy) < r.height) match = true;
-                if (dir === 'right' && dx > 10 && Math.abs(dy) < r.height) match = true;
-
-                if (match) {
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    if (dist < minDistance) { minDistance = dist; closest = btn; }
-                }
-            });
-
-            // 2. 移動先がなければ「周回」させる
-            if (!closest) {
-                if (dir === 'right') { // 同じ行の左端へ
-                    closest = buttonMap.filter(btn => Math.abs(btn.getBoundingClientRect().top - rect.top) < 10)
-                                       .sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left)[0];
-                } else if (dir === 'left') { // 同じ行の右端へ
-                    closest = buttonMap.filter(btn => Math.abs(btn.getBoundingClientRect().top - rect.top) < 10)
-                                       .sort((a, b) => b.getBoundingClientRect().left - a.getBoundingClientRect().left)[0];
-                } else if (dir === 'down') { // 同じ列の最上段へ
-                    closest = buttonMap.filter(btn => Math.abs(btn.getBoundingClientRect().left - rect.left) < 30)
-                                       .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)[0];
-                } else if (dir === 'up') { // 同じ列の最下段へ
-                    closest = buttonMap.filter(btn => Math.abs(btn.getBoundingClientRect().left - rect.left) < 30)
-                                       .sort((a, b) => b.getBoundingClientRect().top - a.getBoundingClientRect().top)[0];
-                }
+            if (dir === 'right' || dir === 'left') {
+                // 水平：論理インデックスで移動
+                let idx = buttons.indexOf(active);
+                if (dir === 'right') idx = (idx + 1) % buttons.length;
+                else idx = (idx - 1 + buttons.length) % buttons.length;
+                buttons[idx].focus();
+            } else {
+                // 垂直：コラムパスで移動
+                let idx = verticalPath.indexOf(active);
+                if (dir === 'down') idx = (idx + 1) % verticalPath.length;
+                else idx = (idx - 1 + verticalPath.length) % verticalPath.length;
+                verticalPath[idx].focus();
             }
-
-            if (closest) closest.focus();
         }
 
         window.addEventListener('keydown', (e) => {
@@ -294,10 +237,10 @@
             const ctrl = e.ctrlKey || e.metaKey;
 
             if (document.activeElement.tagName === 'BUTTON') {
-                if (key === 'w' || key === 'arrowup') { e.preventDefault(); moveFocus('up'); }
-                if (key === 's' || key === 'arrowdown') { e.preventDefault(); moveFocus('down'); }
-                if (key === 'a' || key === 'arrowleft') { e.preventDefault(); moveFocus('left'); }
-                if (key === 'd' || key === 'arrowright') { e.preventDefault(); moveFocus('right'); }
+                if (key === 'd' || key === 'arrowright') { e.preventDefault(); navigate('right'); }
+                if (key === 'a' || key === 'arrowleft') { e.preventDefault(); navigate('left'); }
+                if (key === 's' || key === 'arrowdown') { e.preventDefault(); navigate('down'); }
+                if (key === 'w' || key === 'arrowup') { e.preventDefault(); navigate('up'); }
                 if (e.key === 'Enter' || e.key === ' ') { flashButton(document.activeElement); }
             }
 
