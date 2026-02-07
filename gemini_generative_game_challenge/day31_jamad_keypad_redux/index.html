@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys v3.1 - Deep Contrast</title>
+    <title>JamadKeys v3.2 - Spatial Navigation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -32,39 +32,35 @@
             border-radius: 4px;
             font-weight: 700;
             user-select: none;
-            transition: all 0.1s ease;
+            transition: all 0.08s ease;
             -webkit-tap-highlight-color: transparent;
-            border: 1px solid rgba(255,255,255,0.03);
+            /* 境界線を少し明るく */
+            border: 1px solid #333; 
         }
 
-        /* ショートカット実行時のアニメーション用クラス */
+        /* 実行時のフラッシュ効果 */
         .btn-active-sim {
             background-color: #ffffff !important;
             color: #000000 !important;
             transform: translateY(2px);
         }
 
+        /* フォーカス時のデザイン（青い枠） */
         button:focus {
             outline: none;
             border: 1px solid #3b82f6;
             background-color: #001030 !important;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
         }
 
-        button:active {
-            transform: translateY(1px);
-            filter: brightness(2);
-        }
-
-        /* マクロ（極暗ネイビー） */
         .btn-macro { 
             grid-column: span 2; 
-            background-color: #00081a;
+            background-color: #050505;
             color: #ffffff;
             height: 64px;
             font-size: 0.9rem;
         }
 
-        /* 記号（極暗グレー） */
         .btn-symbol { 
             grid-column: span 1;
             background-color: #050505;
@@ -73,18 +69,10 @@
             font-size: 1.2rem;
         }
 
-        /* 特殊ボタン（少しだけ明度上げ） */
-        .btn-special {
-            background-color: #0d0d0d;
-        }
+        .btn-special { background-color: #0d0d0d; }
+        .btn-highlight { background-color: #040d04; }
 
-        /* グリーン・ハイライト（極暗フォレストグリーン） */
-        .btn-highlight {
-            background-color: #040d04; 
-            color: #ffffff;
-        }
-
-        .label-sub { font-size: 0.5em; opacity: 0.6; margin-top: 1px; font-family: monospace; letter-spacing: 0.05em; }
+        .label-sub { font-size: 0.5em; opacity: 0.6; margin-top: 1px; font-family: monospace; }
         .label-kb { font-size: 0.5em; color: #3b82f6; margin-top: 2px; }
 
         textarea:focus { outline: none; border: 1px solid #111; }
@@ -94,19 +82,19 @@
 
     <div class="flex-none p-4 bg-black border-b border-gray-900 shadow-2xl">
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[10px] text-blue-800 font-black tracking-[0.2em]">JAMADKEYS v3.1</span>
+            <span class="text-[10px] text-blue-800 font-black tracking-[0.2em]">JAMADKEYS v3.2</span>
             <div class="flex gap-4 text-[9px] text-gray-700 mr-auto ml-6 hidden md:flex uppercase font-bold">
-                <span>Tab: Navigate</span>
-                <span>Enter: Type</span>
+                <span>WASD / Arrows: Move</span>
+                <span>Enter / Space: Type</span>
             </div>
             <div class="flex gap-2">
-                <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-[#050505] text-[9px] rounded text-gray-400 h-7">UNDO <span class="label-kb ml-1">^Z</span></button>
-                <button id="btn-redo" onclick="handleUtil('redo')" class="px-3 py-1 bg-[#050505] text-[9px] rounded text-gray-400 h-7">REDO <span class="label-kb ml-1">^Y</span></button>
-                <button id="btn-clear" onclick="handleUtil('clear')" class="px-3 py-1 bg-[#1a0000] text-[9px] rounded text-gray-400 h-7">CLEAR <span class="label-kb ml-1">^K</span></button>
-                <button id="btn-copy" onclick="handleUtil('copy')" class="px-5 py-1 bg-[#001030] text-[9px] rounded text-white h-7 font-bold">COPY <span class="label-kb ml-1">^C</span></button>
+                <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">UNDO <span class="label-kb ml-1">^Z</span></button>
+                <button id="btn-redo" onclick="handleUtil('redo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">REDO <span class="label-kb ml-1">^Y</span></button>
+                <button id="btn-clear" onclick="handleUtil('clear')" class="px-3 py-1 bg-black text-[9px] rounded text-red-900 h-7 border-[#222]">CLEAR <span class="label-kb ml-1">^K</span></button>
+                <button id="btn-copy" onclick="handleUtil('copy')" class="px-5 py-1 bg-[#001030] text-[9px] rounded text-white h-7 font-bold border-[#002060]">COPY <span class="label-kb ml-1">^C</span></button>
             </div>
         </div>
-        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Tab to navigate / Enter to type..."></textarea>
+        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="WASD to navigate / Enter to type..."></textarea>
     </div>
 
     <div class="flex-1 overflow-y-auto pt-2 bg-black">
@@ -121,6 +109,7 @@
         let history = [''];
         let redoStack = [];
 
+        // 構造定義
         const keys = [
             { id: 'btn-t1', label: 'Table 1col', sub: '|-|', kb: '^⇧T', val: '|  |\n|---|\n|  |', offset: -11, type: 'btn-macro' },
             { label: 'Table 2col', sub: '|--|', val: '|  |  |\n|---|---|\n|  |  |', offset: -15, type: 'btn-macro' },
@@ -172,10 +161,14 @@
             { label: '→', val: '→', type: 'btn-symbol' }
         ];
 
-        keys.forEach(key => {
+        // 空間ナビ用マップ生成
+        let buttonMap = []; 
+
+        keys.forEach((key, index) => {
             const btn = document.createElement('button');
             btn.className = key.type;
             if (key.id) btn.id = key.id;
+            btn.setAttribute('data-index', index);
             
             const spanMain = document.createElement('span');
             spanMain.textContent = key.label;
@@ -183,7 +176,6 @@
             
             const bottomRow = document.createElement('div');
             bottomRow.className = 'flex gap-2 items-center';
-            
             if (key.sub) {
                 const spanSub = document.createElement('span');
                 spanSub.className = 'label-sub';
@@ -198,8 +190,12 @@
             }
             btn.appendChild(bottomRow);
             
-            btn.onclick = () => insertText(key.val, key.offset || 0);
+            btn.onclick = () => {
+                flashButton(btn);
+                insertText(key.val, key.offset || 0);
+            };
             keypad.appendChild(btn);
+            buttonMap.push(btn);
         });
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -208,7 +204,6 @@
 
         function insertText(text, offset) {
             saveHistory();
-            redoStack = [];
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
             editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
@@ -237,9 +232,7 @@
             } else if (type === 'copy') {
                 editor.select();
                 document.execCommand('copy');
-                const btn = document.getElementById('btn-copy');
-                btn.classList.add('btn-active-sim');
-                setTimeout(() => btn.classList.remove('btn-active-sim'), 200);
+                flashButton(document.getElementById('btn-copy'));
             }
         }
 
@@ -250,50 +243,78 @@
             }
         }
 
-        // ビジュアルフィードバック関数
-        function flashButton(id) {
-            const el = document.getElementById(id);
-            if (el) {
-                el.classList.add('btn-active-sim');
-                setTimeout(() => el.classList.remove('btn-active-sim'), 150);
-            }
+        function flashButton(el) {
+            if (!el) return;
+            el.classList.add('btn-active-sim');
+            setTimeout(() => el.classList.remove('btn-active-sim'), 100);
         }
 
-        // ショートカット制御
+        // 空間移動ロジック
+        function moveFocus(dir) {
+            const active = document.activeElement;
+            if (!active || active.tagName !== 'BUTTON') return;
+            
+            const rect = active.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            let closest = null;
+            let minDistance = Infinity;
+
+            buttonMap.forEach(btn => {
+                if (btn === active) return;
+                const r = btn.getBoundingClientRect();
+                const cX = r.left + r.width / 2;
+                const cY = r.top + r.height / 2;
+
+                const dx = cX - centerX;
+                const dy = cY - centerY;
+
+                // 方向の判定
+                let match = false;
+                if (dir === 'up' && dy < -10 && Math.abs(dx) < r.width * 1.5) match = true;
+                if (dir === 'down' && dy > 10 && Math.abs(dx) < r.width * 1.5) match = true;
+                if (dir === 'left' && dx < -10 && Math.abs(dy) < r.height) match = true;
+                if (dir === 'right' && dx > 10 && Math.abs(dy) < r.height) match = true;
+
+                if (match) {
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        closest = btn;
+                    }
+                }
+            });
+
+            if (closest) closest.focus();
+        }
+
+        // 全体キー制御
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
             const ctrl = e.ctrlKey || e.metaKey;
-            const shift = e.shiftKey;
 
-            if (ctrl) {
-                if (key === 'z') {
-                    e.preventDefault();
-                    flashButton('btn-undo');
-                    handleUtil('undo');
-                } else if (key === 'y') {
-                    e.preventDefault();
-                    flashButton('btn-redo');
-                    handleUtil('redo');
-                } else if (key === 'k') {
-                    e.preventDefault();
-                    flashButton('btn-clear');
-                    handleUtil('clear');
-                } else if (key === 'c' && document.activeElement !== editor) {
-                    e.preventDefault();
-                    handleUtil('copy');
-                } else if (key === 'b') {
-                    e.preventDefault();
-                    flashButton('btn-bold');
-                    insertText('****', -2);
-                } else if (key === 'l') {
-                    e.preventDefault();
-                    flashButton('btn-link');
-                    insertText('[]()', -3);
-                } else if (key === 't' && shift) {
-                    e.preventDefault();
-                    flashButton('btn-t1');
-                    insertText('|  |\n|---|\n|  |', -11);
+            // 空間移動 (WASD / Arrows)
+            if (document.activeElement.tagName === 'BUTTON') {
+                if (key === 'w' || key === 'arrowup') { e.preventDefault(); moveFocus('up'); }
+                if (key === 's' || key === 'arrowdown') { e.preventDefault(); moveFocus('down'); }
+                if (key === 'a' || key === 'arrowleft') { e.preventDefault(); moveFocus('left'); }
+                if (key === 'd' || key === 'arrowright') { e.preventDefault(); moveFocus('right'); }
+                
+                // Enter / Space 時のエフェクト
+                if (e.key === 'Enter' || e.key === ' ') {
+                    flashButton(document.activeElement);
                 }
+            }
+
+            // ショートカット
+            if (ctrl) {
+                if (key === 'z') { e.preventDefault(); flashButton(document.getElementById('btn-undo')); handleUtil('undo'); }
+                if (key === 'y') { e.preventDefault(); flashButton(document.getElementById('btn-redo')); handleUtil('redo'); }
+                if (key === 'k') { e.preventDefault(); flashButton(document.getElementById('btn-clear')); handleUtil('clear'); }
+                if (key === 'c' && document.activeElement !== editor) { e.preventDefault(); handleUtil('copy'); }
+                if (key === 'b') { e.preventDefault(); flashButton(document.getElementById('btn-bold')); insertText('****', -2); }
+                if (key === 'l') { e.preventDefault(); flashButton(document.getElementById('btn-link')); insertText('[]()', -3); }
             }
         });
     </script>
