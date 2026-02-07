@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys v4.0 - Perfect Control</title>
+    <title>JamadKeys v4.1 - Final Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -34,7 +34,6 @@
             user-select: none;
             transition: all 0.08s ease;
             -webkit-tap-highlight-color: transparent;
-            /* 枠線の明度を上げて視認性確保 */
             border: 1px solid #444; 
         }
 
@@ -51,7 +50,6 @@
             box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
         }
 
-        /* 1080p最適化サイズ */
         .btn-macro { 
             grid-column: span 2; 
             background-color: #000a1f; 
@@ -62,7 +60,7 @@
         .btn-symbol { 
             grid-column: span 1;
             background-color: #050505;
-            height: 55px; /* 指定の55px */
+            height: 55px; 
             font-size: 1.2rem;
         }
 
@@ -73,24 +71,43 @@
         .label-hint { font-size: 0.5em; color: #3b82f6; margin-top: 2px; font-weight: 400; }
 
         textarea:focus { outline: none; border: 1px solid #111; }
+
+        /* 追加：リンク用スタイル */
+        .nav-link {
+            font-size: 9px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: color 0.2s;
+        }
+        .nav-link:hover { color: #3b82f6; }
+        .nav-sep { color: #222; margin: 0 4px; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
+    <!-- 操作パネル -->
     <div class="flex-none p-4 bg-black border-b border-gray-900 shadow-2xl">
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[11px] text-blue-400 font-black tracking-[0.2em] uppercase">JamadKeys Next v4.0</span>
+            <div class="flex items-center gap-4">
+                <span class="text-[11px] text-blue-400 font-black tracking-[0.2em] uppercase">JamadKeys Next v4.1</span>
+                <div class="flex items-center border-l border-gray-800 pl-4">
+                    <a href="https://3d-mindmap-b2c434.gitlab.io/" target="_blank" class="nav-link">Home</a>
+                    <span class="nav-sep">|</span>
+                    <a href="#" class="nav-link">Bug Report</a>
+                </div>
+            </div>
             <div class="flex gap-2">
-                <button id="btn-undo" onclick="handleUtil('undo')" class="px-2 py-1 bg-black text-[9px] rounded text-gray-400 h-8">UNDO<span class="label-hint">^Z</span></button>
-                <button id="btn-redo" onclick="handleUtil('redo')" class="px-2 py-1 bg-black text-[9px] rounded text-gray-400 h-8">REDO<span class="label-hint">^Y</span></button>
-                <button id="btn-cut" onclick="handleUtil('cut')" class="px-3 py-1 bg-black text-[9px] rounded text-red-900 h-8">CUT<span class="label-hint">^X</span></button>
-                <button id="btn-copy" onclick="handleUtil('copy')" class="px-3 py-1 bg-[#000a1f] text-[9px] rounded text-white h-8 font-bold">COPY<span class="label-hint">^C</span></button>
-                <button id="btn-paste" onclick="handleUtil('paste')" class="px-3 py-1 bg-[#001f0a] text-[9px] rounded text-white h-8 font-bold">PASTE<span class="label-hint text-green-400">^V</span></button>
+                <button id="btn-undo" onclick="handleUtil('undo')" class="px-2 py-1 bg-black text-[9px] rounded text-gray-400 h-8 border-[#222]">UNDO<span class="label-hint">^Z</span></button>
+                <button id="btn-redo" onclick="handleUtil('redo')" class="px-2 py-1 bg-black text-[9px] rounded text-gray-400 h-8 border-[#222]">REDO<span class="label-hint">^Y</span></button>
+                <button id="btn-cut" onclick="handleUtil('cut')" class="px-4 py-1 bg-black text-[9px] rounded text-red-900 h-8 border-[#222]">CUT<span class="label-hint">^X</span></button>
+                <button id="btn-copy" onclick="handleUtil('copy')" class="px-4 py-1 bg-[#000a1f] text-[9px] rounded text-white h-8 font-bold border-[#001a4d]">COPY<span class="label-hint">^C</span></button>
             </div>
         </div>
         <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Tab to navigate / Enter to type..."></textarea>
     </div>
 
+    <!-- キーパッド -->
     <div class="flex-1 overflow-y-auto pt-2 bg-black">
         <div id="keypad" class="key-grid">
             <!-- JS生成 -->
@@ -181,10 +198,9 @@
             editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
             
             const newPos = start + text.length + offset;
-            editor.focus(); // カーソル位置を確定させるために一度フォーカス
+            editor.focus();
             editor.setSelectionRange(newPos, newPos);
             
-            // WASDナビゲーションを継続するため、フォーカスをボタンに戻す
             const currentBtn = document.activeElement;
             if (currentBtn && currentBtn.tagName === 'BUTTON') {
                 setTimeout(() => currentBtn.focus(), 0);
@@ -221,12 +237,6 @@
                     document.execCommand('copy');
                 }
                 flashButton(document.getElementById('btn-copy'));
-            } else if (type === 'paste') {
-                try {
-                    const text = await navigator.clipboard.readText();
-                    insertText(text, 0);
-                    flashButton(document.getElementById('btn-paste'));
-                } catch (err) { alert("Paste blocked. Use ^V."); }
             }
         }
 
@@ -280,9 +290,11 @@
                 if (key === 'z') { e.preventDefault(); flashButton(document.getElementById('btn-undo')); handleUtil('undo'); }
                 if (key === 'y') { e.preventDefault(); flashButton(document.getElementById('btn-redo')); handleUtil('redo'); }
                 if (key === 'x') { e.preventDefault(); handleUtil('cut'); }
-                if (key === 'v') { flashButton(document.getElementById('btn-paste')); }
                 if (key === 'a') { e.preventDefault(); editor.focus(); editor.select(); }
                 if (key === 'c' && document.activeElement !== editor) { e.preventDefault(); handleUtil('copy'); }
+                // Pasteエフェクトのみ（実際のPasteはブラウザの標準挙動に任せる）
+                if (key === 'v' && document.activeElement === editor) { /* skip flash to avoid conflict */ }
+                else if (key === 'v') { /* optional: handle visual feedback if needed */ }
             }
         });
     </script>
