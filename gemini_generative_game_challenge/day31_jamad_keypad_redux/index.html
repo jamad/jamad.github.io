@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys Next v2.2</title>
+    <title>JamadKeys v2.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -14,12 +14,13 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
+        /* 6カラム固定のグリッド */
         .key-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 5px;
-            padding: 8px;
-            padding-bottom: 40px;
+            gap: 6px;
+            padding: 10px;
+            padding-bottom: 50px;
         }
 
         button {
@@ -28,67 +29,64 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
-            transition: transform 0.05s, background-color 0.1s;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
         button:active {
             transform: translateY(2px);
-            filter: brightness(1.3);
+            box-shadow: none;
+            filter: brightness(1.2);
         }
 
-        /* マクロ（青）: 2列 */
+        /* マクロボタン（青）: 2列分使用 */
         .macro-key { 
-            background-color: #2c5282; 
-            color: #ebf8ff; 
+            background-color: #1e3a8a; /* Dark Blue */
+            color: #ffffff; 
             grid-column: span 2; 
-            height: 54px;
-            font-size: 0.85rem;
+            height: 58px;
+            font-size: 0.9rem;
+            border: 1px solid #3b82f6;
         }
 
-        /* サブマクロ（グレー）: 2列 */
-        .sub-macro-key {
-            background-color: #2d3748; 
-            color: #cbd5e0;
-            grid-column: span 2;
-            height: 52px;
-            font-size: 0.85rem;
-        }
-
-        /* 記号キー（黒）: 1列 */
+        /* 記号キー（グレー）: 1列分使用 */
         .symbol-key { 
-            background-color: #1a202c; 
-            border: 1px solid #4a5568;
-            height: 48px;
-            font-size: 1.1rem;
+            background-color: #262626; 
+            color: #ffffff;
+            height: 52px;
+            font-size: 1.2rem;
+            border: 1px solid #404040;
         }
 
-        .btn-label-sub { font-size: 0.6em; opacity: 0.6; font-family: monospace; }
+        .btn-label-sub { font-size: 0.6em; opacity: 0.5; font-family: monospace; margin-top: 2px; }
         textarea:focus { outline: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <!-- ディスプレイエリア -->
+    <!-- ヘッダーエリア -->
     <div class="flex-none p-3 bg-gray-900 border-b border-gray-700">
         <div class="flex justify-between items-center mb-2">
-            <span class="text-xs text-gray-400 font-mono">JamadKeys v2.2</span>
+            <span class="text-xs text-gray-500 font-mono">JAMADKEYS v2.3</span>
             <div class="flex gap-2">
-                <button onclick="handleUtil('undo')" class="px-3 py-1 bg-gray-700 text-xs rounded h-8 w-14">UNDO</button>
-                <button onclick="handleUtil('clear')" class="px-3 py-1 bg-red-900 text-xs rounded h-8 w-14">CLR</button>
-                <button onclick="handleUtil('copy')" class="px-3 py-1 bg-blue-700 text-xs rounded h-8 w-14">COPY</button>
+                <button onclick="handleUtil('undo')" class="px-3 py-1 bg-gray-700 text-xs rounded h-8 w-14 border-none shadow-none">UNDO</button>
+                <button onclick="handleUtil('clear')" class="px-3 py-1 bg-red-900 text-xs rounded h-8 w-14 border-none shadow-none">CLR</button>
+                <button onclick="handleUtil('copy')" class="px-3 py-1 bg-blue-600 text-xs rounded h-8 w-14 border-none shadow-none text-white">COPY</button>
             </div>
         </div>
-        <textarea id="editor" class="w-full h-40 p-3 bg-gray-100 text-gray-900 rounded text-lg font-mono resize-none shadow-inner" placeholder="Type Markdown..."></textarea>
+        <textarea id="editor" class="w-full h-40 p-3 bg-gray-100 text-black rounded text-lg font-mono resize-none shadow-inner" placeholder="Ready for input..."></textarea>
     </div>
 
     <!-- キーパッドエリア -->
     <div class="flex-1 overflow-y-auto bg-black custom-scrollbar">
         <div id="keypad" class="key-grid">
-            <!-- JavaScriptでボタンを生成 -->
+            <!-- JavaScriptで生成 -->
         </div>
     </div>
 
@@ -97,24 +95,24 @@
         const keypad = document.getElementById('keypad');
         let history = [''];
 
-        // キー定義
+        // キー定義。6個(スロット)単位で1行になるよう配置
         const keys = [
-            // Row 1: Tables
+            // Row 1: Tables (各2スロット × 3 = 6)
             { label: 'Table 1col', val: '|  |\n|---|\n|  |', offset: -11, type: 'macro' },
             { label: 'Table 2col', val: '|  |  |\n|---|---|\n|  |  |', offset: -15, type: 'macro' },
             { label: 'Table 3col', val: '|  |  |  |\n|---|---|---|\n|  |  |  |', offset: -19, type: 'macro' },
 
-            // Row 2: Basic Markdown
-            { label: 'Bold', sub: '****', val: '****', offset: -2, type: 'sub-macro' },
-            { label: 'Link', sub: '[]()', val: '[]()', offset: -3, type: 'sub-macro' },
-            { label: 'Code', sub: '```', val: '```\n\n```', offset: -4, type: 'sub-macro' },
+            // Row 2: Basic Style (各2スロット × 3 = 6)
+            { label: 'Bold', sub: '****', val: '****', offset: -2, type: 'macro' },
+            { label: 'Link', sub: '[]()', val: '[]()', offset: -3, type: 'macro' },
+            { label: 'Code', sub: '```', val: '```\n\n```', offset: -4, type: 'macro' },
 
-            // Row 3: Markdown Structure
-            { label: 'H1 Header', sub: '# ', val: '# ', type: 'sub-macro' },
-            { label: 'List', sub: '- ', val: '- ', type: 'sub-macro' },
-            { label: 'Quote', sub: '> ', val: '> ', type: 'sub-macro' },
+            // Row 3: Structure (各2スロット × 3 = 6)
+            { label: 'H1 Header', sub: '# ', val: '# ', type: 'macro' },
+            { label: 'List', sub: '- ', val: '- ', type: 'macro' },
+            { label: 'Quote', sub: '> ', val: '> ', type: 'macro' },
 
-            // Row 4: Symbols (Layout Sensitive)
+            // Row 4: Brackets (各1スロット × 6 = 6) 一列に並びます
             { label: '[', val: '[', type: 'symbol-key' },
             { label: ']', val: ']', type: 'symbol-key' },
             { label: '{', val: '{', type: 'symbol-key' },
@@ -122,7 +120,7 @@
             { label: '(', val: '(', type: 'symbol-key' },
             { label: ')', val: ')', type: 'symbol-key' },
 
-            // Row 5: Quotes & Finnish Special
+            // Row 5: Quotes & Finnish (各1スロット × 6 = 6)
             { label: '"', val: '"', type: 'symbol-key' },
             { label: "'", val: "'", type: 'symbol-key' },
             { label: '`', val: '`', type: 'symbol-key' },
@@ -130,7 +128,7 @@
             { label: 'ä', val: 'ä', type: 'symbol-key' },
             { label: 'ö', val: 'ö', type: 'symbol-key' },
 
-            // Row 6: Math & Connectors
+            // Row 6: Math & Connectors (各1スロット × 6 = 6)
             { label: '=', val: '=', type: 'symbol-key' },
             { label: '+', val: '+', type: 'symbol-key' },
             { label: '-', val: '-', type: 'symbol-key' },
@@ -138,7 +136,7 @@
             { label: '*', val: '*', type: 'symbol-key' },
             { label: '/', val: '/', type: 'symbol-key' },
 
-            // Row 7: Punctuation & Others
+            // Row 7: Punctuation (各1スロット × 6 = 6)
             { label: ':', val: ':', type: 'symbol-key' },
             { label: ';', val: ';', type: 'symbol-key' },
             { label: '\\', val: '\\', type: 'symbol-key' },
@@ -146,16 +144,23 @@
             { label: '@', val: '@', type: 'symbol-key' },
             { label: '^', val: '^', type: 'symbol-key' },
 
-            // Row 8: Comparison & Specials
+            // Row 8: Symbols (各1スロット × 6 = 6) - 拡充
             { label: '<', val: '<', type: 'symbol-key' },
             { label: '>', val: '>', type: 'symbol-key' },
+            { label: '~', val: '~', type: 'symbol-key' },
+            { label: '%', val: '%', type: 'symbol-key' },
+            { label: '&', val: '&', type: 'symbol-key' },
+            { label: '$', val: '$', type: 'symbol-key' },
+
+            // Row 9: Extra (各1スロット × 6 = 6)
             { label: '!', val: '!', type: 'symbol-key' },
             { label: '?', val: '?', type: 'symbol-key' },
             { label: '#', val: '#', type: 'symbol-key' },
-            { label: '$', val: '$', type: 'symbol-key' }
+            { label: '§', val: '§', type: 'symbol-key' },
+            { label: '€', val: '€', type: 'symbol-key' },
+            { label: '£', val: '£', type: 'symbol-key' }
         ];
 
-        // UI生成
         keys.forEach(key => {
             const btn = document.createElement('button');
             btn.className = key.type;
@@ -175,15 +180,12 @@
             keypad.appendChild(btn);
         });
 
-        // テキスト挿入 & カーソル制御
         function insertText(text, offset) {
             saveHistory();
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
             const val = editor.value;
-            
             editor.value = val.substring(0, start) + text + val.substring(end);
-            
             const newPos = start + text.length + offset;
             editor.setSelectionRange(newPos, newPos);
             editor.focus();
@@ -203,10 +205,9 @@
             } else if (type === 'copy') {
                 editor.select();
                 document.execCommand('copy');
-                // 簡易的なフィードバック
-                const originalColor = document.body.style.backgroundColor;
-                document.body.style.backgroundColor = '#1a365d';
-                setTimeout(() => document.body.style.backgroundColor = originalColor, 200);
+                const btn = event.target;
+                btn.textContent = 'DONE!';
+                setTimeout(() => btn.textContent = 'COPY', 1000);
             }
             editor.focus();
         }
