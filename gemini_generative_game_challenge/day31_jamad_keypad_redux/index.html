@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys v3.2 - Spatial Navigation</title>
+    <title>JamadKeys v3.3 - Flat Contrast & Cyclic Nav</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -34,7 +34,6 @@
             user-select: none;
             transition: all 0.08s ease;
             -webkit-tap-highlight-color: transparent;
-            /* 境界線を少し明るく */
             border: 1px solid #333; 
         }
 
@@ -49,13 +48,13 @@
         button:focus {
             outline: none;
             border: 1px solid #3b82f6;
-            background-color: #001030 !important;
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
         }
 
+        /* マクロ背景（復活） */
         .btn-macro { 
             grid-column: span 2; 
-            background-color: #050505;
+            background-color: #000a1f; /* 深いネイビー */
             color: #ffffff;
             height: 64px;
             font-size: 0.9rem;
@@ -70,11 +69,13 @@
         }
 
         .btn-special { background-color: #0d0d0d; }
-        .btn-highlight { background-color: #040d04; }
+        
+        /* ハイライト背景（復活） */
+        .btn-highlight { 
+            background-color: #041404; /* 深いフォレストグリーン */
+        }
 
-        .label-sub { font-size: 0.5em; opacity: 0.6; margin-top: 1px; font-family: monospace; }
-        .label-kb { font-size: 0.5em; color: #3b82f6; margin-top: 2px; }
-
+        .label-sub { font-size: 0.55em; opacity: 0.6; margin-top: 1px; font-family: monospace; }
         textarea:focus { outline: none; border: 1px solid #111; }
     </style>
 </head>
@@ -82,16 +83,16 @@
 
     <div class="flex-none p-4 bg-black border-b border-gray-900 shadow-2xl">
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[10px] text-blue-800 font-black tracking-[0.2em]">JAMADKEYS v3.2</span>
-            <div class="flex gap-4 text-[9px] text-gray-700 mr-auto ml-6 hidden md:flex uppercase font-bold">
-                <span>WASD / Arrows: Move</span>
+            <span class="text-[10px] text-blue-900 font-black tracking-[0.2em]">JAMADKEYS v3.3</span>
+            <div class="flex gap-4 text-[9px] text-gray-800 mr-auto ml-6 hidden md:flex uppercase font-bold">
+                <span>WASD: Move (Cyclic)</span>
                 <span>Enter / Space: Type</span>
             </div>
             <div class="flex gap-2">
-                <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">UNDO <span class="label-kb ml-1">^Z</span></button>
-                <button id="btn-redo" onclick="handleUtil('redo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">REDO <span class="label-kb ml-1">^Y</span></button>
-                <button id="btn-clear" onclick="handleUtil('clear')" class="px-3 py-1 bg-black text-[9px] rounded text-red-900 h-7 border-[#222]">CLEAR <span class="label-kb ml-1">^K</span></button>
-                <button id="btn-copy" onclick="handleUtil('copy')" class="px-5 py-1 bg-[#001030] text-[9px] rounded text-white h-7 font-bold border-[#002060]">COPY <span class="label-kb ml-1">^C</span></button>
+                <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">UNDO</button>
+                <button id="btn-redo" onclick="handleUtil('redo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">REDO</button>
+                <button id="btn-clear" onclick="handleUtil('clear')" class="px-3 py-1 bg-black text-[9px] rounded text-red-950 h-7 border-[#222]">CLEAR</button>
+                <button id="btn-copy" onclick="handleUtil('copy')" class="px-5 py-1 bg-[#000a1f] text-[9px] rounded text-white h-7 font-bold border-[#001a4d]">COPY</button>
             </div>
         </div>
         <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="WASD to navigate / Enter to type..."></textarea>
@@ -108,14 +109,14 @@
         const keypad = document.getElementById('keypad');
         let history = [''];
         let redoStack = [];
+        let buttonMap = []; 
 
-        // 構造定義
         const keys = [
-            { id: 'btn-t1', label: 'Table 1col', sub: '|-|', kb: '^⇧T', val: '|  |\n|---|\n|  |', offset: -11, type: 'btn-macro' },
+            { id: 'btn-start', label: 'Table 1col', sub: '|-|', val: '|  |\n|---|\n|  |', offset: -11, type: 'btn-macro' },
             { label: 'Table 2col', sub: '|--|', val: '|  |  |\n|---|---|\n|  |  |', offset: -15, type: 'btn-macro' },
             { label: 'Table 3col', sub: '|---|', val: '|  |  |  |\n|---|---|---|\n|  |  |  |', offset: -19, type: 'btn-macro' },
-            { id: 'btn-bold', label: 'Bold', sub: '****', kb: '^B', val: '****', offset: -2, type: 'btn-macro' },
-            { id: 'btn-link', label: 'Link', sub: '[]()', kb: '^L', val: '[]()', offset: -3, type: 'btn-macro' },
+            { label: 'Bold', sub: '****', val: '****', offset: -2, type: 'btn-macro' },
+            { label: 'Link', sub: '[]()', val: '[]()', offset: -3, type: 'btn-macro' },
             { label: 'Code', sub: '```', val: '```\n\n```', offset: -4, type: 'btn-macro' },
             { label: 'H1 Header', sub: '# ', val: '# ', type: 'btn-macro' },
             { label: 'List', sub: '- ', val: '- ', type: 'btn-macro' },
@@ -161,34 +162,21 @@
             { label: '→', val: '→', type: 'btn-symbol' }
         ];
 
-        // 空間ナビ用マップ生成
-        let buttonMap = []; 
-
         keys.forEach((key, index) => {
             const btn = document.createElement('button');
             btn.className = key.type;
             if (key.id) btn.id = key.id;
-            btn.setAttribute('data-index', index);
             
             const spanMain = document.createElement('span');
             spanMain.textContent = key.label;
             btn.appendChild(spanMain);
             
-            const bottomRow = document.createElement('div');
-            bottomRow.className = 'flex gap-2 items-center';
             if (key.sub) {
                 const spanSub = document.createElement('span');
                 spanSub.className = 'label-sub';
                 spanSub.textContent = key.sub;
-                bottomRow.appendChild(spanSub);
+                btn.appendChild(spanSub);
             }
-            if (key.kb) {
-                const spanKb = document.createElement('span');
-                spanKb.className = 'label-kb';
-                spanKb.textContent = key.kb;
-                bottomRow.appendChild(spanKb);
-            }
-            btn.appendChild(bottomRow);
             
             btn.onclick = () => {
                 flashButton(btn);
@@ -199,7 +187,7 @@
         });
 
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('btn-t1').focus();
+            document.getElementById('btn-start').focus();
         });
 
         function insertText(text, offset) {
@@ -249,7 +237,6 @@
             setTimeout(() => el.classList.remove('btn-active-sim'), 100);
         }
 
-        // 空間移動ロジック
         function moveFocus(dir) {
             const active = document.activeElement;
             if (!active || active.tagName !== 'BUTTON') return;
@@ -261,16 +248,15 @@
             let closest = null;
             let minDistance = Infinity;
 
+            // 1. 通常の移動先を探す
             buttonMap.forEach(btn => {
                 if (btn === active) return;
                 const r = btn.getBoundingClientRect();
                 const cX = r.left + r.width / 2;
                 const cY = r.top + r.height / 2;
-
                 const dx = cX - centerX;
                 const dy = cY - centerY;
 
-                // 方向の判定
                 let match = false;
                 if (dir === 'up' && dy < -10 && Math.abs(dx) < r.width * 1.5) match = true;
                 if (dir === 'down' && dy > 10 && Math.abs(dx) < r.width * 1.5) match = true;
@@ -279,42 +265,47 @@
 
                 if (match) {
                     const dist = Math.sqrt(dx*dx + dy*dy);
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        closest = btn;
-                    }
+                    if (dist < minDistance) { minDistance = dist; closest = btn; }
                 }
             });
+
+            // 2. 移動先がなければ「周回」させる
+            if (!closest) {
+                if (dir === 'right') { // 同じ行の左端へ
+                    closest = buttonMap.filter(btn => Math.abs(btn.getBoundingClientRect().top - rect.top) < 10)
+                                       .sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left)[0];
+                } else if (dir === 'left') { // 同じ行の右端へ
+                    closest = buttonMap.filter(btn => Math.abs(btn.getBoundingClientRect().top - rect.top) < 10)
+                                       .sort((a, b) => b.getBoundingClientRect().left - a.getBoundingClientRect().left)[0];
+                } else if (dir === 'down') { // 同じ列の最上段へ
+                    closest = buttonMap.filter(btn => Math.abs(btn.getBoundingClientRect().left - rect.left) < 30)
+                                       .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)[0];
+                } else if (dir === 'up') { // 同じ列の最下段へ
+                    closest = buttonMap.filter(btn => Math.abs(btn.getBoundingClientRect().left - rect.left) < 30)
+                                       .sort((a, b) => b.getBoundingClientRect().top - a.getBoundingClientRect().top)[0];
+                }
+            }
 
             if (closest) closest.focus();
         }
 
-        // 全体キー制御
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
             const ctrl = e.ctrlKey || e.metaKey;
 
-            // 空間移動 (WASD / Arrows)
             if (document.activeElement.tagName === 'BUTTON') {
                 if (key === 'w' || key === 'arrowup') { e.preventDefault(); moveFocus('up'); }
                 if (key === 's' || key === 'arrowdown') { e.preventDefault(); moveFocus('down'); }
                 if (key === 'a' || key === 'arrowleft') { e.preventDefault(); moveFocus('left'); }
                 if (key === 'd' || key === 'arrowright') { e.preventDefault(); moveFocus('right'); }
-                
-                // Enter / Space 時のエフェクト
-                if (e.key === 'Enter' || e.key === ' ') {
-                    flashButton(document.activeElement);
-                }
+                if (e.key === 'Enter' || e.key === ' ') { flashButton(document.activeElement); }
             }
 
-            // ショートカット
             if (ctrl) {
                 if (key === 'z') { e.preventDefault(); flashButton(document.getElementById('btn-undo')); handleUtil('undo'); }
                 if (key === 'y') { e.preventDefault(); flashButton(document.getElementById('btn-redo')); handleUtil('redo'); }
                 if (key === 'k') { e.preventDefault(); flashButton(document.getElementById('btn-clear')); handleUtil('clear'); }
                 if (key === 'c' && document.activeElement !== editor) { e.preventDefault(); handleUtil('copy'); }
-                if (key === 'b') { e.preventDefault(); flashButton(document.getElementById('btn-bold')); insertText('****', -2); }
-                if (key === 'l') { e.preventDefault(); flashButton(document.getElementById('btn-link')); insertText('[]()', -3); }
             }
         });
     </script>
