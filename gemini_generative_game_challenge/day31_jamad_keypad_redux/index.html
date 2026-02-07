@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JamadKeys Next - Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #000; color: #fff; touch-action: manipulation; overflow: hidden; }
+        .key-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            padding: 8px;
+        }
+        button {
+            transition: transform 0.05s, background-color 0.1s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        button:active {
+            transform: scale(0.95);
+            background-color: #444 !important;
+        }
+        .macro-key { background-color: #2d3748; color: #a0aec0; font-size: 0.8rem; }
+        .special-key { background-color: #1a202c; }
+        .util-key { background-color: #4a5568; }
+        textarea:focus { outline: none; }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    <div class="p-4 bg-gray-900 border-b border-gray-700">
+        <div class="flex justify-between mb-2">
+            <span class="text-xs text-gray-400 font-mono">JamadKeys Next</span>
+            <div class="flex gap-2">
+                <button onclick="handleUtil('clear')" class="px-3 py-1 bg-red-900 text-xs rounded shadow">CLEAR</button>
+                <button onclick="handleUtil('copy')" class="px-3 py-1 bg-blue-700 text-xs rounded shadow">COPY</button>
+            </div>
+        </div>
+        <textarea id="editor" class="w-full h-40 p-3 bg-white text-black rounded text-lg font-mono resize-none" placeholder="Markdown here..."></textarea>
+    </div>
+
+    <div class="flex-1 overflow-y-auto bg-black p-1">
+        <div id="keypad" class="key-grid">
+            </div>
+    </div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const keypad = document.getElementById('keypad');
+
+        // 音響生成
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'tap') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'macro') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            } else if (type === 'copy') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        // キー定義
+        const keys = [
+            // Row 1
+            { label: '~', val: '~' }, { label: '^', val: '^' }, { label: '|', val: '|' }, { label: '&', val: '&' }, { label: '`', val: '`' }, { label: '\\', val: '\\' },
+            // Row 2
+            { label: '(', val: '(' }, { label: ')', val: ')' }, { label: '[', val: '[' }, { label: ']', val: ']' }, { label: '{', val: '{' }, { label: '}', val: '}' },
+            // Row 3
+            { label: '<', val: '<' }, { label: '>', val: '>' }, { label: ':', val: ':' }, { label: ';', val: ';' }, { label: '\'', val: '\'' }, { label: '"', val: '"' },
+            // Row 4
+            { label: '.', val: '.' }, { label: ',', val: ',' }, { label: '!', val: '!' }, { label: '?', val: '?' }, { label: '@', val: '@' }, { label: '#', val: '#' },
+            // Row 5 (Nordic)
+            { label: 'ä', val: 'ä' }, { label: 'ö', val: 'ö' }, { label: 'å', val: 'å' }, { label: 'Ä', val: 'Ä' }, { label: 'Ö', val: 'Ö' }, { label: 'Å', val: 'Å' },
+            // Markdown Macros
+            { label: '|-|', val: '|   |   |\n|---|---|\n|   |   |', type: 'macro' },
+            { label: '```', val: '```\n\n```', type: 'macro' },
+            { label: '**bold', val: '****', type: 'macro' },
+            { label: 'Link', val: '[]()', type: 'macro' },
+            { label: 'List', val: '* ', type: 'macro' },
+            { label: 'H3', val: '### ', type: 'macro' },
+            // Extra Symbols
+            { label: '-', val: '-' }, { label: '+', val: '+' }, { label: '*', val: '*' }, { label: '/', val: '/' }, { label: '=', val: '=' }, { label: '$', val: '$' },
+            { label: '%', val: '%' }, { label: '_', val: '_' }, { label: 'SPACE', val: ' ', type: 'util' }, { label: 'ENTER', val: '\n', type: 'util' }, { label: 'BS', val: 'bs', type: 'util' }
+        ];
+
+        // キーパッド生成
+        keys.forEach(key => {
+            const btn = document.createElement('button');
+            btn.className = `h-14 flex items-center justify-center rounded text-sm font-bold shadow-md border border-gray-800 ${key.type === 'macro' ? 'macro-key' : key.type === 'util' ? 'util-key' : 'special-key'}`;
+            btn.textContent = key.label;
+            
+            btn.onclick = () => {
+                if (key.val === 'bs') {
+                    editor.value = editor.value.slice(0, -1);
+                    playSound('tap');
+                } else {
+                    insertText(key.val);
+                    playSound(key.type === 'macro' ? 'macro' : 'tap');
+                }
+            };
+            keypad.appendChild(btn);
+        });
+
+        function insertText(text) {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const currentVal = editor.value;
+            editor.value = currentVal.substring(0, start) + text + currentVal.substring(end);
+            
+            // カーソル位置の調整
+            let newPos = start + text.length;
+            if (text === '****') newPos = start + 2;
+            if (text === '[]()') newPos = start + 1;
+            if (text === '```\n\n```') newPos = start + 4;
+            
+            editor.focus();
+            editor.setSelectionRange(newPos, newPos);
+        }
+
+        function handleUtil(type) {
+            if (type === 'clear') {
+                if(confirm('内容をすべて消去しますか？')) {
+                    editor.value = '';
+                    playSound('tap');
+                }
+            } else if (type === 'copy') {
+                editor.select();
+                document.execCommand('copy');
+                playSound('copy');
+                alert('Copied to clipboard!');
+            }
+        }
+    </script>
+</body>
+</html>
