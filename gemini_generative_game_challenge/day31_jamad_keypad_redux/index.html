@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JamadKeys v3.4 - Cyclic Snake Navigation</title>
+    <title>JamadKeys v3.5 - Perfect Logic & Navigation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -34,7 +34,7 @@
             user-select: none;
             transition: all 0.08s ease;
             -webkit-tap-highlight-color: transparent;
-            border: 1px solid #333; /* 明るめの枠線 */
+            border: 1px solid #333; 
         }
 
         .btn-active-sim {
@@ -77,10 +77,10 @@
 
     <div class="flex-none p-4 bg-black border-b border-gray-900 shadow-2xl">
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[10px] text-blue-900 font-black tracking-[0.2em]">JAMADKEYS v3.4</span>
+            <span class="text-[10px] text-blue-900 font-black tracking-[0.2em]">JAMADKEYS v3.5</span>
             <div class="flex gap-4 text-[9px] text-gray-800 mr-auto ml-6 hidden md:flex uppercase font-bold">
-                <span>WASD / Arrows: Cyclic Move</span>
-                <span>Space / Enter: Type / Flash</span>
+                <span>WASD: Cyclic Snake Move</span>
+                <span>Space / Enter: Type</span>
             </div>
             <div class="flex gap-2">
                 <button id="btn-undo" onclick="handleUtil('undo')" class="px-3 py-1 bg-black text-[9px] rounded text-gray-400 h-7 border-[#222]">UNDO</button>
@@ -89,7 +89,7 @@
                 <button id="btn-copy" onclick="handleUtil('copy')" class="px-5 py-1 bg-[#000a1f] text-[9px] rounded text-white h-7 font-bold border-[#001a4d]">COPY</button>
             </div>
         </div>
-        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Tab / WASD to navigate..."></textarea>
+        <textarea id="editor" class="w-full h-44 p-4 bg-black text-white rounded-lg text-xl font-mono border border-gray-950" placeholder="Focus here..."></textarea>
     </div>
 
     <div class="flex-1 overflow-y-auto pt-2 bg-black">
@@ -103,8 +103,8 @@
         const keypad = document.getElementById('keypad');
         let history = [''];
         let redoStack = [];
-        let buttons = []; // 論理的な全ボタン配列
-        let verticalPath = []; // 縦移動用の並び順
+        let buttonsLogical = []; 
+        let buttonsVertical = []; 
 
         const keys = [
             { id: 'btn-start', label: 'Table 1col', sub: '|-|', val: '|  |\n|---|\n|  |', offset: -11, type: 'btn-macro' },
@@ -119,7 +119,6 @@
             { label: 'Comment', sub: '<!-- -->', val: '<!--  -->', offset: -4, type: 'btn-macro' },
             { label: 'Task List', sub: '- [ ]', val: '- [ ] ', type: 'btn-macro' },
             { label: 'HR Line', sub: '---', val: '\n---\n', type: 'btn-macro' },
-            // Symbols (1-col)
             { label: '[', val: '[', type: 'btn-symbol' }, { label: ']', val: ']', type: 'btn-symbol' },
             { label: '{', val: '{', type: 'btn-symbol' }, { label: '}', val: '}', type: 'btn-symbol' },
             { label: '(', val: '(', type: 'btn-symbol' }, { label: ')', val: ')', type: 'btn-symbol' },
@@ -140,7 +139,6 @@
             { label: '€', val: '€', type: 'btn-symbol' }, { label: '→', val: '→', type: 'btn-symbol' }
         ];
 
-        // UI生成
         keys.forEach((key, index) => {
             const btn = document.createElement('button');
             btn.className = key.type;
@@ -156,24 +154,24 @@
             }
             btn.onclick = () => { flashButton(btn); insertText(key.val, key.offset || 0); };
             keypad.appendChild(btn);
-            buttons.push(btn);
+            buttonsLogical.push(btn);
         });
 
-        // 垂直移動用のパス（コラム走査）を構築
-        function buildVerticalPath() {
-            const cols = [[], [], [], [], [], []];
-            buttons.forEach(btn => {
+        // ナビゲーション用のパス構築
+        function buildNavPaths() {
+            // 垂直パス（コラムベース）
+            const colGroups = [[], [], [], [], [], []];
+            buttonsLogical.forEach(btn => {
                 const rect = btn.getBoundingClientRect();
-                const colIndex = Math.floor((btn.offsetLeft - keypad.offsetLeft) / (keypad.offsetWidth / 6));
-                // マクロは2列分にまたがるが、開始列に所属させる
-                cols[colIndex].push(btn);
+                const colIdx = Math.floor((btn.offsetLeft - keypad.offsetLeft + 10) / (keypad.offsetWidth / 6));
+                if (colIdx >= 0 && colIdx < 6) colGroups[colIdx].push(btn);
             });
-            verticalPath = cols.flat();
+            buttonsVertical = colGroups.flat();
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
-                buildVerticalPath();
+                buildNavPaths();
                 document.getElementById('btn-start').focus();
             }, 100);
         });
@@ -189,13 +187,26 @@
 
         function handleUtil(type) {
             if (type === 'undo') {
-                if (history.length > 1) { redoStack.push(history.pop()); editor.value = history[history.length - 1]; }
+                if (history.length > 1) {
+                    redoStack.push(history.pop());
+                    editor.value = history[history.length - 1];
+                }
             } else if (type === 'redo') {
-                if (redoStack.length > 0) { const val = redoStack.pop(); history.push(val); editor.value = val; }
+                if (redoStack.length > 0) {
+                    const val = redoStack.pop();
+                    history.push(val);
+                    editor.value = val;
+                }
             } else if (type === 'clear') {
-                if(confirm("Clear all?")) { saveHistory(); editor.value = ''; redoStack = []; }
+                saveHistory(); // 現在の状態を保存
+                editor.value = '';
+                saveHistory(); // 空の状態も保存
+                redoStack = [];
+                flashButton(document.getElementById('btn-clear'));
             } else if (type === 'copy') {
-                editor.select(); document.execCommand('copy'); flashButton(document.getElementById('btn-copy'));
+                editor.select();
+                document.execCommand('copy');
+                flashButton(document.getElementById('btn-copy'));
             }
         }
 
@@ -212,23 +223,20 @@
             setTimeout(() => el.classList.remove('btn-active-sim'), 100);
         }
 
-        // ナビゲーションロジック
         function navigate(dir) {
             const active = document.activeElement;
             if (!active || active.tagName !== 'BUTTON') return;
 
             if (dir === 'right' || dir === 'left') {
-                // 水平：論理インデックスで移動
-                let idx = buttons.indexOf(active);
-                if (dir === 'right') idx = (idx + 1) % buttons.length;
-                else idx = (idx - 1 + buttons.length) % buttons.length;
-                buttons[idx].focus();
+                let idx = buttonsLogical.indexOf(active);
+                if (dir === 'right') idx = (idx + 1) % buttonsLogical.length;
+                else idx = (idx - 1 + buttonsLogical.length) % buttonsLogical.length;
+                buttonsLogical[idx].focus();
             } else {
-                // 垂直：コラムパスで移動
-                let idx = verticalPath.indexOf(active);
-                if (dir === 'down') idx = (idx + 1) % verticalPath.length;
-                else idx = (idx - 1 + verticalPath.length) % verticalPath.length;
-                verticalPath[idx].focus();
+                let idx = buttonsVertical.indexOf(active);
+                if (dir === 'down') idx = (idx + 1) % buttonsVertical.length;
+                else idx = (idx - 1 + buttonsVertical.length) % buttonsVertical.length;
+                buttonsVertical[idx].focus();
             }
         }
 
@@ -247,7 +255,7 @@
             if (ctrl) {
                 if (key === 'z') { e.preventDefault(); flashButton(document.getElementById('btn-undo')); handleUtil('undo'); }
                 if (key === 'y') { e.preventDefault(); flashButton(document.getElementById('btn-redo')); handleUtil('redo'); }
-                if (key === 'k') { e.preventDefault(); flashButton(document.getElementById('btn-clear')); handleUtil('clear'); }
+                if (key === 'k') { e.preventDefault(); handleUtil('clear'); }
                 if (key === 'c' && document.activeElement !== editor) { e.preventDefault(); handleUtil('copy'); }
             }
         });
