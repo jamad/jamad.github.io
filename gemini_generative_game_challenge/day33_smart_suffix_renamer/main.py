@@ -34,7 +34,7 @@ class RenameApp(ctk.CTk):
         self.btn_clear = ctk.CTkButton(self.header_frame, text="リストをクリア", command=self.clear_list, fg_color="gray", width=120)
         self.btn_clear.pack(side="left", padx=10, pady=10)
 
-        self.lbl_info = ctk.CTkLabel(self.header_frame, text="画像ファイルを選択してください。撮影日時を末尾に付与します。")
+        self.lbl_info = ctk.CTkLabel(self.header_frame, text="画像ファイルを選択してください。Exifがある場合は「Exif_日時」にリネームします。")
         self.lbl_info.pack(side="left", padx=20)
 
         # 2. リスト表示エリア (スクロール可能)
@@ -66,13 +66,13 @@ class RenameApp(ctk.CTk):
             if any(d['original_path'] == path_obj for d in self.file_data):
                 continue
 
-            date_str = self.get_date_info(path_obj)
-            new_name = self.generate_new_name(path_obj, date_str)
+            dt_obj, source = self.get_date_info(path_obj)
+            new_name = self.generate_new_name(path_obj, dt_obj, source)
             
             entry = {
                 'original_path': path_obj,
                 'new_name': new_name,
-                'date_source': 'Exif' if date_str else 'FileTime'
+                'date_source': source
             }
             self.file_data.append(entry)
             self.add_row_to_ui(entry)
@@ -81,9 +81,10 @@ class RenameApp(ctk.CTk):
         """
         Exifから撮影日時を取得する。
         失敗した場合はファイルの最終更新日時を返す。
-        戻り値: datetimeオブジェクト
+        戻り値: (datetimeオブジェクト, ソース文字列 'Exif' or 'FileTime')
         """
         dt_obj = None
+        source = "FileTime"
 
         # 1. Exif情報の取得を試みる
         try:
@@ -99,6 +100,7 @@ class RenameApp(ctk.CTk):
                 if date_str:
                     # Exifの日付形式は通常 "YYYY:MM:DD HH:MM:SS"
                     dt_obj = datetime.datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S")
+                    source = "Exif"
         except Exception:
             pass # Exifがない、または画像でない場合はスルー
 
@@ -106,18 +108,23 @@ class RenameApp(ctk.CTk):
         if dt_obj is None:
             mtime = os.path.getmtime(file_path)
             dt_obj = datetime.datetime.fromtimestamp(mtime)
+            source = "FileTime"
 
-        return dt_obj
+        return dt_obj, source
 
-    def generate_new_name(self, original_path: Path, dt_obj: datetime.datetime):
+    def generate_new_name(self, original_path: Path, dt_obj: datetime.datetime, source: str):
         """仕様に基づき新しい名前を生成する"""
         stem = original_path.stem # 拡張子なしのファイル名
         suffix = original_path.suffix # 拡張子 (.jpgなど)
+        date_str = dt_obj.strftime("%Y%m%d%H%M%S")
+
+        # Exif情報がある場合: Exif_YYYYMMDDHHmmSS.ext
+        if source == "Exif":
+            return f"Exif_{date_str}{suffix}"
         
-        # フォーマット: _YYYYMMDDHHmmSS
-        date_suffix = dt_obj.strftime("_%Y%m%d%H%M%S")
-        
-        # 既に同じ日時サフィックスがついているかチェック（多重付与防止）
+        # Exifがない場合（従来通り）: 元のファイル名_YYYYMMDDHHmmSS.ext
+        date_suffix = f"_{date_str}"
+        # 既に同じ日時サフィックスがついているかチェック
         if stem.endswith(date_suffix):
             return original_path.name
 
