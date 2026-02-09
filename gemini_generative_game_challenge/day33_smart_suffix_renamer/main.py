@@ -178,19 +178,23 @@ class RenameApp(ctk.CTk):
 
         # --- 1. スクリーンショットの検知 ---
         # ファイル名に特定のキーワードが含まれる場合はプレフィックスを付与
-        screenshot_keywords = ["screenshot", "screen shot", "スクリーンショット", "s_"]
-        is_screenshot = any(kw in stem.lower() for kw in screenshot_keywords)
+        screenshot_keywords = ["screenshot", "screen shot", "スクリーンショット", "s_", "capture"]
+        # 名前判定に加え、PNG形式でExifがない場合(FileTime)もスクリーンショットとみなす
+        is_screenshot = any(kw in stem.lower() for kw in screenshot_keywords) or (suffix.lower() == ".png" and source == "FileTime")
         prefix = "scrn_" if is_screenshot else ""
 
         # --- 2. IMG_xxxx パターンのクレンジング ---
-        # IMG_8153 のような数字部分を IMG_ymd に置き換える
-        if re.match(r"^IMG_\d+", stem):
+        # スクリーンショットの場合は IMG_ パターンを削除し、それ以外は IMG_ymd に置き換える
+        if is_screenshot:
+            stem = re.sub(r"^IMG_(\d+|ymd)_?", "", stem)
+        elif re.match(r"^IMG_\d+", stem):
+            # IMG_8153 のような数字部分を IMG_ymd に置き換える
             stem = re.sub(r"^IMG_\d+", "IMG_ymd", stem)
 
         # --- 3. 二重処理防止ロジック ---
         # 既にファイル名に YYYYMMDD_HHMMSS 形式の日時が含まれているかチェック
-        # これにより input_file_1.png で発生した「日時が2回つく」現象を回避
-        if re.search(r"_\d{8}_\d{6}", stem):
+        # 先頭に日時が来ている場合も考慮し、アンダースコアなしのパターンも許容する
+        if re.search(r"\d{8}_\d{6}", stem):
             # すでに日時はあるので、プレフィックス(scrn_)やクレンジング(IMG_ymd)のみ適用
             final_name = f"{prefix}{stem}{suffix}"
             # 元の名前と完全に一致するならスキップ対象になる
@@ -199,6 +203,10 @@ class RenameApp(ctk.CTk):
             return final_name
 
         # --- 4. 通常のリネームロジック ---
+        # スクリーンショットでかつstemが空になった（元がIMG_数字のみだった）場合の処理
+        if is_screenshot and not stem:
+            return f"{prefix}{date_str}{suffix}"
+
         # Exif情報がある場合: [prefix]Exif_YYYYMMDD_HHmmSS.ext
         if source == "Exif":
             return f"{prefix}Exif_{date_str}{suffix}"
@@ -211,7 +219,7 @@ class RenameApp(ctk.CTk):
         return f"{prefix}{stem}{date_suffix}{suffix}"
 
     def add_row_to_ui(self, entry):
-        """UIのスクロールフレームに行を追加する"""
+        """UIのススクロールフレームに行を追加する"""
         original = entry['original_path'].name
         new = entry['new_name']
         
