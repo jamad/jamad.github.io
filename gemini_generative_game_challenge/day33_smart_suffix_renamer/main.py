@@ -197,30 +197,48 @@ class RenameApp(ctk.CTk):
             # IMG_8153 のような数字部分を IMG_ymd に置き換える
             stem = re.sub(r"^IMG_\d+", "IMG_ymd", stem)
 
-        # --- 3. 二重処理防止ロジック ---
-        # 既にファイル名に YYYYMMDD_HHMMSS 形式の日時が含まれているかチェック
+        # --- 3. ジャンク名（UUID/システム管理ID等）の判定 ---
+        # 32文字以上のハイフンを含むUUID、またはApple系ID(数字11桁__)を検知
+        is_uuid = bool(re.search(r"[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}", stem))
+        is_apple_id = bool(re.match(r"^\d{11}__", stem))
+        is_junk_name = is_uuid or is_apple_id
+
+        # --- 4. 二重処理防止の事前チェック ---
+        # すでに「整理済みPrefix」がついているか確認
+        clean_tags = ["Exif_", "exif0_", "File_", "IMG_ymd_"]
+        is_already_clean = any(stem.startswith(prefix + tag) or stem.startswith(tag) for tag in clean_tags)
+        
+        # 既にクリーンな状態かつ正しい日付が含まれているなら、連番等を維持するため現状維持
+        # ジャンク名の場合は clean ではないため、このチェックを通過してクレンジングに進む
+        if is_already_clean and date_str in stem:
+            return original_path.name
+
+        # --- 5. リネームロジック (優先順位: Exif系 > Junk掃除 > FileTime) ---
+        
+        # Exif情報がある場合: 元の名前(UUID等)は捨てて統一する
+        if source == "Exif":
+            return f"{prefix}Exif_{date_str}{suffix}"
+        
+        # Exifコンテナはあるが日付が空だった場合
+        if source == "ExifMissingDate":
+            return f"{prefix}exif0_{date_str}{suffix}"
+
+        # ジャンク名なら「File_」に置き換えて掃除する
+        if is_junk_name:
+            return f"{prefix}File_{date_str}{suffix}"
+
+        # 通常のファイル（非ジャンク）で既に日付が含まれている場合（二重付与防止）
         if re.search(r"\d{8}_\d{6}", stem):
-            # すでに日時はあるので、プレフィックス(scrn_ymd_)やクレンジング(IMG_ymd)のみ適用
             final_name = f"{prefix}{stem}{suffix}"
-            # 元の名前と完全に一致するならスキップ対象になる
             if final_name == original_path.name:
                 return original_path.name
             return final_name
 
-        # --- 4. 通常のリネームロジック ---
         # スクリーンショットでかつstemが空になった（元がプレフィックスのみだった）場合の処理
         if is_screenshot and not stem:
             return f"{prefix}{date_str}{suffix}"
 
-        # Exif情報がある場合: [prefix]Exif_YYYYMMDD_HHmmSS.ext
-        if source == "Exif":
-            return f"{prefix}Exif_{date_str}{suffix}"
-        
-        # Exifコンテナはあるが日付が空だった場合: [prefix]exif0_YYYYMMDD_HHmmSS.ext
-        if source == "ExifMissingDate":
-            return f"{prefix}exif0_{date_str}{suffix}"
-        
-        # Exifがない場合（従来通り）: 元のファイル名_YYYYMMDD_HHmmSS.ext
+        # Exifがない（FileTime）通常ファイルの場合
         # 既に同じ日時サフィックスがついているかチェック
         if stem.endswith(date_suffix):
             return original_path.name
