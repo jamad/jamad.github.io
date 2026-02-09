@@ -2,6 +2,7 @@ import customtkinter as ctk
 import os
 import datetime
 import re  # 正規表現用に追加
+import concurrent.futures  # マルチスレッド高速化用に追加
 from pathlib import Path
 from tkinter import filedialog, messagebox
 from PIL import Image, ExifTags
@@ -16,7 +17,7 @@ class RenameApp(ctk.CTk):
 
         # ウィンドウ設定
         self.title("Smart Suffix Renamer (Prototype)")
-        self.geometry("1000x800") # ログエリア確保のため少し縦を伸ばしました
+        self.geometry("1000x850") # 進行状況バーのために少し高さを広げました
 
         # データ保持用リスト
         self.file_data = [] # {'original_path': Path, 'new_name': str, 'status': str}
@@ -54,15 +55,20 @@ class RenameApp(ctk.CTk):
         self.header_label = ctk.CTkLabel(self.scroll_frame, text=f"{'元のファイル名':<40}  →  {'変更後のファイル名':<40}", font=("Consolas", 14, "bold"), anchor="w")
         self.header_label.pack(fill="x", padx=5, pady=5)
 
-        # 【追加】スクロール操作用のキーボードバインド
+        # スクロール操作用のキーボードバインド
         self.bind_all("<Down>", lambda e: self.scroll_frame._parent_canvas.yview_scroll(1, "units"))
         self.bind_all("<Up>", lambda e: self.scroll_frame._parent_canvas.yview_scroll(-1, "units"))
         self.bind_all("<Next>", lambda e: self.scroll_frame._parent_canvas.yview_scroll(1, "pages"))
         self.bind_all("<Prior>", lambda e: self.scroll_frame._parent_canvas.yview_scroll(-1, "pages"))
 
-        # 3. フッターエリア（実行ボタン ＆ ログエリア）
+        # 3. フッターエリア（進行状況 ＆ 実行ボタン ＆ ログエリア）
         self.footer_frame = ctk.CTkFrame(self)
         self.footer_frame.grid(row=2, column=0, padx=20, pady=(10, 20), sticky="ew")
+
+        # 【追加】進行状況バー
+        self.progress_bar = ctk.CTkProgressBar(self.footer_frame)
+        self.progress_bar.pack(fill="x", padx=20, pady=(10, 0))
+        self.progress_bar.set(0)
 
         self.btn_run = ctk.CTkButton(self.footer_frame, text="リネーム実行", command=self.run_rename, font=("Arial", 16, "bold"), height=40, fg_color="#2CC985", hover_color="#26A66F")
         self.btn_run.pack(fill="x", padx=20, pady=10)
@@ -114,17 +120,30 @@ class RenameApp(ctk.CTk):
         except Exception as e:
             messagebox.showerror("エラー", f"フォルダの読み込み中にエラーが発生しました:\n{e}")
 
-    def add_paths_to_list(self, path_objects):
-        """パスのリストを受け取り、UIに追加する共通処理"""
-        total = len(path_objects)
-        for i, path_obj in enumerate(path_objects):
-            # 既にリストにあるファイルはスキップ
-            if any(d['original_path'] == path_obj for d in self.file_data):
-                continue
+    def process_file_parallel(self, path_obj):
+        """【高速化用】単一ファイルの解析を行うスレッド用関数"""
+        dt_obj, source = self.get_date_info(path_obj)
+        new_name = self.generate_new_name(path_obj, dt_obj, source)
+        return path_obj, new_name, source
 
-            dt_obj, source = self.get_date_info(path_obj)
-            new_name = self.generate_new_name(path_obj, dt_obj, source)
-            
+    def add_paths_to_list(self, path_objects):
+        """パスのリストを受け取り、UIに追加する共通処理（マルチスレッド版）"""
+        # 未追加のファイルのみ抽出
+        new_paths = [p for p in path_objects if not any(d['original_path'] == p for d in self.file_data)]
+        if not new_paths: return
+
+        total_count = len(new_paths)
+        self.lbl_info.configure(text=f"解析中... (0/{total_count})")
+        self.append_log(f"--- 解析開始: {total_count} 件 ---")
+        self.update() # UI表示を更新
+
+        # マルチスレッドExecutorで高速にメタデータを取得
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = list(executor.map(self.process_file_parallel, new_paths))
+
+        # 結果をUIに反映
+        self.lbl_info.configure(text=f"プレビューを作成中...")
+        for i, (path_obj, new_name, source) in enumerate(results):
             # プレビュー段階での名前衝突回避（連番付与）
             temp_name = new_name
             counter = 1
@@ -149,9 +168,15 @@ class RenameApp(ctk.CTk):
                 self.file_data.append(entry)
                 self.add_row_to_ui(entry)
 
-            # 【フリーズ対策】一定件数ごとにUIを強制更新してフリーズを防ぐ
-            if i % 10 == 0:
-                self.update()
+            # 【フリーズ対策】20件ごとに描画処理を許可し、プログレスバーを更新
+            if i % 20 == 0 or i == total_count - 1:
+                progress = (i + 1) / total_count
+                self.progress_bar.set(progress)
+                self.lbl_info.configure(text=f"表示を更新中... ({i+1}/{total_count})")
+                self.update() # 強制的にUIを描画させる
+
+        self.lbl_info.configure(text="解析完了。")
+        self.append_log(f"解析完了。")
 
     def get_date_info(self, file_path: Path):
         """
@@ -277,7 +302,7 @@ class RenameApp(ctk.CTk):
         label = ctk.CTkLabel(row_frame, text=label_text, font=("Consolas", 12), anchor="w")
         label.pack(side="left", padx=10)
 
-        # 変更がない場合はここに来ない想定ですが、連番チェック等でまれに来る可能性があるため
+        # 変更がない場合（既にリネーム済みなど）は色を変える
         if original == new:
             label.configure(text_color="gray")
 
@@ -286,6 +311,7 @@ class RenameApp(ctk.CTk):
         self.file_data = []
         self.skip_count = 0
         self.lbl_skip_info.configure(text="")
+        self.progress_bar.set(0)
         for widget in self.scroll_frame.winfo_children():
             # ヘッダー以外を削除
             if widget != self.header_label:
@@ -299,10 +325,12 @@ class RenameApp(ctk.CTk):
 
         # 実行ログの開始
         self.append_log(f"--- 実行開始: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
+        self.progress_bar.set(0)
+        total = len(self.file_data)
         count = 0
         error_count = 0
 
-        for entry in self.file_data:
+        for i, entry in enumerate(self.file_data):
             src = entry['original_path']
             dst_name = entry['new_name']
             
@@ -316,10 +344,10 @@ class RenameApp(ctk.CTk):
             if dst.exists():
                 # 重複する場合、(1), (2)などを付与して回避
                 base_stem = dst.stem
-                i = 1
+                i_dup = 1
                 while dst.exists():
-                    dst = src.parent / f"{base_stem}_{i}{src.suffix}"
-                    i += 1
+                    dst = src.parent / f"{base_stem}_{i_dup}{src.suffix}"
+                    i_dup += 1
             
             try:
                 os.rename(src, dst)
@@ -329,6 +357,10 @@ class RenameApp(ctk.CTk):
                 # エラーをログエリアに表示
                 self.append_log(f"[エラー] {src.name}: {e}")
                 error_count += 1
+            
+            # 進行状況の更新
+            self.progress_bar.set((i + 1) / total)
+            if i % 10 == 0: self.update()
 
         self.append_log(f"完了: {count}個リネーム成功 / {error_count}個失敗\n")
         messagebox.showinfo("完了", f"{count} 個のファイルをリネームしました。\n詳細はログを確認してください。")
