@@ -15,7 +15,7 @@ class RenameApp(ctk.CTk):
 
         # ウィンドウ設定
         self.title("Smart Suffix Renamer (Prototype)")
-        self.geometry("900x600")
+        self.geometry("1000x600") # ボタンが増えたので少し横幅を広げました
 
         # データ保持用リスト
         self.file_data = [] # {'original_path': Path, 'new_name': str, 'status': str}
@@ -28,13 +28,16 @@ class RenameApp(ctk.CTk):
         self.header_frame = ctk.CTkFrame(self)
         self.header_frame.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="ew")
         
-        self.btn_add_files = ctk.CTkButton(self.header_frame, text="ファイルを追加", command=self.add_files, width=150)
+        self.btn_add_files = ctk.CTkButton(self.header_frame, text="ファイルを追加", command=self.add_files, width=140)
         self.btn_add_files.pack(side="left", padx=10, pady=10)
+
+        self.btn_add_folder = ctk.CTkButton(self.header_frame, text="フォルダを追加", command=self.add_folder, width=140)
+        self.btn_add_folder.pack(side="left", padx=10, pady=10)
 
         self.btn_clear = ctk.CTkButton(self.header_frame, text="リストをクリア", command=self.clear_list, fg_color="gray", width=120)
         self.btn_clear.pack(side="left", padx=10, pady=10)
 
-        self.lbl_info = ctk.CTkLabel(self.header_frame, text="画像ファイルを選択してください。Exifがある場合は「Exif_日時」にリネームします。")
+        self.lbl_info = ctk.CTkLabel(self.header_frame, text="画像を選択してください。Exif優先で「Exif_日時」にリネームします。")
         self.lbl_info.pack(side="left", padx=20)
 
         # 2. リスト表示エリア (スクロール可能)
@@ -59,9 +62,39 @@ class RenameApp(ctk.CTk):
 
         if not filepaths:
             return
+        
+        # パスオブジェクトのリストに変換して共通処理へ
+        path_objects = [Path(fp) for fp in filepaths]
+        self.add_paths_to_list(path_objects)
 
-        for fp in filepaths:
-            path_obj = Path(fp)
+    def add_folder(self):
+        """フォルダ選択ダイアログを開き、中の画像をリストに追加する"""
+        folder_path = filedialog.askdirectory(title="フォルダを選択")
+        
+        if not folder_path:
+            return
+
+        target_extensions = {'.jpg', '.jpeg', '.png', '.heic', '.tiff'}
+        path_objects = []
+        
+        try:
+            folder = Path(folder_path)
+            for item in folder.iterdir():
+                if item.is_file() and item.suffix.lower() in target_extensions:
+                    path_objects.append(item)
+            
+            if not path_objects:
+                messagebox.showinfo("info", "選択したフォルダに画像ファイルが見つかりませんでした。")
+                return
+
+            self.add_paths_to_list(path_objects)
+            
+        except Exception as e:
+            messagebox.showerror("エラー", f"フォルダの読み込み中にエラーが発生しました:\n{e}")
+
+    def add_paths_to_list(self, path_objects):
+        """パスのリストを受け取り、UIに追加する共通処理"""
+        for path_obj in path_objects:
             # 既にリストにあるファイルはスキップ
             if any(d['original_path'] == path_obj for d in self.file_data):
                 continue
@@ -116,13 +149,15 @@ class RenameApp(ctk.CTk):
         """仕様に基づき新しい名前を生成する"""
         stem = original_path.stem # 拡張子なしのファイル名
         suffix = original_path.suffix # 拡張子 (.jpgなど)
-        date_str = dt_obj.strftime("%Y%m%d%H%M%S")
+        
+        # フォーマット変更: YYYYMMDDHHmmSS -> YYYYMMDD_HHmmSS
+        date_str = dt_obj.strftime("%Y%m%d_%H%M%S")
 
-        # Exif情報がある場合: Exif_YYYYMMDDHHmmSS.ext
+        # Exif情報がある場合: Exif_YYYYMMDD_HHmmSS.ext
         if source == "Exif":
             return f"Exif_{date_str}{suffix}"
         
-        # Exifがない場合（従来通り）: 元のファイル名_YYYYMMDDHHmmSS.ext
+        # Exifがない場合（従来通り）: 元のファイル名_YYYYMMDD_HHmmSS.ext
         date_suffix = f"_{date_str}"
         # 既に同じ日時サフィックスがついているかチェック
         if stem.endswith(date_suffix):
