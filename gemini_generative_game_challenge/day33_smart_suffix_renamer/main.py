@@ -118,6 +118,18 @@ class RenameApp(ctk.CTk):
             dt_obj, source = self.get_date_info(path_obj)
             new_name = self.generate_new_name(path_obj, dt_obj, source)
             
+            # 【追加】プレビュー段階での名前衝突回避（連番付与）
+            # リスト内の他のファイルや、既存のファイル（自分自身を除く）と名前がぶつからないようにする
+            temp_name = new_name
+            counter = 1
+            while any(d['new_name'] == temp_name for d in self.file_data) or \
+                  ((path_obj.parent / temp_name).exists() and temp_name != path_obj.name):
+                stem_part = Path(new_name).stem
+                suffix_part = Path(new_name).suffix
+                temp_name = f"{stem_part}_{counter}{suffix_part}"
+                counter += 1
+            new_name = temp_name
+
             # 名前が変わらない場合はリストに表示せず、赤いラベルでカウント
             if path_obj.name == new_name:
                 self.skip_count += 1
@@ -188,7 +200,13 @@ class RenameApp(ctk.CTk):
         is_screenshot = any(kw in stem.lower() for kw in screenshot_keywords) or (suffix.lower() == ".png" and source == "FileTime")
         prefix = "scrn_ymd_" if is_screenshot else ""
 
-        # --- 2. プレフィックスのクレンジング ---
+        # --- 2. 二重処理・整理済みファイル防止の事前チェック ---
+        # 整理済みPrefixがすでに付いており、かつ日付も正しい場合は、連番を維持するため現状維持にする
+        clean_tags = ["Exif_", "exif0_", "File_", "IMG_ymd_", "scrn_ymd_"]
+        if any(original_path.stem.startswith(tag) and date_str in original_path.stem for tag in clean_tags):
+            return original_path.name
+
+        # --- 3. プレフィックスのクレンジング ---
         # 重複を防ぐため、既存のプレフィックスを一旦取り除く
         if is_screenshot:
             # scrn_ymd_, scrn_, IMG_... などを除去して純粋な本体(日付等)だけにする
@@ -197,23 +215,13 @@ class RenameApp(ctk.CTk):
             # IMG_8153 のような数字部分を IMG_ymd に置き換える
             stem = re.sub(r"^IMG_\d+", "IMG_ymd", stem)
 
-        # --- 3. ジャンク名（UUID/システム管理ID等）の判定 ---
+        # --- 4. ジャンク名（UUID/システム管理ID等）の判定 ---
         # 32文字以上のハイフンを含むUUID、またはApple系ID(数字11桁__)を検知
         is_uuid = bool(re.search(r"[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}", stem))
         is_apple_id = bool(re.match(r"^\d{11}__", stem))
         is_junk_name = is_uuid or is_apple_id
 
-        # --- 4. 二重処理防止の事前チェック ---
-        # すでに「整理済みPrefix」がついているか確認
-        clean_tags = ["Exif_", "exif0_", "File_", "IMG_ymd_"]
-        is_already_clean = any(stem.startswith(prefix + tag) or stem.startswith(tag) for tag in clean_tags)
-        
-        # 既にクリーンな状態かつ正しい日付が含まれているなら、連番等を維持するため現状維持
-        # ジャンク名の場合は clean ではないため、このチェックを通過してクレンジングに進む
-        if is_already_clean and date_str in stem:
-            return original_path.name
-
-        # --- 5. リネームロジック (優先順位: Exif系 > Junk掃除 > FileTime) ---
+        # --- 5. リネームロジック (優先順位: Exif系 > Junk掃除 > 防止チェック > FileTime) ---
         
         # Exif情報がある場合: 元の名前(UUID等)は捨てて統一する
         if source == "Exif":
