@@ -39,15 +39,15 @@ class RenameApp(ctk.CTk):
         self.btn_clear = ctk.CTkButton(self.header_frame, text="リストをクリア", command=self.clear_list, fg_color="gray", width=120)
         self.btn_clear.pack(side="left", padx=10, pady=10)
 
-        self.lbl_info = ctk.CTkLabel(self.header_frame, text="画像を選択してください。")
-        self.lbl_info.pack(side="left", padx=10)
+        self.lbl_info = ctk.CTkLabel(self.header_frame, text="画像を選択してください。Exif優先で「Exif_日時」にリネームします。")
+        self.lbl_info.pack(side="left", padx=20)
 
-        # 【追加】スキップされた（変更不要な）ファイル数を表示するラベル
-        self.lbl_skip_info = ctk.CTkLabel(self.header_frame, text="", text_color="gray")
+        # 変更不要なファイル数を赤い太字で表示するラベル
+        self.lbl_skip_info = ctk.CTkLabel(self.header_frame, text="", text_color="#FF3B30", font=("Arial", 14, "bold"))
         self.lbl_skip_info.pack(side="left", padx=10)
 
         # 2. リスト表示エリア (スクロール可能)
-        self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="変更プレビュー (リネーム対象のみ表示)")
+        self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="変更プレビュー")
         self.scroll_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
         
         # リストのヘッダーラベル
@@ -61,7 +61,7 @@ class RenameApp(ctk.CTk):
         self.btn_run = ctk.CTkButton(self.footer_frame, text="リネーム実行", command=self.run_rename, font=("Arial", 16, "bold"), height=40, fg_color="#2CC985", hover_color="#26A66F")
         self.btn_run.pack(fill="x", padx=20, pady=10)
 
-        # 【追加】エラーログ・実行ログ表示用のテキストボックス
+        # エラーログ表示用のテキストボックス
         self.log_box = ctk.CTkTextbox(self.footer_frame, height=150, font=("Consolas", 12))
         self.log_box.pack(fill="x", padx=20, pady=(0, 10))
         self.log_box.insert("0.0", "--- 実行ログ ---\n")
@@ -118,7 +118,7 @@ class RenameApp(ctk.CTk):
             dt_obj, source = self.get_date_info(path_obj)
             new_name = self.generate_new_name(path_obj, dt_obj, source)
             
-            # 【変更】名前が変わらない（既に処理済み）場合はUIリストに表示せず、件数だけカウント
+            # 名前が変わらない場合はリストに表示せず、赤いラベルでカウント
             if path_obj.name == new_name:
                 self.skip_count += 1
                 self.lbl_skip_info.configure(text=f"変更なし: {self.skip_count} 件")
@@ -203,7 +203,11 @@ class RenameApp(ctk.CTk):
         if source == "Exif":
             return f"{prefix}Exif_{date_str}{suffix}"
         
-        # Exifがない場合: [prefix]元のファイル名_YYYYMMDD_HHmmSS.ext
+        # Exifがない場合（従来通り）: 元のファイル名_YYYYMMDD_HHmmSS.ext
+        # 既に同じ日時サフィックスがついているかチェック
+        if stem.endswith(date_suffix):
+            return original_path.name
+
         return f"{prefix}{stem}{date_suffix}{suffix}"
 
     def add_row_to_ui(self, entry):
