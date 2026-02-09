@@ -16,10 +16,11 @@ class RenameApp(ctk.CTk):
 
         # ウィンドウ設定
         self.title("Smart Suffix Renamer (Prototype)")
-        self.geometry("1000x750") # ログ表示用に高さを少し広げました
+        self.geometry("1000x800") # ログエリア確保のため少し縦を伸ばしました
 
         # データ保持用リスト
         self.file_data = [] # {'original_path': Path, 'new_name': str, 'status': str}
+        self.skip_count = 0 # 変更不要ファイルの集計用
 
         # --- UIレイアウト ---
         self.grid_columnconfigure(0, weight=1)
@@ -38,31 +39,35 @@ class RenameApp(ctk.CTk):
         self.btn_clear = ctk.CTkButton(self.header_frame, text="リストをクリア", command=self.clear_list, fg_color="gray", width=120)
         self.btn_clear.pack(side="left", padx=10, pady=10)
 
-        self.lbl_info = ctk.CTkLabel(self.header_frame, text="画像を選択してください。Exif優先でリネームします。")
-        self.lbl_info.pack(side="left", padx=20)
+        self.lbl_info = ctk.CTkLabel(self.header_frame, text="画像を選択してください。")
+        self.lbl_info.pack(side="left", padx=10)
+
+        # 【追加】スキップされた（変更不要な）ファイル数を表示するラベル
+        self.lbl_skip_info = ctk.CTkLabel(self.header_frame, text="", text_color="gray")
+        self.lbl_skip_info.pack(side="left", padx=10)
 
         # 2. リスト表示エリア (スクロール可能)
-        self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="変更プレビュー")
+        self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="変更プレビュー (リネーム対象のみ表示)")
         self.scroll_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
         
-        # リストのヘッダーラベル（簡易的）
+        # リストのヘッダーラベル
         self.header_label = ctk.CTkLabel(self.scroll_frame, text=f"{'元のファイル名':<40}  →  {'変更後のファイル名':<40}", font=("Consolas", 14, "bold"), anchor="w")
         self.header_label.pack(fill="x", padx=5, pady=5)
 
-        # 3. フッターエリア（実行ボタン ＆ ログ表示エリア）
+        # 3. フッターエリア（実行ボタン ＆ ログエリア）
         self.footer_frame = ctk.CTkFrame(self)
         self.footer_frame.grid(row=2, column=0, padx=20, pady=(10, 20), sticky="ew")
 
         self.btn_run = ctk.CTkButton(self.footer_frame, text="リネーム実行", command=self.run_rename, font=("Arial", 16, "bold"), height=40, fg_color="#2CC985", hover_color="#26A66F")
         self.btn_run.pack(fill="x", padx=20, pady=10)
 
-        # 【追加】ログ表示用のテキストボックス
+        # 【追加】エラーログ・実行ログ表示用のテキストボックス
         self.log_box = ctk.CTkTextbox(self.footer_frame, height=150, font=("Consolas", 12))
         self.log_box.pack(fill="x", padx=20, pady=(0, 10))
         self.log_box.insert("0.0", "--- 実行ログ ---\n")
 
     def append_log(self, message):
-        """ログエリアにメッセージを追記する"""
+        """ログエリアにテキストを追記する共通メソッド"""
         self.log_box.insert("end", f"{message}\n")
         self.log_box.see("end")
 
@@ -113,6 +118,12 @@ class RenameApp(ctk.CTk):
             dt_obj, source = self.get_date_info(path_obj)
             new_name = self.generate_new_name(path_obj, dt_obj, source)
             
+            # 【変更】名前が変わらない（既に処理済み）場合はUIリストに表示せず、件数だけカウント
+            if path_obj.name == new_name:
+                self.skip_count += 1
+                self.lbl_skip_info.configure(text=f"変更なし: {self.skip_count} 件")
+                continue
+
             entry = {
                 'original_path': path_obj,
                 'new_name': new_name,
@@ -161,37 +172,38 @@ class RenameApp(ctk.CTk):
         stem = original_path.stem # 拡張子なしのファイル名
         suffix = original_path.suffix # 拡張子 (.jpgなど)
         
-        # 日時文字列: YYYYMMDD_HHmmSS
+        # フォーマット: YYYYMMDD_HHmmSS
         date_str = dt_obj.strftime("%Y%m%d_%H%M%S")
         date_suffix = f"_{date_str}"
 
-        # --- 【追加】スクリーンショット検知 ---
+        # --- 1. スクリーンショットの検知 ---
+        # ファイル名に特定のキーワードが含まれる場合はプレフィックスを付与
         screenshot_keywords = ["screenshot", "screen shot", "スクリーンショット", "s_"]
         is_screenshot = any(kw in stem.lower() for kw in screenshot_keywords)
         prefix = "scrn_" if is_screenshot else ""
 
-        # --- 【追加】IMG_xxxx パターンのクレンジング ---
-        # IMG_8153 のような形式を IMG_ymd に置換
+        # --- 2. IMG_xxxx パターンのクレンジング ---
+        # IMG_8153 のような数字部分を IMG_ymd に置き換える
         if re.match(r"^IMG_\d+", stem):
             stem = re.sub(r"^IMG_\d+", "IMG_ymd", stem)
 
-        # --- 【重要】二重日時付与の防止ロジック ---
-        # すでにファイル名のどこかに「_YYYYMMDD_HHMMSS」というパターンが含まれているかチェック
-        # （画像で発生していた「...17052620260205_170526.PNG」のような問題を回避）
+        # --- 3. 二重処理防止ロジック ---
+        # 既にファイル名に YYYYMMDD_HHMMSS 形式の日時が含まれているかチェック
+        # これにより input_file_1.png で発生した「日時が2回つく」現象を回避
         if re.search(r"_\d{8}_\d{6}", stem):
-            # すでに日時が入っている場合は、prefix(scrn_等)の付与とIMG置換のみ反映した名前を返す
-            # すでに完璧な名前なら original_path.name と一致してスキップ対象になる
-            new_name = f"{prefix}{stem}{suffix}"
-            if new_name == original_path.name:
+            # すでに日時はあるので、プレフィックス(scrn_)やクレンジング(IMG_ymd)のみ適用
+            final_name = f"{prefix}{stem}{suffix}"
+            # 元の名前と完全に一致するならスキップ対象になる
+            if final_name == original_path.name:
                 return original_path.name
-            return new_name
+            return final_name
 
-        # --- 以下、基本のリネームロジック ---
+        # --- 4. 通常のリネームロジック ---
         # Exif情報がある場合: [prefix]Exif_YYYYMMDD_HHmmSS.ext
         if source == "Exif":
             return f"{prefix}Exif_{date_str}{suffix}"
         
-        # Exifがない場合（従来通り）: [prefix]元のファイル名_YYYYMMDD_HHmmSS.ext
+        # Exifがない場合: [prefix]元のファイル名_YYYYMMDD_HHmmSS.ext
         return f"{prefix}{stem}{date_suffix}{suffix}"
 
     def add_row_to_ui(self, entry):
@@ -209,13 +221,15 @@ class RenameApp(ctk.CTk):
         label = ctk.CTkLabel(row_frame, text=label_text, font=("Consolas", 12), anchor="w")
         label.pack(side="left", padx=10)
 
-        # 変更がない場合（既にリネーム済みなど）は色を変える
+        # 変更がない場合はここに来ない想定ですが、念のため
         if original == new:
             label.configure(text_color="gray")
 
     def clear_list(self):
-        """リストをクリアする"""
+        """リストをクリアし、スキップ件数もリセットする"""
         self.file_data = []
+        self.skip_count = 0
+        self.lbl_skip_info.configure(text="")
         for widget in self.scroll_frame.winfo_children():
             # ヘッダー以外を削除
             if widget != self.header_label:
@@ -224,11 +238,11 @@ class RenameApp(ctk.CTk):
     def run_rename(self):
         """実際にファイル名を変更する"""
         if not self.file_data:
-            messagebox.showinfo("info", "ファイルが選択されていません。")
+            messagebox.showinfo("info", "リネーム対象のファイルがありません。")
             return
 
-        # ログ開始
-        self.append_log(f"--- 実行開始: {datetime.datetime.now().strftime('%H:%M:%S')} ---")
+        # 実行ログの開始
+        self.append_log(f"--- 実行開始: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
         count = 0
         error_count = 0
 
@@ -236,7 +250,7 @@ class RenameApp(ctk.CTk):
             src = entry['original_path']
             dst_name = entry['new_name']
             
-            # 名前が変わらない場合はスキップ
+            # 名前が変わらない場合は念のためスキップ
             if src.name == dst_name:
                 continue
 
@@ -256,12 +270,12 @@ class RenameApp(ctk.CTk):
                 self.append_log(f"[成功] {src.name} -> {dst.name}")
                 count += 1
             except Exception as e:
-                # 【改善】エラーをログに表示
+                # エラーをログエリアに表示
                 self.append_log(f"[エラー] {src.name}: {e}")
                 error_count += 1
 
-        self.append_log(f"完了: {count}個成功 / {error_count}個失敗\n")
-        messagebox.showinfo("完了", f"{count} 個のファイルをリネームしました。")
+        self.append_log(f"完了: {count}個リネーム成功 / {error_count}個失敗\n")
+        messagebox.showinfo("完了", f"{count} 個のファイルをリネームしました。\n詳細はログを確認してください。")
         self.clear_list()
 
 if __name__ == "__main__":
