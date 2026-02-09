@@ -136,7 +136,7 @@ class RenameApp(ctk.CTk):
         """
         Exifから撮影日時を取得する。
         失敗した場合はファイルの最終更新日時を返す。
-        戻り値: (datetimeオブジェクト, ソース文字列 'Exif' or 'FileTime')
+        戻り値: (datetimeオブジェクト, ソース文字列 'Exif' or 'ExifMissingDate' or 'FileTime')
         """
         dt_obj = None
         source = "FileTime"
@@ -156,6 +156,9 @@ class RenameApp(ctk.CTk):
                     # Exifの日付形式は通常 "YYYY:MM:DD HH:MM:SS"
                     dt_obj = datetime.datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S")
                     source = "Exif"
+                else:
+                    # Exifコンテナはあるが、肝心の日付タグが空の場合
+                    source = "ExifMissingDate"
         except Exception:
             pass # Exifがない、または画像でない場合はスルー
 
@@ -163,7 +166,9 @@ class RenameApp(ctk.CTk):
         if dt_obj is None:
             mtime = os.path.getmtime(file_path)
             dt_obj = datetime.datetime.fromtimestamp(mtime)
-            source = "FileTime"
+            # sourceがExifMissingDateでない（コンテナすら無い）場合のみFileTimeにする
+            if source != "ExifMissingDate":
+                source = "FileTime"
 
         return dt_obj, source
 
@@ -210,6 +215,10 @@ class RenameApp(ctk.CTk):
         # Exif情報がある場合: [prefix]Exif_YYYYMMDD_HHmmSS.ext
         if source == "Exif":
             return f"{prefix}Exif_{date_str}{suffix}"
+        
+        # Exifコンテナはあるが日付が空だった場合: [prefix]exif0_YYYYMMDD_HHmmSS.ext
+        if source == "ExifMissingDate":
+            return f"{prefix}exif0_{date_str}{suffix}"
         
         # Exifがない場合（従来通り）: 元のファイル名_YYYYMMDD_HHmmSS.ext
         # 既に同じ日時サフィックスがついているかチェック
