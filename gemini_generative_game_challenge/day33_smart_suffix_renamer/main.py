@@ -47,7 +47,7 @@ class RenameApp(ctk.CTk):
         self.lbl_skip_info = ctk.CTkLabel(self.header_frame, text="", text_color="#FF3B30", font=("Arial", 14, "bold"))
         self.lbl_skip_info.pack(side="left", padx=10)
 
-        # プログレスエリア（プレビューの上に配置）
+        # プログレスエリア（プレビューの上に配置して視認性を向上）
         self.progress_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.progress_frame.grid(row=1, column=0, padx=20, pady=(0, 10), sticky="ew")
         
@@ -59,8 +59,8 @@ class RenameApp(ctk.CTk):
         self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="変更プレビュー")
         self.scroll_frame.grid(row=2, column=0, padx=20, pady=10, sticky="nsew")
         
-        # リストのヘッダーラベル（簡易的）
-        self.header_label = ctk.CTkLabel(self.scroll_frame, text=f"{'元のファイル名':<40}  →  {'変更後のファイル名':<40}", font=("Consolas", 14, "bold"), anchor="w")
+        # 【変更】リストのヘッダーラベルに通し番号(No.)のカラムを追加
+        self.header_label = ctk.CTkLabel(self.scroll_frame, text=f"{'No.':<6} {'元のファイル名':<40}  →  {'変更後のファイル名':<40}", font=("Consolas", 14, "bold"), anchor="w")
         self.header_label.pack(fill="x", padx=5, pady=5)
 
         # スクロール操作用のキーボードバインド
@@ -124,20 +124,19 @@ class RenameApp(ctk.CTk):
             messagebox.showerror("エラー", f"フォルダの読み込み中にエラーが発生しました:\n{e}")
 
     def process_file_parallel(self, path_obj):
-        """【並列処理】単一ファイルの解析を行う"""
+        """【並列処理】単一ファイルの解析を行うスレッド用関数"""
         dt_obj, source = self.get_date_info(path_obj)
-        # 重複は後でまとめて解決するため、ここでは基本の候補名だけ出す
+        # 基本となる名前候補を生成（重複はここでは解決しない）
         candidate_name = self.generate_new_name(path_obj, dt_obj, source)
         return path_obj, candidate_name, source
 
     def add_paths_to_list(self, path_objects):
         """パスのリストを受け取り、計算と描画を分離して高速に追加する"""
-        # 未追加のファイルのみ抽出
         new_paths = [p for p in path_objects if not any(d['original_path'] == p for d in self.file_data)]
         if not new_paths: return
 
         total_count = len(new_paths)
-        self.lbl_info.configure(text=f"分析中... (0%)")
+        self.lbl_info.configure(text=f"分析中...")
         self.progress_bar.set(0)
         self.update()
 
@@ -149,14 +148,14 @@ class RenameApp(ctk.CTk):
         self.lbl_info.configure(text=f"重複をチェック中...")
         self.update()
 
-        # --- STEP 2: 一括重複チェック（ユーザー提案：メモリ上でまとめて処理） ---
-        # すでに追加済みの名前をsetで保持
+        # --- STEP 2: 一括重複チェック（メモリ上でまとめて処理） ---
+        # すでに追加済みの名前をsetで保持（O(1)の高速検索用）
         used_names = {d['new_name'] for d in self.file_data}
         final_list_to_display = []
 
         for path_obj, candidate_name, source in raw_results:
             new_name = candidate_name
-            # setによる高速検索（O(1)）
+            # ファイルシステムとメモリ上の両方で衝突を確認
             if new_name in used_names or ((path_obj.parent / new_name).exists() and new_name != path_obj.name):
                 stem = Path(candidate_name).stem
                 suffix = Path(candidate_name).suffix
@@ -173,26 +172,29 @@ class RenameApp(ctk.CTk):
                 'date_source': source
             })
 
-        # --- STEP 3: UIへの一括表示（描画負荷を分散してフリーズと空白を防止） ---
+        # --- STEP 3: UIへの描画（段階的描画でクラッシュとフリーズを防止） ---
         self.append_log(f"--- プレビュー表示開始 ---")
         for i, entry in enumerate(final_list_to_display):
-            # 名前が変わらない場合はカウントのみ（描画を省く）
+            # 名前が変わらない場合はカウントのみ（画面部品を作らない）
             if entry['original_path'].name == entry['new_name']:
                 self.skip_count += 1
                 self.lbl_skip_info.configure(text=f"変更なし: {self.skip_count} 件")
             else:
+                # 【改善】通し番号を付けて追加
                 self.file_data.append(entry)
-                self.add_row_to_ui(entry)
+                row_number = len(self.file_data)
+                self.add_row_to_ui(entry, row_number)
 
-            # 定期的にUIイベントを処理（「応答なし」を完全に回避）
+            # 定期的にOSイベントを処理してフリーズを回避
             if i % 15 == 0 or i == total_count - 1:
                 progress = (i + 1) / total_count
                 self.progress_bar.set(progress)
-                self.lbl_info.configure(text=f"表示を更新中... ({i+1}/{total_count})")
-                self.update() # OSとやり取りしてフリーズを防ぐ
+                self.lbl_info.configure(text=f"プレビュー更新中... ({i+1}/{total_count})")
+                self.update() 
 
-        # 表示の空白を防ぐため、最後に描画を強制確定
-        self.lbl_info.configure(text="解析完了。")
+        # 【追加】解析完了メッセージを表示
+        self.lbl_info.configure(text=f"{total_count} 件のファイル解析完了。")
+        # 描画後のスクロール領域を正しく更新
         self.scroll_frame._parent_canvas.configure(scrollregion=self.scroll_frame._parent_canvas.bbox("all"))
         self.update()
 
@@ -305,7 +307,7 @@ class RenameApp(ctk.CTk):
 
         return f"{prefix}{stem}{date_suffix}{suffix}"
 
-    def add_row_to_ui(self, entry):
+    def add_row_to_ui(self, entry, row_number):
         """UIのスクロールフレームに行を追加する"""
         original = entry['original_path'].name
         new = entry['new_name']
@@ -314,13 +316,13 @@ class RenameApp(ctk.CTk):
         row_frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
         row_frame.pack(fill="x", padx=5, pady=2)
         
-        # 表示テキスト
-        label_text = f"{original:<30}  >>>  {new:<30}"
+        # 【変更】表示テキストに行番号(No.)を追加
+        label_text = f"{row_number:<5} {original:<40}  >>>  {new:<40}"
         
         label = ctk.CTkLabel(row_frame, text=label_text, font=("Consolas", 12), anchor="w")
         label.pack(side="left", padx=10)
 
-        # 変更がない場合（既にリネーム済みなど）は色を変える
+        # 変更がない場合はここに来ない想定ですが、念のため
         if original == new:
             label.configure(text_color="gray")
 
@@ -353,7 +355,7 @@ class RenameApp(ctk.CTk):
             src = entry['original_path']
             dst = src.parent / entry['new_name']
             
-            # 衝突回避：既にファイルが存在する場合は連番を振る
+            # 衝突回避：物理的なファイルがすでに存在する場合は連番を振る
             if dst.exists() and src != dst:
                 base, ext = dst.stem, dst.suffix
                 idx = 1
