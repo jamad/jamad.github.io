@@ -54,6 +54,12 @@ class RenameApp(ctk.CTk):
         self.header_label = ctk.CTkLabel(self.scroll_frame, text=f"{'元のファイル名':<40}  →  {'変更後のファイル名':<40}", font=("Consolas", 14, "bold"), anchor="w")
         self.header_label.pack(fill="x", padx=5, pady=5)
 
+        # 【追加】スクロール操作用のキーボードバインド
+        self.bind_all("<Down>", lambda e: self.scroll_frame._parent_canvas.yview_scroll(1, "units"))
+        self.bind_all("<Up>", lambda e: self.scroll_frame._parent_canvas.yview_scroll(-1, "units"))
+        self.bind_all("<Next>", lambda e: self.scroll_frame._parent_canvas.yview_scroll(1, "pages"))
+        self.bind_all("<Prior>", lambda e: self.scroll_frame._parent_canvas.yview_scroll(-1, "pages"))
+
         # 3. フッターエリア（実行ボタン ＆ ログエリア）
         self.footer_frame = ctk.CTkFrame(self)
         self.footer_frame.grid(row=2, column=0, padx=20, pady=(10, 20), sticky="ew")
@@ -110,7 +116,8 @@ class RenameApp(ctk.CTk):
 
     def add_paths_to_list(self, path_objects):
         """パスのリストを受け取り、UIに追加する共通処理"""
-        for path_obj in path_objects:
+        total = len(path_objects)
+        for i, path_obj in enumerate(path_objects):
             # 既にリストにあるファイルはスキップ
             if any(d['original_path'] == path_obj for d in self.file_data):
                 continue
@@ -118,8 +125,7 @@ class RenameApp(ctk.CTk):
             dt_obj, source = self.get_date_info(path_obj)
             new_name = self.generate_new_name(path_obj, dt_obj, source)
             
-            # 【追加】プレビュー段階での名前衝突回避（連番付与）
-            # リスト内の他のファイルや、既存のファイル（自分自身を除く）と名前がぶつからないようにする
+            # プレビュー段階での名前衝突回避（連番付与）
             temp_name = new_name
             counter = 1
             while any(d['new_name'] == temp_name for d in self.file_data) or \
@@ -134,15 +140,18 @@ class RenameApp(ctk.CTk):
             if path_obj.name == new_name:
                 self.skip_count += 1
                 self.lbl_skip_info.configure(text=f"変更なし: {self.skip_count} 件")
-                continue
+            else:
+                entry = {
+                    'original_path': path_obj,
+                    'new_name': new_name,
+                    'date_source': source
+                }
+                self.file_data.append(entry)
+                self.add_row_to_ui(entry)
 
-            entry = {
-                'original_path': path_obj,
-                'new_name': new_name,
-                'date_source': source
-            }
-            self.file_data.append(entry)
-            self.add_row_to_ui(entry)
+            # 【フリーズ対策】一定件数ごとにUIを強制更新してフリーズを防ぐ
+            if i % 10 == 0:
+                self.update()
 
     def get_date_info(self, file_path: Path):
         """
@@ -268,7 +277,7 @@ class RenameApp(ctk.CTk):
         label = ctk.CTkLabel(row_frame, text=label_text, font=("Consolas", 12), anchor="w")
         label.pack(side="left", padx=10)
 
-        # 変更がない場合はここに来ない想定ですが、念のため
+        # 変更がない場合はここに来ない想定ですが、連番チェック等でまれに来る可能性があるため
         if original == new:
             label.configure(text_color="gray")
 
