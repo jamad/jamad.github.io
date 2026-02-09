@@ -95,13 +95,13 @@
         <div class="flex justify-between items-center mb-3">
             <div class="flex items-center gap-4">
                 <div class="flex flex-col">
-                    <span class="text-[12px] text-blue-400 font-black tracking-[0.1em] uppercase">Jamad Ony <span class="text-blue-900 text-[10px] ml-1">v4.2</span></span>
+                    <span class="text-[12px] text-blue-400 font-black tracking-[0.1em] uppercase">Jamad Onyx <span class="text-blue-900 text-[10px] ml-1">v20260207.1</span></span>
                     <span class="subtitle uppercase">[ Nordic Input Surface ]</span>
                 </div>
                 <div class="flex items-center border-l border-gray-800 pl-4 h-6">
-                    <a href="https://3d-mindmap-b2c434.gitlab.io/" target="_blank" class="nav-link">Home</a>
+                    <a href="https://junichiyamada.gitlab.io/" target="_blank" class="nav-link">Home</a>
                     <span class="nav-sep">|</span>
-                    <a href="#" class="nav-link">Bug Report</a>
+                    <a href="https://gitlab.com/junichiyamada/jamad-keypad/-/issues" target="_blank" class="nav-link">Bug Report</a>
                 </div>
             </div>
             <div class="flex gap-2">
@@ -116,7 +116,7 @@
 
     <div class="flex-1 overflow-y-auto pt-2 bg-black">
         <div id="keypad" class="key-grid">
-            <!-- JS生成 -->
+            <!-- JSで動的生成 -->
         </div>
     </div>
 
@@ -129,7 +129,7 @@
         let buttonsVertical = []; 
 
         const keys = [
-            // Row 1-4: Macros (Tableの区切りを -- に変更)
+            // Row 1-4: Macros
             { id: 'btn-start', label: 'Table 1col', sub: '|-|', val: '|  |\n|--|\n|  |', offset: -10, type: 'btn-macro' },
             { label: 'Table 2col', sub: '|--|', val: '|  |  |\n|--|--|\n|  |  |', offset: -13, type: 'btn-macro' },
             { label: 'Table 3col', sub: '|---|', val: '|  |  |  |\n|--|--|--|\n|  |  |  |', offset: -16, type: 'btn-macro' },
