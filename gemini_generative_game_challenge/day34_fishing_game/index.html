@@ -24,8 +24,9 @@
         }
         #depth-meter {
             position: absolute; top: 20px; right: 20px;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
             font-family: monospace; font-size: 24px; text-align: right;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
         #message-area {
             position: absolute; top: 20%; width: 100%; text-align: center;
@@ -51,10 +52,12 @@
             border-radius: 12px; text-align: center; width: 85%; max-width: 380px;
             box-shadow: 0 0 40px rgba(0, 191, 255, 0.2); position: relative;
             border: 4px solid #0277bd;
+            user-select: text; -webkit-user-select: text; /* コピー許可 */
         }
         .fish-kanji {
             font-size: 100px; line-height: 1.1; margin: 10px 0;
             color: #004d40; font-family: 'HiraMinProN-W6', 'YuMincho', serif;
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.1); /* カード内の文字にも薄く影 */
         }
         .fish-reading { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
         .fish-en { font-size: 18px; color: #e65100; font-style: italic; font-family: sans-serif; margin-bottom: 15px;}
@@ -66,21 +69,22 @@
             margin-top: 20px; padding: 12px 50px;
             background: #0277bd; color: white; border: none;
             border-radius: 25px; font-size: 18px; font-weight: bold;
-            cursor: pointer;
+            cursor: pointer; user-select: none;
         }
         .badge-rare {
             position: absolute; top: -15px; right: -15px;
             background: #ffd700; color: #000; padding: 5px 15px;
             border-radius: 20px; font-weight: bold; transform: rotate(15deg);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); pointer-events: none;
         }
         .tutorial {
             position: absolute; bottom: 30px; width: 100%; text-align: center;
-            color: rgba(255,255,255,0.5); font-size: 14px; line-height: 1.5;
+            color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.5;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
         .zone-label {
             position: absolute; top: 50%; transform: translateY(-50%);
-            font-size: 60px; font-weight: bold; color: rgba(255,255,255,0.03);
+            font-size: 60px; font-weight: bold; color: rgba(255,255,255,0.05);
             pointer-events: none; writing-mode: vertical-rl;
         }
     </style>
@@ -95,8 +99,8 @@
     <div class="zone-label" style="right: 20px;">OCEAN (海水)</div>
 
     <div class="tutorial">
-        Tap location to cast line there<br>
-        タップした場所に糸を垂らす
+        Tap to Cast / Tap again to Cancel<br>
+        タップでキャスト / 停止中にタップでキャンセル
     </div>
 </div>
 
@@ -117,7 +121,6 @@
 <script>
 /**
  * 拡張漢字魚辞書 (約250種以上)
- * リストにあった漢字をほぼ全て網羅し、読みと意味を定義
  */
 const FISH_DB = {
     // === 基本・初級 (Common) ===
@@ -354,7 +357,7 @@ const FISH_DB = {
     '鱣': {y:'ちょうざめ', e:'Sturgeon', d:'チョウザメ。', t:'fresh'},
     '鱤': {y:'かん', e:'Yellowcheek', d:'中国の大型淡水肉食魚。', t:'fresh'},
     '鱥': {y:'はやか', e:'Minnow', d:'ハヤカ。', t:'fresh'},
-    '鱦': {y:'すくも', e:'Small fish', d:'小魚。', t:'salt'},
+    '鱦': {y:'すくも', e:'Small fish', d:'小魚の群れ。', t:'salt'},
     '鱨': {y:'ぎぎ', e:'Catfish var', d:'ギギ。', t:'fresh'},
     '鱩': {y:'はたはた', e:'Sandfish', d:'ハタハタ。', t:'salt'},
     '鱪': {y:'しいら', e:'Mahi-mahi', d:'シイラ。', t:'salt'},
@@ -389,7 +392,7 @@ function getFishData(kanji, type) {
     };
 }
 
-// 辞書のキー配列をプールとして使用（確実に定義がある魚しか出ない）
+// 辞書のキー配列をプールとして使用
 const FISH_POOL = Object.keys(FISH_DB);
 
 // --- Audio System ---
@@ -417,7 +420,8 @@ const AudioSys = {
     cast: () => AudioSys.play(600, 'sine', 0.5, 200),
     bite: () => { AudioSys.play(800, 'square', 0.1); setTimeout(()=>AudioSys.play(800,'square',0.1), 100); },
     reel: () => AudioSys.play(300, 'triangle', 0.05),
-    catch: () => [0,100,200,400].forEach((t,i)=>setTimeout(()=>AudioSys.play(440*[1,1.25,1.5,2][i], 'square', 0.3), t))
+    catch: () => [0,100,200,400].forEach((t,i)=>setTimeout(()=>AudioSys.play(440*[1,1.25,1.5,2][i], 'square', 0.3), t)),
+    cancel: () => AudioSys.play(150, 'sawtooth', 0.2) // キャンセル音
 };
 
 // --- Game Engine ---
@@ -426,7 +430,7 @@ const ctx = canvas.getContext('2d');
 let width, height;
 
 // Game State
-let state = 'IDLE'; // IDLE, CASTING, HOLDING, BITE, REELING, CAUGHT
+let state = 'IDLE'; // IDLE, CASTING, HOLDING, BITE, REELING, CAUGHT, RETRIEVING (Empty)
 let hook = { x: 0, y: 0, depth: 0, speed: 0 };
 let fishes = [];
 let particles = [];
@@ -437,6 +441,7 @@ let fightProgress = 0;
 // Config
 const CAST_SPEED = 12;
 const MAX_DEPTH = 5000;
+const VIEW_BUFFER = 400; // 画面外に配置する際のバッファ
 
 function resize() {
     width = window.innerWidth;
@@ -454,33 +459,32 @@ class Fish {
     }
     
     reset(isInit = false) {
-        // 深度決定（深いほどレアが出やすいような重み付けも可能だが今回はランダム）
-        this.depth = Math.random() * MAX_DEPTH;
-        
-        // 文字決定（辞書からランダム）
+        this.depth = Math.random() * (MAX_DEPTH - 150);
         this.char = FISH_POOL[Math.floor(Math.random() * FISH_POOL.length)];
-        // DB上の生息域データを取得
-        const dbData = FISH_DB[this.char] || {t:'salt'}; // デフォルト海水
+        const dbData = FISH_DB[this.char] || {t:'salt'};
         this.type = dbData.t;
-
-        this.size = 40 + Math.random() * 60; // 40-100px
+        this.size = 40 + Math.random() * 60;
         
-        // Y座標の決定（ポッピング防止ロジック）
+        // Y座標の配置
         if (isInit) {
             this.y = this.depth;
         } else {
-            // リサイクル時：カメラの進行方向の「先」に出す
-            // 降りている時(CASTING)は下から、巻いている時(REELING)は上から
+            // リサイクル配置：画面外に広く散らす
+            // 【修正】現在カメラ位置を基準に、上下の安全な領域に配置する
             if (state === 'CASTING') {
-                this.y = cameraY + height + 100 + Math.random() * 200;
-            } else if (state === 'REELING') {
-                this.y = cameraY - 100 - Math.random() * 200;
+                // 下へ向かっている -> 画面の下方向へ先回りして配置
+                this.y = cameraY + height + VIEW_BUFFER + Math.random() * 1000;
+            } else if (state === 'REELING' || state === 'RETRIEVING') {
+                // 上へ向かっている -> 画面の上方向へ配置
+                this.y = cameraY - VIEW_BUFFER - Math.random() * 1000;
             } else {
-                this.y = cameraY + height + 100;
+                this.y = cameraY + height + VIEW_BUFFER;
             }
         }
+        
+        if (this.y > MAX_DEPTH - 150) this.y = Math.random() * (MAX_DEPTH - 200);
 
-        // X座標と移動範囲
+        // X座標
         const border = width / 2;
         if (this.type === 'fresh') {
             this.minX = 0; this.maxX = border;
@@ -502,21 +506,20 @@ class Fish {
             // --- ポッピング防止のリサイクル処理 ---
             const screenY = this.y - cameraY;
             
-            // 画面外に大きく出たら、反対側に回す
-            // 下に行き過ぎたら上へ、上に行き過ぎたら下へ
-            // これにより魚が尽きずに無限スクロール感を出す
-            if (screenY > height + 200) {
-                // 下に消えた -> 上に戻す（REELING中に有効）
-                this.y = cameraY - 200;
-                // X位置なども再設定
+            // 画面の下端よりさらに下に行ったら
+            if (screenY > height + VIEW_BUFFER) {
+                // 上に移動（REELING/RETRIEVING中など、上方向へカメラが動く時用）
+                this.y = cameraY - VIEW_BUFFER - Math.random() * 500;
                 this.resetX();
-            } else if (screenY < -200) {
-                // 上に消えた -> 下に戻す（CASTING中に有効）
-                this.y = cameraY + height + 200;
+            } 
+            // 画面の上端よりさらに上に行ったら
+            else if (screenY < -VIEW_BUFFER) {
+                // 下に移動（CASTING中など、下方向へカメラが動く時用）
+                this.y = cameraY + height + VIEW_BUFFER + Math.random() * 500;
+                if(this.y > MAX_DEPTH) this.y = Math.random() * MAX_DEPTH;
                 this.resetX();
             }
 
-            // フックとの判定
             if (state === 'HOLDING' && Math.abs(this.y - hook.y) < 40 && Math.abs(this.x - hook.x) < 40) {
                 if (Math.random() < 0.05) startBite(this);
             }
@@ -527,7 +530,6 @@ class Fish {
     }
     
     resetX() {
-        // リサイクル時にX位置や種類を再抽選する（バリエーション豊かに）
         this.char = FISH_POOL[Math.floor(Math.random() * FISH_POOL.length)];
         const dbData = FISH_DB[this.char];
         this.type = dbData ? dbData.t : 'salt';
@@ -543,16 +545,22 @@ class Fish {
 
     draw() {
         const screenY = this.y - cameraY;
+        // 画面内判定
         if (screenY < -100 || screenY > height + 100) return;
 
         ctx.save();
         ctx.translate(this.x, screenY);
         
-        ctx.fillStyle = this.type === 'fresh' ? '#b2dfdb' : '#e1f5fe';
+        // Shadow (Original Style)
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.font = `bold ${this.size}px serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        // 向き固定（反転なし）
+        ctx.fillText(this.char, 8, 8); // Offset shadow
+
+        // Main Text
+        ctx.fillStyle = this.type === 'fresh' ? '#b2dfdb' : '#e1f5fe';
         ctx.fillText(this.char, 0, 0);
+        
         ctx.restore();
     }
 }
@@ -562,13 +570,14 @@ class Fish {
 // ------------------------------------
 function handleInput(e) {
     if (e.target.tagName === 'BUTTON') return;
+    if (document.getElementById('result-modal').style.display === 'flex') return;
+
     e.preventDefault();
     AudioSys.init();
     
     let clientX = e.touches ? e.touches[0].clientX : e.clientX;
     
     if (state === 'IDLE') {
-        // タップ位置へキャスト
         hook.x = Math.max(20, Math.min(width - 20, clientX));
         state = 'CASTING';
         hook.depth = 0; hook.y = 0; hook.speed = CAST_SPEED;
@@ -576,14 +585,18 @@ function handleInput(e) {
         AudioSys.cast();
     } else if (state === 'CASTING') {
         state = 'HOLDING'; hook.speed = 0;
-        setMessage("WAITING...");
+        setMessage("WAITING... / TAP TO CANCEL");
+    } else if (state === 'HOLDING') {
+        state = 'RETRIEVING';
+        AudioSys.cancel();
+        setMessage("CANCELED / RETRIEVING...");
     } else if (state === 'BITE') {
         state = 'REELING'; fightProgress = 0;
         AudioSys.reel();
         setMessage("REEL IT IN! (TAP!)");
     } else if (state === 'REELING') {
         fightProgress += 10;
-        hook.y -= 50; // 巻き上げ
+        hook.y -= 200; // 4x speed
         AudioSys.reel();
         if (hook.y <= 0) catchFish();
     }
@@ -610,15 +623,9 @@ function catchFish() {
     document.getElementById('res-kanji').innerText = f.char;
     document.getElementById('res-reading').innerText = data.y;
     document.getElementById('res-en').innerText = data.e;
-    
-    // 解説にGoogle検索リンクを追加（さらに学びたい人用）
-    const searchUrl = `https://www.google.com/search?q=${f.char}+魚`;
-    document.getElementById('res-desc').innerHTML = 
-        `${data.d}<br><br><a href="${searchUrl}" target="_blank" style="color:#0277bd;">Googleで詳細を検索</a>`;
+    document.getElementById('res-desc').innerText = data.d;
     
     const badge = document.getElementById('badge');
-    // 画数が多い、またはJIS水準が高いものを簡易的にレア判定
-    const rare = f.char.length > 0; // 全てCATCH表示にするが、色で区別も可能
     badge.innerText = "CATCH"; badge.style.background = "#ffd700";
 }
 
@@ -639,9 +646,16 @@ for(let i=0; i<40; i++) fishes.push(new Fish());
 function draw() {
     if (state === 'CASTING') {
         hook.y += hook.speed;
-        if (hook.y >= MAX_DEPTH) { state = 'HOLDING'; setMessage("MAX DEPTH"); }
+        if (hook.y >= MAX_DEPTH) { state = 'HOLDING'; setMessage("MAX DEPTH / TAP TO CANCEL"); }
     } else if (state === 'REELING') {
-        hook.y += 2; // Gravity
+        hook.y += 2; 
+    } else if (state === 'RETRIEVING') {
+        hook.y -= 50; 
+        if (hook.y <= 0) {
+            hook.y = 0;
+            state = 'IDLE';
+            setMessage("TAP TO CAST");
+        }
     }
 
     // Camera Logic
@@ -652,12 +666,19 @@ function draw() {
     // UI Updates
     document.getElementById('depth-meter').innerText = (hook.y / 10).toFixed(1) + " m";
 
-    // Background
+    // Background Color
     let depthRatio = Math.min(cameraY / MAX_DEPTH, 1);
     let r = Math.floor(0 * (1-depthRatio));
     let g = Math.floor(100 * (1-depthRatio)); 
     let b = Math.floor(200 * (1-depthRatio) + 50); 
     ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(0, 0, width, height);
+
+    // Sunlight Gradient Overlay (Frame)
+    const sunGrad = ctx.createLinearGradient(0, 0, 0, height/2); // Top half fade
+    sunGrad.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+    sunGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = sunGrad;
     ctx.fillRect(0, 0, width, height);
 
     // Grid Lines
