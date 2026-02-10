@@ -466,8 +466,8 @@ let fightProgress = 0;
 
 // Config
 const CAST_SPEED = 12;
-const MAX_DEPTH = 5000;
-const VIEW_BUFFER = 800;
+const MAX_DEPTH = 7000;
+const VIEW_BUFFER = 1600;
 
 // --- Initialize Logic ---
 // 1. Resize First
@@ -570,21 +570,32 @@ class Fish {
             if (this.x < this.minX + 20 || this.x > this.maxX - 20) this.vx *= -1;
             
             const screenY = this.y - cameraY;
-            if (screenY > height + VIEW_BUFFER) {
-                this.y = cameraY - VIEW_BUFFER - Math.random() * 500;
-                this.resetX();
-            } else if (screenY < -VIEW_BUFFER) {
+            
+            // 画面外（上）に消えたら下へ再配置
+            if (screenY < -VIEW_BUFFER) {
                 this.y = cameraY + height + VIEW_BUFFER + Math.random() * 500;
-                if(this.y > MAX_DEPTH) this.y = Math.random() * MAX_DEPTH;
+                if (this.y > MAX_DEPTH) {
+                    this.y = cameraY - VIEW_BUFFER - Math.random() * 500;
+                }
+                this.resetX();
+            } 
+            // 画面外（下）に消えたら上へ再配置
+            else if (screenY > height + VIEW_BUFFER) {
+                this.y = cameraY - VIEW_BUFFER - Math.random() * 500;
                 this.resetX();
             }
 
-            if (state === 'HOLDING' && Math.abs(this.y - hook.y) < 40 && Math.abs(this.x - hook.x) < 40) {
-                if (Math.random() < 0.05) startBite(this);
+            // 針との当たり判定
+            if (state === 'HOLDING' && Math.abs(this.y - hook.y) < 70 && Math.abs(this.x - hook.x) < 70) {
+                if (Math.random() < 0.2) startBite(this);
             }
-        } else if (this.state === 'HOOKED') {
-            this.x = hook.x + (Math.random()-0.5)*10;
-            this.y = hook.y + 20;
+        } 
+        // === ここから下の処理が消えていました ===
+        else if (this.state === 'HOOKED') {
+            // 釣られている間は針の位置（hook.x, hook.y）に固定する
+            // 少し揺らして暴れている演出を入れる
+            this.x = hook.x + (Math.random() - 0.5) * 15;
+            this.y = hook.y + 25;
         }
     }
     
