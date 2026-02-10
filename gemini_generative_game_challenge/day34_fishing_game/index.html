@@ -483,26 +483,49 @@ resize(); // Call immediately to set width/height
 
 // 2. Define Classes (Now width/height are available)
 class Bubble {
-    constructor() { this.reset(); }
-    reset() {
-        this.x = Math.random() * width;
-        this.y = height + Math.random() * height;
-        this.size = 2 + Math.random() * 5;
-        this.speed = 1 + Math.random() * 2;
-        this.alpha = 0.3 + Math.random() * 0.4;
+    constructor() {
+        this.worldX = Math.random() * width;
+        this.worldY = Math.random() * height; // 画面の高さ範囲内で初期化
+        this.size = 1.5 + Math.random() * 2.5; 
+        this.riseSpeed = 0.4 + Math.random() * 0.8;
+        this.parallaxFactor = 0.6; // 魚よりゆっくり動く（奥にいる演出）
+        this.sinOffset = Math.random() * Math.PI * 2;
+        this.sinSpeed = 0.02 + Math.random() * 0.03;
+        this.amplitude = 10 + Math.random() * 15;
     }
+
     update() {
-        this.y -= this.speed;
-        if (this.y < -50) {
-            this.y = height + 50;
-            this.x = Math.random() * width;
-        }
+        this.worldY -= this.riseSpeed; // 上に昇る
+        this.sinOffset += this.sinSpeed; // ゆらゆら更新
     }
-    draw(ctx) {
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+
+    draw(ctx, camY) {
+        // カメラの動き（camY）に合わせて上下にループさせる計算
+        // Modulo (%) を使って、画面上端に消えたら下から出てくるようにする
+        let screenY = (this.worldY - camY * this.parallaxFactor) % height;
+        if (screenY < 0) screenY += height;
+
+        // サインカーブによる横揺れ
+        const swayX = Math.sin(this.sinOffset) * this.amplitude;
+        const renderX = (this.worldX + swayX) % width;
+
+        ctx.save();
+        ctx.translate(renderX, screenY);
+        
+        // 透明感のある泡の描画
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 1.2;
+        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 泡のハイライト（光の点）
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.arc(-this.size * 0.3, -this.size * 0.3, this.size * 0.2, 0, Math.PI * 2);
         ctx.fill();
+
+        ctx.restore();
     }
 }
 
@@ -603,34 +626,34 @@ for(let i=0; i<35; i++) fishes.push(new Fish());
 
 // --- Input Handling ---
 function handleInput(e) {
-    // UI elements click check
     if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
     if (document.getElementById('result-modal').style.display === 'flex') return;
 
-    e.preventDefault();
     AudioSys.init();
-    
-    let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    let clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
     
     if (state === 'IDLE') {
         hook.x = Math.max(20, Math.min(width - 20, clientX));
         state = 'CASTING';
-        hook.depth = 0; hook.y = 0; hook.speed = CAST_SPEED;
+        hook.y = 0; hook.speed = CAST_SPEED;
         setMessage("TAP TO STOP");
         AudioSys.cast();
     } else if (state === 'CASTING') {
         state = 'HOLDING'; hook.speed = 0;
         setMessage("WAITING... / TAP TO CANCEL");
     } else if (state === 'HOLDING') {
+        // キャンセル（高速回収）モードへ
         state = 'RETRIEVING';
         AudioSys.cancel();
         setMessage("CANCELED / RETRIEVING...");
     } else if (state === 'BITE') {
-        state = 'REELING'; fightProgress = 0;
+        state = 'REELING';
+        fightProgress = 0;
+        hook.biteY = hook.y; // 逃げられる判定の基準点を記録
         AudioSys.reel();
         setMessage("REEL IT IN! (TAP!)");
     } else if (state === 'REELING') {
-        fightProgress += 10;
+        // 釣り上げ。以前の50から200へ（4倍楽に）
         hook.y -= 200; 
         AudioSys.reel();
         if (hook.y <= 0) catchFish();
@@ -686,13 +709,13 @@ function draw() {
         hook.y += hook.speed;
         if (hook.y >= MAX_DEPTH) { state = 'HOLDING'; setMessage("MAX DEPTH / TAP TO CANCEL"); }
     } else if (state === 'REELING') {
-        hook.y += 2; 
+        hook.y += 2.5; // 自然沈下
+        // 噛みついた位置(biteY)から50m(500px)沈んだら失敗
         if (hook.y > hook.biteY + 500) fishEscaped(targetFish);
-    } else if (state === 'RETRIEVING') {
-        hook.y -= 50; 
-        if (hook.y <= 0) {
-            hook.y = 0; state = 'IDLE'; setMessage("TAP TO CAST");
-        }
+    }
+    else if (state === 'RETRIEVING') {
+        hook.y -= 100; // キャンセル時の回収速度
+        if (hook.y <= 0) { hook.y = 0; state = 'IDLE'; setMessage("TAP TO CAST"); }
     }
 
     let targetCamY = hook.y - height * 0.4;
@@ -708,7 +731,7 @@ function draw() {
     ctx.fillStyle = `rgb(${r},${g},${b})`;
     ctx.fillRect(0, 0, width, height);
     
-    bubbles.forEach(b => { b.update(); b.draw(ctx); });
+    bubbles.forEach(b => { b.update(); b.draw(ctx, cameraY); });
 
     const sunGrad = ctx.createLinearGradient(0, 0, 0, height/2);
     sunGrad.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
