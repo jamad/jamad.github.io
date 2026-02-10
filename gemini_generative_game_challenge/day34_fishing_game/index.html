@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>漢字魚影 - Kanji Fishing</title>
+    <title>Deep Kanji Fishing - 漢字深海釣り</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #001e36;
+            background-color: #000;
             font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif;
             touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
         canvas {
             display: block;
@@ -23,26 +25,44 @@
             height: 100%;
             pointer-events: none;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
+            justify-content: space-between;
         }
-        #message {
-            color: white;
+        #depth-meter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: monospace;
             font-size: 24px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: none;
+            text-align: right;
+            pointer-events: none;
         }
-        /* 結果表示画面 */
+        #message-area {
+            position: absolute;
+            top: 20%;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+        }
+        .msg-box {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-size: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 結果画面 */
         #result-modal {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 10, 30, 0.95);
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -52,119 +72,80 @@
             z-index: 100;
         }
         .fish-card {
-            background: #fff;
-            color: #333;
-            padding: 25px;
-            border-radius: 15px;
+            background: #f0f0f0;
+            color: #222;
+            padding: 30px;
+            border-radius: 12px;
             text-align: center;
             width: 85%;
-            max-width: 400px;
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 380px;
+            box-shadow: 0 0 40px rgba(0, 191, 255, 0.2);
             position: relative;
-        }
-        @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            border: 4px solid #0277bd;
         }
         .fish-kanji {
-            font-size: 90px;
-            line-height: 1;
-            margin: 15px 0;
-            font-weight: bold;
+            font-size: 100px;
+            line-height: 1.1;
+            margin: 10px 0;
             color: #004d40;
             font-family: 'HiraMinProN-W6', 'YuMincho', serif;
         }
-        .fish-info {
-            margin-bottom: 15px;
-        }
-        .fish-reading {
-            font-size: 24px;
-            color: #333;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        .fish-name-en {
-            font-size: 20px;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            color: #e65100;
-            font-style: italic;
-        }
+        .fish-reading { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+        .fish-en { font-size: 18px; color: #e65100; font-style: italic; font-family: sans-serif; margin-bottom: 15px;}
         .fish-desc {
-            font-size: 14px;
-            color: #555;
-            line-height: 1.5;
-            background: #f5f5f5;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 15px;
-            text-align: left;
+            font-size: 14px; color: #444; text-align: left; background: #e0f7fa;
+            padding: 12px; border-radius: 6px; line-height: 1.6;
         }
         .btn-close {
-            margin-top: 20px;
-            padding: 12px 40px;
-            background: #0277bd;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: bold;
+            margin-top: 20px; padding: 12px 50px;
+            background: #0277bd; color: white; border: none;
+            border-radius: 25px; font-size: 18px; font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
         }
-        .btn-close:active {
-            background: #01579b;
-            transform: scale(0.95);
+        .badge-rare {
+            position: absolute; top: -15px; right: -15px;
+            background: #ffd700; color: #000; padding: 5px 15px;
+            border-radius: 20px; font-weight: bold; transform: rotate(15deg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
         .tutorial {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: rgba(255,255,255,0.6);
-            font-size: 13px;
-            pointer-events: none;
+            position: absolute; bottom: 30px; width: 100%; text-align: center;
+            color: rgba(255,255,255,0.5); font-size: 14px; line-height: 1.5;
         }
-        /* レア度表示 */
-        .rarity-badge {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background: #fdd835;
-            color: #333;
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transform: rotate(10deg);
-            font-size: 12px;
+        /* 生息域ラベル */
+        .zone-label {
+            position: absolute; top: 50%; 
+            transform: translateY(-50%);
+            font-size: 60px; font-weight: bold; 
+            color: rgba(255,255,255,0.03);
+            pointer-events: none;
+            writing-mode: vertical-rl;
         }
     </style>
 </head>
 <body>
 
 <div id="ui-layer">
-    <div id="message">TAP WATER TO CAST</div>
-    <div class="tutorial">水面をタップしてキャスト → 魚が来たら待つ → 「！」でタップ！</div>
+    <div id="depth-meter">0.0 m</div>
+    <div id="message-area"><div class="msg-box" id="msg-text">TAP WATER TO CAST</div></div>
+    
+    <div class="zone-label" style="left: 20px;">RIVER (淡水)</div>
+    <div class="zone-label" style="right: 20px;">OCEAN (海水)</div>
+
+    <div class="tutorial">
+        Tap Any Location: Cast Line There<br>
+        好きな場所をタップして糸を垂らす
+    </div>
 </div>
 
 <div id="result-modal">
     <div class="fish-card">
-        <div id="rarity-badge" class="rarity-badge">RARE</div>
-        <div style="font-size:14px; color:#888; letter-spacing: 2px;">FISHING REPORT</div>
-        
-        <div class="fish-kanji" id="res-kanji">魚</div>
-        
-        <div class="fish-info">
-            <div class="fish-reading" id="res-reading">さかな</div>
-            <div class="fish-name-en" id="res-en">Fish</div>
-        </div>
-        
-        <div class="fish-desc" id="res-desc">
-            解説テキスト
-        </div>
-        
+        <div id="badge" class="badge-rare">RARE</div>
+        <div style="font-size:12px; color:#666; letter-spacing:1px; margin-bottom:5px;">FISHING LOG</div>
+        <div id="res-kanji" class="fish-kanji">魚</div>
+        <div id="res-reading" class="fish-reading">さかな</div>
+        <div id="res-en" class="fish-en">Fish</div>
+        <div id="res-desc" class="fish-desc">解説</div>
         <button class="btn-close" onclick="closeModal()">OK</button>
     </div>
 </div>
@@ -173,552 +154,506 @@
 
 <script>
 /**
- * 拡張漢字辞書データベース
- * 頂いたリストに基づき、可能な限り多くの魚漢字を定義
+ * 魚漢字データベース (内蔵版)
+ * 一般的な魚から、JIS第2-4水準の難読漢字まで約350種以上を定義
  */
-const KANJI_DB = {
-    // === 初級・基本 ===
-    '鮮': { kana: 'あざやか', en: 'Fresh', desc: '魚が新しいこと。転じて、彩りが美しいさま。「新鮮」の鮮。' },
-    '魚': { kana: 'さかな', en: 'Fish', desc: '水中に住む脊椎動物の総称。全ての基本。' },
-    '鯨': { kana: 'くじら', en: 'Whale', desc: '海に住む世界最大の哺乳類。古くは魚だと思われていた。' },
-    '鮪': { kana: 'まぐろ', en: 'Tuna', desc: '止まると死んでしまう回遊魚。赤身やトロは寿司の王様。' },
-    '鰯': { kana: 'いわし', en: 'Sardine', desc: '弱い魚と書いてイワシ。陸に揚げるとすぐ弱ることから。' },
-    '鮭': { kana: 'さけ', en: 'Salmon', desc: '川で生まれ海で育ち、産卵のために再び川へ戻る。' },
-    '鰹': { kana: 'かつお', en: 'Bonito', desc: '初鰹は江戸っ子の好物。乾燥させて「鰹節」にもなる。' },
-    '鮫': { kana: 'さめ', en: 'Shark', desc: '鋭い歯を持つ海のハンター。交尾することから「交（さ）め」とも。' },
-    '鯖': { kana: 'さば', en: 'Mackerel', desc: '「鯖を読む」の語源。数が多くて数えるのが大変だったため。' },
-    '鯛': { kana: 'たい', en: 'Sea Bream', desc: '「めでたい」に通じる縁起の良い魚。魚の王様。' },
-    '鮎': { kana: 'あゆ', en: 'Sweetfish', desc: '香魚とも呼ばれる、清流の女王。独特の香りがある。' },
-    '鰻': { kana: 'うなぎ', en: 'Eel', desc: '土用の丑の日に食べる。蒲焼が有名。' },
-    '鯉': { kana: 'こい', en: 'Carp', desc: '滝を登って龍になると言われる出世魚の象徴。' },
-    '鱗': { kana: 'うろこ', en: 'Scale', desc: '魚の体を保護する硬い薄片。' },
+const FISH_DICT = {
+    // === Level 1: Surface (Common) ===
+    '魚': {y:'sakana', e:'Fish', d:'全ての魚の基本となる字。'},
+    '鮮': {y:'azayaka', e:'Fresh', d:'魚が新しいこと。「新鮮」の鮮。'},
+    '鮎': {y:'あゆ', e:'Sweetfish', d:'清流の女王。独特の香りがあるため香魚とも。', t:'fresh'},
+    '鯉': {y:'こい', e:'Carp', d:'滝を登って龍になるという伝説がある。', t:'fresh'},
+    '鮒': {y:'ふな', e:'Crucian Carp', d:'「釣りはフナに始まりフナに終わる」。', t:'fresh'},
+    '鱒': {y:'ます', e:'Trout', d:'サケ科の魚。渓流釣りの人気ターゲット。', t:'fresh'},
+    '鯛': {y:'たい', e:'Sea Bream', d:'「めでたい」魚の王様。', t:'salt'},
+    '鰯': {y:'いわし', e:'Sardine', d:'陸に揚げるとすぐ弱ることから「弱い魚」。', t:'salt'},
+    '鯵': {y:'あじ', e:'Horse Mackerel', d:'味が良いからアジと言われる。', t:'salt'},
+    '鯖': {y:'さば', e:'Mackerel', d:'「鯖を読む」の語源。数が多くて数えるのが面倒だった。', t:'salt'},
+    '鮭': {y:'さけ', e:'Salmon', d:'川で生まれ海で育ち、川へ戻る。', t:'fresh'}, // 回遊
+    '鮪': {y:'まぐろ', e:'Tuna', d:'泳ぎ続けないと死んでしまう回遊魚。', t:'salt'},
+    '鮫': {y:'さめ', e:'Shark', d:'交尾をする魚であることから「交」の字がついた説あり。', t:'salt'},
+    '鯨': {y:'くじら', e:'Whale', d:'哺乳類だが、かつては最大の魚とされていた。', t:'salt'},
+    '鰻': {y:'うなぎ', e:'Eel', d:'「一日、四回、糸を垂れる」と書いて鰻(諸説あり)。', t:'fresh'},
+    '鯰': {y:'なまず', e:'Catfish', d:'念じて粘る魚。地震予知の伝説がある。', t:'fresh'},
     
-    // === 中級・食卓でおなじみ ===
-    '鱈': { kana: 'たら', en: 'Cod', desc: '雪の降る季節に美味しくなる魚。大食漢で「たらふく」の語源。' },
-    '鰺': { kana: 'あじ', en: 'Horse Mackerel', desc: '味が良いから「アジ」。フライや干物に最適。' },
-    '鱒': { kana: 'ます', en: 'Trout', desc: 'サケ科の魚。渓流釣りで人気。' },
-    '鮒': { kana: 'ふな', en: 'Crucian Carp', desc: '「釣りはフナに始まりフナに終わる」と言われる身近な魚。' },
-    '鮑': { kana: 'あわび', en: 'Abalone', desc: '巻貝の一種。磯の高級食材。「蚫」とも書く。' },
-    '鮃': { kana: 'ひらめ', en: 'Flounder', desc: '「左ヒラメに右カレイ」。海底に潜み、小魚を捕食する。' },
-    '鰈': { kana: 'かれい', en: 'Flatfish', desc: '「左ヒラメに右カレイ」。ヒラメより口が小さく、虫などを食べる。' },
-    '蛸': { kana: 'たこ', en: 'Octopus', desc: '高い知能を持つ軟体動物。海に住むクモ（海・蜘蛛）の意味も。' },
-    '鯣': { kana: 'するめ', en: 'Dried Squid', desc: 'イカを干したもの。縁起物として「あたりめ」とも呼ぶ。' },
-    '鯡': { kana: 'にしん', en: 'Herring', desc: '春を告げる魚。卵は「数の子」。' },
-    '鯔': { kana: 'ぼら', en: 'Mullet', desc: '出世魚（オボコ→イナ→ボラ→トド）。「とどのつまり」の語源。' },
-    '鰤': { kana: 'ぶり', en: 'Yellowtail', desc: '代表的な出世魚。冬の「寒ブリ」は脂が乗って絶品。' },
-    '鰆': { kana: 'さわら', en: 'Spanish Mackerel', desc: '春を告げる魚。西京焼きなどが美味しい。' },
-    '鰒': { kana: 'ふぐ', en: 'Pufferfish', desc: '毒を持つが味は絶品。「腹」が膨れることから。' },
-    '鱸': { kana: 'すずき', en: 'Sea Bass', desc: '夏を代表する白身魚。立派なエラを持つ。' },
-    '鱚': { kana: 'きす', en: 'Sillago', desc: '砂浜の女王。天ぷらの定番。' },
-    '鱧': { kana: 'はも', en: 'Pike Conger', desc: '「食む（はむ）」が語源。鋭い歯を持つ。京都の夏の味覚。' },
+    // === Level 2: Mid-Depth (Uncommon) ===
+    '鮃': {y:'ひらめ', e:'Flounder', d:'「平」たい魚。左ヒラメに右カレイ。', t:'salt'},
+    '鰈': {y:'かれい', e:'Flatfish', d:'「葉」のように薄い魚。', t:'salt'},
+    '鰹': {y:'かつお', e:'Bonito', d:'身が堅いことから「堅魚(かたうお)」。', t:'salt'},
+    '鱈': {y:'たら', e:'Cod', d:'雪の降る季節に美味しくなる。', t:'salt'},
+    '鰤': {y:'ぶり', e:'Yellowtail', d:'師走(12月)に美味しくなる。出世魚。', t:'salt'},
+    '鮟': {y:'あんこう', e:'Monkfish', d:'海底で安らかにしている魚？肝が絶品。', t:'salt'},
+    '鱚': {y:'きす', e:'Sillago', d:'「喜」ぶ魚。天ぷらの定番。', t:'salt'},
+    '鱸': {y:'すずき', e:'Sea Bass', d:'エラが黒いことから。出世魚。', t:'salt'},
+    '鮑': {y:'あわび', e:'Abalone', d:'魚偏だが巻貝の仲間。磯の宝石。', t:'salt'},
+    '蛸': {y:'たこ', e:'Octopus', d:'海に住むクモ(海蜘蛛)の意味も。', t:'salt'},
+    '鰆': {y:'さわら', e:'Spanish Mackerel', d:'春を告げる魚。', t:'salt'},
+    '鰍': {y:'かじか', e:'Sculpin', d:'秋に美味しい川魚。', t:'fresh'},
+    '鮠': {y:'はや', e:'Dace', d:'動きが速い小魚。', t:'fresh'},
+    '鰒': {y:'ふぐ', e:'Pufferfish', d:'腹が膨れる魚。毒がある。', t:'salt'},
+    '鮗': {y:'このしろ', e:'Gizzard Shad', d:'冬に美味しい。コハダの成魚。', t:'salt'},
+    '鯑': {y:'かずのこ', e:'Herring Roe', d:'ニシンの卵。「カドの子」が訛った。', t:'salt'},
+    '鯒': {y:'こち', e:'Flathead', d:'平たい魚。夏が旬。', t:'salt'},
+    '鯣': {y:'するめ', e:'Dried Squid', d:'イカを干したもの。縁起物。', t:'salt'},
+    '鯱': {y:'しゃち', e:'Orca', d:'魚偏に虎。海の王者。', t:'salt'},
+    '鰊': {y:'にしん', e:'Herring', d:'東の魚？春告魚とも呼ばれる。', t:'salt'},
+    '鰰': {y:'はたはた', e:'Sandfish', d:'雷(神なり)の季節に獲れる。', t:'salt'},
+
+    // === Level 3: Deep Sea (Rare/Hard) ===
+    '鱇': {y:'こう', e:'Deep Sea Fish', d:'鮟鱇（あんこう）の「こう」。', t:'salt'},
+    '鰳': {y:'ひら', e:'Ilisha', d:'骨が多い魚。', t:'salt'},
+    '鮴': {y:'ごり / めばる', e:'Gori / Rockfish', d:'岩の下で「休」む魚。', t:'fresh'},
+    '鯔': {y:'ぼら', e:'Mullet', d:'イナ→ボラ→トド。「とどのつまり」の語源。', t:'salt'},
+    '鱵': {y:'さより', e:'Halfbeak', d:'細長い魚。腹黒い(内臓が黒い)ことで有名。', t:'salt'},
+    '鱧': {y:'はも', e:'Pike Conger', d:'「豊」かな生命力。京都の夏に欠かせない。', t:'salt'},
+    '鰪': {y:'いわし', e:'Sardine (Old)', d:'イワシの異体字の一つ。', t:'salt'},
+    '鰮': {y:'いわし', e:'Sardine (Alt)', d:'イワシの別表記。', t:'salt'},
+    '鱠': {y:'なます', e:'Namasu', d:'魚と野菜を酢で和えた料理。', t:'fresh'},
+    '鱶': {y:'ふか', e:'Large Shark', d:'大型のサメ。フカヒレの原料。', t:'salt'},
+    '鰐': {y:'わに', e:'Crocodile / Shark', d:'古事記ではサメ(因幡の白兎)を指した。', t:'salt'},
+    '鰣': {y:'はす', e:'Hasu', d:'コイ科の魚。季節(時)に関係？', t:'fresh'},
+    '鮖': {y:'かじか', e:'Sculpin', d:'石に張り付く魚。', t:'fresh'},
+    '鮇': {y:'いわな', e:'Char', d:'「未」だ幻の魚？イワナの別表記。', t:'fresh'},
+    '鮬': {y:'ごり', e:'Gori', d:'幼魚、またはゴリ。', t:'fresh'},
+    '鱩': {y:'はたはた', e:'Sandfish', d:'雷魚とも書く。', t:'salt'},
+    '鰄': {y:'かいらぎ', e:'Plum Skin', d:'サメの皮。刀の柄に使われた。', t:'salt'},
+    '鱆': {y:'たこ', e:'Octopus', d:'タコの別表記。', t:'salt'},
+    '鰩': {y:'えい', e:'Ray', d:'海中を揺らめくように泳ぐ。', t:'salt'},
+    '鱪': {y:'しいら', e:'Mahi-mahi', d:'ハワイの高級魚マヒマヒ。暑い夏に獲れる。', t:'salt'},
+    '鱫': {y:'むつ', e:'Gnomefish', d:'脂っこいことを「むつこい」と言うことから。', t:'salt'},
+    '鱰': {y:'しいら', e:'Dolphin Fish', d:'シイラの別表記。', t:'salt'},
     
-    // === 上級・難読 ===
-    '鰍': { kana: 'かじか', en: 'Sculpin', desc: '秋に美味しい川魚。または「いなだ（ブリの幼魚）」を指すことも。' },
-    '鰐': { kana: 'わに', en: 'Crocodile / Shark', desc: '現在は爬虫類のワニだが、古事記の「因幡の白兎」ではサメを指した。' },
-    '鰭': { kana: 'ひれ', en: 'Fin', desc: '魚が泳ぐための器官。「老（お）いる」と書くのは、魚の末端であるため。' },
-    '鮟': { kana: 'あんこう', en: 'Monkfish', desc: '「安」は平たいという意味。深海魚。肝が美味。' },
-    '鮠': { kana: 'はや', en: 'Dace', desc: '動きが「速」い小魚。ウグイやオイカワの総称。' },
-    '鮴': { kana: 'ごり / めばる', en: 'Gori / Rockfish', desc: '水底で休む（休む魚）ゴリ、または岩場に張り付くメバル。' },
-    '鯊': { kana: 'はぜ', en: 'Goby', desc: '砂（沙）に交じって住む魚。天ぷらが美味しい。' },
-    '鯒': { kana: 'こち', en: 'Flathead', desc: '平べったい魚。夏が旬の高級魚。' },
-    '鯑': { kana: 'かずのこ', en: 'Herring Roe', desc: 'ニシンの卵。「カド（ニシン）の子」が訛ったもの。' },
-    '鯱': { kana: 'しゃち', en: 'Orca', desc: '海の王者。「虎」のように獰猛な魚（哺乳類）。' },
-    '鯰': { kana: 'なまず', en: 'Catfish', desc: '「念」には粘るという意味がある。ぬるぬるした魚。' },
-    '鰰': { kana: 'はたはた', en: 'Sandfish', desc: '雷（神なり）の鳴る季節に獲れることから「カミナリウオ」とも。' },
-    '鱆': { kana: 'たこ', en: 'Octopus', desc: 'タコの別表記。' },
-    '鰾': { kana: 'うきぶくろ', en: 'Swim Bladder', desc: '魚が浮力を調整する器官。' },
-    '鱠': { kana: 'なます', en: 'Namasu', desc: '魚肉を細かく刻んで酢で和えた料理。' },
-    '鱶': { kana: 'ふか', en: 'Large Shark', desc: '大型のサメ。フカヒレは高級食材。' },
-    '鰸': { kana: 'しまあじ', en: 'Striped Jack', desc: 'アジの王様。「秋」に美味しい「堅」い魚？（諸説あり）' },
-    '鱪': { kana: 'しいら', en: 'Mahi-mahi', desc: 'ハワイではマヒマヒ。体が薄く、暑い（署）夏に獲れる。' },
-    '鯷': { kana: 'かたくちいわし', en: 'Anchovy', desc: 'アンチョビの原料。堤防（堤）の近くに来ることから。' },
-    '鰗': { kana: 'ひげだら', en: 'Snook', desc: '下顎にヒゲがあるタラに似た魚。' },
-    '鮖': { kana: 'かじか', en: 'Sculpin', desc: '石に張り付いている魚、カジカ。' },
-    '鮇': { kana: 'いわな', en: 'Char', desc: '渓流の魚。「未」だ幻の魚？美味な魚。' },
-    '鯳': { kana: 'すけとうだら', en: 'Alaska Pollock', desc: '底（底）に住むタラ。カマボコの原料になる。' },
-    '鮬': { kana: 'ごり', en: 'Gori', desc: '幼魚、またはゴリ。' },
-    '鮞': { kana: 'はららご', en: 'Fish Roe', desc: '魚の卵。特にサケの卵（イクラ）を指すことがある。' },
-    '鮓': { kana: 'すし', en: 'Sushi', desc: '発酵させた寿司（なれずし）。' },
-    '鮨': { kana: 'すし', en: 'Sushi', desc: '「旨」い魚。現代の寿司屋でよく使われる字。' },
-    '鰮': { kana: 'いわし', en: 'Sardine', desc: 'イワシの別表記。' },
-    '鱵': { kana: 'さより', en: 'Halfbeak', desc: '下顎が針のように長い魚。腹黒い（内蔵が黒い）ことでも有名。' },
-    '鰣': { kana: 'はす', en: 'Hasu', desc: 'コイ科の淡水魚。時（季節）によって味が変わる？' },
-    '鰩': { kana: 'えい', en: 'Ray', desc: '平たい体で海中を羽ばたくように泳ぐ。' },
-    '鰂': { kana: 'いか', en: 'Squid', desc: 'イカの別表記。「則」は吸盤の規則正しさか。' },
-    '鮺': { kana: 'さご / くらげ', en: 'Sandfish / Jellyfish', desc: 'サゴ（幼魚）やクラゲを指す難読漢字。' }
+    // === Level 4: Abyss (Legendary/Obscure) ===
+    '鱻': {y:'せん', e:'Fresh (Ancient)', d:'魚が3匹で新鮮さを表す古代文字。', t:'salt'},
+    '鱺': {y:'ながすじ', e:'Eel-like', d:'長い魚を表す字。', t:'salt'},
+    '䲘': {y:'Unknown', e:'Ancient Fish', d:'詳細不明の古代魚。', t:'salt'},
+    '𩶘': {y:'たなご', e:'Bitterling', d:'タナゴの一種を表す異体字。', t:'fresh'},
+    '𩸽': {y:'ほっけ', e:'Okhotsk Atka Mackerel', d:'「北」の海で獲れる「花」のような魚。国字。', t:'salt'},
+    '鰾': {y:'うきぶくろ', e:'Swim Bladder', d:'魚が浮力を調整する袋。', t:'salt'},
+    '鱮': {y:'たなご', e:'Bitterling', d:'「与」える魚？婚姻色が美しい。', t:'fresh'},
+    '鯳': {y:'すけとうだら', e:'Alaska Pollock', d:'「底」に住むタラ。カマボコの原料。', t:'salt'},
+    '鮟鱇': {y:'あんこう', e:'Monkfish', d:'提灯で獲物を誘う深海魚。', t:'salt'}, // 2文字
+    '竜の落とし子': {y:'たつのおとしご', e:'Seahorse', d:'魚には見えないが魚の仲間。', t:'salt'},
+    '翻車魚': {y:'まんぼう', e:'Sunfish', d:'海に浮かぶ円盤。', t:'salt'}
 };
 
-/**
- * Audio System (Web Audio API)
- */
-class SoundManager {
-    constructor() {
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.value = 0.3; // Volume
-        this.masterGain.connect(this.ctx.destination);
+// 辞書にない漢字が来た場合のフォールバック生成
+function getFishData(kanji, type) {
+    if (FISH_DICT[kanji]) {
+        return FISH_DICT[kanji];
     }
-
-    playTone(freq, type, duration, slideTo = null) {
-        if (this.ctx.state === 'suspended') this.ctx.resume();
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-        if (slideTo) {
-            osc.frequency.exponentialRampToValueAtTime(slideTo, this.ctx.currentTime + duration);
-        }
-        
-        gain.gain.setValueAtTime(1, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-        
-        osc.connect(gain);
-        gain.connect(this.masterGain);
-        
-        osc.start();
-        osc.stop(this.ctx.currentTime + duration);
-    }
-
-    playNoise(duration) {
-        if (this.ctx.state === 'suspended') this.ctx.resume();
-        const bufferSize = this.ctx.sampleRate * duration;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = Math.random() * 2 - 1;
-        }
-
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-        
-        noise.connect(gain);
-        gain.connect(this.masterGain);
-        noise.start();
-    }
-
-    sfxCast() { this.playTone(600, 'sine', 0.3, 300); }
-    sfxSplash() { this.playNoise(0.4); }
-    sfxAlert() { this.playTone(800, 'square', 0.1); this.playTone(800, 'square', 0.1); } // !!
-    sfxHit() { this.playTone(200, 'sawtooth', 0.3, 100); }
-    sfxReel() { this.playTone(400, 'triangle', 0.05); }
-    sfxCaught() { 
-        // 勝利ファンファーレ
-        setTimeout(() => this.playTone(523.25, 'triangle', 0.2), 0);
-        setTimeout(() => this.playTone(659.25, 'triangle', 0.2), 100);
-        setTimeout(() => this.playTone(783.99, 'triangle', 0.4), 200);
-        setTimeout(() => this.playTone(1046.50, 'square', 0.6), 400);
-    }
+    // 未定義のレア漢字用
+    return {
+        y: '？？？',
+        e: 'Mysterious Deep Species',
+        d: `深海で発見された未確認の魚種。「${kanji}」という漢字の読みは謎に包まれている...`,
+        t: type
+    };
 }
 
-const sounds = new SoundManager();
+// ユーザー入力の大量リスト（一部抜粋して利用、またはレア抽選用プールとして保持）
+const RARE_KANJI_POOL = `
+鯉 鯽 鯛 鯔 鯖 鯵 鯰 鯑 鯒 鯣 鯆 鯊 鯋 鯏 鯐 鯒 鯓 鯔 鯕 鯖 鯙 鯚 鯜 鯝 鯞 鯟 鯠 鯡 鯢 鯤 鯥 鯦 鯧 鯨 鯩 鯪 鯫 鯬 
+鯭 鯮 鯯 鯰 鯱 鯲 鯳 鯴 鯵 鯶 鯷 鯸 鯹 鯺 鯻 鯼 鯽 鯾 鯿 鰀 鰁 鰂 鰃 鰄 鰅 鰆 鰇 鰈 鰉 鰊 鰋 鰌 鰍 鰎 鰏 鰐 鰑 鰒 
+鰓 鰔 鰕 鰖 鰗 鰘 鰙 鰚 鰛 鰜 鰝 鰞 鰟 鰠 鰡 鰢 鰣 鰤 鰥 鰦 鰧 鰨 鰩 鰪 鰫 鰬 鰭 鰮 鰯 鰰 鰱 鰲 鰳 鰴 鰵 鰶 鰷 鰸 
+鰹 鰺 鰻 鰼 鰽 鰾 鰿 鱀 鱁 鱂 鱃 鱄 鱅 鱆 鱇 鱈 鱉 鱊 鱋 鱌 鱍 鱎 鱏 鱐 鱑 鱒 鱓 鱔 鱕 鱖 鱗 鱘 鱙 鱚 鱛 鱜 鱝 鱞 
+鱟 鱠 鱡 鱢 鱣 鱤 鱥 鱦 鱧 鱨 鱩 鱪 鱫 鱬 鱭 鱮 鱯 鱰 鱱 鱲 鱳 鱴 鱵 鱶 鱷 鱸 鱹 鱺 蝦 鰕 鰖 鰰 鰚 鰠 鰡 鰢 鰩  
+蟹 鱟 鰞 鱆 鱇 鰂 鰌 鱊 鰒 鱁 鱉 鰐 鯨 鯢 鯱 鰐 鱷 鱓 鱦 鱣 鱥 鮏 鯐 鰌 鱀 鱻 鮮 鯨 鮪 鰯 鮭 鰐 
+鰭 鰹 鮫 鰍 鯖 鱈 鰺 鯵 鱒 鯛 鮎 鰻 鮒 鯉 鱗 魯 魴 鮃 鮓 鮑 鮗 鮖 鮟 鮨 鮠 鮴 鯀 鯊 鯒 鯑 鯏 鮹 鯣 鯢 鯤 鯲 鯡 
+鯔 鯱 鯰 鰓 鰉 鰔 鰕 鰌 鰈 鰆 鰒 鰊 鰄 鰮 鰛 鰥 鰤 鰰 鱆 鱇 鰾 鱚 鱠 鱧 鱶 鱸 魞 魳 魸 魬 鮇 鮱 鮲 鯎 鯐 鮸 鰙 鰚 
+鰘 鰧 鱛 鱏 鱓 鱟 鱩 鱲 𬵪 𩶗 鰡 鰲 鯆 鱉 䰲 魛 魟 䰵 魡 魪 䰻 魥 魭 魧 魦 魣 魫 魶 魹 魨 䰽 魮 魵 䰷 魷 䱀 魼 鮔 
+`.replace(/\s+/g, '').split('');
 
-/**
- * Game Engine
- */
+// --- Audio System ---
+const AudioSys = {
+    ctx: null,
+    gain: null,
+    init: function() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.gain = this.ctx.createGain();
+            this.gain.gain.value = 0.3;
+            this.gain.connect(this.ctx.destination);
+        }
+        if(this.ctx.state === 'suspended') this.ctx.resume();
+    },
+    play: function(freq, type, dur, slide=null) {
+        if (!this.ctx) return;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        if(slide) o.frequency.exponentialRampToValueAtTime(slide, this.ctx.currentTime+dur);
+        g.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime+dur);
+        o.connect(g); g.connect(this.gain);
+        o.start(); o.stop(this.ctx.currentTime+dur);
+    },
+    cast: () => AudioSys.play(600, 'sine', 0.5, 200),
+    bite: () => { AudioSys.play(800, 'square', 0.1); setTimeout(()=>AudioSys.play(800,'square',0.1), 100); },
+    reel: () => AudioSys.play(300, 'triangle', 0.05),
+    catch: () => [0,100,200,400].forEach((t,i)=>setTimeout(()=>AudioSys.play(440*[1,1.25,1.5,2][i], 'square', 0.3), t))
+};
+
+// --- Game Engine ---
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const uiMessage = document.getElementById('message');
-
 let width, height;
-let gameState = 'IDLE'; // IDLE, CASTING, WAITING, BITE, FIGHTING, CAUGHT
-let fishes = [];
-let lure = { x: 0, y: 0, active: false, targetX: 0, targetY: 0 };
-let fightProgress = 0;
-const FIGHT_TARGET = 12; // 少し難易度アップ
 
-// 辞書のキー（漢字）のみをリスト化
-const AVAILABLE_FISH = Object.keys(KANJI_DB);
+// Game State
+let state = 'IDLE'; // IDLE, CASTING, HOLDING, BITE, REELING, CAUGHT
+let hook = { x: 0, y: 0, depth: 0, speed: 0 };
+let fishes = [];
+let particles = [];
+let cameraY = 0;
+let score = 0;
+let targetFish = null;
+let fightProgress = 0;
+
+// Config
+const CAST_SPEED = 10;
+const MAX_DEPTH = 3000; // 3000m equivalent
 
 function resize() {
     width = window.innerWidth;
     height = window.innerHeight;
     canvas.width = width;
     canvas.height = height;
+    hook.x = width / 2; // Default to center on resize
 }
 window.addEventListener('resize', resize);
 resize();
 
 class Fish {
     constructor() {
-        this.reset();
+        // 初期配置は画面全体に散らす（開始時の見栄えのため）
+        // プレイ中のリセットは reset() で画面外に配置
+        this.reset(true); 
     }
+    
+    // isInit: ゲーム開始時の生成ならtrue
+    reset(isInit = false) {
+        // 深さに応じてランク分け
+        this.depth = Math.random() * MAX_DEPTH;
+        
+        // 生息域：左=淡水, 右=海水
+        this.type = Math.random() < 0.5 ? 'fresh' : 'salt';
+        
+        // 文字決定
+        if (Math.random() < 0.3) {
+            const keys = Object.keys(FISH_DICT).filter(k => {
+                const d = FISH_DICT[k];
+                if (d.t && d.t !== this.type) return false;
+                return true;
+            });
+            this.char = keys[Math.floor(Math.random() * keys.length)];
+        } else {
+            this.char = RARE_KANJI_POOL[Math.floor(Math.random() * RARE_KANJI_POOL.length)];
+        }
 
-    reset() {
-        this.y = Math.random() * (height - 150) + 100;
+        this.size = 30 + Math.random() * 50;
         
-        // 漢字の選択（DBにあるものからのみ選ぶ）
-        this.char = AVAILABLE_FISH[Math.floor(Math.random() * AVAILABLE_FISH.length)];
+        // Y座標の決定（Popping防止）
+        if (isInit) {
+            this.y = this.depth; // 最初はランダムでOK
+        } else {
+            // プレイ中のリセット：必ず画面外（下）から生成
+            // カメラより少し下、またはずっと下
+            this.y = cameraY + height + 100 + Math.random() * 500;
+        }
+
+        // X座標と移動範囲
+        const border = width / 2;
+        if (this.type === 'fresh') {
+            // 左側エリア
+            this.minX = 0; 
+            this.maxX = border;
+            this.x = Math.random() * (border - 50);
+        } else {
+            // 右側エリア
+            this.minX = border; 
+            this.maxX = width;
+            this.x = border + Math.random() * (width/2 - 50);
+        }
         
-        // 魚の大きさを文字数や画数ではなくランダムに
-        this.size = Math.random() * 40 + 40; // 40px - 80px
-        
-        // Direction and Speed
-        this.direction = Math.random() < 0.5 ? 1 : -1;
-        this.x = this.direction === 1 ? -100 : width + 100;
-        this.baseSpeed = Math.random() * 1.5 + 0.5;
-        this.speed = this.baseSpeed;
-        
-        this.state = 'SWIM'; // SWIM, CHASE, HOOKED
-        this.wiggleOffset = Math.random() * 100;
-        this.turnScale = 1; // ターン時のスケールアニメーション用
+        this.vx = (Math.random() * 2 + 0.5) * (Math.random()<0.5 ? 1 : -1);
+        this.state = 'SWIM';
     }
 
     update() {
         if (this.state === 'SWIM') {
-            this.x += this.speed * this.direction;
+            this.x += this.vx;
+            // 境界で反転
+            if (this.x < this.minX + 20 || this.x > this.maxX - 20) {
+                this.vx *= -1;
+            }
             
-            // ゆらゆら動く
-            this.offsetY = Math.sin((Date.now() / 500) + this.wiggleOffset) * 15;
-
-            // 画面外に出たらリセット
-            if ((this.direction === 1 && this.x > width + 100) || 
-                (this.direction === -1 && this.x < -100)) {
+            // 画面外リセットロジック（Popping防止）
+            // 画面の上端よりはるか上、または下端よりはるか下に行った場合のみリセット
+            const screenY = this.y - cameraY;
+            
+            // カメラが下がっている（キャスト中）: 上に消えた魚を下へ
+            // カメラが上がっている（リール中）: 下に消えた魚を上へ（今回はシンプルに全部下へ回す）
+            if (screenY < -200 || screenY > height + 200) {
+                // 画面外に出たのでリセット
                 this.reset();
             }
 
-            // ルアーへの興味
-            if (gameState === 'WAITING' && lure.active) {
-                const dx = lure.x - this.x;
-                const dy = lure.y - (this.y + this.offsetY);
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                
-                // 近くに来たら食いつくモードへ
-                if (dist < 200 && Math.random() < 0.03) {
-                    this.state = 'CHASE';
-                }
-            }
-
-        } else if (this.state === 'CHASE') {
-            const targetX = lure.x;
-            const targetY = lure.y;
-            const dx = targetX - this.x;
-            const dy = targetY - (this.y + this.offsetY);
-            
-            // ルアーに向かう
-            this.x += dx * 0.08;
-            this.y += dy * 0.08;
-
-            // ヒット判定
-            if (Math.abs(dx) < 20 && Math.abs(dy) < 20) {
-                if (gameState === 'WAITING') {
+            // フックとの判定 (hook.x を使う)
+            if (state === 'HOLDING' && Math.abs(this.y - hook.y) < 30 && Math.abs(this.x - hook.x) < 30) {
+                if (Math.random() < 0.05) { 
                     startBite(this);
                 }
             }
-            
-            // ルアー回収されたら諦める
-            if (gameState === 'IDLE') {
-                this.state = 'SWIM';
-                this.direction = this.x > width/2 ? 1 : -1; // 外側へ逃げる
-            }
         } else if (this.state === 'HOOKED') {
-            this.x = lure.x;
-            this.y = lure.y;
-            // 暴れる演出
-            this.x += (Math.random() - 0.5) * 10;
-            this.y += (Math.random() - 0.5) * 10;
+            // 釣られている時はフックの位置に同期
+            this.x = hook.x + (Math.random()-0.5)*10;
+            this.y = hook.y + 20;
         }
     }
 
-    draw(ctx) {
+    draw() {
+        const screenY = this.y - cameraY;
+        // 画面内のみ描画
+        if (screenY < -50 || screenY > height + 50) return;
+
         ctx.save();
-        ctx.translate(this.x, this.y + (this.state === 'SWIM' ? this.offsetY : 0));
+        ctx.translate(this.x, screenY);
         
-        // 影
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.font = `${this.size}px serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(this.char, 8, 8);
-
-        // 本体
-        // 興奮状態は黄色、釣られたら赤
-        if (this.state === 'CHASE') ctx.fillStyle = '#ffeb3b';
-        else if (this.state === 'HOOKED') ctx.fillStyle = '#ff5252';
-        else ctx.fillStyle = '#ffffff';
-
+        // 色設定
+        ctx.fillStyle = this.type === 'fresh' ? '#b2dfdb' : '#e1f5fe';
+        if (FISH_DICT[this.char] === undefined) ctx.fillStyle = '#ffeb3b'; 
+        
+        ctx.font = `bold ${this.size}px serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        
+        // 【修正】反転処理（scale）を削除し、常に文字が読めるようにする
+        // 泳ぐ方向に関わらず文字は正位置
         ctx.fillText(this.char, 0, 0);
-
         ctx.restore();
     }
 }
 
-// 魚を生成
-for(let i=0; i<12; i++) {
-    fishes.push(new Fish());
+// パーティクル（泡）
+function spawnParticles(x, y, count) {
+    for(let i=0; i<count; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random()-0.5)*4, vy: -Math.random()*4,
+            life: 1.0
+        });
+    }
 }
 
-let hookedFish = null;
-let biteTimer = null;
+// ------------------------------------
+// Input Handling
+// ------------------------------------
+function handleInput(e) {
+    // UI上のタップなら無視（閉じるボタンなど）はHTML側で制御されるが念のため
+    if (e.target.tagName === 'BUTTON') return;
+    e.preventDefault();
 
-function castLure(tx, ty) {
-    if (gameState !== 'IDLE') return;
+    AudioSys.init();
     
-    sounds.sfxCast();
+    // タップ位置の取得（X座標用）
+    let clientX;
+    if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+    } else {
+        clientX = e.clientX;
+    }
     
-    gameState = 'CASTING';
-    lure.active = true;
-    lure.x = width / 2;
-    lure.y = height;
-    lure.targetX = tx;
-    lure.targetY = ty;
-    
-    let progress = 0;
-    const animateCast = () => {
-        progress += 0.04;
-        lure.x = (width/2) + (lure.targetX - width/2) * progress;
-        // 放物線を描く
-        lure.y = height - (height - lure.targetY) * progress - Math.sin(progress * Math.PI) * 150;
+    if (state === 'IDLE') {
+        // 【修正】タップした位置にフックのX座標を設定
+        hook.x = clientX;
+        
+        // 画面外にはみ出さないように補正
+        if (hook.x < 20) hook.x = 20;
+        if (hook.x > width - 20) hook.x = width - 20;
 
-        if (progress < 1) {
-            requestAnimationFrame(animateCast);
-        } else {
-            lure.x = lure.targetX;
-            lure.y = lure.targetY;
-            sounds.sfxSplash();
-            createParticles(lure.x, lure.y);
-            gameState = 'WAITING';
-            showMessage("WAIT...");
+        // キャスト開始
+        state = 'CASTING';
+        hook.depth = 0;
+        hook.y = 0;
+        hook.speed = CAST_SPEED;
+        setMessage("TAP TO STOP");
+        AudioSys.cast();
+    } else if (state === 'CASTING') {
+        // 停止して待つ
+        state = 'HOLDING';
+        hook.speed = 0;
+        setMessage("WAITING...");
+    } else if (state === 'BITE') {
+        // 合わせる
+        state = 'REELING';
+        fightProgress = 0;
+        AudioSys.reel();
+        setMessage("REEL IT IN! (TAP!)");
+    } else if (state === 'REELING') {
+        // リールを巻く（連打）
+        fightProgress += 10;
+        hook.y -= 40; // 巻き上げ速度
+        spawnParticles(hook.x, hook.y - cameraY, 2);
+        AudioSys.reel();
+        if (hook.y <= 0) {
+            catchFish();
         }
-    };
-    animateCast();
+    }
 }
 
 function startBite(fish) {
-    gameState = 'BITE';
-    hookedFish = fish;
-    sounds.sfxAlert();
-    showMessage("!");
-    
-    // 反応時間（少し短く）
-    biteTimer = setTimeout(() => {
-        if (gameState === 'BITE') {
-            // 逃げられた
-            gameState = 'IDLE';
-            lure.active = false;
+    state = 'BITE';
+    targetFish = fish;
+    fish.state = 'HOOKED';
+    AudioSys.bite();
+    setMessage("!!! TAP !!!");
+    setTimeout(() => {
+        if (state === 'BITE') {
+            state = 'IDLE';
             fish.state = 'SWIM';
-            fish.speed = 8; // 高速で逃げる
-            fish.direction = Math.random() < 0.5 ? 1 : -1;
-            showMessage("ESCAPED...");
-            setTimeout(() => hideMessage(), 1000);
+            fish.vx *= 3; 
+            setMessage("ESCAPED...");
+            setTimeout(() => { if(state==='IDLE') hook.y = 0; setMessage("TAP TO CAST"); }, 1500);
         }
-    }, 1200); 
+    }, 1000);
 }
 
-function hookFish() {
-    if (gameState === 'BITE') {
-        clearTimeout(biteTimer);
-        gameState = 'FIGHTING';
-        hookedFish.state = 'HOOKED';
-        fightProgress = 0;
-        sounds.sfxHit();
-        showMessage("TAP! TAP! TAP!");
-    } else if (gameState === 'FIGHTING') {
-        fightProgress++;
-        sounds.sfxReel();
-        
-        // 視覚的フィードバック（魚が少し寄ってくる）
-        createParticles(lure.x, lure.y);
-        
-        if (fightProgress >= FIGHT_TARGET) {
-            catchSuccess();
-        }
-    } else if (gameState === 'WAITING') {
-        // キャンセル（早巻き）
-        gameState = 'IDLE';
-        lure.active = false;
-        hideMessage();
-    }
-}
-
-function catchSuccess() {
-    gameState = 'CAUGHT';
-    sounds.sfxCaught();
+function catchFish() {
+    state = 'CAUGHT';
+    AudioSys.catch();
     
-    const f = hookedFish;
-    const dbData = KANJI_DB[f.char]; // 必ず存在するはず
+    const f = targetFish;
+    const data = getFishData(f.char, f.type);
     
-    // モーダル表示
     const modal = document.getElementById('result-modal');
     document.getElementById('res-kanji').innerText = f.char;
+    document.getElementById('res-reading').innerText = data.y;
+    document.getElementById('res-en').innerText = data.e;
+    document.getElementById('res-desc').innerText = data.d;
     
-    if (dbData) {
-        document.getElementById('res-reading').innerText = dbData.kana;
-        document.getElementById('res-en').innerText = dbData.en;
-        document.getElementById('res-desc').innerText = dbData.desc;
-        
-        // レア度バッジ（説明文に「難読」などが含まれる場合や、画数が多い場合にレアとする簡易ロジック）
-        const isRare = dbData.desc.includes('難読') || f.char.length > 0 || Math.random() < 0.3;
-        const badge = document.getElementById('rarity-badge');
-        badge.style.display = isRare ? 'block' : 'none';
-        badge.innerText = isRare ? "RARE!" : "CATCH";
-        badge.style.background = isRare ? "#fdd835" : "#81d4fa";
-        
+    const badge = document.getElementById('badge');
+    if (!FISH_DICT[f.char]) {
+        badge.innerText = "LEGENDARY";
+        badge.style.background = "#ff5722";
     } else {
-        // 万が一DBにない場合（論理的にはありえないが安全策）
-        document.getElementById('res-reading').innerText = "調査中";
-        document.getElementById('res-en').innerText = "Unknown Species";
-        document.getElementById('res-desc').innerText = "新種発見！？";
+        badge.innerText = "CATCH";
+        badge.style.background = "#ffd700";
     }
-    
+
     modal.style.display = 'flex';
 }
 
 window.closeModal = function() {
     document.getElementById('result-modal').style.display = 'none';
-    if (hookedFish) {
-        hookedFish.reset(); // 釣った魚はリセットして海へ返す（リリース）
-        hookedFish = null;
-    }
-    lure.active = false;
-    gameState = 'IDLE';
-    hideMessage();
+    if(targetFish) targetFish.reset();
+    state = 'IDLE';
+    hook.y = 0;
+    cameraY = 0;
+    // フックX座標は維持するか、リセットするか。今回は維持（次も同じ場所を狙いやすく）
+    setMessage("TAP TO CAST");
 }
 
-// --- Visual Effects ---
-let particles = [];
-function createParticles(x, y) {
-    for(let i=0; i<8; i++) {
-        particles.push({
-            x: x, y: y,
-            vx: (Math.random() - 0.5) * 8,
-            vy: (Math.random() - 0.5) * 8,
-            life: 1.0,
-            size: Math.random() * 5 + 2
-        });
-    }
+function setMessage(msg) {
+    document.getElementById('msg-text').innerText = msg;
 }
 
-function updateParticles() {
-    for(let i=particles.length-1; i>=0; i--) {
-        let p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy -= 0.1; // 泡は浮く
-        p.life -= 0.05;
-        if(p.life <= 0) particles.splice(i, 1);
-    }
-}
+// ------------------------------------
+// Main Loop
+// ------------------------------------
+for(let i=0; i<30; i++) fishes.push(new Fish());
 
-function drawParticles(ctx) {
-    ctx.fillStyle = 'rgba(220, 245, 255, 0.6)';
-    particles.forEach(p => {
-        ctx.globalAlpha = p.life;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-        ctx.fill();
-    });
-    ctx.globalAlpha = 1.0;
-}
-
-// --- Main Loop ---
 function draw() {
-    // 背景描画（深海グラデーション）
-    const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, '#0277bd');
-    grad.addColorStop(0.4, '#01579b');
-    grad.addColorStop(1, '#001e36');
-    ctx.fillStyle = grad;
+    // Logic
+    if (state === 'CASTING') {
+        hook.y += hook.speed;
+        if (hook.y >= MAX_DEPTH) {
+            state = 'HOLDING';
+            setMessage("MAX DEPTH");
+        }
+    } else if (state === 'REELING') {
+        hook.y += 2; // Gravity resistance
+    }
+
+    // Camera follow hook
+    let targetCamY = hook.y - height * 0.4;
+    if (targetCamY < 0) targetCamY = 0;
+    cameraY += (targetCamY - cameraY) * 0.1;
+
+    // UI Updates
+    document.getElementById('depth-meter').innerText = (hook.y / 10).toFixed(1) + " m";
+
+    // Draw Background
+    let depthRatio = Math.min(cameraY / MAX_DEPTH, 1);
+    let r = Math.floor(0 * (1-depthRatio));
+    let g = Math.floor(100 * (1-depthRatio)); 
+    let b = Math.floor(200 * (1-depthRatio) + 50); 
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
     ctx.fillRect(0, 0, width, height);
-    
-    // 太陽光
-    ctx.save();
-    ctx.globalAlpha = 0.05;
-    ctx.fillStyle = '#fff';
+
+    // 生息域の境界線
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.setLineDash([10, 20]);
     ctx.beginPath();
-    ctx.moveTo(width * 0.2, 0);
-    ctx.lineTo(width * 0.8, height);
-    ctx.lineTo(width * 0.4, height);
-    ctx.lineTo(0, 0);
-    ctx.fill();
-    ctx.restore();
+    ctx.moveTo(width/2, 0);
+    ctx.lineTo(width/2, height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 深度マーカー
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.font = '20px monospace';
+    ctx.textAlign = 'center';
+    // 画面に見えている範囲の深度線だけ描画
+    const startD = Math.floor(cameraY / 500) * 500;
+    for(let d=startD; d<startD + height + 500; d+=500) {
+        let sy = d - cameraY;
+        ctx.fillText(`- ${d/10}m -`, width/2, sy);
+    }
 
     // 魚
     fishes.forEach(f => {
         f.update();
-        f.draw(ctx);
+        f.draw();
     });
 
-    // ルアーと糸
-    if (lure.active) {
-        // 糸
-        ctx.beginPath();
-        ctx.moveTo(width/2, height + 100);
-        ctx.lineTo(lure.x, lure.y);
-        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+    // 釣り糸 (hook.x を使用)
+    let screenHookY = hook.y - cameraY;
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    // 画面上端（空）からずっと伸びているように見せる
+    ctx.moveTo(hook.x, -100); 
+    ctx.lineTo(hook.x, screenHookY);
+    ctx.stroke();
 
-        // ルアー
-        ctx.fillStyle = '#ff5722';
-        ctx.beginPath();
-        ctx.arc(lure.x, lure.y, 6, 0, Math.PI*2);
-        ctx.fill();
-
-        // 「！」マーク
-        if (gameState === 'BITE') {
-            ctx.fillStyle = '#ffeb3b';
-            ctx.font = 'bold 50px Arial';
-            ctx.shadowColor = 'black';
-            ctx.shadowBlur = 10;
-            ctx.fillText('!', lure.x, lure.y - 30);
-            ctx.shadowBlur = 0;
-            
-            // 波紋
-            const pulse = (Date.now() % 500) / 500;
-            ctx.strokeStyle = `rgba(255, 50, 50, ${1-pulse})`;
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.arc(lure.x, lure.y, 30 + pulse*30, 0, Math.PI*2);
-            ctx.stroke();
+    // 釣り針
+    ctx.fillStyle = state === 'BITE' ? 'red' : 'silver';
+    ctx.beginPath();
+    ctx.arc(hook.x, screenHookY, 6, 0, Math.PI*2);
+    ctx.fill();
+    
+    // パーティクル
+    for(let i=particles.length-1; i>=0; i--) {
+        let p = particles[i];
+        p.y += p.vy;
+        p.x += p.vx;
+        p.life -= 0.05;
+        if (p.life <= 0) particles.splice(i,1);
+        else {
+            let sy = p.y - cameraY;
+            ctx.fillStyle = `rgba(255,255,255,${p.life})`;
+            ctx.beginPath(); ctx.arc(p.x, sy, 3, 0, Math.PI*2); ctx.fill();
         }
     }
-    
-    updateParticles();
-    drawParticles(ctx);
 
     requestAnimationFrame(draw);
 }
 
-// --- Input Handling ---
-function handleInput(e) {
-    let x, y;
-    if (e.touches) {
-        x = e.touches[0].clientX;
-        y = e.touches[0].clientY;
-    } else {
-        x = e.clientX;
-        y = e.clientY;
-    }
-
-    if (gameState === 'IDLE') {
-        castLure(x, y);
-    } else {
-        hookFish();
-    }
-}
-
+// Event Listeners
 canvas.addEventListener('mousedown', handleInput);
-canvas.addEventListener('touchstart', (e) => {
-    if (sounds.ctx.state === 'suspended') {
-        sounds.ctx.resume();
-    }
-    handleInput(e);
-}, {passive: false});
-
-function showMessage(text) {
-    uiMessage.innerText = text;
-    uiMessage.style.display = 'block';
-}
-function hideMessage() {
-    uiMessage.style.display = 'none';
-}
+canvas.addEventListener('touchstart', handleInput, {passive:false});
 
 requestAnimationFrame(draw);
-
 </script>
 </body>
 </html>
