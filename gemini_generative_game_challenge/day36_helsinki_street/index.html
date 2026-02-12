@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helsinki Street Translator (Dark)</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom Scrollbar for Dark Theme */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+        
+        /* Map container height adjustments */
+        #map { height: 100%; width: 100%; z-index: 0; background: #1e1e1e; }
+        
+        /* Animation for List Item Selection */
+        @keyframes glow {
+            0% { border-color: #3b82f6; box-shadow: 0 0 5px rgba(59, 130, 246, 0.2); }
+            50% { border-color: #60a5fa; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+            100% { border-color: #3b82f6; box-shadow: 0 0 5px rgba(59, 130, 246, 0.2); }
+        }
+        .animate-glow {
+            animation: glow 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 font-sans h-screen overflow-hidden">
+
+    <div id="root" class="h-full flex flex-col"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        /* * ==========================================
+         * DATA SECTION (JSON Compatible Structure)
+         * 将来的にこの配列の中身を data.json に移動可能です。
+         * Coordinates are approximate paths [lat, lng]
+         * ==========================================
+         */
+        const STREET_DATA = [
+            { 
+                "id": 1, 
+                "fi": "Aleksanterinkatu", 
+                "en": "Alexander Street", 
+                "ja": "アレクサンダー通り", 
+                "path": [
+                    [60.1685, 24.9420], 
+                    [60.1690, 24.9460], 
+                    [60.1695, 24.9525]
+                ], 
+                "desc": "ヘルシンキの主要な商業通り。クリスマスのイルミネーションで有名。" 
+            },
+            { 
+                "id": 2, 
+                "fi": "Mannerheimintie", 
+                "en": "Mannerheim Road", 
+                "ja": "マンネルヘイム通り", 
+                "path": [
+                    [60.1668, 24.9420], 
+                    [60.1705, 24.9395], 
+                    [60.1740, 24.9360],
+                    [60.1780, 24.9300]
+                ], 
+                "desc": "フィンランド元帥の名を冠した大通り。国会議事堂や博物館が並ぶ。" 
+            },
+            { 
+                "id": 3, 
+                "fi": "Esplanadi", 
+                "en": "Esplanade", 
+                "ja": "遊歩道（エスプラナード）", 
+                "path": [
+                    [60.1676, 24.9430], 
+                    [60.1673, 24.9540]
+                ], 
+                "desc": "公園を挟んで北と南に分かれる美しい並木道。観光の中心。" 
+            },
+            { 
+                "id": 4, 
+                "fi": "Kaivokatu", 
+                "en": "Well Street", 
+                "ja": "井戸通り", 
+                "path": [
+                    [60.1706, 24.9380], 
+                    [60.1712, 24.9414],
+                    [60.1715, 24.9450]
+                ], 
+                "desc": "中央駅の正面を通る道。トラムと歩行者で賑わう。" 
+            },
+            { 
+                "id": 5, 
+                "fi": "Keskuskatu", 
+                "en": "Central Street", 
+                "ja": "中央通り", 
+                "path": [
+                    [60.1680, 24.9458], 
+                    [60.1710, 24.9462]
+                ], 
+                "desc": "ストックマンデパートの横を通る歩行者天国。" 
+            },
+            { 
+                "id": 6, 
+                "fi": "Yrjönkatu", 
+                "en": "George Street", 
+                "ja": "ジョージ通り", 
+                "path": [
+                    [60.1640, 24.9390], 
+                    [60.1690, 24.9370]
+                ], 
+                "desc": "歴史的なスイミングホールや古い建物が残る通り。" 
+            },
+            { 
+                "id": 7, 
+                "fi": "Bulevardi", 
+                "en": "Boulevard", 
+                "ja": "大通り（ブールヴァード）", 
+                "path": [
+                    [60.1625, 24.9300], 
+                    [60.1650, 24.9430]
+                ], 
+                "desc": "カフェ、ギャラリー、アンティークショップが多い上品な通り。" 
+            },
+            { 
+                "id": 8, 
+                "fi": "Unioninkatu", 
+                "en": "Union Street", 
+                "ja": "同盟通り", 
+                "path": [
+                    [60.1660, 24.9515], 
+                    [60.1730, 24.9525]
+                ], 
+                "desc": "大聖堂の東側を走り、天文台へと続く長い通り。" 
+            },
+            { 
+                "id": 9, 
+                "fi": "Fredrikinkatu", 
+                "en": "Frederick Street", 
+                "ja": "フレデリック通り", 
+                "path": [
+                    [60.1600, 24.9400],
+                    [60.1690, 24.9280]
+                ], 
+                "desc": "デザインディストリクトの中心。ブティックが多い。" 
+            },
+            { 
+                "id": 10, 
+                "fi": "Korkeavuorenkatu", 
+                "en": "High Mountain Street", 
+                "ja": "高山通り", 
+                "path": [
+                    [60.1610, 24.9470],
+                    [60.1665, 24.9485]
+                ], 
+                "desc": "「ヘルシンキのパリ」とも呼ばれる、お洒落なカフェやパン屋がある通り。" 
+            }
+        ];
+
+        // --- Audio Synthesizer ---
+        const playSound = (type) => {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            osc.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            const now = ctx.currentTime;
+
+            if (type === 'select') {
+                // Crisper "Click" for dark theme
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now); 
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'sort') {
+                // Mechanical "Zip"
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(300, now + 0.15);
+                gainNode.gain.setValueAtTime(0.05, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.15);
+                // Low pass filter to make it softer
+                const filter = ctx.createBiquadFilter();
+                filter.type = "lowpass";
+                filter.frequency.value = 1000;
+                osc.disconnect();
+                osc.connect(filter);
+                filter.connect(gainNode);
+
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'highlight') {
+                // Futuristic "Hollow" sound
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.exponentialRampToValueAtTime(440, now + 0.2);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        };
+
+        const SortIcon = ({ active, direction }) => {
+            if (!active) return <span className="text-slate-600 ml-1">↕</span>;
+            return direction === 'asc' ? <span className="text-blue-400 ml-1">↑</span> : <span className="text-blue-400 ml-1">↓</span>;
+        };
+
+        const App = () => {
+            const [selectedId, setSelectedId] = useState(null);
+            const [sortConfig, setSortConfig] = useState({ key: 'fi', direction: 'asc' });
+            const mapRef = useRef(null);
+            const layersRef = useRef({});
+
+            // Initialize Map
+            useEffect(() => {
+                if (!mapRef.current) {
+                    mapRef.current = L.map('map', {
+                        center: [60.1699, 24.9384],
+                        zoom: 14,
+                        zoomControl: false,
+                        attributionControl: false 
+                    });
+
+                    // Dark Matter Tiles
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                        subdomains: 'abcd',
+                        maxZoom: 20
+                    }).addTo(mapRef.current);
+
+                    L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
+                    L.control.attribution({ position: 'bottomleft' }).addTo(mapRef.current);
+                }
+
+                // Render Polylines
+                STREET_DATA.forEach(street => {
+                    if (!layersRef.current[street.id]) {
+                        // Create Polyline
+                        const polyline = L.polyline(street.path, {
+                            color: '#64748b', // Slate-500 default
+                            weight: 3,
+                            opacity: 0.7,
+                            className: 'transition-all duration-300' // Smooth transitions via CSS if supported by Leaflet wrapper
+                        }).addTo(mapRef.current);
+                        
+                        // Invisible thick line for easier clicking
+                        const clickArea = L.polyline(street.path, {
+                            color: 'transparent',
+                            weight: 20,
+                            opacity: 0
+                        }).addTo(mapRef.current);
+
+                        const popupContent = `
+                            <div style="color: #1e293b; font-family: sans-serif;">
+                                <strong style="font-size:1.1em">${street.fi}</strong><br/>
+                                <span style="color: #64748b">${street.ja}</span>
+                            </div>
+                        `;
+                        
+                        // Bind events to both visible line and click area
+                        [polyline, clickArea].forEach(layer => {
+                            layer.bindPopup(popupContent);
+                            layer.on('click', () => {
+                                handleMapClick(street.id);
+                                layer.openPopup();
+                            });
+                        });
+
+                        layersRef.current[street.id] = polyline; // Store reference to visible line
+                    }
+                });
+            }, []);
+
+            // Handle Selection Effect on Map
+            useEffect(() => {
+                STREET_DATA.forEach(street => {
+                    const layer = layersRef.current[street.id];
+                    if (layer) {
+                        if (street.id === selectedId) {
+                            // Highlight style
+                            layer.setStyle({ color: "#3b82f6", weight: 6, opacity: 1 });
+                            layer.bringToFront();
+                            
+                            // Fit bounds if needed, or just fly to center of path
+                            const bounds = layer.getBounds();
+                            mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 16, animate: true, duration: 1 });
+                            layer.openPopup();
+
+                        } else {
+                            // Default style
+                            layer.setStyle({ color: "#64748b", weight: 3, opacity: 0.7 });
+                            layer.closePopup();
+                        }
+                    }
+                });
+            }, [selectedId]);
+
+            const handleMapClick = (id) => {
+                playSound('highlight');
+                setSelectedId(id);
+                const element = document.getElementById(`row-${id}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            };
+
+            const handleListClick = (id) => {
+                playSound('select');
+                setSelectedId(id);
+            };
+
+            const handleSort = (key) => {
+                playSound('sort');
+                let direction = 'asc';
+                if (sortConfig.key === key && sortConfig.direction === 'asc') {
+                    direction = 'desc';
+                }
+                setSortConfig({ key, direction });
+            };
+
+            const sortedData = useMemo(() => {
+                let sortableItems = [...STREET_DATA];
+                if (sortConfig.key !== null) {
+                    sortableItems.sort((a, b) => {
+                        if (a[sortConfig.key] < b[sortConfig.key]) {
+                            return sortConfig.direction === 'asc' ? -1 : 1;
+                        }
+                        if (a[sortConfig.key] > b[sortConfig.key]) {
+                            return sortConfig.direction === 'asc' ? 1 : -1;
+                        }
+                        return 0;
+                    });
+                }
+                return sortableItems;
+            }, [sortConfig]);
+
+            return (
+                <div className="flex flex-col h-full bg-slate-900">
+                    {/* Header */}
+                    <header className="bg-slate-800 border-b border-slate-700 p-4 flex justify-between items-center shadow-md z-20">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/30">Fi</div>
+                            <h1 className="text-xl font-bold text-slate-100">Helsinki Street Lingo</h1>
+                        </div>
+                        <div className="text-xs text-slate-400 hidden sm:block">
+                            Select a street to learn
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+                        
+                        {/* Map Area */}
+                        <div className="w-full h-1/2 md:h-full md:w-1/2 lg:w-3/5 bg-slate-900 relative z-0">
+                            <div id="map"></div>
+                            <div className="absolute top-4 left-4 bg-slate-800/90 backdrop-blur p-3 rounded-lg shadow-lg border border-slate-700 text-xs z-[400] max-w-[200px] text-slate-300">
+                                <p className="font-semibold text-white mb-1">使い方:</p>
+                                <p>リストをタップすると、その通りの場所と形が表示されます。</p>
+                            </div>
+                        </div>
+
+                        {/* List Area */}
+                        <div className="w-full h-1/2 md:h-full md:w-1/2 lg:w-2/5 flex flex-col bg-slate-800 z-10 shadow-2xl md:shadow-none border-t border-slate-700 md:border-t-0 md:border-l">
+                            
+                            {/* Table Header */}
+                            <div className="grid grid-cols-3 bg-slate-800 border-b border-slate-700 font-semibold text-sm text-slate-400 sticky top-0 z-10 shadow-sm">
+                                <div 
+                                    onClick={() => handleSort('fi')} 
+                                    className="p-3 cursor-pointer hover:bg-slate-700 hover:text-white flex items-center transition-colors select-none"
+                                >
+                                    Finland <SortIcon active={sortConfig.key === 'fi'} direction={sortConfig.direction} />
+                                </div>
+                                <div 
+                                    onClick={() => handleSort('en')} 
+                                    className="p-3 cursor-pointer hover:bg-slate-700 hover:text-white flex items-center transition-colors select-none border-l border-slate-700"
+                                >
+                                    English <SortIcon active={sortConfig.key === 'en'} direction={sortConfig.direction} />
+                                </div>
+                                <div 
+                                    onClick={() => handleSort('ja')} 
+                                    className="p-3 cursor-pointer hover:bg-slate-700 hover:text-white flex items-center transition-colors select-none border-l border-slate-700"
+                                >
+                                    Japanese <SortIcon active={sortConfig.key === 'ja'} direction={sortConfig.direction} />
+                                </div>
+                            </div>
+
+                            {/* List Content */}
+                            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                                {sortedData.map((street) => (
+                                    <div 
+                                        key={street.id}
+                                        id={`row-${street.id}`}
+                                        onClick={() => handleListClick(street.id)}
+                                        className={`
+                                            grid grid-cols-3 text-sm border-b border-slate-700 cursor-pointer transition-all duration-200
+                                            ${selectedId === street.id 
+                                                ? 'bg-blue-900/30 border-l-4 border-l-blue-500 animate-glow' 
+                                                : 'hover:bg-slate-700 border-l-4 border-l-transparent'}
+                                        `}
+                                    >
+                                        <div className="p-3 flex flex-col justify-center">
+                                            <span className="font-bold text-slate-200">{street.fi}</span>
+                                            {selectedId === street.id && (
+                                                <span className="text-xs text-blue-400 mt-1 sm:hidden">Finnish</span>
+                                            )}
+                                        </div>
+                                        <div className="p-3 flex flex-col justify-center text-slate-400 border-l border-dashed border-slate-700/50">
+                                            <span>{street.en}</span>
+                                            {selectedId === street.id && (
+                                                <span className="text-xs text-slate-500 mt-1 sm:hidden">Meaning</span>
+                                            )}
+                                        </div>
+                                        <div className="p-3 flex flex-col justify-center text-slate-400 border-l border-dashed border-slate-700/50">
+                                            <span>{street.ja}</span>
+                                            {selectedId === street.id && (
+                                                <span className="text-xs text-slate-500 mt-1 sm:hidden">意味</span>
+                                            )}
+                                        </div>
+                                        
+                                        {/* Description Drawer */}
+                                        {selectedId === street.id && (
+                                            <div className="col-span-3 bg-slate-700/50 p-3 text-xs text-slate-300 px-4 animate-in fade-in slide-in-from-top-1 border-t border-slate-700">
+                                                <span className="text-yellow-400 mr-2">💡</span>{street.desc}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
