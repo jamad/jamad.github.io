@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Helsinki Street Translator</title>
-    <!-- React, Tailwind, Leaflet の読み込み部分は同じなので省略（実際のファイルには残してください） -->
+    
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,6 +14,7 @@
     </script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         html, body, #root { height: 100%; margin: 0; padding: 0; overflow: hidden; }
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
@@ -30,7 +31,6 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- Audio Logic ---
         const playSound = (type) => {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
@@ -58,19 +58,24 @@
             const [streetData, setStreetData] = useState([]);
             const [selectedId, setSelectedId] = useState(null);
             const [sortConfig, setSortConfig] = useState({ key: 'fi', direction: 'asc' });
-            const [searchTerm, setSearchTerm] = useState(""); // 検索ワード用
-            const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark' || true);
+            const [searchTerm, setSearchTerm] = useState("");
+            const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') !== 'light');
 
             const mapRef = useRef(null);
             const tileLayerRef = useRef(null);
             const layersRef = useRef({});
 
             useEffect(() => {
-                if (isDarkMode) document.documentElement.classList.add('dark');
-                else document.documentElement.classList.remove('dark');
+                const rootEl = document.documentElement;
+                if (isDarkMode) {
+                    rootEl.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    rootEl.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                }
             }, [isDarkMode]);
 
-            // データの読み込み (metadata + geometry)
             useEffect(() => {
                 Promise.all([
                     fetch('./streets_metadata.json').then(res => res.json()),
@@ -86,7 +91,6 @@
                 .catch(e => console.error("Load error:", e));
             }, []);
 
-            // 地図初期化
             useEffect(() => {
                 if (!mapRef.current) {
                     mapRef.current = L.map('map', { center: [60.1699, 24.9384], zoom: 14, zoomControl: false, attributionControl: false });
@@ -105,7 +109,6 @@
                 }
             }, [isDarkMode]);
 
-            // 検索とソートのロジック
             const displayData = useMemo(() => {
                 let filtered = streetData.filter(s => 
                     s.fi.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -119,7 +122,6 @@
                 });
             }, [streetData, searchTerm, sortConfig]);
 
-            // 地図上のライン描画
             useEffect(() => {
                 if (!mapRef.current || streetData.length === 0) return;
                 Object.values(layersRef.current).forEach(l => l.remove());
@@ -128,15 +130,18 @@
                 streetData.forEach(street => {
                     const baseColor = isDarkMode ? '#475569' : '#94a3b8';
                     const polyline = L.polyline(street.path, { color: baseColor, weight: 3, opacity: 0.6 }).addTo(mapRef.current);
-                    const popupContent = `<div class="font-sans"><b>${street.fi}</b><br/><small>${street.ja}</small><p class="mt-1 text-xs">${street.desc}</p></div>`;
+                    const popupContent = `<div class="font-sans"><b>${street.fi}</b><br/><small>${street.ja}</small><p class="mt-1 text-xs text-slate-500">${street.desc}</p></div>`;
                     
                     polyline.bindPopup(popupContent, { closeButton: false });
-                    polyline.on('click', () => { setSelectedId(street.id); });
+                    polyline.on('click', () => { 
+                        setSelectedId(street.id);
+                        const el = document.getElementById(`row-${street.id}`);
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    });
                     layersRef.current[street.id] = polyline;
                 });
             }, [streetData, isDarkMode]);
 
-            // 選択時の強調
             useEffect(() => {
                 streetData.forEach(street => {
                     const layer = layersRef.current[street.id];
@@ -154,41 +159,51 @@
             return (
                 <div className="flex flex-col h-full bg-gray-50 dark:bg-slate-900 transition-colors">
                     <header className="flex-none bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-4 flex justify-between items-center h-16 shadow-sm z-20">
-                        <div className="flex items-center gap-3"><div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold">Fi</div><h1 className="text-lg font-bold">Helsinki Street Lingo</h1></div>
-                        <div onClick={() => { playSound('toggle'); setIsDarkMode(!isDarkMode); }} className="w-12 h-6 bg-gray-300 dark:bg-slate-600 rounded-full p-1 cursor-pointer transition-all relative">
-                            <div className={`bg-white w-4 h-4 rounded-full shadow-md transition-all ${isDarkMode ? 'translate-x-6' : ''}`}></div>
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold">Fi</div>
+                            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 italic">Helsinki Street Lingo</h1>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold tracking-widest hidden sm:block">
+                                {isDarkMode ? 'DARK' : 'LIGHT'}
+                            </span>
+                            <div onClick={() => { playSound('toggle'); setIsDarkMode(!isDarkMode); }} className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors duration-300 ${isDarkMode ? 'bg-slate-600' : 'bg-gray-300'}`}>
+                                <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${isDarkMode ? 'translate-x-6' : ''}`}></div>
+                            </div>
                         </div>
                     </header>
 
                     <div className="flex-1 flex flex-col md:flex-row min-h-0">
-                        <div id="map" className="w-full h-1/2 md:h-full md:w-3/5 bg-gray-200 dark:bg-slate-900"></div>
+                        <div id="map" className="w-full h-1/2 md:h-full md:w-3/5"></div>
 
                         <div className="w-full h-1/2 md:h-full md:w-2/5 flex flex-col bg-white dark:bg-slate-800 border-t md:border-t-0 md:border-l border-gray-200 dark:border-slate-700 shadow-2xl transition-colors">
-                            {/* 検索窓 */}
                             <div className="p-3 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-850">
                                 <input 
                                     type="text" 
-                                    placeholder="通りの名前を検索..." 
-                                    className="w-full p-2 text-sm rounded border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="通りの名前、意味、キーワードで検索..." 
+                                    className="w-full p-2 text-sm rounded border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
 
-                            <div className="flex-none grid grid-cols-3 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 font-semibold text-xs text-slate-500 uppercase tracking-wider">
-                                <div onClick={() => setSortConfig({ key: 'fi', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700">Finland <SortIcon active={sortConfig.key === 'fi'} direction={sortConfig.direction} /></div>
-                                <div onClick={() => setSortConfig({ key: 'en', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 border-l border-gray-200 dark:border-slate-700">English</div>
-                                <div onClick={() => setSortConfig({ key: 'ja', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 border-l border-gray-200 dark:border-slate-700">Japanese</div>
+                            <div className="flex-none grid grid-cols-3 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 font-bold text-[10px] text-slate-500 uppercase tracking-widest">
+                                <div onClick={() => setSortConfig({ key: 'fi', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">Finland <SortIcon active={sortConfig.key === 'fi'} direction={sortConfig.direction} /></div>
+                                <div onClick={() => setSortConfig({ key: 'en', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 border-l border-gray-200 dark:border-slate-700 transition-colors text-center">English</div>
+                                <div onClick={() => setSortConfig({ key: 'ja', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 border-l border-gray-200 dark:border-slate-700 transition-colors text-right px-6">Japanese</div>
                             </div>
 
                             <div className="flex-1 overflow-y-auto custom-scrollbar">
                                 {displayData.map((s) => (
-                                    <div key={s.id} id={`row-${s.id}`} onClick={() => { playSound('select'); setSelectedId(s.id); }} className={`grid grid-cols-3 text-sm border-b border-gray-100 dark:border-slate-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-all ${selectedId === s.id ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-l-blue-500' : 'border-l-4 border-l-transparent'}`}>
-                                        <div className="p-3 font-bold">{s.fi}</div>
-                                        <div className="p-3 text-slate-500 dark:text-slate-400 border-l border-dashed border-gray-200 dark:border-slate-700/50">{s.en}</div>
-                                        <div className="p-3 text-slate-500 dark:text-slate-400 border-l border-dashed border-gray-200 dark:border-slate-700/50">{s.ja}</div>
+                                    <div key={s.id} id={`row-${s.id}`} onClick={() => { playSound('select'); setSelectedId(s.id); }} className={`grid grid-cols-3 text-sm border-b border-gray-100 dark:border-slate-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all ${selectedId === s.id ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-l-blue-500' : 'border-l-4 border-l-transparent'}`}>
+                                        <div className="p-3 font-bold text-slate-800 dark:text-slate-200">{s.fi}</div>
+                                        <div className="p-3 text-slate-500 dark:text-slate-400 border-l border-dashed border-gray-200 dark:border-slate-700/50 text-xs flex items-center">{s.en}</div>
+                                        <div className="p-3 text-slate-500 dark:text-slate-400 border-l border-dashed border-gray-200 dark:border-slate-700/50 text-xs flex items-center justify-end">{s.ja}</div>
                                     </div>
                                 ))}
+                                {displayData.length === 0 && (
+                                    <div className="p-10 text-center text-slate-400 italic text-sm">一致する通りが見つかりませんでした。</div>
+                                )}
                             </div>
                         </div>
                     </div>
