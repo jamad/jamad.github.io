@@ -6,56 +6,40 @@
     <title>Deep Kanji Fishing - 漢字深海釣り</title>
     <style>
         body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000;
+            margin: 0; overflow: hidden; background-color: #000;
             font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
+            touch-action: none; user-select: none; -webkit-user-select: none;
         }
-        canvas {
-            display: block;
-        }
+        canvas { display: block; }
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; /* UIレイヤー全体はクリックを透過 */
-            display: flex; flex-direction: column; justify-content: space-between;
-            z-index: 10;
+            pointer-events: none; display: flex; flex-direction: column; 
+            justify-content: space-between; z-index: 10;
         }
         #depth-meter {
             position: absolute; top: 20px; right: 20px;
-            color: rgba(255, 255, 255, 0.9);
-            font-family: monospace; font-size: 24px; text-align: right;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            color: rgba(255, 255, 255, 0.9); font-family: monospace; 
+            font-size: 24px; text-align: right; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
-        #message-area {
-            position: absolute; top: 20%; width: 100%; text-align: center;
-        }
+        #message-area { position: absolute; top: 20%; width: 100%; text-align: center; }
         .msg-box {
             display: inline-block; background: rgba(0, 0, 0, 0.6); color: #fff;
             padding: 10px 30px; border-radius: 30px; font-size: 20px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.3);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3);
             animation: fadeIn 0.3s;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* 結果画面 */
         #result-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 10, 30, 0.95);
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            color: white; 
-            pointer-events: auto; /* モーダルは操作可能 */
-            z-index: 100;
+            background: rgba(0, 10, 30, 0.95); display: none; flex-direction: column; 
+            justify-content: center; align-items: center; color: white; 
+            pointer-events: auto; z-index: 100;
         }
         .fish-card {
-            background: #f0f0f0; color: #222; padding: 30px;
-            border-radius: 12px; text-align: center; width: 85%; max-width: 380px;
+            background: #f0f0f0; color: #222; padding: 30px; border-radius: 12px;
+            text-align: center; width: 85%; max-width: 380px;
             box-shadow: 0 0 40px rgba(0, 191, 255, 0.2); position: relative;
-            border: 4px solid #0277bd;
-            user-select: text; -webkit-user-select: text;
+            border: 4px solid #0277bd; user-select: text; -webkit-user-select: text;
         }
         .fish-kanji {
             font-size: 100px; line-height: 1.1; margin: 10px 0;
@@ -69,36 +53,25 @@
             padding: 12px; border-radius: 6px; line-height: 1.6;
         }
         .btn-close {
-            margin-top: 20px; padding: 12px 50px;
-            background: #0277bd; color: white; border: none;
-            border-radius: 25px; font-size: 18px; font-weight: bold;
+            margin-top: 20px; padding: 12px 50px; background: #0277bd; color: white; 
+            border: none; border-radius: 25px; font-size: 18px; font-weight: bold;
             cursor: pointer; user-select: none;
         }
         .badge-rare {
-            position: absolute; top: -15px; right: -15px;
-            background: #ffd700; color: #000; padding: 5px 15px;
-            border-radius: 20px; font-weight: bold; transform: rotate(15deg);
+            position: absolute; top: -15px; right: -15px; background: #ffd700; color: #000; 
+            padding: 5px 15px; border-radius: 20px; font-weight: bold; transform: rotate(15deg);
             box-shadow: 0 2px 5px rgba(0,0,0,0.3); pointer-events: none;
         }
-        
-        /* フッターエリア */
         #footer {
             position: absolute; bottom: 10px; width: 100%; text-align: center;
             color: rgba(255,255,255,0.4); font-size: 11px; font-family: sans-serif;
-            pointer-events: auto; 
-            z-index: 20;
+            pointer-events: auto; z-index: 20;
         }
-        #footer a {
-            color: rgba(255,255,255,0.6); text-decoration: none; margin: 0 8px;
-            transition: color 0.2s;
-        }
+        #footer a { color: rgba(255,255,255,0.6); text-decoration: none; margin: 0 8px; }
         #footer a:hover { color: #fff; text-decoration: underline; }
-        
         .tutorial {
             position: absolute; bottom: 40px; width: 100%; text-align: center;
             color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.5;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-            pointer-events: none;
         }
         .zone-label {
             position: absolute; top: 50%; transform: translateY(-50%);
@@ -112,17 +85,11 @@
 <div id="ui-layer">
     <div id="depth-meter">0.0 m</div>
     <div id="message-area"><div class="msg-box" id="msg-text">TAP WATER TO CAST</div></div>
-    
     <div class="zone-label" style="left: 20px;">RIVER (淡水)</div>
     <div class="zone-label" style="right: 20px;">OCEAN (海水)</div>
-
-    <div class="tutorial">
-        Tap to Cast / Tap again to Cancel<br>
-        タップでキャスト / 停止中にタップでキャンセル
-    </div>
-
+    <div class="tutorial">Tap to Cast / Tap again to Cancel<br>タップでキャスト / 停止中にタップでキャンセル</div>
     <div id="footer">
-        <span>v20260211.1</span><span style="margin: 0 5px;">|</span>
+        <span>v1.4.1</span><span style="margin: 0 5px;">|</span>
         <a href="https://junichiyamada.gitlab.io/" target="_blank">Home</a><span style="margin: 0 5px;">|</span>
         <a href="https://gitlab.com/junichiyamada/kanji_fishing/-/issues" target="_blank">Bug Report</a>
     </div>
@@ -130,7 +97,7 @@
 
 <div id="result-modal">
     <div class="fish-card">
-        <div id="badge" class="badge-rare">RARE</div>
+        <div id="badge" class="badge-rare">CATCH</div>
         <div style="font-size:12px; color:#666; letter-spacing:1px; margin-bottom:5px;">FISHING LOG</div>
         <div id="res-kanji" class="fish-kanji">魚</div>
         <div id="res-reading" class="fish-reading">さかな</div>
@@ -360,7 +327,7 @@ const FISH_DB = {
     '鱋': {y:'はす', e:'Hasu', d:'ハス。', t:'fresh'},
     '鱌': {y:'ごり', e:'Gori', d:'ゴリ。', t:'fresh'},
     '鱍': {y:'はねる', e:'Splash', d:'魚が跳ねる様子。', t:'fresh'},
-    '鱎': {y:'い', e:'Topmouth Culter', d:'カワヒラの古称。銀色の細長い淡水魚。', t:'fresh'},
+    '鱎': {y:'い', e:'Fish name', d:'魚の名前。', t:'fresh'},
     '鱏': {y:'えい', e:'Ray', d:'エイ。', t:'salt'},
     '鱐': {y:'しゃちほこ', e:'Shachihoko', d:'シャチホコ。', t:'salt'},
     '鱑': {y:'ふか', e:'Shark', d:'フカ（サメ）。黄色い魚。', t:'salt'},
@@ -403,30 +370,14 @@ const FISH_DB = {
     '鱺': {y:'うなぎ', e:'Eel', d:'ウナギ。', t:'fresh'}
 };
 
-// 辞書にない場合のフォールバック（基本的に発生しないように網羅）
-function getFishData(kanji, type) {
-    if (FISH_DB[kanji]) {
-        return FISH_DB[kanji];
-    }
-    return {
-        y: '？？？',
-        e: 'Ancient Mystery',
-        d: `深海で発見された古代魚。「${kanji}」の読みは失われている...`,
-        t: type
-    };
-}
-
-// 辞書のキー配列をプールとして使用
 const FISH_POOL = Object.keys(FISH_DB);
 
-// --- Audio System ---
 const AudioSys = {
     ctx: null, gain: null,
     init: function() {
         if (!this.ctx) {
             this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            this.gain = this.ctx.createGain();
-            this.gain.gain.value = 0.3;
+            this.gain = this.ctx.createGain(); this.gain.gain.value = 0.3;
             this.gain.connect(this.ctx.destination);
         }
         if(this.ctx.state === 'suspended') this.ctx.resume();
@@ -438,8 +389,7 @@ const AudioSys = {
         if(slide) o.frequency.exponentialRampToValueAtTime(slide, this.ctx.currentTime+dur);
         g.gain.setValueAtTime(0.5, this.ctx.currentTime);
         g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime+dur);
-        o.connect(g); g.connect(this.gain);
-        o.start(); o.stop(this.ctx.currentTime+dur);
+        o.connect(g); g.connect(this.gain); o.start(); o.stop(this.ctx.currentTime+dur);
     },
     cast: () => AudioSys.play(600, 'sine', 0.5, 200),
     bite: () => { AudioSys.play(800, 'square', 0.1); setTimeout(()=>AudioSys.play(800,'square',0.1), 100); },
@@ -449,82 +399,63 @@ const AudioSys = {
     escape: () => AudioSys.play(100, 'sawtooth', 0.5)
 };
 
-// --- Game Engine Variables ---
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-let width, height;
-
-// Game State
-let state = 'IDLE'; 
+let width, height, state = 'IDLE'; 
 let hook = { x: 0, y: 0, depth: 0, speed: 0, biteY: 0 };
-let fishes = [];
-let cameraY = 0;
-let targetFish = null;
-let fightProgress = 0;
+let fishes = [], bubbles = [], particles = [], cameraY = 0, targetFish = null;
+const CAST_SPEED = 12, MAX_DEPTH = 7000, VIEW_BUFFER = 1600;
 
-// Config
-const CAST_SPEED = 12;
-const MAX_DEPTH = 7000;
-const VIEW_BUFFER = 1600;
-
-// --- Initialize Logic ---
-// 1. Resize First
 function resize() {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
-    hook.x = width / 2;
+    width = window.innerWidth; height = window.innerHeight;
+    canvas.width = width; canvas.height = height; hook.x = width / 2;
 }
 window.addEventListener('resize', resize);
-resize(); // Call immediately to set width/height
+resize();
 
-// 2. Define Classes (Now width/height are available)
 class Bubble {
     constructor() {
         this.worldX = Math.random() * width;
-        this.worldY = Math.random() * height; // 画面の高さ範囲内で初期化
+        this.worldY = Math.random() * height;
         this.size = 1.5 + Math.random() * 2.5; 
         this.riseSpeed = 0.4 + Math.random() * 0.8;
-        this.parallaxFactor = 0.6; // 魚よりゆっくり動く（奥にいる演出）
+        this.parallaxFactor = 0.6; 
         this.sinOffset = Math.random() * Math.PI * 2;
         this.sinSpeed = 0.02 + Math.random() * 0.03;
         this.amplitude = 10 + Math.random() * 15;
     }
-
-    update() {
-        this.worldY -= this.riseSpeed; // 上に昇る
-        this.sinOffset += this.sinSpeed; // ゆらゆら更新
-    }
-
+    update() { this.worldY -= this.riseSpeed; this.sinOffset += this.sinSpeed; }
     draw(ctx, camY) {
-        // カメラの動き（camY）に合わせて上下にループさせる計算
-        // Modulo (%) を使って、画面上端に消えたら下から出てくるようにする
         let screenY = (this.worldY - camY * this.parallaxFactor) % height;
         if (screenY < 0) screenY += height;
-
-        // サインカーブによる横揺れ
         const swayX = Math.sin(this.sinOffset) * this.amplitude;
         const renderX = (this.worldX + swayX) % width;
-
-        ctx.save();
-        ctx.translate(renderX, screenY);
-        
-        // 透明感のある泡の描画
-        ctx.beginPath();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-        ctx.lineWidth = 1.2;
-        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // 泡のハイライト（光の点）
-        ctx.beginPath();
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.arc(-this.size * 0.3, -this.size * 0.3, this.size * 0.2, 0, Math.PI * 2);
-        ctx.fill();
-
+        ctx.save(); ctx.translate(renderX, screenY);
+        ctx.beginPath(); ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 1.2; ctx.arc(0, 0, this.size, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.arc(-this.size * 0.3, -this.size * 0.3, this.size * 0.2, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
     }
+}
+
+class Particle {
+    constructor(x, y) {
+        this.x = x; this.y = y;
+        this.vx = (Math.random() - 0.5) * 8;
+        this.vy = (Math.random() - 1.0) * 5; 
+        this.life = 1.0;
+        this.size = 2 + Math.random() * 3;
+    }
+    update() { this.x += this.vx; this.y += this.vy; this.life -= 0.03; }
+    draw(ctx, camY) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.life})`;
+        ctx.beginPath(); ctx.arc(this.x, this.y - camY, this.size, 0, Math.PI * 2); ctx.fill();
+    }
+}
+
+function spawnParticles(x, y) {
+    for(let i=0; i<8; i++) particles.push(new Particle(x, y));
 }
 
 class Fish {
@@ -533,249 +464,134 @@ class Fish {
         this.depth = Math.random() * (MAX_DEPTH - 150);
         this.char = FISH_POOL[Math.floor(Math.random() * FISH_POOL.length)];
         const dbData = FISH_DB[this.char] || {t:'salt'};
-        this.type = dbData.t;
-        this.size = 40 + Math.random() * 60;
-        
-        if (isInit) {
-            this.y = this.depth;
-        } else {
-            if (state === 'CASTING') {
-                this.y = cameraY + height + VIEW_BUFFER + Math.random() * 1000;
-            } else if (state === 'REELING' || state === 'RETRIEVING') {
-                this.y = cameraY - VIEW_BUFFER - Math.random() * 1000;
-            } else {
-                this.y = cameraY + height + VIEW_BUFFER;
-            }
+        this.type = dbData.t; this.size = 40 + Math.random() * 60;
+        if (isInit) { this.y = this.depth; } else {
+            if (state === 'CASTING') { this.y = cameraY + height + VIEW_BUFFER + Math.random() * 1000; }
+            else if (state === 'REELING' || state === 'RETRIEVING') { this.y = cameraY - VIEW_BUFFER - Math.random() * 1000; }
+            else { this.y = cameraY + height + VIEW_BUFFER; }
         }
         if (this.y > MAX_DEPTH - 150) this.y = Math.random() * (MAX_DEPTH - 200);
-
         const border = width / 2;
-        if (this.type === 'fresh') {
-            this.minX = 0; this.maxX = border;
-            this.x = Math.random() * (border - 50);
-        } else {
-            this.minX = border; this.maxX = width;
-            this.x = border + Math.random() * (width/2 - 50);
-        }
-        
-        this.vx = (Math.random() * 2 + 0.5) * (Math.random()<0.5 ? 1 : -1);
-        this.state = 'SWIM';
+        if (this.type === 'fresh') { this.minX = 0; this.maxX = border; this.x = Math.random() * (border - 50); }
+        else { this.minX = border; this.maxX = width; this.x = border + Math.random() * (width/2 - 50); }
+        this.vx = (Math.random() * 2 + 0.5) * (Math.random()<0.5 ? 1 : -1); this.state = 'SWIM';
     }
-
     update() {
         if (this.state === 'SWIM') {
-            this.x += this.vx;
-            if (this.x < this.minX + 20 || this.x > this.maxX - 20) this.vx *= -1;
-            
+            this.x += this.vx; if (this.x < this.minX + 20 || this.x > this.maxX - 20) this.vx *= -1;
             const screenY = this.y - cameraY;
-            
-            // 画面外（上）に消えたら下へ再配置
             if (screenY < -VIEW_BUFFER) {
                 this.y = cameraY + height + VIEW_BUFFER + Math.random() * 500;
-                if (this.y > MAX_DEPTH) {
-                    this.y = cameraY - VIEW_BUFFER - Math.random() * 500;
-                }
+                if (this.y > MAX_DEPTH) this.y = cameraY - VIEW_BUFFER - Math.random() * 500;
                 this.resetX();
-            } 
-            // 画面外（下）に消えたら上へ再配置
-            else if (screenY > height + VIEW_BUFFER) {
+            } else if (screenY > height + VIEW_BUFFER) {
                 this.y = cameraY - VIEW_BUFFER - Math.random() * 500;
                 this.resetX();
             }
-
-            // 針との当たり判定
             if (state === 'HOLDING' && Math.abs(this.y - hook.y) < 70 && Math.abs(this.x - hook.x) < 70) {
-                if (Math.random() < 0.2) startBite(this);
+                if (Math.random() < 0.3) startBite(this);
             }
-        } 
-        // === ここから下の処理が消えていました ===
-        else if (this.state === 'HOOKED') {
-            // 釣られている間は針の位置（hook.x, hook.y）に固定する
-            // 少し揺らして暴れている演出を入れる
+        } else if (this.state === 'HOOKED') {
             this.x = hook.x + (Math.random() - 0.5) * 15;
             this.y = hook.y + 25;
         }
     }
-    
     resetX() {
         this.char = FISH_POOL[Math.floor(Math.random() * FISH_POOL.length)];
-        const dbData = FISH_DB[this.char];
-        this.type = dbData ? dbData.t : 'salt';
+        const dbData = FISH_DB[this.char]; this.type = dbData ? dbData.t : 'salt';
         const border = width / 2;
-        if (this.type === 'fresh') {
-            this.minX = 0; this.maxX = border;
-            this.x = Math.random() * (border - 50);
-        } else {
-            this.minX = border; this.maxX = width;
-            this.x = border + Math.random() * (width/2 - 50);
-        }
+        if (this.type === 'fresh') { this.minX = 0; this.maxX = border; this.x = Math.random() * (border - 50); }
+        else { this.minX = border; this.maxX = width; this.x = border + Math.random() * (width/2 - 50); }
     }
-
     draw() {
-        const screenY = this.y - cameraY;
-        if (screenY < -100 || screenY > height + 100) return;
-
-        ctx.save();
-        ctx.translate(this.x, screenY);
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.font = `bold ${this.size}px serif`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(this.char, 8, 8);
-        ctx.fillStyle = this.type === 'fresh' ? '#b2dfdb' : '#e1f5fe';
-        ctx.fillText(this.char, 0, 0);
+        const screenY = this.y - cameraY; if (screenY < -VIEW_BUFFER || screenY > height + VIEW_BUFFER) return;
+        let opacity = 1.0;
+        if (screenY < 100) opacity = screenY / 100;
+        if (screenY > height - 100) opacity = (height - screenY) / 100;
+        ctx.save(); ctx.globalAlpha = Math.max(0, opacity); ctx.translate(this.x, screenY);
+        ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.font = `bold ${this.size}px serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(this.char, 8, 8);
+        ctx.fillStyle = this.type === 'fresh' ? '#b2dfdb' : '#e1f5fe'; ctx.fillText(this.char, 0, 0);
         ctx.restore();
     }
 }
 
-// 3. Initialize Objects
-const bubbles = [];
-for(let i=0; i<50; i++) bubbles.push(new Bubble());
+for(let i=0; i<45; i++) bubbles.push(new Bubble());
+for(let i=0; i<40; i++) fishes.push(new Fish());
 
-for(let i=0; i<35; i++) fishes.push(new Fish());
-
-// --- Input Handling ---
 function handleInput(e) {
     if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
     if (document.getElementById('result-modal').style.display === 'flex') return;
-
     AudioSys.init();
     let clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
-    
     if (state === 'IDLE') {
-        hook.x = Math.max(20, Math.min(width - 20, clientX));
-        state = 'CASTING';
-        hook.y = 0; hook.speed = CAST_SPEED;
-        setMessage("TAP TO STOP");
-        AudioSys.cast();
-    } else if (state === 'CASTING') {
-        state = 'HOLDING'; hook.speed = 0;
-        setMessage("WAITING... / TAP TO CANCEL");
-    } else if (state === 'HOLDING') {
-        // キャンセル（高速回収）モードへ
-        state = 'RETRIEVING';
-        AudioSys.cancel();
-        setMessage("CANCELED / RETRIEVING...");
-    } else if (state === 'BITE') {
-        state = 'REELING';
-        fightProgress = 0;
-        hook.biteY = hook.y; // 逃げられる判定の基準点を記録
-        AudioSys.reel();
-        setMessage("REEL IT IN! (TAP!)");
-    } else if (state === 'REELING') {
-        // 釣り上げ。以前の50から200へ（4倍楽に）
-        hook.y -= 200; 
-        AudioSys.reel();
-        if (hook.y <= 0) catchFish();
-    }
+        hook.x = Math.max(20, Math.min(width - 20, clientX)); state = 'CASTING';
+        hook.y = 0; hook.speed = CAST_SPEED; setMessage("TAP TO STOP"); AudioSys.cast();
+    } else if (state === 'CASTING') { state = 'HOLDING'; hook.speed = 0; setMessage("WAITING... / TAP TO CANCEL"); }
+    else if (state === 'HOLDING') { state = 'RETRIEVING'; AudioSys.cancel(); setMessage("CANCELED / RETRIEVING..."); }
+    else if (state === 'BITE') { state = 'REELING'; hook.biteY = hook.y; AudioSys.reel(); setMessage("REEL IT IN! (TAP!)"); spawnParticles(hook.x, hook.y); }
+    else if (state === 'REELING') { hook.y -= 200; AudioSys.reel(); spawnParticles(hook.x, hook.y); if (hook.y <= 0) catchFish(); }
 }
 
 function startBite(fish) {
-    state = 'BITE'; targetFish = fish; fish.state = 'HOOKED';
-    hook.biteY = hook.y;
+    state = 'BITE'; targetFish = fish; fish.state = 'HOOKED'; hook.biteY = hook.y;
     AudioSys.bite(); setMessage("!!! TAP !!!");
-    setTimeout(() => {
-        if (state === 'BITE') {
-            fishEscaped(fish);
-        }
-    }, 1200);
+    setTimeout(() => { if (state === 'BITE') fishEscaped(fish); }, 1200);
 }
 
 function fishEscaped(fish) {
-    state = 'IDLE'; 
-    if(fish) { fish.state = 'SWIM'; fish.vx *= 3; }
-    AudioSys.escape();
-    setMessage("ESCAPED... (TOO DEEP / TOO SLOW)");
+    state = 'IDLE'; if(fish) { fish.state = 'SWIM'; fish.vx *= 3; }
+    AudioSys.escape(); setMessage("ESCAPED...");
     setTimeout(() => { if(state==='IDLE') { hook.y = 0; setMessage("TAP TO CAST"); } }, 2000);
 }
 
 function catchFish() {
-    state = 'CAUGHT'; AudioSys.catch();
-    const f = targetFish;
-    const data = getFishData(f.char, f.type);
-    
+    state = 'CAUGHT'; AudioSys.catch(); const f = targetFish;
+    const data = FISH_DB[f.char] || {y:'？',e:'Mystery',d:'謎の魚。',t:'salt'};
     document.getElementById('result-modal').style.display = 'flex';
     document.getElementById('res-kanji').innerText = f.char;
     document.getElementById('res-reading').innerText = data.y;
     document.getElementById('res-en').innerText = data.e;
     document.getElementById('res-desc').innerText = data.d;
-    
-    const badge = document.getElementById('badge');
-    badge.innerText = "CATCH"; badge.style.background = "#ffd700";
 }
 
-window.closeModal = function() {
+function closeModal() {
     document.getElementById('result-modal').style.display = 'none';
     if(targetFish) targetFish.reset();
-    state = 'IDLE'; hook.y = 0; cameraY = 0;
-    setMessage("TAP TO CAST");
+    state = 'IDLE'; hook.y = 0; cameraY = 0; setMessage("TAP TO CAST");
 }
 
 function setMessage(msg) { document.getElementById('msg-text').innerText = msg; }
 
-// --- Main Loop ---
 function draw() {
-    if (state === 'CASTING') {
-        hook.y += hook.speed;
-        if (hook.y >= MAX_DEPTH) { state = 'HOLDING'; setMessage("MAX DEPTH / TAP TO CANCEL"); }
-    } else if (state === 'REELING') {
-        hook.y += 2.5; // 自然沈下
-        // 噛みついた位置(biteY)から50m(500px)沈んだら失敗
-        if (hook.y > hook.biteY + 500) fishEscaped(targetFish);
-    }
-    else if (state === 'RETRIEVING') {
-        hook.y -= 100; // キャンセル時の回収速度
-        if (hook.y <= 0) { hook.y = 0; state = 'IDLE'; setMessage("TAP TO CAST"); }
-    }
-
-    let targetCamY = hook.y - height * 0.4;
-    if (targetCamY < 0) targetCamY = 0;
-    cameraY += (targetCamY - cameraY) * 0.1;
-
+    if (state === 'CASTING') { hook.y += hook.speed; if (hook.y >= MAX_DEPTH) { state = 'HOLDING'; setMessage("MAX DEPTH / TAP TO CANCEL"); } }
+    else if (state === 'REELING') { hook.y += 2.5; if (hook.y > hook.biteY + 500) fishEscaped(targetFish); }
+    else if (state === 'RETRIEVING') { hook.y -= 100; if (hook.y <= 0) { hook.y = 0; state = 'IDLE'; setMessage("TAP TO CAST"); } }
+    let targetCamY = hook.y - height * 0.4; if (targetCamY < 0) targetCamY = 0; cameraY += (targetCamY - cameraY) * 0.1;
     document.getElementById('depth-meter').innerText = (hook.y / 10).toFixed(1) + " m";
-
     let depthRatio = Math.min(cameraY / MAX_DEPTH, 1);
-    let r = Math.floor(0 * (1-depthRatio));
-    let g = Math.floor(100 * (1-depthRatio)); 
-    let b = Math.floor(200 * (1-depthRatio) + 50); 
-    ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.fillRect(0, 0, width, height);
-    
+    let r = Math.floor(0 * (1-depthRatio)), g = Math.floor(80 * (1-depthRatio)), b = Math.floor(180 * (1-depthRatio) + 40); 
+    ctx.fillStyle = `rgb(${r},${g},${b})`; ctx.fillRect(0, 0, width, height);
     bubbles.forEach(b => { b.update(); b.draw(ctx, cameraY); });
-
-    const sunGrad = ctx.createLinearGradient(0, 0, 0, height/2);
-    sunGrad.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
-    sunGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = sunGrad;
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.setLineDash([10, 20]);
-    ctx.beginPath(); ctx.moveTo(width/2, 0); ctx.lineTo(width/2, height); ctx.stroke();
+    for(let i=particles.length-1; i>=0; i--) { particles[i].update(); if(particles[i].life<=0) particles.splice(i,1); else particles[i].draw(ctx, cameraY); }
+    const sunGrad = ctx.createLinearGradient(0, 0, 0, height/2); sunGrad.addColorStop(0, 'rgba(255, 255, 255, 0.15)'); sunGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = sunGrad; ctx.fillRect(0, 0, width, height);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.setLineDash([10, 20]); ctx.beginPath(); ctx.moveTo(width/2, 0); ctx.lineTo(width/2, height); ctx.stroke();
     ctx.setLineDash([]);
-
     ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.font = '20px monospace'; ctx.textAlign = 'center';
     const startD = Math.floor(cameraY / 500) * 500;
-    for(let d=startD; d<startD + height + 500; d+=500) {
-        let sy = d - cameraY;
-        ctx.fillText(`- ${d/10}m -`, width/2, sy);
-    }
-
+    for(let d=startD; d<startD + height + 500; d+=500) { let sy = d - cameraY; ctx.fillText(`- ${d/10}m -`, width/2, sy); }
     fishes.forEach(f => { f.update(); f.draw(); });
-
-    let screenHookY = hook.y - cameraY;
-    ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(hook.x, -100); ctx.lineTo(hook.x, screenHookY); ctx.stroke();
-    
-    ctx.fillStyle = state === 'BITE' ? 'red' : 'silver';
-    ctx.beginPath(); ctx.arc(hook.x, screenHookY, 6, 0, Math.PI*2); ctx.fill();
-    
+    let screenHookY = hook.y - cameraY; ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(hook.x, -100); ctx.lineTo(hook.x, screenHookY); ctx.stroke();
+    ctx.fillStyle = state === 'BITE' ? 'red' : 'silver'; ctx.beginPath(); ctx.arc(hook.x, screenHookY, 6, 0, Math.PI*2); ctx.fill();
     requestAnimationFrame(draw);
 }
-
-// Window level listener to catch clicks anywhere
 window.addEventListener('mousedown', handleInput);
-window.addEventListener('touchstart', handleInput, {passive:false});
-
+window.addEventListener('touchstart', (e) => { 
+    if (e.target.tagName === 'A') return; // フッターのリンクをクリック可能にする
+    e.preventDefault(); 
+    handleInput(e); 
+}, {passive:false});
 requestAnimationFrame(draw);
 </script>
 </body>
