@@ -130,9 +130,27 @@
                 streetData.forEach(street => {
                     const baseColor = isDarkMode ? '#475569' : '#94a3b8';
                     const polyline = L.polyline(street.path, { color: baseColor, weight: 3, opacity: 0.6 }).addTo(mapRef.current);
-                    const popupContent = `<div class="font-sans"><b>${street.fi}</b><br/><small>${street.ja}</small><p class="mt-1 text-xs text-slate-500">${street.desc}</p></div>`;
                     
-                    polyline.bindPopup(popupContent, { closeButton: false });
+                    // ポップアップの内容
+                    const popupContent = `
+                        <div class="font-sans">
+                            <div class="text-[10px] text-blue-500 font-bold tracking-widest mb-1 uppercase">Name Decoded</div>
+                            <h3 class="text-lg font-bold mb-0 leading-tight">${street.fi}</h3>
+                            <div class="text-sm text-slate-400 mb-2 italic leading-tight">${street.en}</div>
+                            <div class="bg-slate-50 dark:bg-slate-850 p-2 rounded border border-slate-200 dark:border-slate-700">
+                                <div class="text-xs font-bold text-slate-700 dark:text-slate-200">${street.ja}</div>
+                                <div class="text-[10px] text-slate-500 mt-1">${street.desc}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent, { 
+                        closeButton: false, 
+                        autoPan: true,
+                        // ★ ここを追加：[横, 縦] の順。縦をマイナスにすると上に浮きます。
+                        offset: [0, -115] 
+                    });
+
                     polyline.on('click', () => { 
                         setSelectedId(street.id);
                         const el = document.getElementById(`row-${street.id}`);
