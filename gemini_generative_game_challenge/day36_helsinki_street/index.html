@@ -137,10 +137,20 @@
 
             // Load Data
             useEffect(() => {
-                fetch('./streets.json')
-                    .then(res => res.ok ? res.json() : [])
-                    .then(data => setStreetData(data))
-                    .catch(e => console.error(e));
+                // metadata と geometry の2つのファイルを同時に読み込む
+                Promise.all([
+                    fetch('./streets_metadata.json').then(res => res.json()),
+                    fetch('./streets_geometry.json').then(res => res.json())
+                ])
+                .then(([metadata, geometry]) => {
+                    // IDをキーにして合体
+                    const mergedData = metadata.map(item => ({
+                        ...item,
+                        path: geometry[item.id] || [] // geometryファイルから座標を引っ張る
+                    }));
+                    setStreetData(mergedData);
+                })
+                .catch(e => console.error("データ読み込みエラー:", e));
             }, []);
 
             // Initialize Map
