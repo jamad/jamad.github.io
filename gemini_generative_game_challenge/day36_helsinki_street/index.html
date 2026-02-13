@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helsinki Street Translator</title>
+    <title>Helsinki Street Decoder</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -19,18 +19,17 @@
         html, body, #root { height: 100%; margin: 0; padding: 0; overflow: hidden; }
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+        /* 地図の高さを確実に確保 */
         #map { height: 100%; width: 100%; z-index: 0; }
-        .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #ffffff; color: #1e293b; border: 1px solid #e2e8f0; }
-        .dark .leaflet-popup-content-wrapper, .dark .leaflet-popup-tip { background: #1e293b; color: #e2e8f0; border: 1px solid #475569; }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
+<body class="bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans">
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
+        // --- Audio ---
         const playSound = (type) => {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
@@ -65,41 +64,44 @@
             const tileLayerRef = useRef(null);
             const layersRef = useRef({});
 
+            // テーマ設定
             useEffect(() => {
                 const rootEl = document.documentElement;
-                if (isDarkMode) {
-                    rootEl.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    rootEl.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                }
+                if (isDarkMode) rootEl.classList.add('dark'); else rootEl.classList.remove('dark');
+                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
             }, [isDarkMode]);
 
+            // データ読み込み
             useEffect(() => {
                 Promise.all([
                     fetch('./streets_metadata.json').then(res => res.json()),
                     fetch('./streets_geometry.json').then(res => res.json())
                 ])
                 .then(([metadata, geometry]) => {
-                    const mergedData = metadata.map(item => ({
-                        ...item,
-                        path: geometry[item.id] || []
-                    }));
+                    const mergedData = metadata.map(item => ({...item, path: geometry[item.id] || [] }));
                     setStreetData(mergedData);
                 })
                 .catch(e => console.error("Load error:", e));
             }, []);
 
+            // 地図初期化（ここを修正しました）
             useEffect(() => {
                 if (!mapRef.current) {
-                    mapRef.current = L.map('map', { center: [60.1699, 24.9384], zoom: 14, zoomControl: false, attributionControl: false });
-                    tileLayerRef.current = L.tileLayer('', { attribution: '&copy; CARTO', subdomains: 'abcd', maxZoom: 20 }).addTo(mapRef.current);
+                    mapRef.current = L.map('map', { center: [60.18, 24.93], zoom: 12, zoomControl: false, attributionControl: false });
                     L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
+                    
+                    // 初期タイル読み込み (これが抜けていました)
+                    const initialUrl = isDarkMode 
+                        ? 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png'
+                        : 'https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png';
+                    
+                    tileLayerRef.current = L.tileLayer(initialUrl, { attribution: '&copy; CARTO' }).addTo(mapRef.current);
+                    
                     setTimeout(() => mapRef.current.invalidateSize(), 200);
                 }
-            }, []);
+            }, []); // 初回のみ実行
 
+            // ダークモード切り替え時のタイル更新
             useEffect(() => {
                 if (tileLayerRef.current) {
                     const url = isDarkMode 
@@ -109,19 +111,28 @@
                 }
             }, [isDarkMode]);
 
+            // 検索・ソート処理
             const displayData = useMemo(() => {
-                let filtered = streetData.filter(s => 
-                    s.fi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    s.en.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    s.ja.includes(searchTerm)
-                );
+                let filtered = streetData;
+                if (searchTerm) {
+                    const lower = searchTerm.toLowerCase();
+                    filtered = streetData.filter(s => 
+                        s.fi.toLowerCase().includes(lower) ||
+                        s.en.toLowerCase().includes(lower) ||
+                        s.ja.includes(searchTerm) ||
+                        (s.desc && s.desc.toLowerCase().includes(lower))
+                    );
+                }
                 return filtered.sort((a, b) => {
+                    if (!a[sortConfig.key]) return 1;
+                    if (!b[sortConfig.key]) return -1;
                     if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
                     if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
                     return 0;
                 });
             }, [streetData, searchTerm, sortConfig]);
 
+            // ライン描画（ポップアップなし版）
             useEffect(() => {
                 if (!mapRef.current || streetData.length === 0) return;
                 Object.values(layersRef.current).forEach(l => l.remove());
@@ -129,29 +140,12 @@
 
                 streetData.forEach(street => {
                     const baseColor = isDarkMode ? '#475569' : '#94a3b8';
+                    // 太さを少し控えめに
                     const polyline = L.polyline(street.path, { color: baseColor, weight: 3, opacity: 0.6 }).addTo(mapRef.current);
                     
-                    // ポップアップの内容
-                    const popupContent = `
-                        <div class="font-sans">
-                            <div class="text-[10px] text-blue-500 font-bold tracking-widest mb-1 uppercase">Name Decoded</div>
-                            <h3 class="text-lg font-bold mb-0 leading-tight">${street.fi}</h3>
-                            <div class="text-sm text-slate-400 mb-2 italic leading-tight">${street.en}</div>
-                            <div class="bg-slate-50 dark:bg-slate-850 p-2 rounded border border-slate-200 dark:border-slate-700">
-                                <div class="text-xs font-bold text-slate-700 dark:text-slate-200">${street.ja}</div>
-                                <div class="text-[10px] text-slate-500 mt-1">${street.desc}</div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    polyline.bindPopup(popupContent, { 
-                        closeButton: false, 
-                        autoPan: true,
-                        // ★ ここを追加：[横, 縦] の順。縦をマイナスにすると上に浮きます。
-                        offset: [0, -115] 
-                    });
-
+                    // クリックイベントのみ登録（ポップアップは削除）
                     polyline.on('click', () => { 
+                        playSound('select');
                         setSelectedId(street.id);
                         const el = document.getElementById(`row-${street.id}`);
                         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -160,69 +154,107 @@
                 });
             }, [streetData, isDarkMode]);
 
+            // 選択時のハイライト処理
             useEffect(() => {
                 streetData.forEach(street => {
                     const layer = layersRef.current[street.id];
                     if (layer) {
                         if (street.id === selectedId) {
-                            layer.setStyle({ color: "#3b82f6", weight: 6, opacity: 1 }).bringToFront().openPopup();
-                            mapRef.current.fitBounds(layer.getBounds(), { padding: [100, 100], maxZoom: 16 });
+                            // 選択時: 鮮やかな青、太く、最前面へ
+                            layer.setStyle({ color: "#3b82f6", weight: 8, opacity: 1 }).bringToFront();
+                            mapRef.current.fitBounds(layer.getBounds(), { padding: [100, 100], maxZoom: 16, duration: 1 });
                         } else {
-                            layer.setStyle({ color: isDarkMode ? '#475569' : '#94a3b8', weight: 3, opacity: 0.6 });
+                            // 非選択時
+                            const baseColor = isDarkMode ? '#475569' : '#94a3b8';
+                            layer.setStyle({ color: baseColor, weight: 3, opacity: 0.6 });
                         }
                     }
                 });
-            }, [selectedId, isDarkMode]);
+            }, [selectedId, isDarkMode, streetData]);
+
+            // スウェーデン語抽出ヘルパー
+            const getSv = (desc) => {
+                if (!desc) return "";
+                if (desc.includes('/ 🇸🇪 ')) return desc.split('/ 🇸🇪 ')[1];
+                if (desc.includes('/ SE ')) return desc.split('/ SE ')[1];
+                return ""; // 見つからない場合は空文字
+            };
 
             return (
                 <div className="flex flex-col h-full bg-gray-50 dark:bg-slate-900 transition-colors">
+                    {/* Header */}
                     <header className="flex-none bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-4 flex justify-between items-center h-16 shadow-sm z-20">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold">Fi</div>
-                            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100">
-                                Helsinki Street Decoder
-                            </h1>
+                            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/30">Fi</div>
+                            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight">Helsinki Street Decoder</h1>
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold tracking-widest hidden sm:block">
                                 {isDarkMode ? 'DARK' : 'LIGHT'}
                             </span>
-                            <div onClick={() => { playSound('toggle'); setIsDarkMode(!isDarkMode); }} className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors duration-300 ${isDarkMode ? 'bg-slate-600' : 'bg-gray-300'}`}>
-                                <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${isDarkMode ? 'translate-x-6' : ''}`}></div>
+                            <div onClick={() => { playSound('toggle'); setIsDarkMode(!isDarkMode); }} className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors ${isDarkMode ? 'bg-slate-600' : 'bg-gray-300'}`}>
+                                <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${isDarkMode ? 'translate-x-6' : 'translate-x-0'}`}></div>
                             </div>
                         </div>
                     </header>
 
                     <div className="flex-1 flex flex-col md:flex-row min-h-0">
-                        <div id="map" className="w-full h-1/2 md:h-full md:w-3/5"></div>
+                        {/* Map */}
+                        <div className="w-full h-1/2 md:h-full md:w-3/5 bg-gray-200 dark:bg-slate-900 relative z-0">
+                            <div id="map"></div>
+                        </div>
 
-                        <div className="w-full h-1/2 md:h-full md:w-2/5 flex flex-col bg-white dark:bg-slate-800 border-t md:border-t-0 md:border-l border-gray-200 dark:border-slate-700 shadow-2xl transition-colors">
+                        {/* List */}
+                        <div className="w-full h-1/2 md:h-full md:w-2/5 flex flex-col bg-white dark:bg-slate-800 border-t md:border-t-0 md:border-l border-gray-200 dark:border-slate-700 shadow-2xl transition-colors z-10">
                             <div className="p-3 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-850">
                                 <input 
                                     type="text" 
-                                    placeholder="通りの名前、意味、キーワードで検索..." 
+                                    placeholder="Search streets..." 
                                     className="w-full p-2 text-sm rounded border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
 
-                            <div className="flex-none grid grid-cols-3 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 font-bold text-[10px] text-slate-500 uppercase tracking-widest">
-                                <div onClick={() => setSortConfig({ key: 'fi', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">Finland <SortIcon active={sortConfig.key === 'fi'} direction={sortConfig.direction} /></div>
-                                <div onClick={() => setSortConfig({ key: 'en', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 border-l border-gray-200 dark:border-slate-700 transition-colors text-center">English</div>
-                                <div onClick={() => setSortConfig({ key: 'ja', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 border-l border-gray-200 dark:border-slate-700 transition-colors text-right px-6">Japanese</div>
+                            {/* 4 Column Header */}
+                            <div className="flex-none grid grid-cols-4 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 font-bold text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                                <div onClick={() => setSortConfig({ key: 'fi', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700">FI <SortIcon active={sortConfig.key === 'fi'} direction={sortConfig.direction} /></div>
+                                <div className="p-3 border-l border-gray-200 dark:border-slate-700">SV</div>
+                                <div onClick={() => setSortConfig({ key: 'en', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 border-l border-gray-200 dark:border-slate-700">EN <SortIcon active={sortConfig.key === 'en'} direction={sortConfig.direction} /></div>
+                                <div onClick={() => setSortConfig({ key: 'ja', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 border-l border-gray-200 dark:border-slate-700 text-right">JA <SortIcon active={sortConfig.key === 'ja'} direction={sortConfig.direction} /></div>
                             </div>
 
                             <div className="flex-1 overflow-y-auto custom-scrollbar">
                                 {displayData.map((s) => (
-                                    <div key={s.id} id={`row-${s.id}`} onClick={() => { playSound('select'); setSelectedId(s.id); }} className={`grid grid-cols-3 text-sm border-b border-gray-100 dark:border-slate-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all ${selectedId === s.id ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-l-blue-500' : 'border-l-4 border-l-transparent'}`}>
-                                        <div className="p-3 font-bold text-slate-800 dark:text-slate-200">{s.fi}</div>
-                                        <div className="p-3 text-slate-500 dark:text-slate-400 border-l border-dashed border-gray-200 dark:border-slate-700/50 text-xs flex items-center">{s.en}</div>
-                                        <div className="p-3 text-slate-500 dark:text-slate-400 border-l border-dashed border-gray-200 dark:border-slate-700/50 text-xs flex items-center justify-end">{s.ja}</div>
+                                    <div 
+                                        key={s.id} 
+                                        id={`row-${s.id}`} 
+                                        onClick={() => { playSound('select'); setSelectedId(s.id); }} 
+                                        className={`
+                                            grid grid-cols-4 text-xs border-b border-gray-100 dark:border-slate-700/50 cursor-pointer 
+                                            transition-all duration-200
+                                            ${selectedId === s.id 
+                                                ? 'bg-blue-600 text-white border-l-0 shadow-inner' 
+                                                : 'text-slate-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 border-l-4 border-l-transparent'
+                                            }
+                                        `}
+                                    >
+                                        <div className={`p-3 font-bold truncate ${selectedId === s.id ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}>
+                                            {s.fi}
+                                        </div>
+                                        <div className="p-3 border-l border-dashed border-slate-200 dark:border-slate-700/50 truncate italic opacity-80">
+                                            {getSv(s.desc)}
+                                        </div>
+                                        <div className="p-3 border-l border-dashed border-slate-200 dark:border-slate-700/50 truncate">
+                                            {s.en}
+                                        </div>
+                                        <div className="p-3 border-l border-dashed border-slate-200 dark:border-slate-700/50 truncate text-right font-medium">
+                                            {s.ja}
+                                        </div>
                                     </div>
                                 ))}
                                 {displayData.length === 0 && (
-                                    <div className="p-10 text-center text-slate-400 italic text-sm">一致する通りが見つかりませんでした。</div>
+                                    <div className="p-10 text-center text-slate-400 italic text-sm">No streets found.</div>
                                 )}
                             </div>
                         </div>
