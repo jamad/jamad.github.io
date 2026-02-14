@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YoJiJuku GO! / 四字熟GO!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gate-color: #1a1a1a;
+            --gate-border: #d4af37;
+            --bg-color: #050505;
+            --neon: #00ffcc;
+            --red-seal: #c41e3a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+
+        body {
+            background-color: var(--bg-color);
+            color: #fff;
+            font-family: 'Noto Serif JP', serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            perspective: 1200px;
+        }
+
+        /* --- UI & Footer --- */
+        #shared-footer, shared-footer { position: fixed !important; bottom: 0; width: 100%; z-index: 3000; background: rgba(0,0,0,0.8); pointer-events: auto; }
+        #ui-layer { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; z-index: 1000; pointer-events: none; }
+        .hud-text { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; text-shadow: 0 0 10px var(--neon); color: var(--neon); }
+
+        /* --- 3D Scene --- */
+        #world {
+            position: absolute;
+            width: 100%; height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 1.0s cubic-bezier(0.25, 1, 0.5, 1);
+            pointer-events: none; /* ボタン以外は全て素通りさせる */
+        }
+
+        .gate-wrapper {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 800px; height: 600px;
+            margin: -300px 0 0 -400px;
+            transform-style: preserve-3d;
+            display: flex; justify-content: center;
+        }
+
+        /* 門が開く演出 */
+        .gate-door {
+            position: absolute; width: 50%; height: 100%;
+            background: var(--gate-color);
+            border: 4px solid var(--gate-border);
+            box-shadow: inset 0 0 50px #000;
+            display: grid; grid-template: repeat(6, 1fr) / 1fr 1fr;
+            padding: 15px; gap: 10px;
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .gate-left { left: 0; transform-origin: left center; border-radius: 8px 0 0 8px; }
+        .gate-right { right: 0; transform-origin: right center; border-radius: 0 8px 8px 0; }
+        .gate-wrapper.open .gate-left { transform: rotateY(-110deg); opacity: 0.3; }
+        .gate-wrapper.open .gate-right { transform: rotateY(110deg); opacity: 0.3; }
+
+        /* 問題プレート */
+        .question-plate {
+            position: absolute; top: -120px; width: 100%;
+            text-align: center; background: rgba(0,0,0,0.8);
+            border: 2px solid var(--gate-border); padding: 15px;
+            font-size: 1.8rem; border-radius: 4px; z-index: 10;
+        }
+        .gate-wrapper.open .question-plate { display: none; }
+
+        /* ★ボタンだけが当たり判定を持つ */
+        .door-btn {
+            background: #000; border: 1px solid #555; color: #e0e0e0;
+            font-size: 1.2rem; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 0 #222;
+            pointer-events: auto !important; /* コリジョン有効 */
+            transform: translateZ(5px); transition: all 0.2s;
+        }
+        .door-btn:hover { color: var(--gate-border); border-color: var(--gate-border); transform: translateZ(10px); }
+        .door-btn.wrong-shake { animation: shake 0.4s; background: #500; }
+
+        @keyframes shake { 
+            0%, 100% { transform: translateZ(5px) translateX(0); }
+            25% { transform: translateZ(5px) translateX(-5px); }
+            75% { transform: translateZ(5px) translateX(5px); }
+        }
+
+        /* --- Overlays --- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 2000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        }
+        .hidden { display: none !important; }
+        h1 { font-size: 4rem; margin-bottom: 2rem; color: var(--gate-border); text-shadow: 0 0 20px rgba(212,175,55,0.5); }
+        .btn-primary { padding: 15px 40px; font-size: 1.5rem; background: var(--red-seal); color: #fff; border: 2px solid var(--gate-border); cursor: pointer; margin-top: 20px; }
+
+        /* デバッグ表示 */
+        #internal-debugger { position: fixed; top: 120px; right: 10px; color: #0f0; background: rgba(0,0,0,0.7); padding: 10px; font-family: monospace; z-index: 10000; pointer-events: none; display: none; }
+        body.debug-mode .gate-wrapper { outline: 2px solid red; background: rgba(255,0,0,0.05); }
+    </style>
+</head>
+<body>
+
+    <div id="internal-debugger">Hit: <span id="hit-target">---</span></div>
+    <div id="world"></div>
+
+    <div id="ui-layer">
+        <div class="hud-text">GATE: <span id="current-q">1</span>/20</div>
+        <div class="hud-text" id="timer-display">00:00.000</div>
+    </div>
+
+    <div id="start-screen" class="overlay">
+        <h1>四字熟語 門番</h1>
+        <p>正しい配列を選択し、20の門を突破せよ</p>
+        <button class="btn-primary" onclick="game.start()">挑戦開始</button>
+    </div>
+
+    <div id="penalty-screen" class="overlay hidden">
+        <h2 style="color:var(--red-seal); font-size:3rem;">不正解！</h2>
+        <div style="width:300px; height:250px; background:#fff; margin:20px; display:flex; justify-content:center; align-items:center; color:#333;">[ Ad Area ]</div>
+        <button class="btn-primary" onclick="game.closePenalty()">閉じて再開</button>
+    </div>
+
+    <div id="result-screen" class="overlay hidden">
+        <h1>完全突破</h1>
+        <div style="font-size: 2rem;">TIME: <span id="final-time" style="color:var(--neon);"></span></div>
+        <button class="btn-primary" onclick="location.reload()">再挑戦</button>
+    </div>
+
+
+    <script>
+        class Game {
+            constructor() {
+                this.idioms = [];
+                this.questions = [];
+                this.currentIndex = 0;
+                this.maxQuestions = 20;
+                this.startTime = 0;
+                this.timerInterval = null;
+                this.gateDistance = 1000;
+                this.isAnimating = false;
+                this.isPenaltyActive = false;
+            }
+
+            async loadData() {
+                const response = await fetch('idioms.json');
+                const data = await response.json();
+                this.idioms = data.filter(item => item.word.length === 4);
+            }
+
+            // 順列生成（4文字固定）
+            getPerms(str) {
+                if (str.length <= 1) return [str];
+                let perms = [];
+                for (let i = 0; i < str.length; i++) {
+                    let char = str[i];
+                    let remaining = str.slice(0, i) + str.slice(i + 1);
+                    for (let p of this.getPerms(remaining)) perms.push(char + p);
+                }
+                return perms;
+            }
+
+            shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+            initQuestions() {
+                const pool = this.shuffle([...this.idioms]);
+                this.questions = pool.slice(0, this.maxQuestions).map(target => ({
+                    target,
+                    buttons: this.shuffle(this.getPerms(target.word))
+                }));
+            }
+
+            start() {
+                this.initQuestions();
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('world').innerHTML = '';
+                
+                this.currentIndex = 0;
+                this.renderGate(0); // 最初の門を生成
+                this.updateActive();
+                
+                // カメラの初期位置（門の100px手前）
+                document.getElementById('world').style.transform = `translateZ(100px)`;
+                
+                this.startTime = performance.now();
+                this.timerInterval = requestAnimationFrame(this.updateTimer.bind(this));
+            }
+
+            renderGate(idx) {
+                if (idx >= this.maxQuestions || document.getElementById(`gate-${idx}`)) return;
+                const q = this.questions[idx];
+                const gate = document.createElement('div');
+                gate.className = 'gate-wrapper';
+                gate.id = `gate-${idx}`;
+                gate.style.transform = `translateZ(-${idx * this.gateDistance}px)`;
+
+                const btnHtml = (start, end) => q.buttons.slice(start, end).map(word => 
+                    `<button class="door-btn" onmousedown="game.check('${word}',this)">${word}</button>`).join('');
+
+                gate.innerHTML = `
+                    <div class="question-plate">${q.target.meaning}<br><small>(${q.target.reading})</small></div>
+                    <div class="gate-door gate-left">${btnHtml(0, 12)}</div>
+                    <div class="gate-door gate-right">${btnHtml(12, 24)}</div>`;
+                document.getElementById('world').appendChild(gate);
+            }
+
+            updateActive() {
+                document.querySelectorAll('.gate-wrapper').forEach(el => el.classList.remove('active-gate'));
+                document.getElementById(`gate-${this.currentIndex}`)?.classList.add('active-gate');
+            }
+
+            check(selected, btn) {
+                if (this.isAnimating || this.isPenaltyActive) return;
+                if (selected === this.questions[this.currentIndex].target.word) {
+                    this.next();
+                } else {
+                    btn.classList.add('wrong-shake');
+                    setTimeout(() => {
+                        btn.classList.remove('wrong-shake');
+                        this.isPenaltyActive = true;
+                        document.getElementById('penalty-screen').classList.remove('hidden');
+                    }, 400);
+                }
+            }
+
+            closePenalty() {
+                this.isPenaltyActive = false;
+                document.getElementById('penalty-screen').classList.add('hidden');
+            }
+
+            next() {
+                this.isAnimating = true;
+                const current = document.getElementById(`gate-${this.currentIndex}`);
+                current.classList.add('open');
+                
+                this.currentIndex++;
+                if (this.currentIndex < this.maxQuestions) {
+                    this.renderGate(this.currentIndex); // 正解した瞬間に次の門を生成
+                    
+                    // 世界を手前に引き寄せる
+                    const nextZ = (this.currentIndex * this.gateDistance) + 100;
+                    document.getElementById('world').style.transform = `translateZ(${nextZ}px)`;
+                    document.getElementById('current-q').textContent = this.currentIndex + 1;
+
+                    setTimeout(() => {
+                        this.isAnimating = false;
+                        this.updateActive();
+                        // 通過した門は1秒後に物理消去
+                        setTimeout(() => current.remove(), 500);
+                    }, 1000);
+                } else {
+                    this.finish();
+                }
+            }
+
+            updateTimer() {
+                if (this.currentIndex >= this.maxQuestions) return;
+                const diff = performance.now() - this.startTime;
+                const min = Math.floor(diff / 60000).toString().padStart(2,'0');
+                const sec = Math.floor((diff % 60000) / 1000).toString().padStart(2,'0');
+                const ms = Math.floor(diff % 1000).toString().padStart(3,'0');
+                document.getElementById('timer-display').textContent = `${min}:${sec}.${ms}`;
+                this.timerInterval = requestAnimationFrame(this.updateTimer.bind(this));
+            }
+
+            finish() {
+                cancelAnimationFrame(this.timerInterval);
+                document.getElementById('final-time').textContent = document.getElementById('timer-display').textContent;
+                document.getElementById('result-screen').classList.remove('hidden');
+            }
+
+            initDebugger() {
+                if (typeof DebugOverlay !== 'undefined') {
+                    new DebugOverlay({ target: this, props: ['currentIndex', 'isAnimating', 'worldZ'], title: 'Game Debug' });
+                }
+                const debugDiv = document.getElementById('internal-debugger');
+                const hitSpan = document.getElementById('hit-target');
+                document.addEventListener('keydown', e => {
+                    if (e.altKey && e.key.toLowerCase() === 'd') {
+                        e.preventDefault();
+                        const show = debugDiv.style.display === 'none';
+                        debugDiv.style.display = show ? 'block' : 'none';
+                        document.body.classList.toggle('debug-mode', show);
+                    }
+                });
+                document.addEventListener('mousemove', e => {
+                    const el = document.elementFromPoint(e.clientX, e.clientY);
+                    if (el) hitSpan.textContent = `${el.tagName}.${el.className}`;
+                });
+            }
+        }
+
+        const game = new Game();
+        window.onload = async () => {
+            await game.loadData();
+            game.initDebugger();
+        };
+    </script>
+
+
+    <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
+    <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
+    <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
+    <shared-footer version="v20260214.12" project="yojijuku_go"></shared-footer>
+</body>
+</html>
