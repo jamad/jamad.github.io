@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>順列生成器 | Permutation Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1a1a1a;
+            --paper: #f8f6f0;
+            --red-seal: #c41e3a;
+            --accent: #2d4a5a;
+            --gold: #d4af37;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif JP', serif;
+            background: linear-gradient(135deg, var(--paper) 0%, #ebe8dc 100%);
+            color: var(--ink);
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Decorative background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.01) 2px, rgba(0,0,0,0.01) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.01) 2px, rgba(0,0,0,0.01) 4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            color: var(--ink);
+            text-shadow: 3px 3px 0px rgba(212, 175, 55, 0.3);
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--red-seal), transparent);
+        }
+
+        .subtitle {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-top: 1.5rem;
+        }
+
+        .input-section {
+            background: white;
+            border: 3px solid var(--ink);
+            box-shadow: 8px 8px 0px var(--accent);
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            position: relative;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .input-section::before {
+            content: '◉';
+            position: absolute;
+            top: -15px;
+            left: 30px;
+            font-size: 1.5rem;
+            color: var(--red-seal);
+            background: var(--paper);
+            padding: 0 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            letter-spacing: 0.05em;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 250px;
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.5rem;
+            padding: 1rem 1.5rem;
+            border: 3px solid var(--ink);
+            background: var(--paper);
+            letter-spacing: 0.3em;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            background: white;
+            box-shadow: inset 0 0 0 3px var(--gold);
+            transform: translateY(-2px);
+        }
+
+        button {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 1rem 2.5rem;
+            background: var(--red-seal);
+            color: white;
+            border: 3px solid var(--ink);
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            position: relative;
+            transition: all 0.2s ease;
+            box-shadow: 4px 4px 0px var(--ink);
+        }
+
+        button:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--ink);
+        }
+
+        button:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px var(--ink);
+        }
+
+        .info {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background: rgba(45, 74, 90, 0.05);
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+        }
+
+        .results-section {
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .results-header h2 {
+            font-size: 1.8rem;
+            letter-spacing: 0.1em;
+        }
+
+        .count {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1rem;
+            color: var(--red-seal);
+            font-weight: 600;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .permutation-card {
+            background: white;
+            border: 2px solid var(--ink);
+            padding: 1.5rem 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 0.2em;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            position: relative;
+            animation: cardAppear 0.5s ease-out both;
+        }
+
+        .permutation-card:hover {
+            transform: translateY(-5px) rotate(1deg);
+            box-shadow: 6px 6px 0px var(--accent);
+            background: var(--paper);
+        }
+
+        .permutation-card::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            background: var(--red-seal);
+            border-radius: 50%;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotate(-5deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--accent);
+            font-size: 1.1rem;
+            opacity: 0.6;
+        }
+
+        .error {
+            background: #ffe4e4;
+            border: 2px solid #ff6b6b;
+            color: #d63031;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 4px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .results-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0.5rem;
+            }
+            
+            .permutation-card {
+                padding: 1rem 0.5rem;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>順列</h1>
+            <div class="subtitle">Permutation Generator</div>
+        </header>
+
+        <div class="input-section">
+            <label for="input">4文字を入力してください</label>
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="input" 
+                    maxlength="4" 
+                    placeholder="一二三四"
+                    autocomplete="off"
+                >
+                <button onclick="generatePermutations()">生成</button>
+            </div>
+            <div class="info">
+                ※ 4文字の文字列を入力すると、全ての順列（4! = 24通り）が生成されます
+            </div>
+            <div id="error"></div>
+        </div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="results-header">
+                <h2>結果</h2>
+                <div class="count" id="count"></div>
+            </div>
+            <div class="results-grid" id="results"></div>
+        </div>
+
+        <div class="empty-state" id="emptyState">
+            文字列を入力して「生成」ボタンを押してください
+        </div>
+    </div>
+
+    <script>
+        // Generate all permutations of a string
+        function getPermutations(str) {
+            if (str.length === 0) return [];
+            if (str.length === 1) return [str];
+            
+            const permutations = [];
+            const chars = str.split('');
+            
+            for (let i = 0; i < chars.length; i++) {
+                const currentChar = chars[i];
+                const remainingChars = chars.slice(0, i).concat(chars.slice(i + 1));
+                const remainingPerms = getPermutations(remainingChars.join(''));
+                
+                for (let perm of remainingPerms) {
+                    permutations.push(currentChar + perm);
+                }
+            }
+            
+            return permutations;
+        }
+
+        function generatePermutations() {
+            const input = document.getElementById('input').value;
+            const errorDiv = document.getElementById('error');
+            const resultsSection = document.getElementById('resultsSection');
+            const emptyState = document.getElementById('emptyState');
+            const resultsGrid = document.getElementById('results');
+            const countDiv = document.getElementById('count');
+            
+            // Clear previous error
+            errorDiv.innerHTML = '';
+            
+            // Validate input
+            if (input.length !== 4) {
+                errorDiv.innerHTML = '<div class="error">⚠ エラー: ちょうど4文字を入力してください</div>';
+                return;
+            }
+            
+            // Generate permutations
+            const permutations = getPermutations(input);
+            
+            // Display results
+            resultsGrid.innerHTML = '';
+            permutations.forEach((perm, index) => {
+                const card = document.createElement('div');
+                card.className = 'permutation-card';
+                card.textContent = perm;
+                card.style.animationDelay = `${index * 0.02}s`;
+                resultsGrid.appendChild(card);
+            });
+            
+            countDiv.textContent = `${permutations.length}通り`;
+            resultsSection.style.display = 'block';
+            emptyState.style.display = 'none';
+        }
+
+        // Allow Enter key to generate
+        document.getElementById('input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generatePermutations();
+            }
+        });
+
+        // Auto-generate for the placeholder example on load (optional)
+        // Uncomment the next line if you want to show example on page load
+        // window.onload = () => { document.getElementById('input').value = '一二三四'; generatePermutations(); };
+    </script>
+</body>
+</html>

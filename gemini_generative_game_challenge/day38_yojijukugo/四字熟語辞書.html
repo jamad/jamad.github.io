@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四字熟語辞書</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .search-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        #searchInput {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        #searchInput:focus {
+            border-color: #667eea;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .idiom-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .idiom-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .idiom-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+        
+        .idiom-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 5px;
+            letter-spacing: 0.05em;
+        }
+        
+        .idiom-reading {
+            font-size: 0.9em;
+            color: #718096;
+            margin-bottom: 10px;
+        }
+        
+        .idiom-description {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+        
+        .category-filter {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .category-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        
+        .category-btn:hover,
+        .category-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .idiom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📖 四字熟語辞書</h1>
+            <p class="subtitle">日本の伝統的な四字熟語を網羅した総合辞書</p>
+        </header>
+        
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="四字熟語を検索（例：一期一会）">
+            </div>
+            
+            <div class="category-filter" id="categoryFilter"></div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">総収録数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="displayCount">0</div>
+                    <div class="stat-label">表示中</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="idiom-grid" id="idiomGrid">
+                <div class="loading">読み込み中...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let idioms = [];
+        let filteredIdioms = [];
+        let currentCategory = "all";
+
+        // JSONファイルから四字熟語を読み込む
+        async function loadIdioms() {
+            try {
+                const response = await fetch('idioms.json');
+                if (!response.ok) {
+                    throw new Error('データの読み込みに失敗しました');
+                }
+                idioms = await response.json();
+                filteredIdioms = [...idioms];
+                
+                // 初期化
+                document.getElementById("totalCount").textContent = idioms.length;
+                generateCategoryFilters();
+                displayIdioms(idioms);
+            } catch (error) {
+                console.error('Error loading idioms:', error);
+                document.getElementById("idiomGrid").innerHTML = 
+                    '<div class="no-results">データの読み込みに失敗しました。idioms.jsonファイルが同じディレクトリにあることを確認してください。</div>';
+            }
+        }
+
+        // 読み仮名からカテゴリを判定
+        function getCategory(reading) {
+            const firstChar = reading.charAt(0);
+            
+            if ("あいうえお".includes(firstChar)) return "あ行";
+            if ("かきくけこがぎぐげご".includes(firstChar)) return "か行";
+            if ("さしすせそざじずぜぞ".includes(firstChar)) return "さ行";
+            if ("たちつてとだぢづでど".includes(firstChar)) return "た行";
+            if ("なにぬねの".includes(firstChar)) return "な行";
+            if ("はひふへほばびぶべぼぱぴぷぺぽ".includes(firstChar)) return "は行";
+            if ("まみむめも".includes(firstChar)) return "ま行";
+            if ("やゆよ".includes(firstChar)) return "や行";
+            if ("らりるれろ".includes(firstChar)) return "ら行";
+            if ("わをん".includes(firstChar)) return "わ行";
+            return "その他";
+        }
+
+        // カテゴリフィルタを生成
+        function generateCategoryFilters() {
+            const categories = ["all", "あ行", "か行", "さ行", "た行", "な行", "は行", "ま行", "や行", "ら行", "わ行"];
+            const filterContainer = document.getElementById("categoryFilter");
+            
+            categories.forEach(cat => {
+                const btn = document.createElement("button");
+                btn.className = "category-btn" + (cat === "all" ? " active" : "");
+                btn.textContent = cat === "all" ? "すべて" : cat;
+                btn.onclick = () => filterByCategory(cat, btn);
+                filterContainer.appendChild(btn);
+            });
+        }
+
+        // カテゴリでフィルタ
+        function filterByCategory(category, button) {
+            currentCategory = category;
+            
+            // ボタンのアクティブ状態を更新
+            document.querySelectorAll(".category-btn").forEach(btn => {
+                btn.classList.remove("active");
+            });
+            button.classList.add("active");
+            
+            // 検索も適用
+            const searchTerm = document.getElementById("searchInput").value;
+            filterIdioms(searchTerm);
+        }
+
+        // 四字熟語を表示
+        function displayIdioms(idiomsToShow) {
+            const grid = document.getElementById("idiomGrid");
+            grid.innerHTML = "";
+            
+            if (idiomsToShow.length === 0) {
+                grid.innerHTML = '<div class="no-results">該当する四字熟語が見つかりませんでした</div>';
+                document.getElementById("displayCount").textContent = "0";
+                return;
+            }
+            
+            idiomsToShow.forEach(idiom => {
+                const card = document.createElement("div");
+                card.className = "idiom-card";
+                card.innerHTML = `
+                    <div class="idiom-title">${idiom.word}</div>
+                    <div class="idiom-reading">${idiom.reading}</div>
+                    <div class="idiom-description">${idiom.meaning}</div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            document.getElementById("displayCount").textContent = idiomsToShow.length;
+        }
+
+        // 検索・フィルタ機能
+        function filterIdioms(searchTerm) {
+            let result = idioms;
+            
+            // カテゴリフィルタ
+            if (currentCategory !== "all") {
+                result = result.filter(idiom => getCategory(idiom.reading) === currentCategory);
+            }
+            
+            // 検索フィルタ
+            if (searchTerm) {
+                result = result.filter(idiom => 
+                    idiom.word.includes(searchTerm) || 
+                    idiom.reading.includes(searchTerm) ||
+                    idiom.meaning.includes(searchTerm)
+                );
+            }
+            
+            filteredIdioms = result;
+            displayIdioms(filteredIdioms);
+        }
+
+        // 検索イベント
+        document.getElementById("searchInput").addEventListener("input", (e) => {
+            filterIdioms(e.target.value);
+        });
+
+        // ページ読み込み時にデータを読み込む
+        loadIdioms();
+    </script>
+</body>
+</html>
