@@ -28,6 +28,17 @@
             perspective: 1200px;
         }
 
+        /* --- Footer用スタイル追加 --- */
+        /* 共用フッターがどのようなID/クラスで生成されても最前面に来るように指定 */
+        #shared-footer, footer, .footer-container {
+            position: fixed !important;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 3000 !important; /* オーバーレイより手前 */
+            background: rgba(0, 0, 0, 0.8); /* 読みやすさのため背景追加 */
+        }
+
         #ui-layer {
             position: fixed;
             top: 0; left: 0; width: 100%;
@@ -257,10 +268,17 @@
         <button class="btn-primary" onclick="location.reload()">再挑戦</button>
     </div>
 
-    <!-- 1. 外部デバッガースクリプトの読み込み -->
+    <!-- 1. デバッガースクリプト (キャッシュクリア Ctrl+F5 を忘れずに) -->
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
 
+    <!-- 2. 共用フッタースクリプト -->
+    <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
+    <shared-footer version="v20260214.1" project="yojijuku_go"></shared-footer>
+
     <script>
+        // Footerの設定（もし引数が必要ならここに記述。例：GitLabのリポジトリ情報など）
+        // window.FooterConfig = { ... } のような形式かもしれません
+        
         class Game {
             constructor() {
                 this.idioms = [];
