@@ -340,15 +340,13 @@
                 this.renderGate(0);
                 this.renderGate(1);
                 
-                // ★修正点: 最初のゲートをアクティブにする
                 this.updateActiveGate();
 
                 document.getElementById('current-q').textContent = "1";
                 this.startTime = performance.now();
                 this.timerInterval = requestAnimationFrame(this.updateTimer.bind(this));
 
-                // 2. デバッグモード起動
-                this.initDebugger();
+                // ★ここに書いてあった this.initDebugger(); を削除しました
             }
 
             initDebugger() {
@@ -543,7 +541,15 @@
         }
 
         const game = new Game();
-        window.onload = () => game.loadData();
+        
+        window.onload = async () => {
+            // データを読み込む
+            await game.loadData();
+            
+            // ★ここでデバッガーを起動すれば、スタート画面でも Alt+D が効きます
+            game.initDebugger();
+        };
+        
     </script>
 </body>
 </html>
