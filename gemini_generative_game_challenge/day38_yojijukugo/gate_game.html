@@ -52,6 +52,7 @@
             transition: transform 1.0s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
+        /* ゲートの基本スタイル */
         .gate-wrapper {
             position: absolute;
             top: 50%; left: 50%;
@@ -60,11 +61,11 @@
             transform-style: preserve-3d;
             display: flex;
             justify-content: center;
-            /* ★修正点: デフォルトではクリックイベントを無効化 */
+            /* ★重要修正: デフォルトではクリックイベントを無効化（透明な壁対策） */
             pointer-events: none; 
         }
 
-        /* ★修正点: アクティブなゲートだけクリック可能にするクラス */
+        /* ★重要修正: アクティブなゲートだけクリック可能にする */
         .gate-wrapper.active-gate {
             pointer-events: auto;
         }
@@ -234,9 +235,12 @@
         <div class="penalty-msg">不正解！</div>
         <p>セキュリティゲートがロックされました。<br>解除コードを確認してください。</p>
         
+        <!-- ▼ Google Adsense コードをここに配置 ▼ -->
         <div class="ad-container">
+            <!-- ここにAdsenseのスクリプトタグを貼ってください -->
             <span style="font-size: 0.8rem;">[ 広告エリア ]<br>ここにGoogle Adsenseが表示されます</span>
         </div>
+        <!-- ▲ Google Adsense コードここまで ▲ -->
 
         <button class="btn-primary" onclick="game.closePenalty()">閉じて再開 (Time Loss)</button>
     </div>
@@ -253,7 +257,7 @@
         <button class="btn-primary" onclick="location.reload()">再挑戦</button>
     </div>
 
-    <!-- 1. デバッガースクリプトの読み込み -->
+    <!-- 1. 外部デバッガースクリプトの読み込み -->
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
 
     <script>
@@ -348,16 +352,19 @@
             }
 
             initDebugger() {
-                if (window.DebugOverlay) {
+                // 外部スクリプトが読み込まれていれば実行
+                if (typeof DebugOverlay !== 'undefined') {
                     new DebugOverlay({
                         target: this,
                         props: ['currentIndex', 'isAnimating', 'isPenaltyActive', 'worldZ'],
                         title: 'Game State (Alt+D)'
                     });
+                } else {
+                    console.log("DebugOverlay not loaded.");
                 }
             }
 
-            // ★修正点: 現在のゲートだけをクリック可能にする関数
+            // ★重要: 現在のゲートだけをクリック可能にする関数
             updateActiveGate() {
                 // 全てのゲートからactiveクラスを外す
                 document.querySelectorAll('.gate-wrapper').forEach(el => {
@@ -412,6 +419,11 @@
                 `;
 
                 document.getElementById('world').appendChild(gateWrapper);
+                
+                // もしレンダリングしたのが現在のゲートならアクティブ化
+                if (index === this.currentIndex) {
+                    this.updateActiveGate();
+                }
             }
 
             checkAnswer(selected, correct, btnElement) {
@@ -447,7 +459,7 @@
                 
                 const currentGate = document.getElementById(`gate-${this.currentIndex}`);
                 currentGate.classList.add('open');
-                // 通過済みゲートはクリック不可にする（念のため）
+                // 通過済みゲートはクリック不可にする
                 currentGate.classList.remove('active-gate');
 
                 this.currentIndex++;
