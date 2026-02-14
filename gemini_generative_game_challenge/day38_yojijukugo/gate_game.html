@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四字熟語 門番 - Idiom Gatekeeper</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gate-color: #1a1a1a;
+            --gate-border: #d4af37; /* Gold */
+            --bg-color: #050505;
+            --text-color: #fff;
+            --btn-bg: #000;
+            --neon: #00ffcc;
+            --red-seal: #c41e3a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Noto Serif JP', serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            perspective: 1200px; /* 奥行き感 */
+        }
+
+        /* --- UI Layer (HUD) --- */
+        #ui-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .hud-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px var(--neon);
+            color: var(--neon);
+        }
+
+        /* --- 3D World --- */
+        #world {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 1.0s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* --- Gate Structure --- */
+        .gate-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            /* 扉全体のサイズ */
+            width: 800px; 
+            height: 600px; 
+            margin-top: -300px;
+            margin-left: -400px;
+            transform-style: preserve-3d;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Question Plate (Above the door) */
+        .question-plate {
+            position: absolute;
+            top: -120px;
+            width: 100%;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--gate-border);
+            padding: 15px;
+            font-size: 1.8rem;
+            color: white;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            border-radius: 4px;
+            backface-visibility: hidden;
+            z-index: 10;
+        }
+        
+        .question-sub {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        /* Doors */
+        .gate-door {
+            position: absolute;
+            top: 0;
+            width: 50%; /* 400px */
+            height: 100%;
+            background: var(--gate-color);
+            border: 4px solid var(--gate-border);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            /* パネル配置用グリッド */
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2列 */
+            grid-template-rows: repeat(6, 1fr); /* 6行 */
+            padding: 15px;
+            gap: 10px;
+        }
+
+        .gate-left {
+            left: 0;
+            transform-origin: left center;
+            border-right: 2px solid var(--gate-border);
+            border-radius: 8px 0 0 8px;
+        }
+
+        .gate-right {
+            right: 0;
+            transform-origin: right center;
+            border-left: 2px solid var(--gate-border);
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* --- Buttons on the Door --- */
+        .door-btn {
+            background: var(--btn-bg);
+            border: 1px solid #555;
+            color: #e0e0e0;
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 0 #222;
+            position: relative;
+            backface-visibility: hidden; /* 裏側からは見えない */
+        }
+
+        .door-btn:hover {
+            background: #222;
+            border-color: var(--gate-border);
+            color: var(--gate-border);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #111;
+        }
+
+        .door-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #111;
+        }
+        
+        .door-btn.wrong-shake {
+            animation: shake 0.4s;
+            background: #500;
+            color: white;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* --- Open State --- */
+        .gate-wrapper.open .gate-left {
+            transform: rotateY(-100deg);
+            opacity: 0.5;
+        }
+        .gate-wrapper.open .gate-right {
+            transform: rotateY(100deg);
+            opacity: 0.5;
+        }
+        .gate-wrapper.open .question-plate {
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* --- Screens (Start/Result/Penalty) --- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .hidden { display: none !important; }
+
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            color: var(--gate-border);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .btn-primary {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background: var(--red-seal);
+            color: white;
+            border: 2px solid var(--gate-border);
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 15px var(--red-seal);
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+        .btn-primary:hover { transform: scale(1.1); }
+
+        /* --- Penalty Popup (Adsense) --- */
+        #penalty-popup {
+            background: rgba(20, 0, 0, 0.95);
+            border: 3px solid var(--red-seal);
+        }
+        
+        .ad-container {
+            width: 300px;
+            height: 250px;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            margin: 20px;
+            border: 1px dashed #999;
+        }
+
+        .penalty-msg {
+            font-size: 2rem;
+            color: var(--red-seal);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        /* Ranking Table */
+        .ranking-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .ranking-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            font-family: 'Orbitron', monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D World -->
+    <div id="world">
+        <!-- Javascript will generate gates here -->
+    </div>
+
+    <!-- UI HUD -->
+    <div id="ui-layer">
+        <div class="hud-text">GATE: <span id="current-q">1</span>/20</div>
+        <div class="hud-text" id="timer-display">00:00.000</div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="overlay">
+        <h1>四字熟語 門番</h1>
+        <p>正しい配列のボタンを押し、20の門を突破せよ</p>
+        <button class="btn-primary" onclick="game.start()">挑戦開始</button>
+        <div id="loading-msg" style="margin-top: 20px; color: #aaa;">データ読込中...</div>
+    </div>
+
+    <!-- Penalty Screen (Adsense Placeholder) -->
+    <div id="penalty-screen" class="overlay hidden" id="penalty-popup">
+        <div class="penalty-msg">不正解！</div>
+        <p>セキュリティゲートがロックされました。<br>解除コードを確認してください。</p>
+        
+        <!-- ▼ Google Adsense コードをここに配置 ▼ -->
+        <div class="ad-container">
+            <!-- ここにAdsenseのスクリプトタグを貼ってください -->
+            <span style="font-size: 0.8rem;">[ 広告エリア ]<br>ここにGoogle Adsenseが表示されます</span>
+        </div>
+        <!-- ▲ Google Adsense コードここまで ▲ -->
+
+        <button class="btn-primary" onclick="game.closePenalty()">閉じて再開 (Time Loss)</button>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="result-screen" class="overlay hidden">
+        <h1>完全突破</h1>
+        <div style="font-size: 2rem; margin-bottom: 20px;">
+            TIME: <span id="final-time" style="color: var(--neon); font-family: 'Orbitron';"></span>
+        </div>
+        <div class="ranking-box">
+            <h3>ローカルランキング (Top 5)</h3>
+            <div id="ranking-list"></div>
+        </div>
+        <button class="btn-primary" onclick="location.reload()">再挑戦</button>
+    </div>
+
+    <script>
+        class Game {
+            constructor() {
+                this.idioms = [];
+                this.questions = [];
+                this.currentIndex = 0;
+                this.maxQuestions = 20;
+                this.startTime = 0;
+                this.timerInterval = null;
+                this.worldZ = 0; 
+                this.gateDistance = 1000; // 門の間隔
+                this.isAnimating = false;
+                this.isPenaltyActive = false;
+            }
+
+            async loadData() {
+                try {
+                    const response = await fetch('idioms.json');
+                    if (!response.ok) throw new Error("JSON not found");
+                    const data = await response.json();
+                    this.idioms = data.filter(item => item.word.length === 4);
+                    document.getElementById('loading-msg').style.display = 'none';
+                } catch (e) {
+                    document.getElementById('loading-msg').textContent = "エラー: idioms.jsonが見つかりません";
+                }
+            }
+
+            // --- 順列生成ロジック (perm.htmlより移植) ---
+            getPermutations(str) {
+                if (str.length === 0) return [];
+                if (str.length === 1) return [str];
+                
+                const permutations = [];
+                const chars = str.split('');
+                
+                for (let i = 0; i < chars.length; i++) {
+                    const currentChar = chars[i];
+                    const remainingChars = chars.slice(0, i).concat(chars.slice(i + 1));
+                    const remainingPerms = this.getPermutations(remainingChars.join(''));
+                    
+                    for (let perm of remainingPerms) {
+                        permutations.push(currentChar + perm);
+                    }
+                }
+                return permutations; // 重複がある場合は new Set() で除去可能だが、四字熟語は通常重複なし
+            }
+
+            // 配列シャッフル
+            shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            initQuestions() {
+                const shuffledIdioms = this.shuffle([...this.idioms]);
+                this.questions = [];
+
+                for(let i=0; i<this.maxQuestions; i++) {
+                    const target = shuffledIdioms[i];
+                    // 正解を含む全24通りの順列を生成
+                    let perms = this.getPermutations(target.word);
+                    // ボタン配置用にシャッフル
+                    perms = this.shuffle(perms);
+
+                    this.questions.push({
+                        target: target,
+                        buttons: perms // 24個の文字列配列
+                    });
+                }
+            }
+
+            start() {
+                if(this.idioms.length === 0) return alert("データがありません");
+                this.initQuestions();
+                
+                document.getElementById('start-screen').classList.add('hidden');
+                
+                this.currentIndex = 0;
+                this.worldZ = 0;
+                const world = document.getElementById('world');
+                world.style.transform = `translateZ(0px)`;
+                world.innerHTML = '';
+
+                // 最初の2つの門を生成
+                this.renderGate(0);
+                this.renderGate(1);
+
+                document.getElementById('current-q').textContent = "1";
+                this.startTime = performance.now();
+                this.timerInterval = requestAnimationFrame(this.updateTimer.bind(this));
+            }
+
+            renderGate(index) {
+                if (index >= this.maxQuestions) return;
+
+                const q = this.questions[index];
+                const zPos = -index * this.gateDistance;
+                
+                const gateWrapper = document.createElement('div');
+                gateWrapper.className = 'gate-wrapper';
+                gateWrapper.id = `gate-${index}`;
+                gateWrapper.style.transform = `translateZ(${zPos}px)`;
+
+                // 問題プレート
+                const questionText = q.target.meaning.length > 30 
+                    ? q.target.meaning.substring(0, 30) + "..." 
+                    : q.target.meaning;
+                
+                const plateHtml = `
+                    <div class="question-plate">
+                        ${questionText}
+                        <div class="question-sub">(${q.target.reading})</div>
+                    </div>
+                `;
+
+                // 左扉のボタン (0-11)
+                let leftButtonsHtml = '';
+                for(let i=0; i<12; i++) {
+                    const word = q.buttons[i];
+                    leftButtonsHtml += `<button class="door-btn" onmousedown="game.checkAnswer('${word}', '${q.target.word}', this)">${word}</button>`;
+                }
+
+                // 右扉のボタン (12-23)
+                let rightButtonsHtml = '';
+                for(let i=12; i<24; i++) {
+                    const word = q.buttons[i];
+                    rightButtonsHtml += `<button class="door-btn" onmousedown="game.checkAnswer('${word}', '${q.target.word}', this)">${word}</button>`;
+                }
+
+                gateWrapper.innerHTML = `
+                    ${plateHtml}
+                    <div class="gate-door gate-left">${leftButtonsHtml}</div>
+                    <div class="gate-door gate-right">${rightButtonsHtml}</div>
+                `;
+
+                document.getElementById('world').appendChild(gateWrapper);
+            }
+
+            checkAnswer(selected, correct, btnElement) {
+                if(this.isAnimating || this.isPenaltyActive) return;
+
+                if (selected === correct) {
+                    // 正解処理
+                    btnElement.style.background = "#00ff00";
+                    btnElement.style.color = "#000";
+                    this.nextLevel();
+                } else {
+                    // 不正解処理
+                    btnElement.classList.add('wrong-shake');
+                    setTimeout(() => {
+                        this.showPenalty();
+                        btnElement.classList.remove('wrong-shake');
+                    }, 400); // 揺れ終わったらペナルティ表示
+                }
+            }
+
+            // ペナルティ画面表示
+            showPenalty() {
+                this.isPenaltyActive = true;
+                document.getElementById('penalty-screen').classList.remove('hidden');
+                // タイマーは止めない（これがペナルティ）
+            }
+
+            // ペナルティ解除
+            closePenalty() {
+                document.getElementById('penalty-screen').classList.add('hidden');
+                // 少しだけ入力をブロックして連打を防ぐ
+                setTimeout(() => {
+                    this.isPenaltyActive = false;
+                }, 300);
+            }
+
+            nextLevel() {
+                this.isAnimating = true;
+                
+                const currentGate = document.getElementById(`gate-${this.currentIndex}`);
+                currentGate.classList.add('open');
+
+                // カメラ前進
+                this.currentIndex++;
+                this.worldZ += this.gateDistance;
+                document.getElementById('world').style.transform = `translateZ(${this.worldZ}px)`;
+
+                document.getElementById('current-q').textContent = this.currentIndex + 1;
+
+                if (this.currentIndex < this.maxQuestions) {
+                    // 次の次の門を生成（無限廊下感）
+                    this.renderGate(this.currentIndex + 1);
+                    
+                    // 通過した古い門を削除（メモリ節約）
+                    if(this.currentIndex > 2) {
+                        const oldGate = document.getElementById(`gate-${this.currentIndex - 3}`);
+                        if(oldGate) oldGate.remove();
+                    }
+
+                    setTimeout(() => {
+                        this.isAnimating = false;
+                    }, 1000); // アニメーション完了待ち
+                } else {
+                    this.finish();
+                }
+            }
+
+            updateTimer() {
+                if (this.currentIndex >= this.maxQuestions) return;
+                
+                const now = performance.now();
+                const diff = now - this.startTime;
+                
+                const min = Math.floor(diff / 60000);
+                const sec = Math.floor((diff % 60000) / 1000);
+                const ms = Math.floor(diff % 1000);
+
+                const str = 
+                    (min < 10 ? "0" + min : min) + ":" + 
+                    (sec < 10 ? "0" + sec : sec) + "." + 
+                    (ms < 100 ? "0" : (ms < 10 ? "0" : "")) + ms;
+
+                document.getElementById('timer-display').textContent = str;
+                this.timerInterval = requestAnimationFrame(this.updateTimer.bind(this));
+            }
+
+            finish() {
+                cancelAnimationFrame(this.timerInterval);
+                const finalTimeStr = document.getElementById('timer-display').textContent;
+                const finalTimeMs = performance.now() - this.startTime;
+                
+                setTimeout(() => {
+                    document.getElementById('result-screen').classList.remove('hidden');
+                    document.getElementById('final-time').textContent = finalTimeStr;
+                    this.saveScore(finalTimeMs, finalTimeStr);
+                }, 1000);
+            }
+
+            saveScore(ms, str) {
+                let ranking = JSON.parse(localStorage.getItem('gateGameRanking') || '[]');
+                ranking.push({ time: ms, str: str, date: new Date().toLocaleDateString() });
+                ranking.sort((a, b) => a.time - b.time);
+                ranking = ranking.slice(0, 5);
+                localStorage.setItem('gateGameRanking', JSON.stringify(ranking));
+                this.showRanking(ranking);
+            }
+
+            showRanking(ranking) {
+                const list = document.getElementById('ranking-list');
+                list.innerHTML = '';
+                ranking.forEach((r, i) => {
+                    const row = document.createElement('div');
+                    row.className = 'ranking-row';
+                    row.innerHTML = `
+                        <span>#${i+1}</span>
+                        <span>${r.str}</span>
+                        <span style="font-size:0.8em; color:#aaa;">${r.date}</span>
+                    `;
+                    list.appendChild(row);
+                });
+            }
+        }
+
+        const game = new Game();
+        window.onload = () => game.loadData();
+    </script>
+</body>
+</html>
