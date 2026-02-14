@@ -2,7 +2,7 @@
 <html lang="ja" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Helsinki Street Decoder</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -20,11 +20,13 @@
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
-        /* 地図の高さを確実に確保 */
         #map { height: 100%; width: 100%; z-index: 0; }
+        
+        /* タップ時の反応を良くするCSS */
+        .leaflet-interactive { cursor: pointer; -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans">
+<body class="bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-10">
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
@@ -64,14 +66,12 @@
             const tileLayerRef = useRef(null);
             const layersRef = useRef({});
 
-            // テーマ設定
             useEffect(() => {
                 const rootEl = document.documentElement;
                 if (isDarkMode) rootEl.classList.add('dark'); else rootEl.classList.remove('dark');
                 localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
             }, [isDarkMode]);
 
-            // データ読み込み
             useEffect(() => {
                 Promise.all([
                     fetch('./streets_metadata.json').then(res => res.json()),
@@ -84,24 +84,18 @@
                 .catch(e => console.error("Load error:", e));
             }, []);
 
-            // 地図初期化（ここを修正しました）
             useEffect(() => {
                 if (!mapRef.current) {
-                    mapRef.current = L.map('map', { center: [60.18, 24.93], zoom: 12, zoomControl: false, attributionControl: false });
+                    mapRef.current = L.map('map', { center: [60.18, 24.93], zoom: 13, zoomControl: false, attributionControl: false });
                     L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
-                    
-                    // 初期タイル読み込み (これが抜けていました)
                     const initialUrl = isDarkMode 
                         ? 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png'
                         : 'https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png';
-                    
                     tileLayerRef.current = L.tileLayer(initialUrl, { attribution: '&copy; CARTO' }).addTo(mapRef.current);
-                    
-                    setTimeout(() => mapRef.current.invalidateSize(), 200);
+                    setTimeout(() => mapRef.current.invalidateSize(), 300);
                 }
-            }, []); // 初回のみ実行
+            }, []);
 
-            // ダークモード切り替え時のタイル更新
             useEffect(() => {
                 if (tileLayerRef.current) {
                     const url = isDarkMode 
@@ -111,159 +105,144 @@
                 }
             }, [isDarkMode]);
 
-            // 検索・ソート処理
             const displayData = useMemo(() => {
                 let filtered = streetData;
                 if (searchTerm) {
                     const lower = searchTerm.toLowerCase();
                     filtered = streetData.filter(s => 
-                        s.fi.toLowerCase().includes(lower) ||
-                        s.en.toLowerCase().includes(lower) ||
-                        s.ja.includes(searchTerm) ||
-                        (s.desc && s.desc.toLowerCase().includes(lower))
+                        s.fi.toLowerCase().includes(lower) || s.en.toLowerCase().includes(lower) || s.ja.includes(searchTerm)
                     );
                 }
                 return filtered.sort((a, b) => {
-                    if (!a[sortConfig.key]) return 1;
-                    if (!b[sortConfig.key]) return -1;
                     if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
                     if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
                     return 0;
                 });
             }, [streetData, searchTerm, sortConfig]);
 
-            // ライン描画（ポップアップなし版）
+            // 地図描画（iPad対応クリック強化版）
             useEffect(() => {
                 if (!mapRef.current || streetData.length === 0) return;
-                Object.values(layersRef.current).forEach(l => l.remove());
+                Object.values(layersRef.current).forEach(group => group.remove());
                 layersRef.current = {};
 
                 streetData.forEach(street => {
                     const baseColor = isDarkMode ? '#475569' : '#94a3b8';
-                    // 太さを少し控えめに
-                    const polyline = L.polyline(street.path, { color: baseColor, weight: 3, opacity: 0.6 }).addTo(mapRef.current);
                     
                     // クリックイベントのみ登録（ポップアップは削除）
-                    polyline.on('click', () => { 
-                        playSound('select');
-                        setSelectedId(street.id);
-                        const el = document.getElementById(`row-${street.id}`);
-                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // 1. 見えるライン
+                    const polyline = L.polyline(street.path, { color: baseColor, weight: 3, opacity: 0.6 });
+                    
+                    // 2. クリック判定用の太い透明ライン（iPad対策）
+                    const clickArea = L.polyline(street.path, { color: 'transparent', weight: 25, opacity: 0, interactive: true });
+                    
+                    const group = L.featureGroup([polyline, clickArea]).addTo(mapRef.current);
+                    
+                    group.on('click', (e) => {
+                        L.DomEvent.stopPropagation(e); // 地図自体のクリックイベントを防ぐ
+    
+                        playSound('select'); // 音を鳴らしたい場合はこれを追加
+                        handleSelection(street.id);
                     });
-                    layersRef.current[street.id] = polyline;
+
+                    layersRef.current[street.id] = group;
                 });
             }, [streetData, isDarkMode]);
 
-            // 選択時のハイライト処理
+            const handleSelection = (id) => {
+                setSelectedId(id);
+                // リスト側の該当行までスクロール
+                setTimeout(() => {
+                    const el = document.getElementById(`row-${id}`);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            };
+
+            // 選択時のハイライト
             useEffect(() => {
                 streetData.forEach(street => {
-                    const layer = layersRef.current[street.id];
-                    if (layer) {
+                    const group = layersRef.current[street.id];
+                    if (group) {
+                        const polyline = group.getLayers()[0]; // 最初のが見えるライン
                         if (street.id === selectedId) {
-                            // 選択時: 鮮やかな青、太く、最前面へ
-                            layer.setStyle({ color: "#3b82f6", weight: 8, opacity: 1 }).bringToFront();
-                            mapRef.current.fitBounds(layer.getBounds(), { padding: [100, 100], maxZoom: 16, duration: 1 });
+                            polyline.setStyle({ color: "#3b82f6", weight: 8, opacity: 1 });
+                            group.bringToFront();
+                            mapRef.current.fitBounds(polyline.getBounds(), { padding: [100, 100], maxZoom: 16, animate: true });
                         } else {
-                            // 非選択時
-                            const baseColor = isDarkMode ? '#475569' : '#94a3b8';
-                            layer.setStyle({ color: baseColor, weight: 3, opacity: 0.6 });
+                            polyline.setStyle({ color: isDarkMode ? '#475569' : '#94a3b8', weight: 3, opacity: 0.6 });
                         }
                     }
                 });
             }, [selectedId, isDarkMode, streetData]);
 
-            // スウェーデン語抽出ヘルパー
             const getSv = (desc) => {
                 if (!desc) return "";
                 if (desc.includes('/ 🇸🇪 ')) return desc.split('/ 🇸🇪 ')[1];
-                if (desc.includes('/ SE ')) return desc.split('/ SE ')[1];
-                return ""; // 見つからない場合は空文字
+                return "";
             };
 
             return (
-                <div className="flex flex-col h-full bg-gray-50 dark:bg-slate-900 transition-colors">
+                <div className="flex flex-col h-full bg-gray-50 dark:bg-slate-900 transition-colors overflow-hidden">
                     {/* Header */}
                     <header className="flex-none bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-4 flex justify-between items-center h-16 shadow-sm z-20">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/30">Fi</div>
-                            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight">Helsinki Street Decoder</h1>
+                            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold">Fi</div>
+                            <h1 className="text-lg font-bold">Helsinki Street Decoder</h1>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold tracking-widest hidden sm:block">
-                                {isDarkMode ? 'DARK' : 'LIGHT'}
-                            </span>
-                            <div onClick={() => { playSound('toggle'); setIsDarkMode(!isDarkMode); }} className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors ${isDarkMode ? 'bg-slate-600' : 'bg-gray-300'}`}>
-                                <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${isDarkMode ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                            <span className="text-[10px] text-slate-500 font-bold hidden sm:block uppercase">{isDarkMode ? 'Dark' : 'Light'}</span>
+                            <div onClick={() => setIsDarkMode(!isDarkMode)} className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${isDarkMode ? 'bg-slate-600' : 'bg-gray-300'}`}>
+                                <div className={`bg-white w-4 h-4 rounded-full shadow transition-transform ${isDarkMode ? 'translate-x-6' : ''}`}></div>
                             </div>
                         </div>
                     </header>
 
-                    <div className="flex-1 flex flex-col md:flex-row min-h-0">
-                        {/* Map */}
-                        <div className="w-full h-1/2 md:h-full md:w-3/5 bg-gray-200 dark:bg-slate-900 relative z-0">
-                            <div id="map"></div>
-                        </div>
+                    {/* Main */}
+                    <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+                        <div id="map" className="w-full h-1/2 md:h-full md:w-3/5"></div>
 
-                        {/* List */}
-                        <div className="w-full h-1/2 md:h-full md:w-2/5 flex flex-col bg-white dark:bg-slate-800 border-t md:border-t-0 md:border-l border-gray-200 dark:border-slate-700 shadow-2xl transition-colors z-10">
-                            <div className="p-3 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-850">
-                                <input 
-                                    type="text" 
-                                    placeholder="Search streets..." 
-                                    className="w-full p-2 text-sm rounded border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
+                        <div className="w-full h-1/2 md:h-full md:w-2/5 flex flex-col bg-white dark:bg-slate-850 border-t md:border-t-0 md:border-l border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <div className="p-3 border-b border-gray-200 dark:border-slate-700">
+                                <input type="text" placeholder="Search streets..." className="w-full p-2 text-sm rounded border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                             </div>
 
-                            {/* 4 Column Header */}
-                            <div className="flex-none grid grid-cols-4 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 font-bold text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                                <div onClick={() => setSortConfig({ key: 'fi', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700">FI <SortIcon active={sortConfig.key === 'fi'} direction={sortConfig.direction} /></div>
-                                <div className="p-3 border-l border-gray-200 dark:border-slate-700">SV</div>
-                                <div onClick={() => setSortConfig({ key: 'en', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 border-l border-gray-200 dark:border-slate-700">EN <SortIcon active={sortConfig.key === 'en'} direction={sortConfig.direction} /></div>
-                                <div onClick={() => setSortConfig({ key: 'ja', direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' })} className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 border-l border-gray-200 dark:border-slate-700 text-right">JA <SortIcon active={sortConfig.key === 'ja'} direction={sortConfig.direction} /></div>
+                            <div className="flex-none grid grid-cols-4 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 font-bold text-[10px] text-slate-500 uppercase tracking-widest">
+                                <div onClick={() => setSortConfig({key:'fi', direction: sortConfig.direction==='asc'?'desc':'asc'})} className="p-3 cursor-pointer">FI</div>
+                                <div className="p-3">SV</div>
+                                <div onClick={() => setSortConfig({key:'en', direction: sortConfig.direction==='asc'?'desc':'asc'})} className="p-3 cursor-pointer">EN</div>
+                                <div onClick={() => setSortConfig({key:'ja', direction: sortConfig.direction==='asc'?'desc':'asc'})} className="p-3 cursor-pointer text-right">JA</div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                            <div className="flex-1 overflow-y-auto custom-scrollbar bg-white dark:bg-slate-900">
                                 {displayData.map((s) => (
-                                    <div 
-                                        key={s.id} 
-                                        id={`row-${s.id}`} 
-                                        onClick={() => { playSound('select'); setSelectedId(s.id); }} 
-                                        className={`
-                                            grid grid-cols-4 text-xs border-b border-gray-100 dark:border-slate-700/50 cursor-pointer 
-                                            transition-all duration-200
-                                            ${selectedId === s.id 
-                                                ? 'bg-blue-600 text-white border-l-0 shadow-inner' 
-                                                : 'text-slate-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 border-l-4 border-l-transparent'
-                                            }
-                                        `}
-                                    >
-                                        <div className={`p-3 font-bold truncate ${selectedId === s.id ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}>
-                                            {s.fi}
-                                        </div>
-                                        <div className="p-3 border-l border-dashed border-slate-200 dark:border-slate-700/50 truncate italic opacity-80">
-                                            {getSv(s.desc)}
-                                        </div>
-                                        <div className="p-3 border-l border-dashed border-slate-200 dark:border-slate-700/50 truncate">
-                                            {s.en}
-                                        </div>
-                                        <div className="p-3 border-l border-dashed border-slate-200 dark:border-slate-700/50 truncate text-right font-medium">
-                                            {s.ja}
-                                        </div>
+                                    <div key={s.id} id={`row-${s.id}`} onClick={() => handleSelection(s.id)} 
+                                        className={`grid grid-cols-4 text-xs border-b border-gray-100 dark:border-slate-800/50 cursor-pointer transition-all ${selectedId === s.id ? 'bg-blue-600 text-white font-bold' : 'text-slate-700 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}>
+                                        <div className="p-3 truncate">{s.fi}</div>
+                                        <div className="p-3 border-l border-dashed border-slate-700/30 truncate italic opacity-70">{getSv(s.desc)}</div>
+                                        <div className="p-3 border-l border-dashed border-slate-700/30 truncate">{s.en}</div>
+                                        <div className="p-3 border-l border-dashed border-slate-700/30 truncate text-right">{s.ja}</div>
                                     </div>
                                 ))}
-                                {displayData.length === 0 && (
-                                    <div className="p-10 text-center text-slate-400 italic text-sm">No streets found.</div>
-                                )}
                             </div>
                         </div>
                     </div>
+
+                    
                 </div>
             );
         };
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+
+
+<!-- </body> の直前に追加 -->
+<script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
+
+<script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
+
+<shared-footer version="v20260212.5" project="street_decoder"></shared-footer>
+
 </body>
 </html>
