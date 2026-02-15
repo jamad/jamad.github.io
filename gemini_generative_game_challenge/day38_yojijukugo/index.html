@@ -29,7 +29,14 @@
         /* --- UI & Footer --- */
         #shared-footer, shared-footer { position: fixed !important; bottom: 0; width: 100%; z-index: 3000; background: rgba(0,0,0,0.8); pointer-events: auto; }
         #ui-layer { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; z-index: 1000; pointer-events: none; }
-        .hud-text { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; text-shadow: 0 0 10px var(--neon); color: var(--neon); }
+
+        .hud-text { 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 1.2rem; /* 少し小さく */
+            text-shadow: 0 0 10px var(--neon); 
+            color: var(--neon);
+            letter-spacing: 0.1em;
+        }
 
         /* --- 3D Scene --- */
         #world {
@@ -59,33 +66,12 @@
             padding: 15px; gap: 10px;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s;
             z-index: 5;
-            
-            overflow: hidden; /* アイコンが扉からはみ出ないように */
-
         }
-
         .gate-left { left: 0; border-radius: 8px 0 0 8px; }
         .gate-right { right: 0; border-radius: 0 8px 8px 0; }
 
         .gate-wrapper.open .gate-left { transform: translateX(-1200px); opacity: 0; }
         .gate-wrapper.open .gate-right { transform: translateX(1200px); opacity: 0; }
-
-
-        .zodiac-icon {
-            position: absolute;
-            top: 50%;
-            width: 400px; /* 扉の幅 */
-            height: 400px;
-            transform: translateY(-50%);
-            display: flex; justify-content: center; align-items: center;
-            font-size: 350px; font-weight: 900; font-family: serif;
-            color: var(--gate-border);
-            opacity: 0.15; /* 15%くらいの薄さで背景にする */
-            pointer-events: none;
-            z-index: 0;
-        }
-        .gate-left .zodiac-icon { right: -200px; } /* 左扉の右側に半分出す */
-        .gate-right .zodiac-icon { left: -200px; } /* 右扉の左側に半分出す */
 
         /* --- 問題プレート --- */
         .question-plate {
@@ -142,42 +128,116 @@
 
         /* デバッグ用 */
         #internal-debugger { position: fixed; top: 120px; right: 10px; color: #0f0; background: rgba(0,0,0,0.7); padding: 10px; font-family: monospace; z-index: 10000; pointer-events: none; display: none; }
+
+
+        /* 扉の横の飾り（イラスト代わり） */
+        .zodiac-deco {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 80px;
+            font-weight: 900;
+            color: var(--gate-border);
+            text-shadow: 0 0 30px var(--gate-border);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 1;
+            font-family: 'Noto Serif JP', serif;
+
+            
+            /* ★最重要：絶対にクリックを邪魔させない */
+            pointer-events: none !important; 
+        }
+        .deco-left { left: -120px; }
+        .deco-right { right: -120px; }
+
+        /* iPad / タブレット用の調整 */
+
+        /* ★iPad用の修正：中身をまとめて縮小する箱の設定 */
+        .gate-scaler {
+            position: relative;
+            width: 800px; height: 600px;
+            transform-style: preserve-3d;
+            display: flex; justify-content: center;
+        }
+
+        @media (max-width: 1024px) {
+            /* ★修正：wrapperではなくscalerを縮小する */
+            .gate-scaler {
+                transform: scale(0.6); /* iPad用にしっかり縮小 */
+            }
+            .question-plate {
+                top: -140px; /* 縮小に合わせてプレート位置を調整 */
+            }
+            .zodiac-deco {
+                font-size: 60px; /* 飾りも少し小さく */
+            }
+        }
+
+
+        /* --- iPadシミュレーターの枠設定 --- */
+        #ipad-frame {
+            position: fixed;
+            top: 50%; left: 50%;
+            width: 834px; height: 1194px; /* iPad Pro 11" 縦サイズ */
+            transform: translate(-50%, -50%) scale(0.6); /* PCで見れるサイズに縮小 */
+            border: 20px solid #333;
+            border-radius: 30px;
+            pointer-events: none;
+            z-index: 5000;
+            display: none;
+            box-shadow: 0 0 100px rgba(0,0,0,1), 0 0 0 1000px rgba(0,0,0,0.8);
+        }
+
+        /* デバッグモード中のみ枠を表示 */
+        body.debug-mode #ipad-frame { display: block; }
+
+        /* ★iPad Pro (縦) 用のレイアウト微調整 */
+        @media (max-width: 1024px), body.debug-mode {
+            .gate-wrapper {
+                top: 50%; /* 縦長画面では60%だと下すぎるので50%に戻す */
+            }
+            .gate-scaler {
+                transform: scale(0.65); /* 扉を画面内に収める */
+            }
+            .question-plate {
+                top: -180px; /* プレートの位置を調整 */
+            }
+        }
+
     </style>
 </head>
 <body>
+    <div id="ipad-frame"></div> <!-- シミュレーターの箱を追加 -->
 
     <div id="internal-debugger">Hit: <span id="hit-target">---</span></div>
     <div id="world"></div>
 
     <div id="ui-layer">
-        <div class="hud-text">GATE: <span id="current-q">1</span>/20</div>
+        <div class="hud-text">GATE: <span id="current-q">1</span>/12</div>
         <div class="hud-text" id="timer-display">00:00.000</div>
     </div>
 
-    <!-- スタート画面 -->
     <div id="start-screen" class="overlay">
         <h1>YoJiJuku GO!</h1>
         <p>一気呵成：十二支の試練を突破せよ</p>
         <button class="btn-primary" onclick="game.start()">勇往邁進</button>
     </div>
 
-
     <div id="penalty-screen" class="overlay hidden">
-        <h2 style="color:var(--red-seal); font-size:3rem; margin-bottom: 10px;">多岐亡羊！</h2>
+        <h2 style="color:var(--red-seal); font-size:3rem; margin-bottom: 10px;">多岐亡羊</h2>
         <p>セキュリティロック発動中</p>
         <div style="width:300px; height:250px; background:#fff; margin:20px; display:flex; justify-content:center; align-items:center; color:#333; font-weight: bold;">[ Ad Area ]</div>
-        <button class="btn-primary" onclick="game.closePenalty()">改過自新！</button>
+        <button class="btn-primary" onclick="game.closePenalty()">改過自新</button>
     </div>
 
-    
-    <!-- リザルト画面 -->
     <div id="result-screen" class="overlay hidden">
-        <h1>百戦錬磨</h1>
+        <h1>完全突破</h1>
         <p style="margin-bottom:10px;">十二支を統べし者</p>
-        <div style="font-size: 1.5rem; font-family: 'Orbitron'; margin-bottom:5px;">光陰如箭</div>
-        <div style="font-size: 3rem; font-family: 'Orbitron'; margin-bottom:20px;"><span id="final-time" style="color:var(--neon);"></span></div>
+        <div style="font-size: 2rem; font-family: 'Orbitron';">TIME: <span id="final-time" style="color:var(--neon);"></span></div>
         <button class="btn-primary" onclick="location.reload()">心機一転</button>
     </div>
+
 
     <script>
         class Game {
@@ -185,28 +245,19 @@
                 this.idioms = [];
                 this.questions = [];
                 this.currentIndex = 0;
+                this.maxQuestions = 12;
                 this.startTime = 0;
                 this.timerInterval = null;
                 this.gateDistance = 1000;
                 this.isAnimating = false;
                 this.isPenaltyActive = false;
 
-                this.maxQuestions = 12; // 12問に変更
-            
-                // ★追加：十二支の定義
+                // 追加：十二支の定義
                 this.zodiacs = [
-                    {kanji: "子", reading: "ね", en: "Rat"},
-                    {kanji: "丑", reading: "うし", en: "Ox"},
-                    {kanji: "寅", reading: "とら", en: "Tiger"},
-                    {kanji: "卯", reading: "う", en: "Rabbit"},
-                    {kanji: "辰", reading: "たつ", en: "Dragon"},
-                    {kanji: "巳", reading: "み", en: "Snake"},
-                    {kanji: "午", reading: "うま", en: "Horse"},
-                    {kanji: "未", reading: "ひつじ", en: "Goat"},
-                    {kanji: "申", reading: "さる", en: "Monkey"},
-                    {kanji: "酉", reading: "とり", en: "Rooster"},
-                    {kanji: "戌", reading: "いぬ", en: "Dog"},
-                    {kanji: "亥", reading: "い", en: "Boar"}
+                    {k: "子", e: "Rat"}, {k: "丑", e: "Ox"}, {k: "寅", e: "Tiger"},
+                    {k: "卯", e: "Rabbit"}, {k: "辰", e: "Dragon"}, {k: "巳", e: "Snake"},
+                    {k: "午", e: "Horse"}, {k: "未", e: "Goat"}, {k: "申", e: "Monkey"},
+                    {k: "酉", e: "Rooster"}, {k: "戌", e: "Dog"}, {k: "亥", e: "Boar"}
                 ];
             }
 
@@ -252,8 +303,7 @@
             renderGate(idx) {
                 if (idx >= this.maxQuestions || document.getElementById(`gate-${idx}`)) return;
                 const q = this.questions[idx];
-                const z = this.zodiacs[idx]; // 追加
-
+                const z = this.zodiacs[idx]; 
                 const gate = document.createElement('div');
                 gate.className = 'gate-wrapper';
                 gate.id = `gate-${idx}`;
@@ -265,22 +315,35 @@
                 const enMeaning = q.target.meaning_en || "[ English Meaning ]";
                 const enReading = q.target.reading_en || "[ English Pronunciation ]";
 
-
                 gate.innerHTML = `
-                    <div class="question-plate">
-                        <div style="position:absolute; top:10px; left:15px; font-size:2rem; opacity:0.2; color:var(--gate-border);">${z.kanji}</div> <!-- 刻印追加 -->
-                        <div class="jp-meaning">${q.target.meaning}</div>
-                        <div class="jp-reading">(${q.target.reading})</div>
-                        <div class="en-box">
-                            <div>${enMeaning}</div>
-                            <div style="font-size:0.8rem; margin-top:3px;">${enReading}</div>
-                        </div>
-                    </div>
 
-                    <!-- 扉の中にzodiac-iconを追加 -->
-                    
-                    <div class="gate-door gate-left"><div class="zodiac-icon">${z.kanji}</div>${btnHtml(0, 12)}</div>
-                    <div class="gate-door gate-right"><div class="zodiac-icon">${z.kanji}</div>${btnHtml(12, 24)}</div>`;
+                    <div class="gate-scaler"> <!-- ★この箱で包む -->
+                        <div class="question-plate" style="pointer-events: none;">
+
+                            <!-- ここを z.kanji から z.k に修正（データと合わせるため） -->
+                            <div style="position:absolute; top:10px; left:15px; font-size:2.5rem; opacity:0.1; color:var(--gate-border); font-weight:900;">${z.k}</div>
+                        
+                            <div class="jp-meaning">${q.target.meaning}</div>
+                            <div class="jp-reading">(${q.target.reading})</div>
+                            <div class="en-box">
+                                <div>${enMeaning}</div>
+                                <div style="font-size:0.8rem; margin-top:3px;">${enReading}</div>
+                            </div>
+                        </div>
+
+
+                        <!-- 文字を扉（gate-door）の中に入れることで、扉と一緒にスライドさせます -->
+                        <div class="gate-door gate-left" style="pointer-events: none;">
+                            <div class="zodiac-deco deco-left" style="pointer-events: none;">${z.k}</div>
+                            ${btnHtml(0, 12)}
+                        </div>
+                        <div class="gate-door gate-right" style="pointer-events: none;">
+                            <div class="zodiac-deco deco-right" style="pointer-events: none;">${z.k}</div>
+                            ${btnHtml(12, 24)}
+                        </div>
+                    </div>`;
+
+
                 document.getElementById('world').appendChild(gate);
             }
 
@@ -288,11 +351,11 @@
                 document.querySelectorAll('.gate-wrapper').forEach(el => el.classList.remove('active-gate'));
                 document.getElementById(`gate-${this.currentIndex}`)?.classList.add('active-gate');
 
-                // ★HUDの表示を十二支に更新
+                // ★ id="current-q" を消さないように HTML を作成する
                 const z = this.zodiacs[this.currentIndex];
                 const hudElem = document.querySelector('.hud-text:first-child');
                 if (z && hudElem) {
-                    hudElem.innerHTML = `${z.kanji}之門 <small style="font-size:0.8rem; opacity:0.8;">(${z.en})</small> <span style="font-size:1rem; margin-left:10px;">${this.currentIndex + 1}/12</span>`;
+                    hudElem.innerHTML = `<span id="current-q">${this.currentIndex + 1}</span>/12 <small>(${z.e})</small> `;
                 }
             }
 
@@ -333,7 +396,7 @@
                         setTimeout(() => {
                             this.isAnimating = false;
                             this.updateActive();
-                            setTimeout(() => current.remove(), 200);
+                            setTimeout(() => current.remove(), 1000);
                         }, 1200);
                     } else {
                         this.finish();
@@ -371,10 +434,6 @@
                         document.body.classList.toggle('debug-mode', show);
                     }
                 });
-                document.addEventListener('mousemove', e => {
-                    const el = document.elementFromPoint(e.clientX, e.clientY);
-                    if (el) hitSpan.textContent = `${el.tagName}.${el.className}`;
-                });
             }
         }
 
@@ -389,6 +448,6 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260215.6" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260215.15" project="yojijuku_go"></shared-footer>
 </body>
 </html>
