@@ -127,7 +127,16 @@
         .btn-primary { padding: 15px 40px; font-size: 1.5rem; background: var(--red-seal); color: #fff; border: 2px solid var(--gate-border); cursor: pointer; margin-top: 20px; font-weight: bold; border-radius: 4px; }
 
         /* デバッグ用 */
-        #internal-debugger { position: fixed; top: 120px; right: 10px; color: #0f0; background: rgba(0,0,0,0.7); padding: 10px; font-family: monospace; z-index: 10000; pointer-events: none; display: none; }
+        #internal-debugger { 
+            position: fixed; top: 120px; right: 10px; 
+            color: #0f0; background: rgba(0,0,0,0.7); 
+            padding: 10px; font-family: monospace; 
+            
+            /* ★修正：iPad枠(5000)より手前に表示する */
+            z-index: 6000; 
+            
+            pointer-events: none; display: none; 
+        }
 
 
         /* 扉の横の飾り（イラスト代わり） */
@@ -200,12 +209,18 @@
             top: 50%; left: 50%;
             width: 834px; height: 1194px; /* iPad Pro 11" 縦サイズ */
             transform: translate(-50%, -50%) scale(0.6); /* PCで見れるサイズに縮小 */
-            border: 20px solid #333;
+
+            /* ★修正：背景を透明にする（重要！） */
+            background: transparent;
+
+            border: 20px solid #444;
             border-radius: 30px;
             pointer-events: none;
             z-index: 5000;
             display: none;
-            box-shadow: 0 0 100px rgba(0,0,0,1), 0 0 0 1000px rgba(0,0,0,0.8);
+            
+            /* 外側を暗くして、iPad画面を際立たせる */
+            box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.85);
         }
 
         /* デバッグモード中のみ枠を表示 */
@@ -475,6 +490,6 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260215.20" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260215.21" project="yojijuku_go"></shared-footer>
 </body>
 </html>
