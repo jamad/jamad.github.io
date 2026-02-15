@@ -164,29 +164,30 @@
         /* ★修正：画面が狭い時 OR デバッグモード(Alt+D)の時に適用する */
         /* iPad / タブレット / デバッグモード用の調整 */
         @media (max-width: 1024px), body.debug-mode {
-            /* 1. 位置をPCと同じ「やや下（60%）」に戻して、上のHUDと被らないようにする */
+            
+            /* ★修正：位置を「75%」まで下げて、画面下部に重心を置く */
             .gate-wrapper {
-                top: 60%; 
+                top: 75%; 
             }
 
-            /* 2. 画面からはみ出さないように、全体を0.65倍に縮小する */
+            /* 全体を縮小して画面内に収める */
             .gate-scaler {
                 transform: scale(0.65);
             }
 
-            /* 3. プレートの位置調整：縮小した分、少し位置が変わるので微調整 */
+            /* プレートの位置微調整 */
             .question-plate {
                 top: -180px;
-                width: 120%; /* 文字が折り返さないよう少し横幅を広げる */
-                left: -10%;  /* 広げた分、中心を合わせる */
+                width: 120%;
+                left: -10%;
             }
 
-            /* 4. 干支の文字サイズ調整 */
+            /* 干支の文字サイズ */
             .zodiac-deco {
                 font-size: 80px;
             }
             
-            /* 5. HUD（左上の情報）が枠に被らないようパディング調整 */
+            /* HUDのパディング */
             #ui-layer {
                 padding: 40px 30px; 
             }
@@ -474,6 +475,6 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260215.18" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260215.19" project="yojijuku_go"></shared-footer>
 </body>
 </html>
