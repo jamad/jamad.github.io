@@ -429,9 +429,17 @@
                 document.addEventListener('keydown', e => {
                     if (e.altKey && e.key.toLowerCase() === 'd') {
                         e.preventDefault();
-                        const show = debugDiv.style.display === 'none';
-                        debugDiv.style.display = show ? 'block' : 'none';
-                        document.body.classList.toggle('debug-mode', show);
+
+
+                        // 現在の body が debug-mode かどうかで判定する（確実な方法）
+                        const isNowDebug = document.body.classList.contains('debug-mode');
+                        const willShow = !isNowDebug;
+                        
+                        // デバッグ窓の表示切り替え
+                        debugDiv.style.display = willShow ? 'block' : 'none';
+                        // iPad枠とiPadレイアウトの切り替え
+                        document.body.classList.toggle('debug-mode', willShow);
+
                     }
                 });
             }
@@ -448,6 +456,6 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260215.15" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260215.16" project="yojijuku_go"></shared-footer>
 </body>
 </html>
