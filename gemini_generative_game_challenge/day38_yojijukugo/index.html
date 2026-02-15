@@ -165,31 +165,31 @@
         /* iPad / タブレット / デバッグモード用の調整 */
         @media (max-width: 1024px), body.debug-mode {
             
-            /* ★修正：位置を「75%」まで下げて、画面下部に重心を置く */
+            /* 1. 指定の 58% に設定 */
             .gate-wrapper {
-                top: 75%; 
+                top: 58%; 
             }
 
-            /* 全体を縮小して画面内に収める */
+            /* 縮小率はそのまま */
             .gate-scaler {
                 transform: scale(0.65);
             }
 
-            /* プレートの位置微調整 */
+            /* 2. 指定の -200px に設定
+               4. 幅を扉（100%）に合わせてピッタリにする */
             .question-plate {
-                top: -180px;
-                width: 120%;
-                left: -10%;
+                top: -200px;
+                width: 100%; /* 120%から100%に戻して扉幅に合わせる */
+                left: 0;     /* 中心ズレを直す */
             }
 
-            /* 干支の文字サイズ */
             .zodiac-deco {
                 font-size: 80px;
             }
             
-            /* HUDのパディング */
+            /* 3. 青い文字（HUD）が枠に入りきるように余白を広げる */
             #ui-layer {
-                padding: 40px 30px; 
+                padding: 60px 50px; /* 余白を増やして、文字を内側に押し込む */
             }
         }
 
@@ -245,8 +245,8 @@
 
     <div id="penalty-screen" class="overlay hidden">
         <h2 style="color:var(--red-seal); font-size:3rem; margin-bottom: 10px;">多岐亡羊</h2>
-        <p>セキュリティロック発動中</p>
-        <div style="width:300px; height:250px; background:#fff; margin:20px; display:flex; justify-content:center; align-items:center; color:#333; font-weight: bold;">[ Ad Area ]</div>
+        <p>閉門蟄居</p>
+        <div style="width:300px; height:250px; background:#fff; margin:20px; display:flex; justify-content:center; align-items:center; color:#333; font-weight: bold;">[ 鋭意制作 ]</div>
         <button class="btn-primary" onclick="game.closePenalty()">改過自新</button>
     </div>
 
@@ -475,6 +475,6 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260215.19" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260215.20" project="yojijuku_go"></shared-footer>
 </body>
 </html>
