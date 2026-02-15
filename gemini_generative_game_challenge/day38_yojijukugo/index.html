@@ -36,20 +36,20 @@
             position: absolute;
             width: 100%; height: 100%;
             transform-style: preserve-3d;
-            transition: transform 1.0s cubic-bezier(0.25, 1, 0.5, 1);
-            pointer-events: none; /* ボタン以外は全て素通りさせる */
+            transition: transform 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            pointer-events: none;
         }
 
         .gate-wrapper {
             position: absolute;
-            top: 50%; left: 50%;
+            top: 65%; left: 50%;
             width: 800px; height: 600px;
             margin: -300px 0 0 -400px;
             transform-style: preserve-3d;
             display: flex; justify-content: center;
         }
 
-        /* 門が開く演出 */
+        /* --- 扉のデザインとスライド演出 --- */
         .gate-door {
             position: absolute; width: 50%; height: 100%;
             background: var(--gate-color);
@@ -57,83 +57,111 @@
             box-shadow: inset 0 0 50px #000;
             display: grid; grid-template: repeat(6, 1fr) / 1fr 1fr;
             padding: 15px; gap: 10px;
-            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s;
+            z-index: 5;
+            overflow: hidden; /* アイコンをはみ出させない */
         }
-        .gate-left { left: 0; transform-origin: left center; border-radius: 8px 0 0 8px; }
-        .gate-right { right: 0; transform-origin: right center; border-radius: 0 8px 8px 0; }
-        .gate-wrapper.open .gate-left { transform: rotateY(-110deg); opacity: 0.3; }
-        .gate-wrapper.open .gate-right { transform: rotateY(110deg); opacity: 0.3; }
+        .gate-left { left: 0; border-radius: 8px 0 0 8px; border-right: 2px solid var(--gate-border); }
+        .gate-right { right: 0; border-radius: 0 8px 8px 0; border-left: 2px solid var(--gate-border); }
 
-        /* 問題プレート */
-        .question-plate {
-            position: absolute; top: -120px; width: 100%;
-            text-align: center; background: rgba(0,0,0,0.8);
-            border: 2px solid var(--gate-border); padding: 15px;
-            font-size: 1.8rem; border-radius: 4px; z-index: 10;
+        /* 干支アイコンの配置 */
+        .zodiac-icon {
+            position: absolute;
+            top: 50%;
+            width: 400px; /* 扉2枚分で800px */
+            height: 400px;
+            transform: translateY(-50%);
+            fill: var(--gate-border);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
         }
+        .gate-left .zodiac-icon { right: -200px; } /* 左扉の右端に半分出す */
+        .gate-right .zodiac-icon { left: -200px; } /* 右扉の左端に半分出す */
+
+        .gate-wrapper.open .gate-left { transform: translateX(-1200px); opacity: 0; }
+        .gate-wrapper.open .gate-right { transform: translateX(1200px); opacity: 0; }
+
+        /* --- 問題プレート --- */
+        .question-plate {
+            position: absolute; top: -280px; width: 100%;
+            text-align: center; background: rgba(0,0,0,0.85);
+            border: 2px solid var(--gate-border); padding: 20px;
+            border-radius: 8px; z-index: 10;
+            box-shadow: 0 0 30px rgba(0,0,0,1);
+        }
+        .jp-meaning { font-size: 1.8rem; margin-bottom: 5px; font-weight: 900; }
+        .jp-reading { font-size: 1.1rem; color: #ddd; margin-bottom: 12px; }
+        .en-box { border-top: 1px solid #555; padding-top: 12px; color: var(--gate-border); font-family: sans-serif; font-size: 0.95rem; font-style: italic; line-height: 1.4; }
+
         .gate-wrapper.open .question-plate { display: none; }
 
-        /* ★ボタンだけが当たり判定を持つ */
+        /* ボタン */
         .door-btn {
-            background: #000; border: 1px solid #555; color: #e0e0e0;
+            background: rgba(0,0,0,0.6); border: 1px solid #555; color: #e0e0e0;
             font-size: 1.2rem; cursor: pointer;
             display: flex; justify-content: center; align-items: center;
             box-shadow: 0 4px 0 #222;
-            pointer-events: auto !important; /* コリジョン有効 */
-            transform: translateZ(5px); transition: all 0.2s;
+            pointer-events: auto !important;
+            transform: translateZ(10px); transition: all 0.2s;
+            z-index: 10;
         }
-        .door-btn:hover { color: var(--gate-border); border-color: var(--gate-border); transform: translateZ(10px); }
+        .door-btn:hover { color: var(--gate-border); border-color: var(--gate-border); background: rgba(20,20,20,0.9); transform: translateZ(20px); }
         .door-btn.wrong-shake { animation: shake 0.4s; background: #500; }
 
         @keyframes shake { 
-            0%, 100% { transform: translateZ(5px) translateX(0); }
-            25% { transform: translateZ(5px) translateX(-5px); }
-            75% { transform: translateZ(5px) translateX(5px); }
+            0%, 100% { transform: translateZ(10px) translateX(0); }
+            25% { transform: translateZ(10px) translateX(-5px); }
+            75% { transform: translateZ(10px) translateX(5px); }
         }
 
         /* --- Overlays --- */
         .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
             z-index: 2000; display: flex; flex-direction: column;
             justify-content: center; align-items: center; backdrop-filter: blur(5px);
         }
         .hidden { display: none !important; }
-        h1 { font-size: 4rem; margin-bottom: 2rem; color: var(--gate-border); text-shadow: 0 0 20px rgba(212,175,55,0.5); }
-        .btn-primary { padding: 15px 40px; font-size: 1.5rem; background: var(--red-seal); color: #fff; border: 2px solid var(--gate-border); cursor: pointer; margin-top: 20px; }
-
-        /* デバッグ表示 */
-        #internal-debugger { position: fixed; top: 120px; right: 10px; color: #0f0; background: rgba(0,0,0,0.7); padding: 10px; font-family: monospace; z-index: 10000; pointer-events: none; display: none; }
-        body.debug-mode .gate-wrapper { outline: 2px solid red; background: rgba(255,0,0,0.05); }
+        h1 { font-size: 4rem; margin-bottom: 1rem; color: var(--gate-border); text-shadow: 0 0 20px rgba(212,175,55,0.5); }
+        .btn-primary { padding: 15px 40px; font-size: 1.5rem; background: var(--red-seal); color: #fff; border: 2px solid var(--gate-border); cursor: pointer; margin-top: 20px; font-weight: bold; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div id="internal-debugger">Hit: <span id="hit-target">---</span></div>
     <div id="world"></div>
 
     <div id="ui-layer">
-        <div class="hud-text">GATE: <span id="current-q">1</span>/20</div>
+        <div class="hud-text"></div>
         <div class="hud-text" id="timer-display">00:00.000</div>
     </div>
 
+    <!-- スタート画面 -->
     <div id="start-screen" class="overlay">
-        <h1>四字熟語 門番</h1>
-        <p>正しい配列を選択し、20の門を突破せよ</p>
-        <button class="btn-primary" onclick="game.start()">挑戦開始</button>
+        <h1>YoJiJuku GO!</h1>
+        <p style="letter-spacing: 0.2em;">一気呵成：十二支の試練を突破せよ</p>
+        <button class="btn-primary" onclick="game.start()">勇往邁進</button>
     </div>
 
+    <!-- 不正解画面 -->
     <div id="penalty-screen" class="overlay hidden">
-        <h2 style="color:var(--red-seal); font-size:3rem;">不正解！</h2>
-        <div style="width:300px; height:250px; background:#fff; margin:20px; display:flex; justify-content:center; align-items:center; color:#333;">[ Ad Area ]</div>
-        <button class="btn-primary" onclick="game.closePenalty()">閉じて再開</button>
+        <h2 style="color:var(--red-seal); font-size:5rem; margin-bottom: 10px; letter-spacing: 0.2em;">多岐亡羊</h2>
+        <p>謹言慎行：過ちを省みよ</p>
+        <div style="width:300px; height:250px; background:#fff; margin:20px; display:flex; justify-content:center; align-items:center; color:#333; font-weight: bold;">[ Ad Area ]</div>
+        <button class="btn-primary" onclick="game.closePenalty()">改過自新</button>
     </div>
 
+    <!-- リザルト画面 -->
     <div id="result-screen" class="overlay hidden">
-        <h1>完全突破</h1>
-        <div style="font-size: 2rem;">TIME: <span id="final-time" style="color:var(--neon);"></span></div>
-        <button class="btn-primary" onclick="location.reload()">再挑戦</button>
+        <h1>百戦錬磨</h1>
+        <p style="margin-bottom:15px; letter-spacing: 0.1em;">十二支を統べし者</p>
+        <div style="font-size: 1.5rem; font-family: 'Orbitron'; margin-bottom:5px;">光陰如箭</div>
+        <div style="font-size: 4rem; font-family: 'Orbitron'; margin-bottom:30px;"><span id="final-time" style="color:var(--neon);"></span></div>
+        <button class="btn-primary" onclick="location.reload()">心機一転</button>
     </div>
 
+    <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
+    <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
+    <shared-footer version="v20260215.ZodiacZ" project="yojijuku_go"></shared-footer>
 
     <script>
         class Game {
@@ -141,12 +169,23 @@
                 this.idioms = [];
                 this.questions = [];
                 this.currentIndex = 0;
-                this.maxQuestions = 20;
+                this.maxQuestions = 12;
                 this.startTime = 0;
                 this.timerInterval = null;
-                this.gateDistance = 1000;
+                this.gateDistance = 1200;
                 this.isAnimating = false;
                 this.isPenaltyActive = false;
+
+                // 十二支データと簡易アイコン（文字）
+                // 本来はSVGパスを入れるが、今回は視認性の高い文字をデザイン化
+                this.zodiacs = [
+                    {k: "子", r: "ね", e: "Rat"}, {k: "丑", r: "うし", e: "Ox"},
+                    {k: "寅", r: "とら", e: "Tiger"}, {k: "卯", r: "う", e: "Rabbit"},
+                    {k: "辰", r: "たつ", e: "Dragon"}, {k: "巳", r: "み", e: "Snake"},
+                    {k: "午", r: "うま", e: "Horse"}, {k: "未", r: "ひつじ", e: "Goat"},
+                    {k: "申", r: "さる", e: "Monkey"}, {k: "酉", r: "とり", e: "Rooster"},
+                    {k: "戌", r: "いぬ", e: "Dog"}, {k: "亥", r: "い", e: "Boar"}
+                ];
             }
 
             async loadData() {
@@ -155,7 +194,6 @@
                 this.idioms = data.filter(item => item.word.length === 4);
             }
 
-            // 順列生成（4文字固定）
             getPerms(str) {
                 if (str.length <= 1) return [str];
                 let perms = [];
@@ -181,14 +219,10 @@
                 this.initQuestions();
                 document.getElementById('start-screen').classList.add('hidden');
                 document.getElementById('world').innerHTML = '';
-                
                 this.currentIndex = 0;
-                this.renderGate(0); // 最初の門を生成
+                this.renderGate(0);
                 this.updateActive();
-                
-                // カメラの初期位置（門の100px手前）
                 document.getElementById('world').style.transform = `translateZ(100px)`;
-                
                 this.startTime = performance.now();
                 this.timerInterval = requestAnimationFrame(this.updateTimer.bind(this));
             }
@@ -196,6 +230,7 @@
             renderGate(idx) {
                 if (idx >= this.maxQuestions || document.getElementById(`gate-${idx}`)) return;
                 const q = this.questions[idx];
+                const z = this.zodiacs[idx];
                 const gate = document.createElement('div');
                 gate.className = 'gate-wrapper';
                 gate.id = `gate-${idx}`;
@@ -204,16 +239,37 @@
                 const btnHtml = (start, end) => q.buttons.slice(start, end).map(word => 
                     `<button class="door-btn" onmousedown="game.check('${word}',this)">${word}</button>`).join('');
 
+                // 英語データの表示（なければ仮）
+                const enMeaning = q.target.meaning_en || "[ English Meaning ]";
+                const enReading = q.target.reading_en || "[ English Pronunciation ]";
+
+                // アイコンとして干支の文字を巨大に表示
+                const zodiacIconHtml = `<div class="zodiac-icon" style="display:flex; justify-content:center; align-items:center; font-size:350px; font-weight:900; font-family:serif;">${z.k}</div>`;
+
                 gate.innerHTML = `
-                    <div class="question-plate">${q.target.meaning}<br><small>(${q.target.reading})</small></div>
-                    <div class="gate-door gate-left">${btnHtml(0, 12)}</div>
-                    <div class="gate-door gate-right">${btnHtml(12, 24)}</div>`;
+                    <div class="question-plate">
+                        <div style="position:absolute; top:10px; left:15px; font-size:2.5rem; opacity:0.1; color:var(--gate-border); font-weight:900;">${z.k}</div>
+                        <div class="jp-meaning">${q.target.meaning}</div>
+                        <div class="jp-reading">(${q.target.reading})</div>
+                        <div class="en-box">
+                            <div>${enMeaning}</div>
+                            <div style="font-size:0.85rem; margin-top:4px;">${enReading}</div>
+                        </div>
+                    </div>
+                    <div class="gate-door gate-left">${zodiacIconHtml}${btnHtml(0, 12)}</div>
+                    <div class="gate-door gate-right">${zodiacIconHtml}${btnHtml(12, 24)}</div>`;
                 document.getElementById('world').appendChild(gate);
             }
 
             updateActive() {
                 document.querySelectorAll('.gate-wrapper').forEach(el => el.classList.remove('active-gate'));
                 document.getElementById(`gate-${this.currentIndex}`)?.classList.add('active-gate');
+                
+                const z = this.zodiacs[this.currentIndex];
+                const hudElem = document.querySelector('.hud-text:first-child');
+                if (z && hudElem) {
+                    hudElem.innerHTML = `<span style="color:var(--gate-border); font-weight:900;">${z.k}</span>之門 <small style="font-size:0.8rem; opacity:0.7;">(${z.e})</small> <span style="font-size:1.1rem; margin-left:15px; font-family:Orbitron;">${this.currentIndex + 1}/12</span>`;
+                }
             }
 
             check(selected, btn) {
@@ -236,28 +292,26 @@
             }
 
             next() {
+                if (this.isAnimating) return;
                 this.isAnimating = true;
                 const current = document.getElementById(`gate-${this.currentIndex}`);
                 current.classList.add('open');
                 
-                this.currentIndex++;
-                if (this.currentIndex < this.maxQuestions) {
-                    this.renderGate(this.currentIndex); // 正解した瞬間に次の門を生成
-                    
-                    // 世界を手前に引き寄せる
-                    const nextZ = (this.currentIndex * this.gateDistance) + 100;
-                    document.getElementById('world').style.transform = `translateZ(${nextZ}px)`;
-                    document.getElementById('current-q').textContent = this.currentIndex + 1;
-
-                    setTimeout(() => {
-                        this.isAnimating = false;
+                setTimeout(() => {
+                    this.currentIndex++;
+                    if (this.currentIndex < this.maxQuestions) {
+                        this.renderGate(this.currentIndex);
+                        const nextZ = (this.currentIndex * this.gateDistance) + 100;
+                        document.getElementById('world').style.transform = `translateZ(${nextZ}px)`;
                         this.updateActive();
-                        // 通過した門は1秒後に物理消去
-                        setTimeout(() => current.remove(), 500);
-                    }, 1000);
-                } else {
-                    this.finish();
-                }
+                        setTimeout(() => {
+                            this.isAnimating = false;
+                            setTimeout(() => current.remove(), 200);
+                        }, 1200);
+                    } else {
+                        this.finish();
+                    }
+                }, 100);
             }
 
             updateTimer() {
@@ -275,39 +329,12 @@
                 document.getElementById('final-time').textContent = document.getElementById('timer-display').textContent;
                 document.getElementById('result-screen').classList.remove('hidden');
             }
-
-            initDebugger() {
-                if (typeof DebugOverlay !== 'undefined') {
-                    new DebugOverlay({ target: this, props: ['currentIndex', 'isAnimating', 'worldZ'], title: 'Game Debug' });
-                }
-                const debugDiv = document.getElementById('internal-debugger');
-                const hitSpan = document.getElementById('hit-target');
-                document.addEventListener('keydown', e => {
-                    if (e.altKey && e.key.toLowerCase() === 'd') {
-                        e.preventDefault();
-                        const show = debugDiv.style.display === 'none';
-                        debugDiv.style.display = show ? 'block' : 'none';
-                        document.body.classList.toggle('debug-mode', show);
-                    }
-                });
-                document.addEventListener('mousemove', e => {
-                    const el = document.elementFromPoint(e.clientX, e.clientY);
-                    if (el) hitSpan.textContent = `${el.tagName}.${el.className}`;
-                });
-            }
         }
 
         const game = new Game();
         window.onload = async () => {
             await game.loadData();
-            game.initDebugger();
         };
     </script>
-
-
-    <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
-    <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
-    <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260214.12" project="yojijuku_go"></shared-footer>
 </body>
 </html>
