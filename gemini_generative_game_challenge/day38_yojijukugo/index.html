@@ -161,16 +161,24 @@
             display: flex; justify-content: center;
         }
 
-        @media (max-width: 1024px) {
-            /* ★修正：wrapperではなくscalerを縮小する */
+        /* iPad / タブレット用の調整 */
+        /* ★修正：画面が狭い時 OR デバッグモード(Alt+D)の時に適用する */
+        @media (max-width: 1024px), body.debug-mode {
             .gate-scaler {
-                transform: scale(0.6); /* iPad用にしっかり縮小 */
+                transform: scale(0.6); /* 0.65だとまだ少し大きいので0.6にします */
             }
             .question-plate {
-                top: -140px; /* 縮小に合わせてプレート位置を調整 */
+                top: -140px; 
             }
             .zodiac-deco {
-                font-size: 60px; /* 飾りも少し小さく */
+                font-size: 60px;
+            }
+            .gate-wrapper {
+                top: 50%; /* 縦長画面では中央に戻す */
+            }
+            /* HUD（左上の文字）も枠に被らないように少し内側へ */
+            #ui-layer {
+                padding: 40px 30px; 
             }
         }
 
