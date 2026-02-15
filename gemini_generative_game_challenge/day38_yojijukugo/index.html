@@ -49,7 +49,10 @@
 
         .gate-wrapper {
             position: absolute;
-            top: 60%; left: 50%;
+            
+            top: 60% !important; /* ★ここに !important を追加 */
+            
+            left: 50%;
             width: 800px; height: 600px;
             margin: -300px 0 0 -400px;
             transform-style: preserve-3d;
@@ -218,7 +221,7 @@
             pointer-events: none;
             z-index: 5000;
             display: none;
-            
+
             /* 外側を暗くして、iPad画面を際立たせる */
             box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.85);
         }
@@ -490,6 +493,6 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260215.21" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260215.22" project="yojijuku_go"></shared-footer>
 </body>
 </html>
