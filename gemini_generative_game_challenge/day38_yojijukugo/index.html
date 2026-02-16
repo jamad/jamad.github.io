@@ -329,8 +329,11 @@
         <div id="world"></div>
 
         <div id="ui-layer">
-            <div class="hud-text">GATE: <span id="current-q">1</span>/12</div>
-            <div class="hud-text" id="timer-display">00:00.000</div>
+            <!-- ★HUDを枠で囲む（これを追加！） -->
+            <div class="hud-frame">
+                <div class="hud-text">GATE: <span id="current-q">1</span>/12</div>
+                <div class="hud-text" id="timer-display">00:00.000</div>
+            </div>
         </div>
 
         <div id="start-screen" class="overlay">
@@ -599,6 +602,16 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260216.14" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260216.15" project="yojijuku_go"></shared-footer>
+
+    <!-- ★設定ボタンとスライダー -->
+    <div id="config-ui">
+        <button id="config-btn" onclick="toggleConfig()">⚙️ Config</button>
+        <div id="config-panel" class="hidden">
+            <label>Screen Scale</label>
+            <input type="range" id="scale-slider" min="0.5" max="1.5" step="0.05" value="1.0" oninput="updateScale(this.value)">
+            <span id="scale-value">1.0x</span>
+        </div>
+    </div>
 </body>
 </html>
