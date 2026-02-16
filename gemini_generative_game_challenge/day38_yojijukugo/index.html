@@ -279,41 +279,36 @@
         }
 
 
-        /* --- 設定（Config）UI --- */
-        #config-ui {
+        /* --- 画面下部のスライダーバー --- */
+        #bottom-controls {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9000;
-            font-family: sans-serif;
-        }
-        #config-btn {
-            background: #333;
-            color: #fff;
-            border: 1px solid #666;
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.5rem;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-        #config-panel {
-            position: absolute;
-            bottom: 60px;
-            right: 0;
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid var(--gate-border);
-            padding: 15px;
-            border-radius: 8px;
-            width: 200px;
-            color: #fff;
+            bottom: 25px; /* Footerの高さに合わせて少し浮かせる */
+            left: 0;
+            width: 100%;
+            height: 60px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            /* Footer(3000)より手前にして操作可能にする */
+            z-index: 4000; 
+            /* 下から黒くグラデーションさせて見やすくする */
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            pointer-events: auto;
         }
-        #config-panel.hidden { display: none; }
-        #config-panel label { font-size: 0.9rem; color: var(--gate-border); }
-        #scale-slider { width: 100%; cursor: pointer; }
+
+        #scale-slider {
+            width: 200px;
+            height: 6px;
+            background: #444;
+            border-radius: 3px;
+            outline: none;
+            opacity: 0.8;
+            transition: opacity .2s;
+            cursor: pointer;
+            accent-color: var(--gate-border); /* つまみの色を金色に */
+        }
+        #scale-slider:hover { opacity: 1; }
 
     </style>
 </head>
@@ -583,10 +578,6 @@
         };
 
         // --- Config機能 ---
-        function toggleConfig() {
-            const panel = document.getElementById('config-panel');
-            panel.classList.toggle('hidden');
-        }
 
         function updateScale(val) {
             const wrapper = document.getElementById('game-scale-wrapper');
@@ -598,20 +589,18 @@
         }
     </script>
 
+    <!-- ★Footerの上に配置するスライダーバー -->
+    <div id="bottom-controls">
+        <span style="color:#aaa; font-size:0.8rem; letter-spacing:1px;">SCREEN SCALE</span>
+        <input type="range" id="scale-slider" min="0.5" max="1.5" step="0.05" value="1.0" oninput="updateScale(this.value)">
+        <span id="scale-value" style="color:var(--neon); font-family:'Orbitron'; width:3em;">1.0x</span>
+    </div>
 
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260216.15" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260216.16" project="yojijuku_go"></shared-footer>
 
-    <!-- ★設定ボタンとスライダー -->
-    <div id="config-ui">
-        <button id="config-btn" onclick="toggleConfig()">⚙️ Config</button>
-        <div id="config-panel" class="hidden">
-            <label>Screen Scale</label>
-            <input type="range" id="scale-slider" min="0.5" max="1.5" step="0.05" value="1.0" oninput="updateScale(this.value)">
-            <span id="scale-value">1.0x</span>
-        </div>
-    </div>
+
 </body>
 </html>
