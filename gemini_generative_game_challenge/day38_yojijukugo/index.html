@@ -251,7 +251,10 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 900px; /* 枠の横幅制限 */
+
+            width: 800px; /* ★ここを修正：100%から800px（扉と同じ幅）に固定 */
+            max-width: 95vw; /* スマホ等ではみ出さないための保険 */
+
             margin: 0 auto;   /* 中央寄せ */
             padding: 15px 30px;
             border: 2px solid rgba(255, 255, 255, 0.8); /* 白い枠線 */
@@ -479,7 +482,9 @@
 
                 // ★ id="current-q" を消さないように HTML を作成する
                 const z = this.zodiacs[this.currentIndex];
+
                 const hudElem = document.querySelector('.hud-text:first-child');
+
                 if (z && hudElem) {
                     hudElem.innerHTML = `<span id="current-q">${this.currentIndex + 1}</span>/12 <small>(${z.e})</small> `;
                 }
@@ -599,7 +604,7 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260216.16" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260216.17" project="yojijuku_go"></shared-footer>
 
 
 </body>
