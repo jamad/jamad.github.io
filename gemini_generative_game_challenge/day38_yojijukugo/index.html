@@ -258,14 +258,15 @@
     <div id="start-screen" class="overlay">
         <h1>YoJiJuku GO!</h1>
         <p>一気呵成：十二支の試練を突破せよ</p>
-        <button class="btn-primary" onclick="game.start()">勇往邁進</button>
+        <p><small style="color:#aaa;">(Complete at a stretch)</small></p>
+        <button class="btn-primary" onclick="game.start()">勇往邁進 <small style="color:#ddd;">(Dash forward)</small></button>
     </div>
 
     <div id="penalty-screen" class="overlay hidden">
-        <h2 style="color:var(--red-seal); font-size:3rem; margin-bottom: 10px;">多岐亡羊</h2>
-        <p>閉門蟄居</p>
-        <div style="width:300px; height:250px; background:#fff; margin:20px; display:flex; justify-content:center; align-items:center; color:#333; font-weight: bold;">[ 鋭意制作 ]</div>
-        <button class="btn-primary" onclick="game.closePenalty()">改過自新</button>
+        <h2 style="color:var(--red-seal); font-size:3rem; margin-bottom: 10px;">多岐亡羊 <small style="color:#aaa; font-size:1.5rem;">(Too many paths)</small></h2>
+        <p>閉門蟄居 <small style="color:#aaa;">(Confined)</small></p>
+        <div style="width:100px; height:50px; background:#fff; margin:20px; display:flex; justify-content:center; align-items:center; color:#333; font-weight: bold;">[ 鋭意制作 ]    <div style="font-size:0.8rem; color:#666;">(WIP)</div></div>
+        <button class="btn-primary" onclick="game.closePenalty()">改過自新 <small style="color:#ddd;">(Repent and start anew)</small></button>
     </div>
 
     <div id="result-screen" class="overlay hidden">
@@ -493,6 +494,6 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260215.22" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260216.3" project="yojijuku_go"></shared-footer>
 </body>
 </html>
