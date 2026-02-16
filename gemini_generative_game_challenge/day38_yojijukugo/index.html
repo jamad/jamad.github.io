@@ -23,7 +23,6 @@
             overflow: hidden;
             height: 100vh;
             width: 100vw;
-            perspective: 1200px;
         }
 
         /* --- UI & Footer --- */
@@ -279,6 +278,10 @@
             overflow: hidden;
             transform-origin: center center; /* 中央から拡大縮小 */
             transition: transform 0.1s;
+
+            /* ★この2行を追加してください！ */
+            perspective: 1200px;          /* ここで奥行きを作る */
+            transform-style: preserve-3d; /* 中身の3D移動を許可する */
         }
 
 
@@ -604,7 +607,7 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260216.18" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260216.19" project="yojijuku_go"></shared-footer>
 
 
 </body>
