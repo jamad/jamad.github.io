@@ -50,7 +50,7 @@
         .gate-wrapper {
             position: absolute;
             
-            top: 60% !important; /* ★ここに !important を追加 */
+            top: 70% !important; /* ★ここに !important を追加 */
             
             left: 50%;
             width: 800px; height: 600px;
@@ -427,7 +427,7 @@
                 this.currentIndex = 0;
                 this.renderGate(0);
                 this.updateActive();
-                document.getElementById('world').style.transform = `translateZ(100px)`;
+                document.getElementById('world').style.transform = `translateZ(0px)`;
                 this.startTime = performance.now();
                 this.timerInterval = requestAnimationFrame(this.updateTimer.bind(this));
             }
@@ -523,7 +523,7 @@
                     this.currentIndex++;
                     if (this.currentIndex < this.maxQuestions) {
                         this.renderGate(this.currentIndex);
-                        const nextZ = (this.currentIndex * this.gateDistance) + 100;
+                        const nextZ = (this.currentIndex * this.gateDistance) + 0;
                         document.getElementById('world').style.transform = `translateZ(${nextZ}px)`;
                         document.getElementById('current-q').textContent = this.currentIndex + 1;
 
@@ -607,7 +607,7 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260216.19" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260216.20" project="yojijuku_go"></shared-footer>
 
 
 </body>
