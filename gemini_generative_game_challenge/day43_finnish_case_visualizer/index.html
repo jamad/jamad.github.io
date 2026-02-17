@@ -4,12 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suomi Case Map v3</title>
+    <title>Suomi Case Map v4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --base-font-scale: 1; /* スライダーで変更 */
-            --card-width: calc(140px * var(--base-font-scale));
+            --base-font-scale: 1.0; 
+            /* 以前の1.3倍を基準(1.0)に再設計 */
+            --card-width: calc(180px * var(--base-font-scale));
         }
 
         body {
@@ -36,13 +37,13 @@
             overflow: hidden;
         }
 
-        /* 中央の円 (450px) */
-        .target-sphere {
+        /* 中央を角丸の正方形に変更 */
+        .target-box {
             position: absolute;
             width: 450px;
             height: 450px;
-            border: 2px dashed rgba(99, 102, 241, 0.3);
-            border-radius: 50%;
+            border: 3px dashed rgba(99, 102, 241, 0.2);
+            border-radius: 60px; /* 大きめの角丸 */
             background: rgba(30, 41, 59, 0.1);
             z-index: 1;
         }
@@ -51,31 +52,30 @@
         .case-card {
             position: absolute;
             width: var(--card-width);
-            padding: calc(10px * var(--base-font-scale));
+            padding: calc(14px * var(--base-font-scale));
             background: rgba(15, 23, 42, 0.95);
-            border-radius: 12px;
+            border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
             z-index: 20;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
             transition: width 0.2s ease, padding 0.2s ease;
         }
 
-        .case-name { font-size: calc(8px * var(--base-font-scale)); font-weight: 900; text-transform: uppercase; margin-bottom: 2px; }
-        .case-word { font-size: calc(14px * var(--base-font-scale)); font-weight: 800; color: white; line-height: 1.2; }
-        .case-desc { font-size: calc(9px * var(--base-font-scale)); color: #94a3b8; margin-top: 2px; }
+        .case-name { font-size: calc(11px * var(--base-font-scale)); font-weight: 900; text-transform: uppercase; margin-bottom: 4px; }
+        .case-word { font-size: calc(18px * var(--base-font-scale)); font-weight: 800; color: white; line-height: 1.2; }
+        .case-desc { font-size: calc(11px * var(--base-font-scale)); color: #94a3b8; margin-top: 4px; }
 
-        /* --- 配置定義 --- */
+        /* --- 配置とアニメーション --- */
 
         /* 1. 内格系 (Inside) */
         .pos-inessive { top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid #f43f5e; z-index: 21; }
         
-        /* 出格: 内格に被らないよう、中心から少しずらして外へ */
         .pos-elative { animation: elative-move 6s infinite ease-in-out; }
         @keyframes elative-move {
-            0%, 40% { left: 45%; top: 55%; transform: translate(-50%, -50%); opacity: 0; }
+            0%, 40% { left: 45%; top: 50%; transform: translate(-50%, -50%); opacity: 0; }
             45% { opacity: 1; }
-            70%, 100% { left: 15%; top: 85%; transform: translate(-50%, -50%); opacity: 0; }
+            70%, 100% { left: 15%; top: 75%; transform: translate(-50%, -50%); opacity: 0; }
         }
 
         .pos-illative { animation: illative-move 6s infinite ease-in-out; }
@@ -84,112 +84,92 @@
             70%, 100% { left: 35%; top: 50%; transform: translate(-50%, -50%); opacity: 1; }
         }
 
-        /* 2. 接格系 (On/Surface) - 円の縁(450px)に接地させる */
-        /* top: 50% - (450/2) = 225px(上端)付近 */
+        /* 2. 接格系 (Surface/On) */
         .pos-adessive { top: calc(50% - 225px); left: 50%; transform: translate(-50%, -100%); border: 2px solid #10b981; }
         
+        /* 向格: 斜めにすんなり降りてくる動き */
         .pos-allative { animation: allative-move 6s infinite ease-in-out; }
         @keyframes allative-move {
-            0%, 40% { top: 5%; left: 80%; opacity: 0.5; }
-            70%, 100% { top: calc(50% - 215px); left: 65%; transform: translate(-50%, -100%); opacity: 1; }
+            0%, 40% { top: 10%; left: 85%; opacity: 0.5; transform: translate(0, 0); }
+            70%, 100% { top: calc(50% - 225px); left: 70%; transform: translate(-50%, -100%); opacity: 1; }
         }
 
         .pos-ablative { animation: ablative-move 6s infinite ease-in-out; }
         @keyframes ablative-move {
-            0%, 40% { top: calc(50% - 215px); left: 35%; transform: translate(-50%, -100%); opacity: 1; }
-            70%, 100% { top: 30%; left: 5%; opacity: 0; }
+            0%, 40% { top: calc(50% - 225px); left: 30%; transform: translate(-50%, -100%); opacity: 1; }
+            70%, 100% { top: 25%; left: 5%; opacity: 0; }
         }
 
-        /* 3. 状態・変化系 */
-        .pos-essive { top: 75%; left: 28%; border-left: 4px solid #fbbf24; }
-        .pos-translative { top: 75%; left: 72%; border-left: 4px solid #f59e0b; }
+        /* 3. 状態・変化系 (下部左右) */
+        .pos-essive { bottom: 25%; left: 20%; border-left: 5px solid #fbbf24; }
+        .pos-translative { bottom: 25%; right: 20%; border-left: 5px solid #f59e0b; }
 
-        /* 4. 基本・目的語系 */
-        .pos-nominative { bottom: 5%; left: 50%; transform: translateX(-50%); width: calc(180px * var(--base-font-scale)); background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
-        .pos-genitive { top: 20%; left: 85%; }
-        .pos-partitive { top: 35%; left: 85%; }
-        .pos-akkusatiivi { top: 50%; left: 85%; }
+        /* 4. 基本・目的語系 (右列) */
+        .pos-nominative { bottom: 5%; left: 50%; transform: translateX(-50%); width: calc(220px * var(--base-font-scale)); background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
+        .pos-genitive { top: 20%; right: 5%; }
+        .pos-partitive { top: 40%; right: 5%; }
+        .pos-akkusatiivi { top: 60%; right: 5%; }
 
-        /* 5. 周辺格 */
-        .pos-abessiivi { top: 88%; left: 15%; }
-        .pos-komitatiivi { top: 88%; left: 85%; }
-        .pos-instruktiivi { top: 12%; left: 15%; }
+        /* 5. 周辺格 (四隅遠く) */
+        .pos-abessiivi { bottom: 10%; left: 10%; }
+        .pos-komitatiivi { bottom: 10%; right: 10%; }
+        .pos-instruktiivi { top: 10%; left: 10%; }
 
-        /* 絵文字：主格と円の間に配置 */
+        /* 絵文字を大きく、薄く、中央ボックスにフィット */
         .object-emoji {
             position: absolute;
-            top: 72%; /* 主格(bottom 5%)と中心(50%)の間、やや円寄り */
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: calc(8rem * var(--base-font-scale));
+            font-size: calc(20rem * var(--base-font-scale));
             z-index: 5;
-            filter: drop-shadow(0 0 30px rgba(0,0,0,0.7));
-            opacity: 0.4;
+            opacity: 0.12; /* かなり薄く */
             pointer-events: none;
-            transition: font-size 0.2s ease;
+            transition: all 0.3s ease;
         }
 
-        .sidebar {
-            background: #0f172a;
-            border-left: 1px solid #1e293b;
-            padding: 24px;
-            overflow-y: auto;
-        }
-
+        /* サイドバー */
+        .sidebar { background: #0f172a; border-left: 1px solid #1e293b; padding: 24px; overflow-y: auto; }
         .word-btn {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 8px;
-            background: #1e293b;
-            border: 2px solid transparent;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-            cursor: pointer;
+            width: 100%; padding: 14px; margin-bottom: 10px; background: #1e293b;
+            border: 2px solid transparent; border-radius: 16px; display: flex; align-items: center; gap: 12px;
+            transition: all 0.2s; cursor: pointer;
         }
         .word-btn.active { border-color: #6366f1; background: #1e1b4b; }
-
-        .slider-container {
-            margin-top: 20px;
-            padding: 15px;
-            background: #1e293b;
-            border-radius: 12px;
-        }
+        .slider-container { margin-top: 20px; padding: 15px; background: #1e293b; border-radius: 16px; }
     </style>
 </head>
 <body>
 
     <div class="main-container">
         <div class="stage">
-            <div class="target-sphere"></div>
+            <div class="target-box"></div>
             <div id="emoji-display" class="object-emoji">👒</div>
             <div id="case-layer" class="w-full h-full relative"></div>
         </div>
 
         <div class="sidebar">
-            <div class="mb-6">
-                <h1 class="text-xl font-black text-white">Finnish Case Map</h1>
-                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Interactive Viz</span>
+            <div class="mb-8">
+                <h1 class="text-2xl font-black text-white">Finnish Case Map</h1>
+                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.3em]">Visual Grammar System</span>
             </div>
 
             <div id="word-list"></div>
 
-            <!-- フォント調整スライダー -->
             <div class="slider-container">
-                <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-tighter">
-                    Font / Card Scale: <span id="scale-val" class="text-indigo-400">1.0</span>
+                <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-tight">
+                    Scale Adjustment: <span id="scale-val" class="text-indigo-400">1.0</span>
                 </label>
-                <input type="range" id="font-slider" min="0.7" max="1.6" step="0.05" value="1.0" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                <input type="range" id="font-slider" min="0.5" max="1.5" step="0.05" value="1.0" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
             </div>
             
-            <div class="mt-8 p-4 bg-slate-900 rounded-xl border border-slate-800 text-[11px] text-slate-400">
-                <p class="font-bold text-slate-200 mb-2">配置のルール:</p>
-                <ul class="space-y-1">
-                    <li>● <strong>内格/出格:</strong> 重なりを避け軌道をオフセット。</li>
-                    <li>● <strong>接格/向格:</strong> 円の上端にピタッと接地。</li>
-                    <li>● <strong>絵文字:</strong> 主格と中心の中間に配置。</li>
+            <div class="mt-8 p-5 bg-slate-900 rounded-2xl border border-slate-800 text-[12px] text-slate-400 leading-relaxed">
+                <h3 class="font-bold text-white mb-2">位置関係の解説</h3>
+                <ul class="space-y-3">
+                    <li><strong class="text-rose-400">● 中央（正方形）:</strong> 「名詞そのもの」の領域。内格系はここへの出入り。</li>
+                    <li><strong class="text-emerald-400">● 上端（接地）:</strong> 「表面・接触」の領域。接格系がここを担当。</li>
+                    <li><strong class="text-indigo-400">● 右側:</strong> 文法的な関係（所有・目的語）。空間移動ではない抽象的な繋がり。</li>
+                    <li><strong class="text-amber-400">● 下部左右:</strong> 「状態」の変化。存在としての性質（〜として、〜に成る）。</li>
                 </ul>
             </div>
         </div>
@@ -234,7 +214,7 @@
             slider.oninput = (e) => {
                 const val = e.target.value;
                 document.documentElement.style.setProperty('--base-font-scale', val);
-                valDisplay.textContent = parseFloat(val).toFixed(1);
+                valDisplay.textContent = parseFloat(val).toFixed(2);
             };
         }
 
@@ -244,7 +224,7 @@
             WORDS.forEach(w => {
                 const btn = document.createElement('button');
                 btn.className = `word-btn ${currentWord.id === w.id ? 'active' : ''}`;
-                btn.innerHTML = `<span class="text-xl">${w.emoji}</span><div class="text-left"><div class="text-sm font-black text-white">${w.base}</div><div class="text-[9px] text-slate-500">${w.meaning}</div></div>`;
+                btn.innerHTML = `<span class="text-2xl">${w.emoji}</span><div class="text-left"><div class="text-base font-black text-white">${w.base}</div><div class="text-[10px] text-slate-500 font-bold uppercase">${w.meaning}</div></div>`;
                 btn.onclick = () => { currentWord = w; updateUI(); };
                 list.appendChild(btn);
             });
