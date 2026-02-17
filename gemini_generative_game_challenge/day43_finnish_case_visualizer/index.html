@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suomi Case Animation Map</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            height: 100vh;
+        }
+
+        /* 図解エリア */
+        .stage {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            overflow: hidden;
+        }
+
+        /* 「中」を象徴するメインの円 */
+        .target-sphere {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border: 2px dashed rgba(99, 102, 241, 0.4);
+            border-radius: 50%;
+            background: rgba(30, 41, 59, 0.2);
+            z-index: 1;
+        }
+
+        /* 格カードの基本 */
+        .case-card {
+            position: absolute;
+            width: 130px;
+            padding: 8px;
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            z-index: 10;
+            pointer-events: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        /* --- 格ごとの位置とアニメーション定義 --- */
+
+        /* 1. 内格系 (Inside) */
+        .pos-inessive { /* 中で */
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            border: 2px solid #f43f5e;
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.3);
+        }
+
+        .pos-illative { /* 中へ：1秒待機、1秒移動のループ */
+            top: 50%; left: 10%; 
+            transform: translateY(-50%);
+            animation: illative-move 2s infinite;
+        }
+        @keyframes illative-move {
+            0%, 50% { left: 10%; opacity: 0.8; } /* 1秒待機 */
+            100% { left: 50%; transform: translate(-50%, -50%); opacity: 1; } /* 1秒で中へ */
+        }
+
+        .pos-elative { /* 中から */
+            top: 50%; left: 50%;
+            animation: elative-move 2s infinite;
+        }
+        @keyframes elative-move {
+            0% { transform: translate(-50%, -50%); opacity: 1; }
+            50%, 100% { left: 10%; top: 80%; opacity: 0; }
+        }
+
+        /* 2. 接格系 (On/Surface) */
+        .pos-adessive { /* 上で */
+            top: 15%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            border: 2px solid #10b981;
+        }
+
+        .pos-allative { /* 上へ */
+            top: -5%; left: 75%;
+            animation: allative-move 2s infinite;
+        }
+        @keyframes allative-move {
+            0%, 50% { top: -5%; left: 75%; opacity: 0.8; }
+            100% { top: 15%; left: 55%; transform: translate(-50%, -50%); opacity: 1; }
+        }
+
+        .pos-ablative { /* 上から */
+            top: 15%; left: 50%;
+            animation: ablative-move 2s infinite;
+        }
+        @keyframes ablative-move {
+            0% { transform: translate(-50%, -50%); opacity: 1; }
+            50%, 100% { top: 30%; left: 85%; opacity: 0; }
+        }
+
+        /* 3. その他 */
+        .pos-nominative { bottom: 8%; left: 50%; transform: translateX(-50%); width: 200px; background: rgba(99, 102, 241, 0.2); }
+        .pos-genitive { top: 40%; left: 85%; }
+        .pos-partitive { top: 60%; left: 85%; }
+        .pos-essive { top: 80%; left: 20%; }
+
+        /* 絵文字（対象物）の配置 - 円の真下に配置 */
+        .object-emoji {
+            position: absolute;
+            top: 75%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 7rem;
+            z-index: 5;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+        }
+
+        /* サイドバー */
+        .sidebar {
+            background: #0f172a;
+            border-left: 1px solid #1e293b;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .word-btn {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 12px;
+            background: #1e293b;
+            border: 2px solid transparent;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .word-btn:hover { background: #334155; }
+        .word-btn.active { border-color: #6366f1; background: #1e1b4b; transform: translateX(-5px); }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- 学習ステージ -->
+        <div class="stage">
+            <div class="target-sphere"></div>
+            
+            <div id="emoji-display" class="object-emoji">👒</div>
+
+            <!-- 格カードレイヤー -->
+            <div class="case-container w-full h-full relative" id="case-layer">
+                <!-- JSで生成 -->
+            </div>
+        </div>
+
+        <!-- サイドバー（右利き用操作） -->
+        <div class="sidebar no-scrollbar">
+            <div class="mb-8">
+                <h1 class="text-2xl font-black text-white leading-none">Suomi Case</h1>
+                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em]">Learning Viz</span>
+            </div>
+
+            <div id="word-list"></div>
+            
+            <div class="mt-10 p-5 bg-slate-900/80 rounded-2xl border border-slate-800 text-[11px] text-slate-400 leading-relaxed">
+                <p class="font-bold text-slate-200 mb-2">アニメーションのルール:</p>
+                <div class="space-y-3">
+                    <p><span class="text-rose-500 font-black">●</span> <strong>入格 (Illatiivi):</strong> 外で1秒待機後、1秒かけて「中」へ移動します。</p>
+                    <p><span class="text-emerald-500 font-black">●</span> <strong>接格系:</strong> 円の「上」の面に対する動きを表します。</p>
+                    <p><span class="text-indigo-500 font-black">●</span> <strong>主格:</strong> すべての基本として下部に配置されています。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WORDS = [
+            { id: 'hattu', base: 'hattu', meaning: '帽子', emoji: '👒', forms: { Nominatiivi: 'hattu', Genetiivi: 'hatun', Partitiivi: 'hattua', Inessiivi: 'hatussa', Elatiivi: 'hatusta', Illatiivi: 'hattuun', Adessiivi: 'hatulla', Ablatiivi: 'hatulta', Allatiivi: 'hatulle', Essiivi: 'hattuna' } },
+            { id: 'talo', base: 'talo', meaning: '家', emoji: '🏠', forms: { Nominatiivi: 'talo', Genetiivi: 'talon', Partitiivi: 'taloa', Inessiivi: 'talossa', Elatiivi: 'talosta', Illatiivi: 'taloon', Adessiivi: 'talolla', Ablatiivi: 'talolta', Allatiivi: 'talolle', Essiivi: 'talona' } },
+            { id: 'koira', base: 'koira', meaning: '犬', emoji: '🐶', forms: { Nominatiivi: 'koira', Genetiivi: 'koiran', Partitiivi: 'koiraa', Inessiivi: 'koirassa', Elatiivi: 'koirasta', Illatiivi: 'koiraan', Adessiivi: 'koiralla', Ablatiivi: 'koiralta', Allatiivi: 'koiralle', Essiivi: 'koirana' } },
+            { id: 'auto', base: 'auto', meaning: '車', emoji: '🚗', forms: { Nominatiivi: 'auto', Genetiivi: 'auton', Partitiivi: 'autoa', Inessiivi: 'autossa', Elatiivi: 'autosta', Illatiivi: 'autoon', Adessiivi: 'autolla', Ablatiivi: 'autolta', Allatiivi: 'autolle', Essiivi: 'autona' } }
+        ];
+
+        const CASE_CONFIGS = [
+            { id: 'Inessiivi', name: '内格', desc: '中で', class: 'pos-inessive', color: '#f43f5e' },
+            { id: 'Illatiivi', name: '入格', desc: '中へ', class: 'pos-illative', color: '#fb7185' },
+            { id: 'Elatiivi', name: '出格', desc: '中から', class: 'pos-elative', color: '#fb7185' },
+            
+            { id: 'Adessiivi', name: '接格', desc: '上で', class: 'pos-adessive', color: '#10b981' },
+            { id: 'Allatiivi', name: '向格', desc: '上へ', class: 'pos-allative', color: '#34d399' },
+            { id: 'Ablatiivi', name: '奪格', desc: '上から', class: 'pos-ablative', color: '#34d399' },
+            
+            { id: 'Nominatiivi', name: '主格', desc: '基本形', class: 'pos-nominative', color: '#6366f1' },
+            { id: 'Genetiivi', name: '属格', desc: '〜の', class: 'pos-genitive', color: '#818cf8' },
+            { id: 'Partitiivi', name: '分格', desc: '一部', class: 'pos-partitive', color: '#94a3b8' },
+            { id: 'Essiivi', name: '具格', desc: 'として', class: 'pos-essive', color: '#94a3b8' },
+        ];
+
+        let currentWord = WORDS[0];
+
+        function init() {
+            renderWordList();
+            renderCases();
+        }
+
+        function renderWordList() {
+            const list = document.getElementById('word-list');
+            list.innerHTML = '';
+            WORDS.forEach(w => {
+                const btn = document.createElement('button');
+                btn.className = `word-btn ${currentWord.id === w.id ? 'active' : ''}`;
+                btn.innerHTML = `
+                    <span class="text-2xl">${w.emoji}</span>
+                    <div class="text-left">
+                        <div class="font-black text-sm text-white">${w.base}</div>
+                        <div class="text-[10px] text-slate-500 font-bold">${w.meaning}</div>
+                    </div>
+                `;
+                btn.onclick = () => {
+                    currentWord = w;
+                    updateUI();
+                };
+                list.appendChild(btn);
+            });
+        }
+
+        function renderCases() {
+            const container = document.getElementById('case-layer');
+            container.innerHTML = '';
+            CASE_CONFIGS.forEach(c => {
+                const card = document.createElement('div');
+                card.className = `case-card ${c.class}`;
+                card.id = `node-${c.id}`;
+                updateCardContent(card, c);
+                container.appendChild(card);
+            });
+        }
+
+        function updateCardContent(el, c) {
+            const form = currentWord.forms[c.id];
+            el.innerHTML = `
+                <div class="text-[9px] font-black uppercase tracking-tighter mb-0.5" style="color: ${c.color}">${c.name}</div>
+                <div class="text-[15px] font-black text-white leading-tight">${form}</div>
+                <div class="text-[8px] text-slate-500 font-bold mt-0.5">${c.desc}</div>
+            `;
+        }
+
+        function updateUI() {
+            renderWordList();
+            document.getElementById('emoji-display').textContent = currentWord.emoji;
+            CASE_CONFIGS.forEach(c => {
+                const card = document.getElementById(`node-${c.id}`);
+                updateCardContent(card, c);
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
