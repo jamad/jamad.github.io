@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Addit-Lab</title>
+    <title>Addit-Lab ✨</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&family=Nunito:wght@400;700&display=swap');
-
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        
         body {
-            font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif;
-            background-color: #f0f4f8;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #FFD1DC 0%, #E6E6FA 50%, #B4E7CE 100%);
+            background-attachment: fixed;
             touch-action: manipulation;
             overflow: hidden;
         }
@@ -19,80 +20,122 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background: white;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 20px 60px rgba(255, 192, 203, 0.3);
+            backdrop-filter: blur(10px);
         }
 
         @media (min-width: 768px) and (orientation: landscape) {
             .game-container {
                 flex-direction: row;
-                height: 90vh;
-                margin-top: 5vh;
-                border-radius: 20px;
+                height: 92vh;
+                margin-top: 4vh;
+                border-radius: 30px;
             }
-            .panel-left { width: 50%; border-right: 2px solid #eee; }
+            .panel-left { width: 50%; border-right: 3px solid rgba(255, 209, 220, 0.3); }
             .panel-right { width: 50%; }
         }
 
-        .food-display { transition: all 0.3s ease; }
+        .food-display { 
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            filter: drop-shadow(0 5px 15px rgba(255, 182, 193, 0.4));
+        }
         
         .toxic-glow {
-            filter: drop-shadow(0 0 15px #00ff00);
+            filter: drop-shadow(0 0 20px #00ff00) drop-shadow(0 0 40px #00ff00);
             animation: pulse 1s infinite;
         }
-        .tasty-glow { filter: drop-shadow(0 0 15px #ffaa00); }
+        .tasty-glow { 
+            filter: drop-shadow(0 0 20px #FFD700) drop-shadow(0 0 30px #FFA500);
+        }
+        .warning-glow {
+            filter: drop-shadow(0 0 15px #FF6B6B);
+        }
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.08); }
             100% { transform: scale(1); }
         }
         @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+            0% { transform: translateY(0px) rotate(-2deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(-2deg); }
         }
-        .floating { animation: float 3s ease-in-out infinite; }
+        .floating { animation: float 3.5s ease-in-out infinite; }
 
-        .pop-anim { animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .pop-anim { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes pop {
-            0% { transform: scale(0.9); }
-            50% { transform: scale(1.1); }
+            0% { transform: scale(0.85); }
+            50% { transform: scale(1.15); }
             100% { transform: scale(1); }
         }
 
-        .stat-bar-fill { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s; }
-        .btn-press { transition: transform 0.1s; }
-        .btn-press:active { transform: scale(0.95); }
+        .stat-bar-fill { transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s; }
+        .btn-press { transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-press:active { transform: scale(0.93); }
+        .btn-press:hover { transform: translateY(-2px); }
 
-        /* Scrollbar hide for clean UI */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .modal-overlay {
-            background-color: rgba(0,0,0,0.7);
-            backdrop-filter: blur(5px);
+            background: linear-gradient(135deg, rgba(255, 209, 220, 0.95), rgba(230, 230, 250, 0.95));
+            backdrop-filter: blur(10px);
         }
 
         .cost-text {
-            animation: fadeUp 1s forwards;
+            animation: fadeUp 1.2s forwards;
+            font-weight: 800;
         }
         @keyframes fadeUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            50% { transform: translateY(-15px) scale(1.1); }
+            100% { opacity: 0; transform: translateY(-30px) scale(0.8); }
+        }
+
+        .ingredient-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border: 2px solid;
+            border-radius: 16px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ingredient-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 245, 250, 0.9));
+            border: 2px solid rgba(255, 192, 203, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .warning-badge {
+            background: linear-gradient(135deg, #FF6B6B, #FFB6C1);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 800;
+            display: inline-block;
+            margin: 2px;
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, #FFD1DC 0%, #E6E6FA 100%);
         }
     </style>
 </head>
 <body class="text-slate-700 select-none">
 
-    <!-- Game Container -->
     <div class="game-container relative overflow-hidden">
         
-        <!-- Language Selector -->
         <div class="absolute top-4 right-4 z-50">
-            <select id="langSelect" onchange="game.setLanguage(this.value)" class="bg-white/80 backdrop-blur border border-slate-300 text-slate-700 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-blue-500">
+            <select id="langSelect" onchange="game.setLanguage(this.value)" class="bg-white/90 backdrop-blur border-2 border-pink-200 text-slate-700 text-sm rounded-full px-3 py-2 focus:outline-none focus:border-pink-400 font-bold shadow-lg">
                 <option value="ja">🇯🇵 日本語</option>
                 <option value="en">🇺🇸 English</option>
                 <option value="fi">🇫🇮 Suomi</option>
@@ -100,194 +143,298 @@
             </select>
         </div>
 
-        <!-- Header: Stats -->
-        <div class="panel-left flex flex-col p-4 bg-slate-50 flex-grow relative z-10">
-            <div class="flex justify-between items-center mb-4 pr-16">
-                <div class="bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
-                    <span id="labelMoney" class="text-xs text-slate-400 font-bold block">資金</span>
-                    <span id="moneyDisplay" class="text-xl font-bold text-green-600">¥ 1,000,000</span>
+        <div class="panel-left flex flex-col p-5 header-gradient flex-grow relative z-10">
+            <div class="flex justify-between items-center mb-6 pr-20">
+                <div class="bg-white/90 px-5 py-3 rounded-full shadow-lg border-2 border-green-200">
+                    <span id="labelMoney" class="text-xs text-green-500 font-bold block tracking-wider">資金</span>
+                    <span id="moneyDisplay" class="text-2xl font-black text-green-600">¥ 1,000,000</span>
                 </div>
-                <div class="bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
-                    <span id="labelReputation" class="text-xs text-slate-400 font-bold block">評判</span>
-                    <span id="reputationDisplay" class="text-xl font-bold text-blue-600">★ 3.0</span>
+                <div class="bg-white/90 px-5 py-3 rounded-full shadow-lg border-2 border-yellow-200">
+                    <span id="labelReputation" class="text-xs text-yellow-500 font-bold block tracking-wider">評判</span>
+                    <span id="reputationDisplay" class="text-2xl font-black text-yellow-600">★ 3.0</span>
                 </div>
             </div>
 
-            <!-- Main Food Display -->
             <div class="flex-grow flex flex-col justify-center items-center relative py-6">
-                <!-- BG Circle -->
                 <div class="absolute inset-0 flex justify-center items-center opacity-10 pointer-events-none">
-                    <svg width="300" height="300" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="1" fill="none" stroke-dasharray="5,5" />
-                        <circle cx="50" cy="50" r="30" stroke="currentColor" stroke-width="1" fill="none" />
+                    <svg width="350" height="350" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" stroke="url(#gradient1)" stroke-width="1.5" fill="none" stroke-dasharray="8,4" />
+                        <circle cx="50" cy="50" r="35" stroke="url(#gradient1)" stroke-width="1" fill="none" />
+                        <defs>
+                            <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FFD1DC;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#E6E6FA;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
                     </svg>
                 </div>
                 
                 <div id="foodEmoji" class="text-9xl mb-4 floating food-display cursor-pointer transition-transform">🥣</div>
-                <h2 id="foodName" class="text-2xl font-bold text-slate-800">空のボウル</h2>
-                <div id="labelBaseFood" class="text-sm text-slate-400 mt-1 min-h-[1.25rem]">...</div>
+                <h2 id="foodName" class="text-3xl font-black text-slate-800 mb-2">空のボウル</h2>
+                <div id="labelBaseFood" class="text-sm text-slate-500 font-semibold mt-1 min-h-[1.25rem]">混合物</div>
+                <div id="warningBadges" class="mt-2 flex flex-wrap gap-1 justify-center max-w-xs"></div>
 
-                <!-- Floating Cost Indicator (Dynamic) -->
                 <div id="floatingCostContainer" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
 
-                <!-- Current Stats Overlay -->
-                <div class="w-full max-w-xs mt-6 space-y-3 bg-white/80 p-4 rounded-xl border border-slate-200 backdrop-blur-sm">
-                    <!-- Flavor -->
+                <div class="w-full max-w-sm mt-6 space-y-3 stat-card p-5">
                     <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span id="labelFlavor" class="font-bold">味・中毒性</span>
-                            <span id="valFlavor">0</span>
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span id="labelFlavor" class="font-bold text-orange-600">🍭 味・中毒性</span>
+                            <span id="valFlavor" class="font-black text-orange-600">0</span>
                         </div>
-                        <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-                            <div id="barFlavor" class="stat-bar-fill h-full bg-orange-400" style="width: 0%"></div>
+                        <div class="h-3 bg-orange-100 rounded-full overflow-hidden shadow-inner">
+                            <div id="barFlavor" class="stat-bar-fill h-full bg-gradient-to-r from-orange-300 to-orange-500" style="width: 0%"></div>
                         </div>
                     </div>
-                    <!-- Appearance -->
                     <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span id="labelAppearance" class="font-bold">見た目・映え</span>
-                            <span id="valAppearance">0</span>
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span id="labelAppearance" class="font-bold text-pink-600">✨ 見た目・映え</span>
+                            <span id="valAppearance" class="font-black text-pink-600">0</span>
                         </div>
-                        <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-                            <div id="barAppearance" class="stat-bar-fill h-full bg-pink-400" style="width: 0%"></div>
+                        <div class="h-3 bg-pink-100 rounded-full overflow-hidden shadow-inner">
+                            <div id="barAppearance" class="stat-bar-fill h-full bg-gradient-to-r from-pink-300 to-pink-500" style="width: 0%"></div>
                         </div>
                     </div>
-                    <!-- Safety -->
                     <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span id="labelSafety" class="font-bold">安全性・健康</span>
-                            <span id="valSafety">100</span>
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span id="labelSafety" class="font-bold text-green-600">💚 健康リスク</span>
+                            <span id="valSafety" class="font-black text-green-600">100</span>
                         </div>
-                        <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-                            <div id="barSafety" class="stat-bar-fill h-full bg-green-500" style="width: 100%"></div>
+                        <div class="h-3 bg-green-100 rounded-full overflow-hidden shadow-inner">
+                            <div id="barSafety" class="stat-bar-fill h-full bg-gradient-to-r from-green-300 to-green-500" style="width: 100%"></div>
                         </div>
                     </div>
-                    <!-- Cost -->
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span id="labelCost" class="font-bold">製造コスト (低いほど利益率UP)</span>
-                            <span id="valCost">0</span>
+                    <div class="grid grid-cols-3 gap-2 pt-2 border-t border-pink-200">
+                        <div class="text-center">
+                            <div class="text-[10px] text-slate-400 font-bold">トランス脂肪</div>
+                            <div id="valTransFat" class="text-sm font-black text-red-500">0g</div>
                         </div>
-                        <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-                            <div id="barCost" class="stat-bar-fill h-full bg-slate-500" style="width: 0%"></div>
+                        <div class="text-center">
+                            <div class="text-[10px] text-slate-400 font-bold">ナトリウム</div>
+                            <div id="valSodium" class="text-sm font-black text-orange-500">0mg</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-[10px] text-slate-400 font-bold">糖質</div>
+                            <div id="valSugar" class="text-sm font-black text-purple-500">0g</div>
+                        </div>
+                    </div>
+                    <div class="pt-2">
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span id="labelCost" class="font-bold text-blue-600">💰 製造コスト</span>
+                            <span id="valCost" class="font-black text-blue-600">0</span>
+                        </div>
+                        <div class="h-3 bg-blue-100 rounded-full overflow-hidden shadow-inner">
+                            <div id="barCost" class="stat-bar-fill h-full bg-gradient-to-r from-blue-300 to-blue-500" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Controls Area -->
-        <div class="panel-right bg-white border-t border-slate-200 flex flex-col z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] h-[45vh] md:h-auto">
+        <div class="panel-right bg-white border-t-4 border-pink-200 flex flex-col z-20 shadow-[0_-5px_25px_rgba(255,182,193,0.2)] h-[50vh] md:h-auto">
             
-            <!-- Tabs or Section Headers could go here, but using a single scrollable list for simplicity on mobile -->
-            <div class="flex justify-between items-center px-4 pt-2 pb-1 border-b border-slate-100">
-                <h3 id="labelIngredientsTitle" class="font-bold text-slate-500 text-sm">原材料 & 添加物</h3>
-                <button id="btnReset" onclick="game.resetFood()" class="text-xs text-red-400 hover:text-red-600 underline">リセット</button>
+            <div class="flex justify-between items-center px-5 pt-3 pb-2 bg-gradient-to-r from-pink-50 to-purple-50 border-b-2 border-pink-100">
+                <h3 id="labelIngredientsTitle" class="font-black text-pink-600 text-base">🧪 原材料 & 添加物</h3>
+                <button id="btnReset" onclick="game.resetFood()" class="text-xs text-red-400 hover:text-red-600 font-bold underline">リセット</button>
             </div>
             
             <div class="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar">
                 
-                <!-- Base Ingredients Section -->
                 <div>
-                    <h4 id="headerBase" class="text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">ベース素材 (製造コスト↑)</h4>
+                    <h4 id="headerBase" class="text-xs font-black text-pink-400 uppercase mb-3 tracking-widest">🥤 ベース素材</h4>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="game.addIngredient('water')" class="btn-press bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-2 flex items-center gap-2 text-left">
-                            <div class="text-xl">💧</div>
-                            <div class="leading-tight">
-                                <div id="nameWater" class="font-bold text-sm text-slate-700">水</div>
+                        <button onclick="game.addIngredient('water')" class="ingredient-card btn-press border-blue-300 hover:border-blue-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-2xl">💧</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-sm text-blue-700">水</div>
+                                <div class="text-[9px] text-slate-400 font-semibold">+¥5</div>
                             </div>
                         </button>
-                        <button onclick="game.addIngredient('flour')" class="btn-press bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 rounded-lg p-2 flex items-center gap-2 text-left">
-                            <div class="text-xl">🌾</div>
-                            <div class="leading-tight">
-                                <div id="nameFlour" class="font-bold text-sm text-slate-700">小麦粉</div>
+                        <button onclick="game.addIngredient('carbonated')" class="ingredient-card btn-press border-cyan-300 hover:border-cyan-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-2xl">🫧</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-sm text-cyan-700">炭酸水</div>
+                                <div class="text-[9px] text-slate-400 font-semibold">+¥8</div>
                             </div>
                         </button>
-                        <button onclick="game.addIngredient('meat')" class="btn-press bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg p-2 flex items-center gap-2 text-left">
-                            <div class="text-xl">🥩</div>
-                            <div class="leading-tight">
-                                <div id="nameMeat" class="font-bold text-sm text-slate-700">肉ペースト</div>
+                        <button onclick="game.addIngredient('flour')" class="ingredient-card btn-press border-yellow-300 hover:border-yellow-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-2xl">🌾</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-sm text-yellow-700">小麦粉</div>
+                                <div class="text-[9px] text-slate-400 font-semibold">+¥10</div>
                             </div>
                         </button>
-                        <button onclick="game.addIngredient('gelatin')" class="btn-press bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg p-2 flex items-center gap-2 text-left">
-                            <div class="text-xl">🦴</div>
-                            <div class="leading-tight">
-                                <div id="nameGelatin" class="font-bold text-sm text-slate-700">ゼラチン</div>
+                        <button onclick="game.addIngredient('oil')" class="ingredient-card btn-press border-amber-300 hover:border-amber-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-2xl">🧈</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-sm text-amber-700">植物油脂</div>
+                                <div class="text-[9px] text-slate-400 font-semibold">+¥12</div>
+                            </div>
+                        </button>
+                        <button onclick="game.addIngredient('meat')" class="ingredient-card btn-press border-red-300 hover:border-red-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-2xl">🥩</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-sm text-red-700">肉ペースト</div>
+                                <div class="text-[9px] text-slate-400 font-semibold">+¥35</div>
+                            </div>
+                        </button>
+                        <button onclick="game.addIngredient('gelatin')" class="ingredient-card btn-press border-orange-300 hover:border-orange-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-2xl">🦴</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-sm text-orange-700">ゼラチン</div>
+                                <div class="text-[9px] text-slate-400 font-semibold">+¥15</div>
                             </div>
                         </button>
                     </div>
                 </div>
 
-                <!-- Additives Section -->
                 <div>
-                    <h4 id="headerAdditives" class="text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">化学添加物 (研究費がかかる)</h4>
+                    <h4 class="text-xs font-black text-purple-400 uppercase mb-3 tracking-widest">🍬 甘味料・酸味料</h4>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="game.addAdditive('color')" class="btn-press bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-lg p-2 flex items-center gap-2 text-left">
-                            <div class="text-xl bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🎨</div>
-                            <div class="leading-tight">
-                                <div id="nameColor" class="font-bold text-sm text-pink-700">合成着色料</div>
-                                <div class="text-[10px] text-slate-500 font-mono">-¥1,000</div>
+                        <button onclick="game.addAdditive('hfcs')" class="ingredient-card btn-press border-purple-300 hover:border-purple-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-purple-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🍯</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-purple-700">ブドウ糖果糖液糖</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥1,200</div>
                             </div>
                         </button>
-
-                        <button onclick="game.addAdditive('preservative')" class="btn-press bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-2 flex items-center gap-2 text-left">
-                            <div class="text-xl bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🧪</div>
-                            <div class="leading-tight">
-                                <div id="namePreservative" class="font-bold text-sm text-blue-700">保存料</div>
-                                <div class="text-[10px] text-slate-500 font-mono">-¥2,000</div>
+                        <button onclick="game.addAdditive('aspartame')" class="ingredient-card btn-press border-pink-300 hover:border-pink-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-pink-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">💊</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-pink-700">アスパルテーム</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥2,000</div>
                             </div>
                         </button>
-
-                        <button onclick="game.addAdditive('msg')" class="btn-press bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg p-2 flex items-center gap-2 text-left">
-                            <div class="text-xl bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-sm">💊</div>
-                            <div class="leading-tight">
-                                <div id="nameMsg" class="font-bold text-sm text-orange-700">化学調味料</div>
-                                <div class="text-[10px] text-slate-500 font-mono">-¥3,000</div>
+                        <button onclick="game.addAdditive('acesulfame')" class="ingredient-card btn-press border-fuchsia-300 hover:border-fuchsia-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-fuchsia-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🧁</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-fuchsia-700">アセスルファムK</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥1,800</div>
                             </div>
                         </button>
+                        <button onclick="game.addAdditive('citric')" class="ingredient-card btn-press border-lime-300 hover:border-lime-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-lime-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🍋</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-lime-700">クエン酸</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥800</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
 
-                        <button onclick="game.addAdditive('sweetener')" class="btn-press bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg p-2 flex items-center gap-2 text-left">
-                            <div class="text-xl bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🍬</div>
-                            <div class="leading-tight">
-                                <div id="nameSweetener" class="font-bold text-sm text-purple-700">人工甘味料</div>
-                                <div class="text-[10px] text-slate-500 font-mono">-¥1,500</div>
+                <div>
+                    <h4 class="text-xs font-black text-rose-400 uppercase mb-3 tracking-widest">🎨 着色料・香料</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="game.addAdditive('color')" class="ingredient-card btn-press border-rose-300 hover:border-rose-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-rose-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🎨</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-rose-700">合成着色料</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥1,000</div>
+                            </div>
+                        </button>
+                        <button onclick="game.addAdditive('caramel')" class="ingredient-card btn-press border-amber-300 hover:border-amber-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-amber-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🍮</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-amber-700">カラメル色素</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥900</div>
+                            </div>
+                        </button>
+                        <button onclick="game.addAdditive('flavor')" class="ingredient-card btn-press border-violet-300 hover:border-violet-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-violet-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🌸</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-violet-700">香料</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥1,500</div>
+                            </div>
+                        </button>
+                        <button onclick="game.addAdditive('msg')" class="ingredient-card btn-press border-orange-300 hover:border-orange-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-orange-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🧂</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-orange-700">MSG</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥2,500</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-black text-blue-400 uppercase mb-3 tracking-widest">🧪 保存料・その他</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="game.addAdditive('sorbic')" class="ingredient-card btn-press border-blue-300 hover:border-blue-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-blue-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🧴</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-blue-700">ソルビン酸K</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥1,600</div>
+                            </div>
+                        </button>
+                        <button onclick="game.addAdditive('benzoate')" class="ingredient-card btn-press border-indigo-300 hover:border-indigo-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-indigo-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">💉</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-indigo-700">安息香酸Na</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥1,400</div>
+                            </div>
+                        </button>
+                        <button onclick="game.addAdditive('phosphate')" class="ingredient-card btn-press border-teal-300 hover:border-teal-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-teal-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">⚗️</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-teal-700">リン酸塩</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥1,300</div>
+                            </div>
+                        </button>
+                        <button onclick="game.addAdditive('nitrite')" class="ingredient-card btn-press border-red-400 hover:border-red-500 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-red-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">☢️</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-red-700">亜硝酸Na</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥2,200</div>
+                            </div>
+                        </button>
+                        <button onclick="game.addAdditive('transfat')" class="ingredient-card btn-press border-yellow-400 hover:border-yellow-500 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-yellow-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🧈</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-yellow-700">部分水素添加油脂</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥1,100</div>
+                            </div>
+                        </button>
+                        <button onclick="game.addAdditive('casein')" class="ingredient-card btn-press border-sky-300 hover:border-sky-400 p-2.5 flex items-center gap-2 text-left">
+                            <div class="text-xl bg-sky-100 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">🥛</div>
+                            <div class="leading-tight flex-1">
+                                <div class="font-bold text-[11px] text-sky-700">カゼインNa</div>
+                                <div class="text-[9px] text-red-500 font-bold">-¥1,700</div>
                             </div>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div class="p-4 border-t border-slate-100">
-                <button onclick="game.sellProduct()" class="btn-press w-full bg-gradient-to-r from-slate-800 to-slate-700 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 hover:from-slate-700 hover:to-slate-600 transition-all">
-                    <span id="btnShip">完成！出荷する</span>
-                    <span class="text-xl">🚀</span>
+            <div class="p-4 bg-gradient-to-r from-pink-50 to-purple-50 border-t-2 border-pink-200">
+                <button onclick="game.sellProduct()" class="btn-press w-full bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 text-white font-black py-4 rounded-2xl shadow-xl flex items-center justify-center gap-3 hover:shadow-2xl transition-all text-lg">
+                    <span>完成！出荷する</span>
+                    <span class="text-2xl">🚀</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Result Modal -->
     <div id="resultModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-[90%] shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
-            <div class="text-center mb-4">
-                <div id="resultEmoji" class="text-6xl mb-2">🎉</div>
-                <h2 id="resultTitle" class="text-2xl font-bold text-slate-800">大ヒット！</h2>
-                <p id="resultDesc" class="text-slate-500 text-sm mt-2">...</p>
+        <div class="bg-white rounded-3xl p-8 max-w-md w-[92%] shadow-2xl transform scale-95 transition-transform duration-300 border-4 border-pink-200" id="modalContent">
+            <div class="text-center mb-6">
+                <div id="resultEmoji" class="text-7xl mb-3">🎉</div>
+                <h2 id="resultTitle" class="text-3xl font-black text-slate-800 mb-3">大ヒット！</h2>
+                <p id="resultDesc" class="text-slate-600 text-sm leading-relaxed">中毒的な美味しさでバカ売れ！</p>
             </div>
             
-            <div class="bg-slate-50 rounded-lg p-4 mb-6 space-y-2">
-                <div class="flex justify-between items-center border-b border-slate-200 pb-2">
-                    <span id="labelResultSales" class="text-sm font-bold text-slate-600">売上</span>
-                    <span id="resultSales" class="font-bold text-green-600">+ 0</span>
+            <div class="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-5 mb-6 space-y-3 border-2 border-pink-100">
+                <div class="flex justify-between items-center border-b-2 border-pink-200 pb-3">
+                    <span class="text-sm font-bold text-slate-700">💰 売上</span>
+                    <span id="resultSales" class="font-black text-xl text-green-600">+ 0</span>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span id="labelResultRep" class="text-sm font-bold text-slate-600">世間の評価</span>
-                    <span id="resultRep" class="font-bold text-blue-600">+ 0</span>
+                    <span class="text-sm font-bold text-slate-700">⭐ 世間の評価</span>
+                    <span id="resultRep" class="font-black text-xl text-blue-600">+ 0</span>
                 </div>
             </div>
 
-            <button id="btnNext" onclick="game.closeModal()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-500 transition-colors">
-                次の開発へ
+            <button onclick="game.closeModal()" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-black py-4 rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg text-lg">
+                次の開発へ ✨
             </button>
         </div>
     </div>
@@ -514,46 +661,35 @@
 
         class SoundManager {
             constructor() {
-                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                this.masterGain = this.ctx.createGain();
-                this.masterGain.gain.value = 0.3;
-                this.masterGain.connect(this.ctx.destination);
+                try {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.value = 0.25;
+                    this.masterGain.connect(this.ctx.destination);
+                } catch(e) {
+                    this.ctx = null;
+                }
             }
             playTone(freq, type, duration, startTime = 0) {
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, this.ctx.currentTime + startTime);
-                gain.gain.setValueAtTime(0.5, this.ctx.currentTime + startTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + startTime + duration);
-                osc.connect(gain);
-                gain.connect(this.masterGain);
-                osc.start(this.ctx.currentTime + startTime);
-                osc.stop(this.ctx.currentTime + startTime + duration);
+                if (!this.ctx || this.ctx.state === 'suspended') return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + startTime);
+                    gain.gain.setValueAtTime(0.4, this.ctx.currentTime + startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + startTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.masterGain);
+                    osc.start(this.ctx.currentTime + startTime);
+                    osc.stop(this.ctx.currentTime + startTime + duration);
+                } catch(e) {}
             }
-            playAdd() {
-                this.playTone(800, 'sine', 0.1);
-                this.playTone(600, 'sine', 0.1, 0.05);
-            }
-            playAddBase() {
-                this.playTone(200, 'triangle', 0.15);
-                this.playTone(150, 'triangle', 0.2, 0.1);
-            }
-            playSuccess() {
-                this.playTone(1200, 'square', 0.1, 0);
-                this.playTone(1600, 'square', 0.4, 0.1);
-            }
-            playFail() {
-                this.playTone(150, 'sawtooth', 0.4);
-                this.playTone(100, 'sawtooth', 0.4, 0.2);
-            }
-            playWarning() {
-                this.playTone(300, 'sawtooth', 0.2);
-            }
-            playCash() {
-                this.playTone(2000, 'sine', 0.05);
-            }
+            playAdd() { this.playTone(900, 'sine', 0.08); this.playTone(700, 'sine', 0.08, 0.04); }
+            playAddBase() { this.playTone(250, 'triangle', 0.12); this.playTone(200, 'triangle', 0.15, 0.08); }
+            playSuccess() { this.playTone(1400, 'square', 0.08, 0); this.playTone(1800, 'square', 0.35, 0.08); }
+            playFail() { this.playTone(180, 'sawtooth', 0.35); this.playTone(120, 'sawtooth', 0.35, 0.15); }
+            playWarning() { this.playTone(350, 'sawtooth', 0.18); }
         }
 
         class Game {
@@ -562,58 +698,63 @@
                 this.currentLang = 'ja';
                 
                 this.additives = {
-                    color: { id: 'add_color', flavor: 0, appearance: 25, safety: -15, cost: -5, researchCost: 1000 },
-                    preservative: { id: 'add_preservative', flavor: -5, appearance: 5, safety: -10, cost: -15, researchCost: 2000 },
-                    msg: { id: 'add_msg', flavor: 30, appearance: 0, safety: -20, cost: -8, researchCost: 3000 },
-                    sweetener: { id: 'add_sweetener', flavor: 20, appearance: 0, safety: -10, cost: -12, researchCost: 1500 }
+                    hfcs: { flavor: 15, appearance: 5, safety: -12, cost: -8, sugar: 45, researchCost: 1200 },
+                    aspartame: { flavor: 25, appearance: 0, safety: -18, cost: -15, sugar: 0, researchCost: 2000 },
+                    acesulfame: { flavor: 22, appearance: 0, safety: -15, cost: -12, sugar: 0, researchCost: 1800 },
+                    citric: { flavor: 18, appearance: 5, safety: -5, cost: -6, researchCost: 800 },
+                    color: { flavor: 0, appearance: 30, safety: -18, cost: -7, researchCost: 1000 },
+                    caramel: { flavor: 5, appearance: 25, safety: -10, cost: -6, researchCost: 900 },
+                    flavor: { flavor: 28, appearance: 10, safety: -14, cost: -10, researchCost: 1500 },
+                    msg: { flavor: 35, appearance: 0, safety: -22, cost: -12, sodium: 800, researchCost: 2500 },
+                    sorbic: { flavor: -8, appearance: 3, safety: -12, cost: -14, researchCost: 1600 },
+                    benzoate: { flavor: -6, appearance: 2, safety: -10, cost: -12, researchCost: 1400 },
+                    phosphate: { flavor: 8, appearance: 12, safety: -16, cost: -10, sodium: 500, researchCost: 1300 },
+                    nitrite: { flavor: 5, appearance: 20, safety: -25, cost: -15, researchCost: 2200 },
+                    transfat: { flavor: 20, appearance: 15, safety: -30, cost: -18, transFat: 3.5, researchCost: 1100 },
+                    casein: { flavor: 12, appearance: 18, safety: -8, cost: -11, sodium: 300, researchCost: 1700 }
                 };
 
                 this.baseIngredients = {
-                    water: { id: 'ing_water', flavor: 0, appearance: 0, safety: 10, cost: 5, type: 'liquid' },
-                    flour: { id: 'ing_flour', flavor: 5, appearance: 5, safety: 20, cost: 10, type: 'powder' },
-                    meat: { id: 'ing_meat', flavor: 20, appearance: 20, safety: 15, cost: 40, type: 'solid' },
-                    gelatin: { id: 'ing_gelatin', flavor: 0, appearance: 10, safety: 20, cost: 15, type: 'thickener' }
+                    water: { flavor: 0, appearance: 0, safety: 15, cost: 5, type: 'liquid' },
+                    carbonated: { flavor: 5, appearance: 8, safety: 12, cost: 8, type: 'liquid' },
+                    flour: { flavor: 8, appearance: 8, safety: 22, cost: 10, type: 'powder' },
+                    oil: { flavor: 10, appearance: 10, safety: 18, cost: 12, type: 'fat', transFat: 0.2 },
+                    meat: { flavor: 25, appearance: 25, safety: 20, cost: 35, type: 'solid', sodium: 200 },
+                    gelatin: { flavor: 0, appearance: 15, safety: 25, cost: 15, type: 'thickener' }
                 };
 
                 this.state = {
                     money: 1000000,
                     reputation: 3.0,
-                    addedIngredients: [], // list of keys
-                    stats: { flavor: 0, appearance: 0, safety: 100, cost: 0 },
-                    currentProductType: 'prod_empty',
+                    addedIngredients: [],
+                    stats: { flavor: 0, appearance: 0, safety: 100, cost: 0, transFat: 0, sodium: 0, sugar: 0 },
+                    currentProductType: 'empty',
                     emoji: '🥣'
                 };
 
                 this.init();
             }
 
-            t(key) { return TRANSLATIONS[this.currentLang][key] || key; }
+            init() { this.resetFood(); }
 
             setLanguage(lang) {
                 this.currentLang = lang;
                 this.updateUI();
             }
 
-            init() {
-                this.resetFood();
-            }
-
             resetFood() {
                 if (this.state.addedIngredients && this.state.addedIngredients.length > 0) this.sound.playWarning();
                 
                 this.state.addedIngredients = [];
-                this.state.stats = { flavor: 0, appearance: 0, safety: 100, cost: 0 };
-                this.state.currentProductType = 'prod_empty';
+                this.state.stats = { flavor: 0, appearance: 0, safety: 100, cost: 0, transFat: 0, sodium: 0, sugar: 0 };
+                this.state.currentProductType = 'empty';
                 this.state.emoji = '🥣';
                 
-                // Remove visual effects
                 const emoji = document.getElementById('foodEmoji');
                 emoji.className = "text-9xl mb-4 floating food-display cursor-pointer transition-transform"; 
                 
                 this.updateUI();
             }
-
-            // --- Core Logic ---
 
             addIngredient(key) {
                 const ing = this.baseIngredients[key];
@@ -621,14 +762,13 @@
 
                 this.state.addedIngredients.push(key);
                 
-                // Base ingredients INCREASE unit cost (materials)
                 this.state.stats.flavor += ing.flavor;
                 this.state.stats.appearance += ing.appearance;
-                // Safety logic: Fresh ingredients are generally safe, but mixing too much might not be
-                this.state.stats.safety = (this.state.stats.safety + ing.safety) / (this.state.addedIngredients.length === 1 ? 1 : 1.1);
+                this.state.stats.safety = (this.state.stats.safety + ing.safety) / (this.state.addedIngredients.length === 1 ? 1 : 1.08);
                 this.state.stats.cost += ing.cost;
+                this.state.stats.transFat += ing.transFat || 0;
+                this.state.stats.sodium += ing.sodium || 0;
                 
-                // Small cost to buy ingredients
                 this.state.money -= 100; 
 
                 this.sound.playAddBase();
@@ -643,18 +783,20 @@
                 
                 if (this.state.money < add.researchCost) {
                     this.sound.playWarning();
-                    alert("資金不足です / Not enough funds");
+                    alert(this.currentLang === 'ja' ? "資金不足です" : "Not enough funds");
                     return;
                 }
 
                 this.state.addedIngredients.push(key);
                 this.state.money -= add.researchCost;
 
-                // Additives DECREASE unit cost (optimization) but lower safety
                 this.state.stats.flavor += add.flavor;
                 this.state.stats.appearance += add.appearance;
                 this.state.stats.safety += add.safety;
-                this.state.stats.cost += add.cost; // Negative value reduces cost
+                this.state.stats.cost += add.cost;
+                this.state.stats.transFat += add.transFat || 0;
+                this.state.stats.sodium += add.sodium || 0;
+                this.state.stats.sugar += add.sugar || 0;
 
                 this.sound.playAdd();
                 this.showFloatingCost(`- ¥${add.researchCost.toLocaleString()}`);
@@ -666,60 +808,96 @@
             showFloatingCost(text) {
                 const container = document.getElementById('floatingCostContainer');
                 const el = document.createElement('div');
-                el.className = 'cost-text font-bold text-red-500 text-lg absolute whitespace-nowrap';
+                el.className = 'cost-text text-red-500 text-xl absolute whitespace-nowrap';
                 el.innerText = text;
-                el.style.left = (Math.random() * 40 - 20) + 'px';
-                el.style.top = (Math.random() * 40 - 20) + 'px';
+                el.style.left = (Math.random() * 60 - 30) + 'px';
+                el.style.top = (Math.random() * 60 - 30) + 'px';
                 container.appendChild(el);
-                setTimeout(() => el.remove(), 1000);
+                setTimeout(() => el.remove(), 1200);
             }
 
             updateProductIdentity() {
                 const ings = this.state.addedIngredients;
                 const has = (k) => ings.includes(k);
                 
-                let type = 'prod_sludge';
+                let type = 'sludge';
                 let emoji = '🧪';
+                let name = '謎のヘドロ';
 
-                // Basic Logic
                 if (ings.length === 0) {
-                    type = 'prod_empty';
+                    type = 'empty';
                     emoji = '🥣';
+                    name = '空のボウル';
                 } else if (ings.every(i => ['water'].includes(i))) {
-                    type = 'prod_water';
+                    type = 'water';
                     emoji = '💧';
+                    name = 'ただの水';
+                } else if (has('carbonated')) {
+                    if ((has('hfcs') || has('aspartame')) && (has('citric') || has('flavor'))) {
+                        if (has('flavor') && this.state.stats.flavor > 50) {
+                            type = 'energy';
+                            emoji = '⚡';
+                            name = 'エナジードリンク';
+                        } else {
+                            type = 'soda';
+                            emoji = '🥤';
+                            name = '炭酸飲料';
+                        }
+                    } else if (has('color') || has('citric')) {
+                        type = 'juice';
+                        emoji = '🧃';
+                        name = '人工ジュース';
+                    }
+                } else if (has('water') && (has('hfcs') || has('aspartame')) && (has('color') || has('citric'))) {
+                    type = 'juice';
+                    emoji = '🧃';
+                    name = '人工ジュース';
                 } else if (has('meat')) {
-                    if (has('preservative') || has('msg')) {
-                        type = 'prod_ham';
+                    if ((has('nitrite') || has('phosphate')) && (has('msg') || has('sorbic'))) {
+                        type = 'sausage';
+                        emoji = '🌭';
+                        name = 'ソーセージ';
+                    } else if (has('sorbic') || has('msg')) {
+                        type = 'ham';
                         emoji = '🍖';
+                        name = '加工ハム';
                     } else {
-                        type = 'prod_meat';
+                        type = 'meat';
                         emoji = '🥩';
+                        name = '生肉の塊';
                     }
                 } else if (has('flour')) {
-                    if (has('sweetener') || has('water')) {
-                        type = 'prod_dough'; // or Cake
-                        emoji = '🍞';
-                    }
-                    if (has('msg') && this.state.stats.flavor > 30) {
-                        type = 'prod_snack';
+                    if ((has('transfat') || has('oil')) && (has('msg') || has('flavor')) && this.state.stats.flavor > 40) {
+                        type = 'snack';
                         emoji = '🍟';
+                        name = 'スナック菓子';
+                    } else {
+                        type = 'dough';
+                        emoji = '🍞';
+                        name = '謎の練り物';
                     }
-                } else if (has('water') && (has('sweetener') || has('color'))) {
-                    type = 'prod_juice';
-                    emoji = '🥤';
-                } else if (has('gelatin') && has('water')) {
-                    type = 'prod_jelly';
-                    emoji = '🍮';
-                } else if (ings.length > 5) {
-                    type = 'prod_sludge';
+                } else if (has('gelatin')) {
+                    if ((has('hfcs') || has('aspartame')) && has('color')) {
+                        type = 'jelly';
+                        emoji = '🍮';
+                        name = 'ゼリー';
+                    } else if (has('hfcs') && has('flavor')) {
+                        type = 'candy';
+                        emoji = '🍬';
+                        name = 'キャンディー';
+                    }
+                }
+
+                if (ings.length > 7) {
+                    type = 'sludge';
                     emoji = '🤢';
+                    name = '謎のヘドロ';
                 }
 
                 this.state.currentProductType = type;
                 this.state.emoji = emoji;
+                this.state.productName = name;
 
-                // Clamp stats
                 this.state.stats.flavor = Math.max(0, Math.min(100, this.state.stats.flavor));
                 this.state.stats.appearance = Math.max(0, Math.min(100, this.state.stats.appearance));
                 this.state.stats.safety = Math.max(0, Math.min(100, this.state.stats.safety));
@@ -732,60 +910,62 @@
                 void emoji.offsetWidth;
                 emoji.classList.add('pop-anim');
                 
-                // Glows
                 emoji.className = "text-9xl mb-4 floating food-display cursor-pointer transition-transform pop-anim";
-                if (this.state.stats.appearance > 70) emoji.classList.add('tasty-glow');
-                if (this.state.stats.safety < 40) emoji.classList.add('toxic-glow');
+                if (this.state.stats.appearance > 75) emoji.classList.add('tasty-glow');
+                if (this.state.stats.safety < 35) emoji.classList.add('toxic-glow');
+                if (this.state.stats.transFat > 2 || this.state.stats.sodium > 1000) emoji.classList.add('warning-glow');
+            }
+
+            updateWarningBadges() {
+                const container = document.getElementById('warningBadges');
+                container.innerHTML = '';
+                
+                if (this.state.stats.transFat > 1) {
+                    const badge = document.createElement('span');
+                    badge.className = 'warning-badge';
+                    badge.textContent = '⚠️ トランス脂肪酸';
+                    container.appendChild(badge);
+                }
+                if (this.state.stats.sodium > 800) {
+                    const badge = document.createElement('span');
+                    badge.className = 'warning-badge';
+                    badge.textContent = '⚠️ 高塩分';
+                    container.appendChild(badge);
+                }
+                if (this.state.stats.sugar > 30) {
+                    const badge = document.createElement('span');
+                    badge.className = 'warning-badge';
+                    badge.textContent = '⚠️ 高糖質';
+                    container.appendChild(badge);
+                }
+                const additiveCount = this.state.addedIngredients.filter(k => this.additives[k]).length;
+                if (additiveCount > 5) {
+                    const badge = document.createElement('span');
+                    badge.className = 'warning-badge';
+                    badge.textContent = '⚠️ 添加物多数';
+                    container.appendChild(badge);
+                }
             }
 
             updateUI() {
                 const s = this.state.stats;
-                const currency = this.t('currency');
 
-                // Labels
-                document.getElementById('labelMoney').textContent = this.t('money');
-                document.getElementById('labelReputation').textContent = this.t('reputation');
-                document.getElementById('labelBaseFood').textContent = this.t('base_food');
-                document.getElementById('labelFlavor').textContent = this.t('flavor');
-                document.getElementById('labelAppearance').textContent = this.t('appearance');
-                document.getElementById('labelSafety').textContent = this.t('safety');
-                document.getElementById('labelCost').textContent = this.t('cost');
-                
-                document.getElementById('headerBase').textContent = this.t('header_base');
-                document.getElementById('headerAdditives').textContent = this.t('header_additives');
-                document.getElementById('labelIngredientsTitle').textContent = this.t('additives_title');
-                document.getElementById('btnReset').textContent = this.t('reset');
-                document.getElementById('btnShip').textContent = this.t('ship');
-
-                // Buttons
-                document.getElementById('nameWater').textContent = this.t('ing_water');
-                document.getElementById('nameFlour').textContent = this.t('ing_flour');
-                document.getElementById('nameMeat').textContent = this.t('ing_meat');
-                document.getElementById('nameGelatin').textContent = this.t('ing_gelatin');
-
-                document.getElementById('nameColor').textContent = this.t('add_color');
-                document.getElementById('namePreservative').textContent = this.t('add_preservative');
-                document.getElementById('nameMsg').textContent = this.t('add_msg');
-                document.getElementById('nameSweetener').textContent = this.t('add_sweetener');
-
-                // Values
-                document.getElementById('moneyDisplay').textContent = `${currency} ${this.state.money.toLocaleString()}`;
+                document.getElementById('moneyDisplay').textContent = `¥ ${this.state.money.toLocaleString()}`;
                 document.getElementById('reputationDisplay').textContent = `★ ${this.state.reputation.toFixed(1)}`;
                 
-                // Main Display
-                document.getElementById('foodName').textContent = this.t(this.state.currentProductType);
+                document.getElementById('foodName').textContent = this.state.productName || '空のボウル';
                 document.getElementById('foodEmoji').textContent = this.state.emoji;
 
-                // Bars
                 this.setBar('Flavor', s.flavor);
                 this.setBar('Appearance', s.appearance);
                 this.setBar('Safety', s.safety, true);
                 this.setBar('Cost', s.cost, false, true);
 
-                // Modal
-                document.getElementById('labelResultSales').textContent = this.t('res_sales');
-                document.getElementById('labelResultRep').textContent = this.t('res_rating');
-                document.getElementById('btnNext').textContent = this.t('res_next');
+                document.getElementById('valTransFat').textContent = s.transFat.toFixed(1) + 'g';
+                document.getElementById('valSodium').textContent = Math.floor(s.sodium) + 'mg';
+                document.getElementById('valSugar').textContent = Math.floor(s.sugar) + 'g';
+
+                this.updateWarningBadges();
             }
 
             setBar(type, value, isSafety = false, isCost = false) {
@@ -795,12 +975,21 @@
                 valText.textContent = Math.floor(value);
 
                 if (isSafety) {
-                    bar.className = `stat-bar-fill h-full transition-colors ${value < 40 ? 'bg-red-500' : value < 70 ? 'bg-yellow-400' : 'bg-green-500'}`;
+                    if (value < 30) {
+                        bar.className = `stat-bar-fill h-full bg-gradient-to-r from-red-400 to-red-600`;
+                    } else if (value < 60) {
+                        bar.className = `stat-bar-fill h-full bg-gradient-to-r from-yellow-300 to-yellow-500`;
+                    } else {
+                        bar.className = `stat-bar-fill h-full bg-gradient-to-r from-green-300 to-green-500`;
+                    }
                 } else if (isCost) {
-                    // Cost: High is red (expensive to make), Low is blue (cheap to make)
-                    // But usually "Unit Cost" low is better for profit. 
-                    // Let's say: 0-30 Good (Blue), 30-70 Mid (Gray), 70-100 Bad (Red)
-                    bar.className = `stat-bar-fill h-full transition-colors ${value > 70 ? 'bg-red-500' : value > 30 ? 'bg-slate-500' : 'bg-blue-500'}`;
+                    if (value > 60) {
+                        bar.className = `stat-bar-fill h-full bg-gradient-to-r from-red-400 to-red-600`;
+                    } else if (value > 30) {
+                        bar.className = `stat-bar-fill h-full bg-gradient-to-r from-blue-300 to-blue-500`;
+                    } else {
+                        bar.className = `stat-bar-fill h-full bg-gradient-to-r from-cyan-300 to-cyan-500`;
+                    }
                 }
             }
 
@@ -808,62 +997,57 @@
                 const s = this.state.stats;
                 const type = this.state.currentProductType;
                 
-                // If nothing added
                 if (this.state.addedIngredients.length === 0) return;
 
-                // Trash detection
-                if (type === 'prod_sludge' || type === 'prod_empty' || type === 'prod_meat' || type === 'prod_dough') {
-                    this.showModal('res_trash_title', 'res_trash_desc', -50000, -0.2, '🗑️');
+                if (s.transFat > 3 && this.state.addedIngredients.filter(k => this.additives[k]).length > 5) {
+                    this.showModal('☢️ 危険すぎて販売中止', 'トランス脂肪酸と添加物まみれで、社内審査で販売中止に。開発費が無駄になりました。', -100000, -0.5, '☢️');
                     this.sound.playFail();
                     return;
                 }
 
-                // Profit Calculation
-                // Profit = (Sales Price - Unit Cost) * Volume
-                // Sales Price is driven by Flavor + Appearance
-                // Volume is driven by Reputation + Flavor
-                // Unit Cost is s.cost
-                
-                // Simplified:
-                // Margin factor: (120 - s.cost) ... lower cost is better
-                // Quality factor: (s.flavor + s.appearance)
-                let baseSales = (s.flavor + s.appearance) * (120 - s.cost) * 15;
+                if (type === 'sludge' || type === 'empty' || type === 'meat' || type === 'dough') {
+                    this.showModal('☢️ 産業廃棄物', 'これは食べ物ではありません。こっそり廃棄しました。廃棄コストが痛い...', -60000, -0.3, '🗑️');
+                    this.sound.playFail();
+                    return;
+                }
+
+                let baseSales = (s.flavor + s.appearance) * (125 - s.cost) * 18;
                 
                 let reputationChange = 0;
-                let titleKey = "res_normal_title";
-                let descKey = "res_normal_desc";
+                let title = "👍 そこそこの売上";
+                let desc = "定番商品として無難に売れました。地味ですが安定収益です。";
                 let emoji = "🛒";
 
-                if (s.safety < 30) {
-                    baseSales = -800000;
-                    reputationChange = -1.5;
-                    titleKey = "res_recall_title";
-                    descKey = "res_recall_desc";
+                if (s.safety < 25) {
+                    baseSales = -1200000;
+                    reputationChange = -2.0;
+                    title = "🚨 回収騒ぎ！";
+                    desc = "「変な味がする」「気分が悪くなった」とクレーム殺到。保健所の立ち入り検査が入り、全品回収となりました。";
                     emoji = "🚑";
                     this.sound.playFail();
-                } else if (s.flavor > 80 && s.appearance > 70 && s.cost < 30) {
-                    baseSales *= 2.5;
-                    reputationChange = -0.2; // Suspiciously good
-                    titleKey = "res_hit_title";
-                    descKey = "res_hit_desc";
+                } else if (s.flavor > 85 && s.appearance > 75 && s.cost < 25) {
+                    baseSales *= 3.2;
+                    reputationChange = -0.3;
+                    title = "😈 悪魔的ヒット！";
+                    desc = "中毒的な美味しさでバカ売れ！一部で「何が入ってるんだ？」と騒がれていますが、売れれば正義です。";
                     emoji = "💰";
                     this.sound.playSuccess();
-                } else if (s.safety > 90 && s.cost > 80) {
-                    baseSales *= 0.4;
-                    reputationChange = +0.4;
-                    titleKey = "res_fail_org_title";
-                    descKey = "res_fail_org_desc";
+                } else if (s.safety > 92 && s.cost > 75) {
+                    baseSales *= 0.35;
+                    reputationChange = +0.5;
+                    title = "💸 高すぎて売れない";
+                    desc = "「体に良いのはわかるけど高すぎる」と主婦層にスルーされました。オーガニック志向は難しい...";
                     emoji = "🍃";
                     this.sound.playWarning();
-                } else if (s.flavor < 30 && s.appearance < 30) {
-                    baseSales = 5000;
-                    reputationChange = -0.1;
-                    titleKey = "res_fail_bad_title";
-                    descKey = "res_fail_bad_desc";
+                } else if (s.flavor < 25 && s.appearance < 25) {
+                    baseSales = 8000;
+                    reputationChange = -0.15;
+                    title = "📦 在庫の山";
+                    desc = "味が薄く、見た目もパッとしないためワゴンセール行き。ほぼ原価割れです。";
                     emoji = "📉";
                     this.sound.playWarning();
                 } else {
-                    reputationChange = 0.1;
+                    reputationChange = 0.12;
                     this.sound.playSuccess();
                 }
 
@@ -871,25 +1055,24 @@
                 this.state.reputation += reputationChange;
                 this.state.reputation = Math.min(5.0, Math.max(0.0, this.state.reputation));
 
-                this.showModal(titleKey, descKey, baseSales, reputationChange, emoji);
+                this.showModal(title, desc, baseSales, reputationChange, emoji);
             }
 
-            showModal(titleKey, descKey, sales, rep, emoji) {
+            showModal(title, desc, sales, rep, emoji) {
                 const modal = document.getElementById('resultModal');
                 const content = document.getElementById('modalContent');
-                const currency = this.t('currency');
                 
                 document.getElementById('resultEmoji').textContent = emoji;
-                document.getElementById('resultTitle').textContent = this.t(titleKey);
-                document.getElementById('resultDesc').textContent = this.t(descKey);
+                document.getElementById('resultTitle').textContent = title;
+                document.getElementById('resultDesc').textContent = desc;
                 
                 const salesElem = document.getElementById('resultSales');
-                salesElem.textContent = (sales > 0 ? "+" : "") + `${currency} ${Math.floor(sales).toLocaleString()}`;
-                salesElem.className = sales > 0 ? "font-bold text-green-600" : "font-bold text-red-600";
+                salesElem.textContent = (sales > 0 ? "+ " : "") + `¥ ${Math.floor(sales).toLocaleString()}`;
+                salesElem.className = sales > 0 ? "font-black text-xl text-green-600" : "font-black text-xl text-red-600";
 
                 const repElem = document.getElementById('resultRep');
-                repElem.textContent = (rep > 0 ? "+" : "") + rep.toFixed(1);
-                repElem.className = rep >= 0 ? "font-bold text-blue-600" : "font-bold text-red-600";
+                repElem.textContent = (rep > 0 ? "+ " : "") + rep.toFixed(1);
+                repElem.className = rep >= 0 ? "font-black text-xl text-blue-600" : "font-black text-xl text-red-600";
 
                 modal.classList.remove('hidden');
                 setTimeout(() => {
