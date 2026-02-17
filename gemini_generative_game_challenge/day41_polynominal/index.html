@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Polynomial Morph v4</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --panel: #1e1e1e;
+            --accent: #00bcd4; /* 近似線の色 */
+            --target: #ff4081; /* 元関数の色 */
+            --axis: #ffffff;
+            --grid-major: #424242;
+            --grid-minor: #2c2c2c;
+            --text: #e0e0e0;
+        }
+        body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Helvetica Neue', Arial, sans-serif; color: var(--text); touch-action: none; }
+        
+        /* ヘッダー (言語切り替え) */
+        #header {
+            position: absolute; top: 10px; left: 20px;
+            background: rgba(30, 30, 30, 0.8);
+            padding: 8px 12px;
+            border-radius: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            backdrop-filter: blur(4px);
+            border: 1px solid #444;
+            z-index: 100;
+        }
+        .lang-option {
+            display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.8rem;
+        }
+        input[type="radio"] { accent-color: var(--accent); cursor: pointer; }
+
+        /* UI レイアウト (下部パネル) */
+        #ui-layer {
+            position: absolute; bottom: 0; width: 100%;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px 30px; /* iPhoneの下部バー考慮 */
+            box-sizing: border-box;
+            border-top: 1px solid #333;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; gap: 12px;
+            z-index: 100;
+        }
+
+        /* 数式表示エリア */
+        #formula-container {
+            background: #000;
+            border-radius: 8px;
+            padding: 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            border-left: 4px solid var(--accent);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            
+            /* スクロールバーのスタイリング (Webkit) */
+            scrollbar-width: thin;
+            scrollbar-color: #555 #000;
+        }
+        #formula-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        #formula-container::-webkit-scrollbar-track {
+            background: #000; 
+        }
+        #formula-container::-webkit-scrollbar-thumb {
+            background: #555; 
+            border-radius: 4px;
+        }
+
+        #formula-text {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+        
+        /* 各コントロール行 */
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        .label-row { display: flex; justify-content: space-between; font-size: 0.9rem; color: #aaa; }
+        
+        /* 入力要素のスタイル */
+        select {
+            background: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 4px; font-size: 1rem;
+            outline: none; width: 100%; box-sizing: border-box;
+        }
+        input[type=range] {
+            width: 100%; height: 6px; background: #444; border-radius: 3px; outline: none; -webkit-appearance: none; margin-top: 5px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 24px; height: 24px; background: var(--accent); border-radius: 50%; cursor: pointer; border: 2px solid #fff;
+        }
+
+        /* 横並びグリッド（PC・タブレット用） */
+        .controls-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        /* 凡例 */
+        #legend {
+            position: absolute; top: 10px; right: 20px;
+            background: rgba(0,0,0,0.6); padding: 10px; border-radius: 4px; pointer-events: none;
+            font-size: 0.8rem;
+            text-align: right;
+            z-index: 90;
+        }
+        .legend-item { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 4px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+
+        /* PC等でのレイアウト調整 */
+        @media (min-width: 768px) {
+            #ui-layer {
+                /* 幅制限を解除して画面下部全体を使う */
+                max-width: none;
+                width: 96%;
+                bottom: 20px; 
+                left: 2%; 
+                right: 2%;
+                border-radius: 12px;
+                padding: 20px;
+            }
+
+            .controls-grid {
+                display: grid;
+                grid-template-columns: 1fr 2fr 1fr; /* 関数 | 項数 | ズーム */
+                gap: 20px;
+                align-items: end;
+            }
+            
+            /* 数式は全幅使う */
+            #formula-container {
+                grid-column: 1 / -1;
+                margin-bottom: 10px;
+            }
+            
+            /* グリッド配置の再定義 */
+            .control-group:nth-child(1) { grid-area: 2 / 1 / 3 / 2; } /* Select */
+            .control-group:nth-child(3) { grid-area: 2 / 2 / 3 / 3; } /* Terms */
+            .control-group:nth-child(4) { grid-area: 2 / 3 / 3 / 4; } /* Zoom */
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="graphCanvas"></canvas>
+
+<!-- 言語切り替えヘッダー -->
+<div id="header">
+    <label class="lang-option"><input type="radio" name="lang" value="en"> EN</label>
+    <label class="lang-option"><input type="radio" name="lang" value="ja" checked> JP</label>
+    <label class="lang-option"><input type="radio" name="lang" value="fi"> FI</label>
+    <label class="lang-option"><input type="radio" name="lang" value="da"> DA</label>
+</div>
+
+<!-- 凡例 -->
+<div id="legend">
+    <div class="legend-item"><div class="dot" style="background:var(--target)"></div> <span id="legend-original">元の関数 f(x)</span></div>
+    <div class="legend-item"><div class="dot" style="background:var(--accent)"></div> <span id="legend-approx">近似多項式 P(x)</span></div>
+</div>
+
+<!-- コントロールパネル -->
+<div id="ui-layer">
+    <div class="controls-grid">
+        <!-- 2. 数式 (PCではgrid-column 1/-1) -->
+        <div id="formula-container">
+            <span id="formula-text"></span>
+        </div>
+
+        <!-- 1. 関数選択 -->
+        <div class="control-group">
+            <div class="label-row"><span id="lbl-func">関数選択</span></div>
+            <select id="funcSelect"></select>
+        </div>
+
+        <!-- 3. 項数スライダー -->
+        <div class="control-group">
+            <div class="label-row"><span id="lbl-terms">項数 (n):</span> <b id="nVal">1</b></div>
+            <!-- 最大値を64に変更 -->
+            <input type="range" id="nSlider" min="0" max="64" value="1" step="1">
+        </div>
+
+        <!-- 4. ズームスライダー -->
+        <div class="control-group">
+            <div class="label-row"><span id="lbl-zoom">ズーム (表示範囲):</span> <b id="zoomVal">x: ±5</b></div>
+            <input type="range" id="zoomSlider" min="2" max="20" value="6" step="0.5">
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * Localization (i18n) Data
+ */
+const translations = {
+    ja: {
+        lblFunc: "関数選択",
+        lblTerms: "項数 (n)",
+        lblZoom: "ズーム (表示範囲)",
+        legendOriginal: "元の関数 f(x)",
+        legendApprox: "近似多項式 P(x)",
+        funcs: {
+            sin: "sin(x)",
+            cos: "cos(x)",
+            exp: "e^x (指数関数)",
+            log: "ln(1+x) (対数)",
+            inv: "1/(1-x) (幾何級数)",
+            arctan: "arctan(x)",
+            sinh: "sinh(x)",
+            cosh: "cosh(x)"
+        }
+    },
+    en: {
+        lblFunc: "Select Function",
+        lblTerms: "Terms (n)",
+        lblZoom: "Zoom (Range)",
+        legendOriginal: "Original f(x)",
+        legendApprox: "Polynomial P(x)",
+        funcs: {
+            sin: "sin(x)",
+            cos: "cos(x)",
+            exp: "e^x (Exponential)",
+            log: "ln(1+x) (Logarithm)",
+            inv: "1/(1-x) (Geometric)",
+            arctan: "arctan(x)",
+            sinh: "sinh(x)",
+            cosh: "cosh(x)"
+        }
+    },
+    fi: {
+        lblFunc: "Valitse funktio",
+        lblTerms: "Termit (n)",
+        lblZoom: "Zoomaus (Alue)",
+        legendOriginal: "Alkuperäinen f(x)",
+        legendApprox: "Approksimaatio P(x)",
+        funcs: {
+            sin: "sin(x)",
+            cos: "cos(x)",
+            exp: "e^x (Eksponentti)",
+            log: "ln(1+x) (Logaritmi)",
+            inv: "1/(1-x) (Geometrinen)",
+            arctan: "arctan(x)",
+            sinh: "sinh(x)",
+            cosh: "cosh(x)"
+        }
+    },
+    da: {
+        lblFunc: "Vælg funktion",
+        lblTerms: "Led (n)",
+        lblZoom: "Zoom (Område)",
+        legendOriginal: "Original f(x)",
+        legendApprox: "Tilnærmelse P(x)",
+        funcs: {
+            sin: "sin(x)",
+            cos: "cos(x)",
+            exp: "e^x (Eksponentiel)",
+            log: "ln(1+x) (Logaritme)",
+            inv: "1/(1-x) (Geometrisk)",
+            arctan: "arctan(x)",
+            sinh: "sinh(x)",
+            cosh: "cosh(x)"
+        }
+    }
+};
+
+let currentLang = 'ja';
+
+/**
+ * Math Logic
+ */
+function factorial(n) {
+    if (n <= 1) return 1;
+    let r = 1;
+    for (let i = 2; i <= n; i++) r *= i;
+    return r;
+}
+
+const functions = {
+    sin: {
+        func: Math.sin,
+        getTerm: (n, x) => {
+            const power = 2 * n + 1;
+            const sign = (n % 2 === 0) ? 1 : -1;
+            const fact = factorial(power);
+            const val = sign * Math.pow(x, power) / fact;
+            let text = "";
+            if (n === 0) text = "x";
+            else text = (sign > 0 ? " + " : " - ") + `\\frac{x^{${power}}}{${power}!}`;
+            return { val, text };
+        }
+    },
+    cos: {
+        func: Math.cos,
+        getTerm: (n, x) => {
+            const power = 2 * n;
+            const sign = (n % 2 === 0) ? 1 : -1;
+            const fact = factorial(power);
+            const val = sign * Math.pow(x, power) / fact;
+            let text = "";
+            if (n === 0) text = "1";
+            else text = (sign > 0 ? " + " : " - ") + `\\frac{x^{${power}}}{${power}!}`;
+            return { val, text };
+        }
+    },
+    exp: {
+        func: Math.exp,
+        getTerm: (n, x) => {
+            const power = n;
+            const fact = factorial(power);
+            const val = Math.pow(x, power) / fact;
+            let text = "";
+            if (n === 0) text = "1";
+            else if (n === 1) text = " + x";
+            else text = ` + \\frac{x^{${power}}}{${power}!}`;
+            return { val, text };
+        }
+    },
+    log: {
+        func: (x) => Math.log(1 + x),
+        getTerm: (n, x) => {
+            const power = n + 1;
+            const sign = (n % 2 === 0) ? 1 : -1;
+            const val = sign * Math.pow(x, power) / power;
+            let text = "";
+            if (n === 0) text = "x";
+            else text = (sign > 0 ? " + " : " - ") + `\\frac{x^{${power}}}{${power}}`;
+            return { val, text };
+        }
+    },
+    inv: {
+        func: (x) => 1 / (1 - x),
+        getTerm: (n, x) => {
+            const power = n;
+            const val = Math.pow(x, power);
+            let text = "";
+            if (n === 0) text = "1";
+            else if (n === 1) text = " + x";
+            else text = ` + x^{${power}}`;
+            return { val, text };
+        }
+    },
+    arctan: {
+        func: Math.atan,
+        getTerm: (n, x) => {
+            const power = 2 * n + 1;
+            const sign = (n % 2 === 0) ? 1 : -1;
+            const val = sign * Math.pow(x, power) / power;
+            let text = "";
+            if (n === 0) text = "x";
+            else text = (sign > 0 ? " + " : " - ") + `\\frac{x^{${power}}}{${power}}`;
+            return { val, text };
+        }
+    },
+    sinh: {
+        func: Math.sinh,
+        getTerm: (n, x) => {
+            const power = 2 * n + 1;
+            const fact = factorial(power);
+            const val = Math.pow(x, power) / fact;
+            let text = "";
+            if (n === 0) text = "x";
+            else text = ` + \\frac{x^{${power}}}{${power}!}`;
+            return { val, text };
+        }
+    },
+    cosh: {
+        func: Math.cosh,
+        getTerm: (n, x) => {
+            const power = 2 * n;
+            const fact = factorial(power);
+            const val = Math.pow(x, power) / fact;
+            let text = "";
+            if (n === 0) text = "1";
+            else text = ` + \\frac{x^{${power}}}{${power}!}`;
+            return { val, text };
+        }
+    }
+};
+
+/**
+ * App Elements
+ */
+const canvas = document.getElementById('graphCanvas');
+const ctx = canvas.getContext('2d');
+const nSlider = document.getElementById('nSlider');
+const zoomSlider = document.getElementById('zoomSlider');
+const funcSelect = document.getElementById('funcSelect');
+const formulaText = document.getElementById('formula-text');
+const nVal = document.getElementById('nVal');
+const zoomVal = document.getElementById('zoomVal');
+const langRadios = document.getElementsByName('lang');
+
+// Labels to update
+const elLblFunc = document.getElementById('lbl-func');
+const elLblTerms = document.getElementById('lbl-terms');
+const elLblZoom = document.getElementById('lbl-zoom');
+const elLegendOriginal = document.getElementById('legend-original');
+const elLegendApprox = document.getElementById('legend-approx');
+
+let audioCtx = null;
+let width, height;
+
+/**
+ * Initialization & Localization
+ */
+function updateLanguage(lang) {
+    currentLang = lang;
+    const t = translations[lang];
+
+    // Static labels
+    elLblFunc.innerText = t.lblFunc;
+    elLblTerms.innerText = t.lblTerms + ":";
+    elLblZoom.innerText = t.lblZoom + ":";
+    elLegendOriginal.innerText = t.legendOriginal;
+    elLegendApprox.innerText = t.legendApprox;
+
+    // Refresh Select Options
+    const currentVal = funcSelect.value;
+    funcSelect.innerHTML = "";
+    for (let key in functions) {
+        let opt = document.createElement('option');
+        opt.value = key;
+        opt.text = t.funcs[key];
+        funcSelect.appendChild(opt);
+    }
+    // Restore selection if possible, else default to sin
+    if (currentVal && functions[currentVal]) {
+        funcSelect.value = currentVal;
+    } else {
+        funcSelect.value = "sin";
+    }
+}
+
+// Bind radio events
+langRadios.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        updateLanguage(e.target.value);
+    });
+});
+
+// Initialize
+updateLanguage('ja');
+
+
+/**
+ * Audio Logic
+ */
+function playSound(n) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    // スケールロジック (64項に対応するため微調整)
+    const baseFreq = 261.63; // C4
+    const semiTones = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28, 31, 33, 36]; 
+    
+    // オクターブが上がりすぎないようにループさせる
+    const cycle = Math.floor(n / semiTones.length);
+    const index = n % semiTones.length;
+    const note = semiTones[index] + (cycle * 2); // ループ毎に少しだけピッチを上げる(2半音)
+    
+    osc.frequency.setValueAtTime(baseFreq * Math.pow(2, note/12), audioCtx.currentTime);
+    osc.type = 'sine';
+    
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.4);
+}
+
+/**
+ * Drawing Logic
+ */
+function toCanvasX(x, rangeX) {
+    return (x / rangeX) * (width / 2) + (width / 2);
+}
+
+function toCanvasY(y, rangeX) {
+    const scale = (width / 2) / rangeX;
+    return (height / 2) - (y * scale);
+}
+
+function draw() {
+    width = canvas.width = window.innerWidth * window.devicePixelRatio;
+    height = canvas.height = (window.innerHeight) * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    width = window.innerWidth;
+    height = window.innerHeight;
+
+    const rangeX = parseFloat(zoomSlider.value);
+    const nMax = parseInt(nSlider.value);
+    const funcKey = funcSelect.value;
+    const currentFunc = functions[funcKey];
+    
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg');
+    ctx.fillRect(0, 0, width, height);
+    
+    const scale = (width / 2) / rangeX;
+
+    // --- Grid ---
+    ctx.font = "12px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    
+    const leftX = -rangeX;
+    const rightX = rangeX;
+    const startX = Math.floor(leftX);
+    
+    for (let i = startX; i <= rightX; i++) {
+        const cx = toCanvasX(i, rangeX);
+        if (cx < 0 || cx > width) continue;
+
+        ctx.beginPath();
+        if (i === 0) {
+            ctx.lineWidth = 3; ctx.strokeStyle = "var(--axis)";
+        } else if (i % 5 === 0) {
+            ctx.lineWidth = 1.5; ctx.strokeStyle = "#555";
+        } else {
+            ctx.lineWidth = 0.5; ctx.strokeStyle = "#333";
+        }
+        ctx.moveTo(cx, 0); ctx.lineTo(cx, height);
+        ctx.stroke();
+        
+        if (i !== 0 && i % 1 === 0) {
+             ctx.fillStyle = "#888";
+             ctx.fillText(i, cx, height/2 + 5);
+        }
+    }
+
+    const rangeY = (height / 2) / scale;
+    const topY = rangeY;
+    const bottomY = -rangeY;
+    const startY = Math.floor(bottomY);
+    
+    for (let i = startY; i <= topY; i++) {
+        const cy = toCanvasY(i, rangeX);
+        if (cy < 0 || cy > height) continue;
+
+        ctx.beginPath();
+        if (i === 0) {
+            ctx.lineWidth = 3; ctx.strokeStyle = "var(--axis)";
+        } else if (i % 5 === 0) {
+            ctx.lineWidth = 1.5; ctx.strokeStyle = "#555";
+        } else {
+            ctx.lineWidth = 0.5; ctx.strokeStyle = "#333";
+        }
+        ctx.moveTo(0, cy); ctx.lineTo(width, cy);
+        ctx.stroke();
+
+        if (i !== 0 && i % 1 === 0) {
+             ctx.fillStyle = "#888";
+             ctx.fillText(i, width/2 + 10, cy);
+        }
+    }
+
+    // --- Original Function ---
+    ctx.beginPath();
+    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--target');
+    ctx.lineWidth = 3;
+    let first = true;
+    for (let px = 0; px < width; px+=2) {
+        const x = (px - width/2) / scale;
+        const y = currentFunc.func(x);
+        
+        if (Math.abs(y) > rangeY * 2) { first = true; continue; }
+
+        const py = toCanvasY(y, rangeX);
+        if (first) { ctx.moveTo(px, py); first = false; }
+        else { ctx.lineTo(px, py); }
+    }
+    ctx.stroke();
+
+    // --- Approx Function ---
+    ctx.beginPath();
+    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--accent');
+    ctx.lineWidth = 4;
+    first = true;
+    
+    for (let px = 0; px < width; px+=2) {
+        const x = (px - width/2) / scale;
+        
+        let yApprox = 0;
+        for (let k = 0; k <= nMax; k++) {
+             yApprox += currentFunc.getTerm(k, x).val;
+        }
+
+        if (Math.abs(yApprox) > rangeY * 2) { first = true; continue; }
+
+        const py = toCanvasY(yApprox, rangeX);
+        if (first) { ctx.moveTo(px, py); first = false; }
+        else { ctx.lineTo(px, py); }
+    }
+    ctx.stroke();
+    
+    updateFormulaText(currentFunc, nMax);
+}
+
+function updateFormulaText(func, n) {
+    let html = `f(x) ≈ `;
+    for (let i = 0; i <= n; i++) {
+        html += func.getTerm(i, 0).text; 
+    }
+    html = html.replace(/\\frac\{(.+?)\}\{(.+?)\}/g, '<sup>$1</sup>&frasl;<sub>$2</sub>');
+    html = html.replace(/\^\{(.+?)\}/g, '<sup>$1</sup>');
+    formulaText.innerHTML = html;
+}
+
+// Events
+nSlider.addEventListener('input', (e) => {
+    nVal.textContent = e.target.value;
+    playSound(parseInt(e.target.value));
+    requestAnimationFrame(draw);
+});
+
+zoomSlider.addEventListener('input', (e) => {
+    zoomVal.textContent = "x: ±" + e.target.value;
+    requestAnimationFrame(draw);
+});
+
+funcSelect.addEventListener('change', () => {
+    nSlider.value = 1; 
+    nVal.textContent = 1;
+    requestAnimationFrame(draw);
+});
+
+window.addEventListener('resize', draw);
+
+// Initial draw
+draw();
+
+</script>
+</body>
+</html>
