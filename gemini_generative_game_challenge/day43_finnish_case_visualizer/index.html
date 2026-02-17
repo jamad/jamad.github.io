@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suomi Case Map v8</title>
+    <title>Suomi Case Map v11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --base-font-scale: 1.0; 
             --card-width: calc(190px * var(--base-font-scale));
             --box-size: 450px;
-            --ani-play-state: running; /* JSで制御 */
-            --ani-delay: 0s;           /* JSで制御 */
+            --ani-play-state: running;
+            --ani-delay: 0s;
         }
 
         body {
@@ -22,7 +22,6 @@
         }
 
         .main-container { display: grid; grid-template-columns: 1fr 350px; height: 100vh; }
-
         .stage {
             position: relative; display: flex; align-items: center; justify-content: center;
             background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
@@ -37,132 +36,158 @@
 
         .case-card {
             position: absolute; width: var(--card-width);
-            padding: calc(12px * var(--base-font-scale));
+            padding: calc(10px * var(--base-font-scale));
             background: rgba(15, 23, 42, 0.95); border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.1); text-align: center;
             z-index: 20; box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            /* アニメーション制御 */
             animation-play-state: var(--ani-play-state) !important;
             animation-delay: var(--ani-delay) !important;
+            animation-fill-mode: both !important;
+            cursor: pointer;
         }
 
-        .case-name { font-size: calc(10px * var(--base-font-scale)); font-weight: 900; text-transform: uppercase; margin-bottom: 4px; }
-        .case-word { font-size: calc(18px * var(--base-font-scale)); font-weight: 800; color: white; line-height: 1.2; }
-        .case-desc { font-size: calc(11px * var(--base-font-scale)); color: #94a3b8; margin-top: 4px; }
+        .case-name { font-size: calc(9px * var(--base-font-scale)); font-weight: 900; text-transform: uppercase; margin-bottom: 2px; }
+        .case-word { 
+            font-size: calc(16px * var(--base-font-scale)); font-weight: 800; color: white; line-height: 1.2;
+            display: flex; align-items: center; justify-content: center; gap: calc(6px * var(--base-font-scale));
+        }
+        .case-desc { font-size: calc(10px * var(--base-font-scale)); color: #94a3b8; margin-top: 2px; }
 
-        /* KPTカラー (彩度低め) */
-        .strong-grade { color: #7dd3fc; text-decoration: underline; text-underline-offset: 4px; } /* 淡い青 */
-        .weak-grade { color: #fdba74; text-decoration: underline; text-underline-offset: 4px; }   /* 淡いオレンジ */
+        /* 下線を削除 */
+        .strong-grade { color: #7dd3fc; }
+        .weak-grade { color: #fdba74; }
+        .suffix { color: #64748b; font-weight: 400; font-size: 0.9em; }
+        .tts-icon { opacity: 0.5; font-size: 0.8em; }
+        .case-card:hover .tts-icon { opacity: 1; }
 
-        /* --- Animations --- */
+        /* Animations */
         .pos-inessive { top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid #f43f5e; z-index: 21; }
-        .pos-illative { animation: illative-move 6s infinite ease-in-out; }
-        @keyframes illative-move {
-            0%, 40% { left: 5%; top: 50%; transform: translateY(-50%); opacity: 0.3; }
+        .pos-illative { animation: ill-move 6s infinite linear; }
+        @keyframes ill-move {
+            0%, 40% { left: 5%; top: 50%; transform: translateY(-50%); opacity: 0.2; }
             70%, 100% { left: 35%; top: 50%; transform: translate(-50%, -50%); opacity: 1; }
         }
-        .pos-elative { animation: elative-move 6s infinite ease-in-out; }
-        @keyframes elative-move {
+        .pos-elative { animation: ela-move 6s infinite linear; }
+        @keyframes ela-move {
             0%, 40% { left: 60%; top: 50%; transform: translate(-50%, -50%); opacity: 1; }
-            70%, 100% { left: 90%; top: 50%; transform: translate(-50%, -50%); opacity: 0; }
+            70%, 100% { left: 95%; top: 50%; transform: translate(-50%, -50%); opacity: 0; }
         }
         .pos-adessive { top: calc(50% - 225px); left: 50%; transform: translate(-50%, -110%); border: 2px solid #10b981; }
-        .pos-allative { animation: allative-move 6s infinite ease-in-out; }
-        @keyframes allative-move {
-            0%, 40% { top: 5%; left: 15%; opacity: 0.3; }
-            70%, 100% { top: calc(50% - 225px); left: calc(50% - 190px); transform: translate(-50%, -110%); opacity: 1; }
+        .pos-allative { animation: all-move 6s infinite linear; }
+        @keyframes all-move {
+            0%, 40% { top: 10%; left: 15%; transform: translate(-50%, -110%); opacity: 0.2; }
+            70%, 100% { top: calc(50% - 225px); left: calc(50% - 195px); transform: translate(-50%, -110%); opacity: 1; }
         }
-        .pos-ablative { animation: ablative-move 6s infinite ease-in-out; }
-        @keyframes ablative-move {
-            0%, 40% { top: calc(50% - 225px); left: calc(50% + 190px); transform: translate(-50%, -110%); opacity: 1; }
-            70%, 100% { top: 5%; left: 85%; opacity: 0; }
+        .pos-ablative { animation: abl-move 6s infinite linear; }
+        @keyframes abl-move {
+            0%, 40% { top: calc(50% - 225px); left: calc(50% + 195px); transform: translate(-50%, -110%); opacity: 1; }
+            70%, 100% { top: 10%; left: 85%; transform: translate(-50%, -110%); opacity: 0; }
         }
-
+        
         /* Fixed Positions */
         .pos-nominative { top: calc(50% + 290px); left: 50%; transform: translateX(-50%); width: calc(210px * var(--base-font-scale)); border-color: #6366f1; background: rgba(99, 102, 241, 0.2); }
-        .pos-essive { top: calc(50% + 290px); left: 25%; transform: translateX(-50%); border-left: 5px solid #fbbf24; }
-        .pos-translative { top: calc(50% + 290px); left: 75%; transform: translateX(-50%); border-left: 5px solid #f59e0b; }
-        .pos-partitive { top: calc(50% + 360px); left: 35%; transform: translateX(-50%); }
+        .pos-essive { top: calc(50% + 290px); left: 22%; transform: translateX(-50%); border-left: 5px solid #fbbf24; }
+        .pos-translative { top: calc(50% + 290px); left: 78%; transform: translateX(-50%); border-left: 5px solid #f59e0b; }
+        .pos-partitive { top: calc(50% + 365px); left: 35%; transform: translateX(-50%); }
         .pos-akkusatiivi { top: 25%; right: 5%; }
         .pos-genitive { top: calc(50% + 140px); left: calc(50% + 140px); border: 1px solid rgba(129, 140, 248, 0.5); }
-
-        /* Marginal Cases */
         .pos-abessiivi { bottom: 2%; left: 2%; opacity: 0.3; }
         .pos-komitatiivi { bottom: 2%; right: 2%; opacity: 0.3; }
         .pos-instruktiivi { top: 2%; left: 2%; opacity: 0.3; }
 
-        .object-emoji {
+        /* Emoji Grid */
+        .emoji-container {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 20rem; z-index: 5; opacity: 0.08; pointer-events: none;
+            display: grid; gap: 20px; z-index: 5; opacity: 0.08; pointer-events: none;
         }
+        .emoji-container.sg { grid-template-columns: 1fr; font-size: 20rem; }
+        .emoji-container.pl { grid-template-columns: 1fr 1fr; font-size: 10rem; }
 
-        .sidebar { background: #0f172a; border-left: 1px solid #1e293b; padding: 24px; overflow-y: auto; }
+        .stage-toggle {
+            position: absolute; top: calc(50% + 375px); left: 50%; transform: translateX(-50%);
+            display: flex; background: #1e293b; padding: 3px; border-radius: 10px; z-index: 100; border: 1px solid #334155;
+        }
+        .toggle-btn {
+            padding: 5px 15px; font-size: 11px; font-weight: 800; border-radius: 7px; cursor: pointer; color: #94a3b8; transition: all 0.2s;
+        }
+        .toggle-btn.active { background: #6366f1; color: white; box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4); }
+
+        .sidebar { background: #0f172a; border-left: 1px solid #1e293b; padding: 20px; overflow-y: auto; }
         .word-btn {
             width: 100%; padding: 10px; margin-bottom: 8px; background: #1e293b;
             border: 2px solid transparent; border-radius: 12px; display: flex; align-items: center; gap: 10px;
             transition: all 0.2s; cursor: pointer;
         }
         .word-btn.active { border-color: #6366f1; background: #1e1b4b; }
-        .control-group { margin-top: 16px; padding: 12px; background: #1e293b; border-radius: 12px; border: 1px solid #334155; }
         
-        input[type="range"] { height: 4px; background: #334155; border-radius: 2px; appearance: none; cursor: pointer; }
-        input[type="range"]::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; background: #6366f1; border-radius: 50%; }
+        input[type="range"] { width: 100%; height: 4px; background: #334155; border-radius: 2px; appearance: none; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: #6366f1; border-radius: 50%; border: 2px solid #fff; }
     </style>
 </head>
 <body>
-
     <div class="main-container">
         <div class="stage">
             <div class="target-box"></div>
-            <div id="emoji-display" class="object-emoji">👒</div>
+            <div id="emoji-container" class="emoji-container sg"></div>
+            <div class="stage-toggle">
+                <div id="sg-btn" class="toggle-btn active" onclick="setNumber('sg')">Yksikkö (SG)</div>
+                <div id="pl-btn" class="toggle-btn" onclick="setNumber('pl')">Monikko (PL)</div>
+            </div>
             <div id="case-layer" class="w-full h-full relative"></div>
         </div>
 
         <div class="sidebar">
-            <div class="mb-4">
+            <div class="mb-6">
                 <h1 class="text-xl font-black text-white leading-tight">Suomi Case Map</h1>
-                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em]">v8 Scrub & KPT Edition</span>
+                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em]">v11 Polished</span>
             </div>
 
-            <div id="word-list" class="max-h-[40vh] overflow-y-auto mb-4 pr-1"></div>
+            <div id="word-list" class="max-h-[45vh] overflow-y-auto mb-6 pr-1 custom-scrollbar"></div>
 
-            <div class="space-y-3">
-                <!-- アニメーション・スクラバー -->
-                <div class="control-group">
+            <div class="space-y-4">
+                <div class="p-3 bg-slate-800/50 rounded-xl">
                     <div class="flex justify-between items-center mb-2">
                         <label class="text-[10px] font-bold text-slate-400 uppercase">Animation Scrub</label>
-                        <button id="play-pause" class="text-[10px] bg-slate-700 px-2 py-0.5 rounded text-white">Pause</button>
+                        <button id="play-pause" class="text-[9px] bg-indigo-600 px-2 py-0.5 rounded text-white font-bold">Pause</button>
                     </div>
-                    <input type="range" id="ani-scrub" min="0" max="100" value="0" class="w-full">
+                    <input type="range" id="ani-scrub" min="0" max="100" value="0">
                 </div>
-
-                <!-- スケール -->
-                <div class="control-group">
-                    <label class="block text-[10px] font-bold text-slate-400 mb-2 uppercase">Scale</label>
-                    <input type="range" id="font-slider" min="0.5" max="1.5" step="0.05" value="1.0" class="w-full">
+                <div class="p-3 bg-slate-800/50 rounded-xl">
+                    <label class="block text-[10px] font-bold text-slate-400 mb-2 uppercase">Card Scale</label>
+                    <input type="range" id="font-slider" min="0.5" max="1.5" step="0.05" value="1.0">
                 </div>
-            </div>
-            
-            <div class="mt-6 p-4 bg-slate-900 rounded-xl border border-slate-800 text-[10px] text-slate-400 leading-relaxed">
-                <h3 class="font-bold text-slate-200 mb-1">Grade Highlights:</h3>
-                <div class="flex gap-4">
-                    <span class="strong-grade">Strong (kk, p, nk)</span>
-                    <span class="weak-grade">Weak (k, v, ng)</span>
-                </div>
-                <p class="mt-2 text-slate-500 italic">スクラバーで格の移動を自由に停止・逆再生できます。</p>
             </div>
         </div>
     </div>
 
     <script>
         const WORDS = [
-            { id: 'hattu', base: 'hattu', meaning: '帽子', emoji: '👒', kpt: { s: 'tt', w: 't' }, forms: { Nominatiivi: 'hattu', Genetiivi: 'hatun', Akkusatiivi: 'hatun / hattu', Partitiivi: 'hattua', Inessiivi: 'hatussa', Elatiivi: 'hatusta', Illatiivi: 'hattuun', Adessiivi: 'hatulla', Ablatiivi: 'hatulta', Allatiivi: 'hatulle', Essiivi: 'hattuna', Translatiivi: 'hatuksi', Abessiivi: 'hatutta', Komitatiivi: 'hattuineen', Instruktiivi: 'hatuin' }},
-            { id: 'kukka', base: 'kukka', meaning: '花', emoji: '🌸', kpt: { s: 'kk', w: 'k' }, forms: { Nominatiivi: 'kukka', Genetiivi: 'kukan', Akkusatiivi: 'kukan / kukka', Partitiivi: 'kukkaa', Inessiivi: 'kukassa', Elatiivi: 'kukasta', Illatiivi: 'kukkaan', Adessiivi: 'kukalla', Ablatiivi: 'kukalta', Allatiivi: 'kukalle', Essiivi: 'kukkana', Translatiivi: 'kukaksi', Abessiivi: 'kukatta', Komitatiivi: 'kukkineen', Instruktiivi: 'kukkia' }},
-            { id: 'leipa', base: 'leipä', meaning: 'パン', emoji: '🍞', kpt: { s: 'p', w: 'v' }, forms: { Nominatiivi: 'leipä', Genetiivi: 'leivän', Akkusatiivi: 'leivän / leipä', Partitiivi: 'leipää', Inessiivi: 'leivässä', Elatiivi: 'leivästä', Illatiivi: 'leipään', Adessiivi: 'leivällä', Ablatiivi: 'leivältä', Allatiivi: 'leivälle', Essiivi: 'leipänä', Translatiivi: 'leiväksi', Abessiivi: 'leivättä', Komitatiivi: 'leipineen', Instruktiivi: 'leivin' }},
-            { id: 'kaupunki', base: 'kaupunki', meaning: '町', emoji: '🏙️', kpt: { s: 'nk', w: 'ng' }, forms: { Nominatiivi: 'kaupunki', Genetiivi: 'kaupungin', Akkusatiivi: 'kaupungin / kaupunki', Partitiivi: 'kaupunkia', Inessiivi: 'kaupungissa', Elatiivi: 'kaupungista', Illatiivi: 'kaupunkiin', Adessiivi: 'kaupungilla', Ablatiivi: 'kaupungilta', Allatiivi: 'kaupungille', Essiivi: 'kaupunkina', Translatiivi: 'kaupungiksi', Abessiivi: 'kaupungitta', Komitatiivi: 'kaupunkeineen', Instruktiivi: 'kaupungein' }},
-            { id: 'koti', base: 'koti', meaning: '自宅', emoji: '🏡', kpt: { s: 't', w: 'd' }, forms: { Nominatiivi: 'koti', Genetiivi: 'kodin', Akkusatiivi: 'kodin / koti', Partitiivi: 'kotia', Inessiivi: 'kodissa', Elatiivi: 'kodista', Illatiivi: 'kotiin', Adessiivi: 'kodilla', Ablatiivi: 'kodilta', Allatiivi: 'kodille', Essiivi: 'kotona', Translatiivi: 'kodiksi', Abessiivi: 'koditta', Komitatiivi: 'koteineen', Instruktiivi: 'kodein' }},
-            { id: 'koulu', base: 'koulu', meaning: '学校', emoji: '🏫', forms: { Nominatiivi: 'koulu', Genetiivi: 'koulun', Akkusatiivi: 'koulun / koulu', Partitiivi: 'koulua', Inessiivi: 'koulussa', Elatiivi: 'koulusta', Illatiivi: 'kouluun', Adessiivi: 'koululla', Ablatiivi: 'koululta', Allatiivi: 'koululle', Essiivi: 'kouluna', Translatiivi: 'kouluksi', Abessiivi: 'koulutta', Komitatiivi: 'kouluineen', Instruktiivi: 'kouluin' }}
+            { id: 'hattu', base: 'hattu', meaning: '帽子', emoji: '👒', kpt: { s: 'tt', w: 't' }, /* ... data ... */ },
+            { id: 'kukka', base: 'kukka', meaning: '花 (kk→k)', emoji: '🌸', kpt: { s: 'kk', w: 'k' }, /* ... data ... */ },
+            // データ修正: leipäの複数形Elatiiviを修正
+            { id: 'leipa', base: 'leipä', meaning: 'パン (p→v)', emoji: '🍞', kpt: { s: 'p', w: 'v' }, 
+              sg: { Nominatiivi: 'leipä', Genetiivi: 'leivän', Akkusatiivi: 'leivän / leipä', Partitiivi: 'leipää', Inessiivi: 'leivässä', Elatiivi: 'leivästä', Illatiivi: 'leipään', Adessiivi: 'leivällä', Ablatiivi: 'leivältä', Allatiivi: 'leivälle', Essiivi: 'leipänä', Translatiivi: 'leiväksi', Abessiivi: 'leivättä', Komitatiivi: 'leipineen', Instruktiivi: 'leivin' },
+              pl: { Nominatiivi: 'leivät', Genetiivi: 'leipien', Akkusatiivi: 'leivät', Partitiivi: 'leipiä', Inessiivi: 'leivissä', Elatiivi: 'leivistä', Illatiivi: 'leipiin', Adessiivi: 'leivillä', Ablatiivi: 'leiviltä', Allatiivi: 'leiville', Essiivi: 'leipinä', Translatiivi: 'leiviksi', Abessiivi: 'leivittä', Komitatiivi: 'leipineen', Instruktiivi: 'leivin' }
+            },
+            { id: 'kaupunki', base: 'kaupunki', meaning: '町 (nk→ng)', emoji: '🏙️', kpt: { s: 'nk', w: 'ng' }, /* ... data ... */ },
+            { id: 'ystava', base: 'ystävä', meaning: '友達', emoji: '🤝', kpt: {s:'v', w:'v'}, /* ... data ... */ },
+            { id: 'talo', base: 'talo', meaning: '家', emoji: '🏠', /* ... data ... */ },
+            { id: 'koti', base: 'koti', meaning: '自宅 (t→d)', emoji: '🏡', kpt: { s: 't', w: 'd' }, /* ... data ... */ },
+            { id: 'koulu', base: 'koulu', meaning: '学校', emoji: '🏫', /* ... data ... */ }
         ];
+
+        // データ補完
+        const FULL_DATA = {
+            hattu: { sg: { Nominatiivi: 'hattu', Genetiivi: 'hatun', Akkusatiivi: 'hatun / hattu', Partitiivi: 'hattua', Inessiivi: 'hatussa', Elatiivi: 'hatusta', Illatiivi: 'hattuun', Adessiivi: 'hatulla', Ablatiivi: 'hatulta', Allatiivi: 'hatulle', Essiivi: 'hattuna', Translatiivi: 'hatuksi', Abessiivi: 'hatutta', Komitatiivi: 'hattuineen', Instruktiivi: 'hatuin' }, pl: { Nominatiivi: 'hatut', Genetiivi: 'hattujen', Akkusatiivi: 'hatut', Partitiivi: 'hattuja', Inessiivi: 'hatuissa', Elatiivi: 'hatuista', Illatiivi: 'hattuihin', Adessiivi: 'hatuilla', Ablatiivi: 'hatuilta', Allatiivi: 'hatuille', Essiivi: 'hattuina', Translatiivi: 'hatuiksi', Abessiivi: 'hatuitta', Komitatiivi: 'hattuineen', Instruktiivi: 'hatuin' } },
+            kukka: { sg: { Nominatiivi: 'kukka', Genetiivi: 'kukan', Akkusatiivi: 'kukan / kukka', Partitiivi: 'kukkaa', Inessiivi: 'kukassa', Elatiivi: 'kukasta', Illatiivi: 'kukkaan', Adessiivi: 'kukalla', Ablatiivi: 'kukalta', Allatiivi: 'kukalle', Essiivi: 'kukkana', Translatiivi: 'kukaksi', Abessiivi: 'kukatta', Komitatiivi: 'kukkineen', Instruktiivi: 'kukkia' }, pl: { Nominatiivi: 'kukat', Genetiivi: 'kukkien', Akkusatiivi: 'kukat', Partitiivi: 'kukkia', Inessiivi: 'kukissa', Elatiivi: 'kukista', Illatiivi: 'kukkiin', Adessiivi: 'kukilla', Ablatiivi: 'kukilta', Allatiivi: 'kukille', Essiivi: 'kukkina', Translatiivi: 'kukiksi', Abessiivi: 'kukitta', Komitatiivi: 'kukkineen', Instruktiivi: 'kukkia' } },
+            kaupunki: { sg: { Nominatiivi: 'kaupunki', Genetiivi: 'kaupungin', Akkusatiivi: 'kaupungin / kaupunki', Partitiivi: 'kaupunkia', Inessiivi: 'kaupungissa', Elatiivi: 'kaupungista', Illatiivi: 'kaupunkiin', Adessiivi: 'kaupungilla', Ablatiivi: 'kaupungilta', Allatiivi: 'kaupungille', Essiivi: 'kaupunkina', Translatiivi: 'kaupungiksi', Abessiivi: 'kaupungitta', Komitatiivi: 'kaupunkeineen', Instruktiivi: 'kaupungein' }, pl: { Nominatiivi: 'kaupungit', Genetiivi: 'kaupunkien', Akkusatiivi: 'kaupungit', Partitiivi: 'kaupunkeja', Inessiivi: 'kaupungeissa', Elatiivi: 'kaupungeista', Illatiivi: 'kaupunkeihin', Adessiivi: 'kaupungeilla', Ablatiivi: 'kaupungeilta', Allatiivi: 'kaupungeille', Essiivi: 'kaupunkeina', Translatiivi: 'kaupungeiksi', Abessiivi: 'kaupungeitta', Komitatiivi: 'kaupunkeineen', Instruktiivi: 'kaupungein' } },
+            ystava: { sg: { Nominatiivi: 'ystävä', Genetiivi: 'ystävän', Partitiivi: 'ystävää', Inessiivi: 'ystävässä', Elatiivi: 'ystävästä', Illatiivi: 'ystävään', Adessiivi: 'ystävällä', Ablatiivi: 'ystävältä', Allatiivi: 'ystävälle', Essiivi: 'ystävänä', Translatiivi: 'ystäväksi', Abessiivi: 'ystävättä'}, pl: { Nominatiivi: 'ystävät', Genetiivi: 'ystävien', Partitiivi: 'ystäviä', Inessiivi: 'ystävissä', Elatiivi: 'ystävistä', Illatiivi: 'ystäviin', Adessiivi: 'ystävillä', Ablatiivi: 'ystäviltä', Allatiivi: 'ystäville', Essiivi: 'ystävinä', Translatiivi: 'ystäviksi', Abessiivi: 'ystävittä' } },
+            talo: { sg: { Nominatiivi: 'talo', Genetiivi: 'talon', Partitiivi: 'taloa', Inessiivi: 'talossa', Elatiivi: 'talosta', Illatiivi: 'taloon', Adessiivi: 'talolla', Ablatiivi: 'talolta', Allatiivi: 'talolle', Essiivi: 'talona', Translatiivi: 'taloksi', Abessiivi: 'talotta'}, pl: { Nominatiivi: 'talot', Genetiivi: 'talojen', Partitiivi: 'taloja', Inessiivi: 'taloissa', Elatiivi: 'taloista', Illatiivi: 'taloihin', Adessiivi: 'taloilla', Ablatiivi: 'taloilta', Allatiivi: 'taloille', Essiivi: 'taloina', Translatiivi: 'taloiksi', Abessiivi: 'taloitta' } },
+            koti: { sg: { Nominatiivi: 'koti', Genetiivi: 'kodin', Partitiivi: 'kotia', Inessiivi: 'kodissa', Elatiivi: 'kodista', Illatiivi: 'kotiin', Adessiivi: 'kodilla', Ablatiivi: 'kodilta', Allatiivi: 'kodille', Essiivi: 'kotona', Translatiivi: 'kodiksi', Abessiivi: 'koditta'}, pl: { Nominatiivi: 'kodit', Genetiivi: 'kotien', Partitiivi: 'koteja', Inessiivi: 'kodeissa', Elatiivi: 'kodeista', Illatiivi: 'koteihin', Adessiivi: 'kodeilla', Ablatiivi: 'kodeilta', Allatiivi: 'kodeille', Essiivi: 'koteina', Translatiivi: 'kodeiksi', Abessiivi: 'kodeitta' } },
+            koulu: { sg: { Nominatiivi: 'koulu', Genetiivi: 'koulun', Partitiivi: 'koulua', Inessiivi: 'koulussa', Elatiivi: 'koulusta', Illatiivi: 'kouluun', Adessiivi: 'koululla', Ablatiivi: 'koululta', Allatiivi: 'koululle', Essiivi: 'kouluna', Translatiivi: 'kouluksi', Abessiivi: 'koulutta'}, pl: { Nominatiivi: 'koulut', Genetiivi: 'koulujen', Partitiivi: 'kouluja', Inessiivi: 'kouluissa', Elatiivi: 'kouluista', Illatiivi: 'kouluihin', Adessiivi: 'kouluilla', Ablatiivi: 'kouluilta', Allatiivi: 'kouluille', Essiivi: 'kouluina', Translatiivi: 'kouluiksi', Abessiivi: 'kouluitta' } }
+        };
+        WORDS.forEach(w => Object.assign(w, FULL_DATA[w.id]));
+
 
         const CASE_CONFIGS = [
             { id: 'Nominatiivi', name: '主格 (Nominatiivi)', desc: '〜は', class: 'pos-nominative', color: '#6366f1' },
@@ -183,34 +208,89 @@
         ];
 
         let currentWord = WORDS[0];
-        let isPaused = false;
+        let currentNum = 'sg';
+        let isPaused = true; // 初期状態をPauseに
 
+        // --- 全体管理 ---
         function init() {
-            renderWordList(); renderCases(); setupControls();
+            renderWordList(); renderCases(); setupControls(); updateUI();
+            togglePlay(true); // 初期描画時にPause状態を適用
         }
 
+        // --- UIコントロール ---
         function setupControls() {
-            const fontSlider = document.getElementById('font-slider');
-            fontSlider.oninput = (e) => document.documentElement.style.setProperty('--base-font-scale', e.target.value);
-
-            const aniScrub = document.getElementById('ani-scrub');
-            aniScrub.oninput = (e) => {
+            document.getElementById('font-slider').oninput = (e) => document.documentElement.style.setProperty('--base-font-scale', e.target.value);
+            document.getElementById('ani-scrub').oninput = (e) => {
                 if(!isPaused) togglePlay(true);
-                // 6秒のアニメーションに対して、負の遅延をかけることでシーク
-                const delay = -(parseFloat(e.target.value) / 100 * 6).toFixed(2);
+                const delay = -(parseFloat(e.target.value) / 100 * 6);
                 document.documentElement.style.setProperty('--ani-delay', `${delay}s`);
             };
-
             document.getElementById('play-pause').onclick = () => togglePlay(!isPaused);
         }
 
-        function togglePlay(pause) {
-            isPaused = pause;
+        function togglePlay(p) {
+            isPaused = p;
             document.documentElement.style.setProperty('--ani-play-state', isPaused ? 'paused' : 'running');
             document.getElementById('play-pause').textContent = isPaused ? 'Play' : 'Pause';
         }
 
-        function renderWordList() {
+        function setNumber(n) {
+            currentNum = n;
+            document.getElementById('sg-btn').classList.toggle('active', n === 'sg');
+            document.getElementById('pl-btn').classList.toggle('active', n === 'pl');
+            updateUI();
+        }
+
+        // --- 描画ロジック ---
+        function updateEmoji() {
+            const container = document.getElementById('emoji-container');
+            container.className = `emoji-container ${currentNum}`;
+            container.innerHTML = (currentNum === 'sg' ? [1] : [1,2,3,4]).map(() => `<span>${currentWord.emoji}</span>`).join('');
+        }
+
+        function formatWord(text, configId) {
+            if(!text) return '';
+            let val = text.split(' / ')[0];
+            const suffixes = ['ssa','sta','an','en','un','in','lla','lta','lle','na','ksi','tta','neen','it','at','ut','ja','ia','hin','ien','jen','den','tten'];
+            
+            let root = val, suf = '';
+            for(let s of suffixes) {
+                if(val.endsWith(s) && configId !== 'Nominatiivi') {
+                    root = val.slice(0, -s.length);
+                    suf = '-' + s;
+                    break;
+                }
+            }
+
+            if (currentWord.kpt) {
+                const { s, w } = currentWord.kpt;
+                root = root.replace(s, `<span class="strong-grade">${s}</span>`);
+                if(!root.includes('span')) root = root.replace(w, `<span class="weak-grade">${w}</span>`);
+            }
+            return `<div>${root}<span class="suffix">${suf}</span></div><span class="tts-icon">🔊</span>`;
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text.split(' / ')[0]);
+            utter.lang = 'fi-FI'; window.speechSynthesis.speak(utter);
+        }
+
+        function renderWordList() { /* ...変更なし... */ }
+        function renderCases() { /* ...変更なし... */ }
+        
+        function updateUI() {
+            renderWordList(); updateEmoji();
+            CASE_CONFIGS.forEach(c => {
+                const el = document.getElementById(`node-${c.id}`);
+                const val = currentWord[currentNum] && currentWord[currentNum][c.id] ? currentWord[currentNum][c.id] : '';
+                el.onclick = () => speak(val);
+                el.querySelector('.case-word').innerHTML = formatWord(val, c.id);
+            });
+        }
+        
+        // --- 変更なしの関数（省略） ---
+        renderWordList = function() {
             const list = document.getElementById('word-list');
             list.innerHTML = '';
             WORDS.forEach(w => {
@@ -221,49 +301,18 @@
                 list.appendChild(btn);
             });
         }
-
-        function renderCases() {
+        renderCases = function() {
             const container = document.getElementById('case-layer');
             container.innerHTML = '';
             CASE_CONFIGS.forEach(c => {
                 const card = document.createElement('div');
                 card.className = `case-card ${c.class}`;
                 card.id = `node-${c.id}`;
-                updateCardContent(card, c);
+                card.innerHTML = `<div class="case-name" style="color: ${c.color}">${c.name}</div>
+                                  <div class="case-word"></div>
+                                  <div class="case-desc">${c.desc}</div>`;
                 container.appendChild(card);
             });
-        }
-
-        function highlightKPT(text) {
-            if (!currentWord.kpt) return text;
-            const { s, w } = currentWord.kpt;
-            // 強変化・弱変化を置換。まず長い文字から置換して誤判定を防ぐ
-            let html = text;
-            // 弱変化(Orange)
-            const weakRegex = new RegExp(`([^a-z]|^)${w}(?=[aeiouyäö])|${w}$`, 'g'); 
-            // 簡易的に：単語内の該当箇所を色付け。
-            // ※より正確には語幹の解析が必要ですが、ここでは提示された単語に最適化します。
-            if(text.includes(s)) {
-                html = text.replace(s, `<span class="strong-grade">${s}</span>`);
-            } else if(text.includes(w)) {
-                html = text.replace(w, `<span class="weak-grade">${w}</span>`);
-            }
-            return html;
-        }
-
-        function updateCardContent(el, c) {
-            const form = currentWord.forms[c.id];
-            el.innerHTML = `
-                <div class="case-name" style="color: ${c.color}">${c.name}</div>
-                <div class="case-word">${highlightKPT(form)}</div>
-                <div class="case-desc">${c.desc}</div>
-            `;
-        }
-
-        function updateUI() {
-            renderWordList();
-            document.getElementById('emoji-display').textContent = currentWord.emoji;
-            CASE_CONFIGS.forEach(c => updateCardContent(document.getElementById(`node-${c.id}`), c));
         }
 
         window.onload = init;
