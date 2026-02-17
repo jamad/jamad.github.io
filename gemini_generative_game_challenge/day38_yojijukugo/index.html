@@ -455,11 +455,14 @@
                             <!-- ここを z.kanji から z.k に修正（データと合わせるため） -->
                             <div style="position:absolute; top:10px; left:15px; font-size:2.5rem; opacity:0.1; color:var(--gate-border); font-weight:900;">${z.k}</div>
                         
-                            <div class="jp-meaning">${q.target.meaning}</div>
-                            <div class="jp-reading">(${q.target.reading})</div>
+                                <div class="jp-meaning">${enMeaning}</div>
+                                <div class="jp-reading">(${enReading})</div>
+
                             <div class="en-box">
-                                <div>${enMeaning}</div>
-                                <div style="font-size:0.8rem; margin-top:3px;">${enReading}</div>
+
+                                <div class="jp-meaning">${q.target.meaning}</div>
+                                <div class="jp-reading">(${q.target.reading})</div>
+
                             </div>
                         </div>
 
@@ -607,7 +610,7 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260216.21" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260216.22" project="yojijuku_go"></shared-footer>
 
 
 </body>
