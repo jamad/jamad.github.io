@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suomi Case Map v6</title>
+    <title>Suomi Case Map v7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --base-font-scale: 1.0; 
-            --card-width: calc(180px * var(--base-font-scale));
+            --card-width: calc(190px * var(--base-font-scale));
             --box-size: 450px;
         }
 
@@ -37,7 +37,6 @@
             overflow: hidden;
         }
 
-        /* 中央の角丸正方形 */
         .target-box {
             position: absolute;
             width: var(--box-size);
@@ -51,7 +50,7 @@
         .case-card {
             position: absolute;
             width: var(--card-width);
-            padding: calc(14px * var(--base-font-scale));
+            padding: calc(12px * var(--base-font-scale));
             background: rgba(15, 23, 42, 0.95);
             border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -61,7 +60,7 @@
             transition: all 0.3s ease;
         }
 
-        .case-name { font-size: calc(11px * var(--base-font-scale)); font-weight: 900; text-transform: uppercase; margin-bottom: 4px; }
+        .case-name { font-size: calc(10px * var(--base-font-scale)); font-weight: 900; text-transform: uppercase; margin-bottom: 4px; }
         .case-word { font-size: calc(18px * var(--base-font-scale)); font-weight: 800; color: white; line-height: 1.2; }
         .case-desc { font-size: calc(11px * var(--base-font-scale)); color: #94a3b8; margin-top: 4px; }
 
@@ -83,32 +82,38 @@
         /* --- 2. 接格系 (Surface/On) --- */
         .pos-adessive { top: calc(50% - 225px); left: 50%; transform: translate(-50%, -110%); border: 2px solid #10b981; }
         
-        /* 向格: 左上から直線的に着地点へ */
         .pos-allative { animation: allative-move 6s infinite ease-in-out; }
         @keyframes allative-move {
-            0%, 40% { top: 5%; left: 15%; opacity: 0.3; transform: translate(0, 0); }
+            0%, 40% { top: 5%; left: 15%; opacity: 0.3; }
             70%, 100% { top: calc(50% - 225px); left: calc(50% - 190px); transform: translate(-50%, -110%); opacity: 1; }
         }
 
-        /* 奪格: 右上へ直線的に逃げる */
         .pos-ablative { animation: ablative-move 6s infinite ease-in-out; }
         @keyframes ablative-move {
             0%, 40% { top: calc(50% - 225px); left: calc(50% + 190px); transform: translate(-50%, -110%); opacity: 1; }
-            70%, 100% { top: 5%; left: 85%; opacity: 0; transform: translate(0, 0); }
+            70%, 100% { top: 5%; left: 85%; opacity: 0; }
         }
 
-        /* --- 3. 文法・状態系 --- */
-        .pos-genitive { top: calc(50% + 130px); left: calc(50% + 130px); border: 1px solid rgba(129, 140, 248, 0.5); }
-        .pos-nominative { top: calc(50% + 280px); left: 50%; transform: translateX(-50%); width: calc(220px * var(--base-font-scale)); background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
-        .pos-partitive { top: 20%; right: 5%; }
-        .pos-akkusatiivi { top: 40%; right: 5%; }
-        .pos-essive { bottom: 20%; left: 20%; border-left: 5px solid #fbbf24; }
-        .pos-translative { bottom: 20%; right: 20%; border-left: 5px solid #f59e0b; }
+        /* --- 3. 文法・状態系レイアウト --- */
+        
+        /* 土台グループ */
+        .pos-nominative { top: calc(50% + 290px); left: 50%; transform: translateX(-50%); width: calc(210px * var(--base-font-scale)); border-color: #6366f1; background: rgba(99, 102, 241, 0.2); }
+        .pos-essive { top: calc(50% + 290px); left: 25%; transform: translateX(-50%); border-left: 5px solid #fbbf24; }
+        .pos-translative { top: calc(50% + 290px); left: 75%; transform: translateX(-50%); border-left: 5px solid #f59e0b; }
+        
+        /* 分格: 主格の左下 */
+        .pos-partitive { top: calc(50% + 360px); left: 35%; transform: translateX(-50%); }
+        
+        /* 対格: 出格の軌道を避けて右上へ */
+        .pos-akkusatiivi { top: 25%; right: 5%; }
 
-        /* 周辺格: 画面の隅ギリギリに配置 */
-        .pos-abessiivi { bottom: 3%; left: 3%; opacity: 0.4; }
-        .pos-komitatiivi { bottom: 3%; right: 3%; opacity: 0.4; }
-        .pos-instruktiivi { top: 3%; left: 3%; opacity: 0.4; }
+        /* 属格: 正方形の右下角 */
+        .pos-genitive { top: calc(50% + 140px); left: calc(50% + 140px); border: 1px solid rgba(129, 140, 248, 0.5); }
+
+        /* 周辺格: 画面の隅 */
+        .pos-abessiivi { bottom: 2%; left: 2%; opacity: 0.3; }
+        .pos-komitatiivi { bottom: 2%; right: 2%; opacity: 0.3; }
+        .pos-instruktiivi { top: 2%; left: 2%; opacity: 0.3; }
 
         .object-emoji {
             position: absolute;
@@ -139,10 +144,10 @@
         <div class="sidebar">
             <div class="mb-6">
                 <h1 class="text-2xl font-black text-white leading-tight">Suomi Case Map</h1>
-                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.3em]">v6 Pro Layout</span>
+                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.3em]">v7 KPT Update</span>
             </div>
 
-            <div id="word-list" class="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar"></div>
+            <div id="word-list" class="max-h-[50vh] overflow-y-auto pr-2 mb-4 custom-scrollbar"></div>
 
             <div class="slider-container">
                 <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase">
@@ -152,11 +157,11 @@
             </div>
             
             <div class="mt-6 p-4 bg-slate-900 rounded-2xl border border-slate-800 text-[11px] text-slate-400 leading-relaxed">
-                <h3 class="font-bold text-slate-200 mb-1">Update v6:</h3>
+                <h3 class="font-bold text-slate-200 mb-1">Update v7:</h3>
                 <ul class="space-y-1">
-                    <li>・常用単語(koti, koulu等)を追加</li>
-                    <li>・向格の動きを最短直線ルートに修正</li>
-                    <li>・周辺格(処/共/様)を画面端へ移動</li>
+                    <li>・格ラベルにフィンランド語名を併記</li>
+                    <li>・変格・分格・対格の配置を整理</li>
+                    <li>・KPT変化する重要語(kukka, leipä等)を追加</li>
                 </ul>
             </div>
         </div>
@@ -165,29 +170,30 @@
     <script>
         const WORDS = [
             { id: 'hattu', base: 'hattu', meaning: '帽子', emoji: '👒', forms: { Nominatiivi: 'hattu', Genetiivi: 'hatun', Akkusatiivi: 'hatun / hattu', Partitiivi: 'hattua', Inessiivi: 'hatussa', Elatiivi: 'hatusta', Illatiivi: 'hattuun', Adessiivi: 'hatulla', Ablatiivi: 'hatulta', Allatiivi: 'hatulle', Essiivi: 'hattuna', Translatiivi: 'hatuksi', Abessiivi: 'hatutta', Komitatiivi: 'hattuineen', Instruktiivi: 'hatuin' }},
+            { id: 'kukka', base: 'kukka', meaning: '花 (kk→k)', emoji: '🌸', forms: { Nominatiivi: 'kukka', Genetiivi: 'kukan', Akkusatiivi: 'kukan / kukka', Partitiivi: 'kukkaa', Inessiivi: 'kukassa', Elatiivi: 'kukasta', Illatiivi: 'kukkaan', Adessiivi: 'kukalla', Ablatiivi: 'kukalta', Allatiivi: 'kukalle', Essiivi: 'kukkana', Translatiivi: 'kukaksi', Abessiivi: 'kukatta', Komitatiivi: 'kukkineen', Instruktiivi: 'kukkia' }},
+            { id: 'leipa', base: 'leipä', meaning: 'パン (p→v)', emoji: '🍞', forms: { Nominatiivi: 'leipä', Genetiivi: 'leivän', Akkusatiivi: 'leivän / leipä', Partitiivi: 'leipää', Inessiivi: 'leivässä', Elatiivi: 'leivästä', Illatiivi: 'leipään', Adessiivi: 'leivällä', Ablatiivi: 'leivältä', Allatiivi: 'leivälle', Essiivi: 'leipänä', Translatiivi: 'leiväksi', Abessiivi: 'leivättä', Komitatiivi: 'leipineen', Instruktiivi: 'leivin' }},
+            { id: 'kaupunki', base: 'kaupunki', meaning: '町 (nk→ng)', emoji: '🏙️', forms: { Nominatiivi: 'kaupunki', Genetiivi: 'kaupungin', Akkusatiivi: 'kaupungin / kaupunki', Partitiivi: 'kaupunkia', Inessiivi: 'kaupungissa', Elatiivi: 'kaupungista', Illatiivi: 'kaupunkiin', Adessiivi: 'kaupungilla', Ablatiivi: 'kaupungilta', Allatiivi: 'kaupungille', Essiivi: 'kaupunkina', Translatiivi: 'kaupungiksi', Abessiivi: 'kaupungitta', Komitatiivi: 'kaupunkeineen', Instruktiivi: 'kaupungein' }},
             { id: 'talo', base: 'talo', meaning: '家', emoji: '🏠', forms: { Nominatiivi: 'talo', Genetiivi: 'talon', Akkusatiivi: 'talon / talo', Partitiivi: 'taloa', Inessiivi: 'talossa', Elatiivi: 'talosta', Illatiivi: 'taloon', Adessiivi: 'talolla', Ablatiivi: 'talolta', Allatiivi: 'talolle', Essiivi: 'talona', Translatiivi: 'taloksi', Abessiivi: 'talotta', Komitatiivi: 'taloineen', Instruktiivi: 'taloin' }},
             { id: 'koti', base: 'koti', meaning: '自宅', emoji: '🏡', forms: { Nominatiivi: 'koti', Genetiivi: 'kodin', Akkusatiivi: 'kodin / koti', Partitiivi: 'kotia', Inessiivi: 'kodissa', Elatiivi: 'kodista', Illatiivi: 'kotiin', Adessiivi: 'kodilla', Ablatiivi: 'kodilta', Allatiivi: 'kodille', Essiivi: 'kotona', Translatiivi: 'kodiksi', Abessiivi: 'koditta', Komitatiivi: 'koteineen', Instruktiivi: 'kodein' }},
-            { id: 'koulu', base: 'koulu', meaning: '学校', emoji: '🏫', forms: { Nominatiivi: 'koulu', Genetiivi: 'koulun', Akkusatiivi: 'koulun / koulu', Partitiivi: 'koulua', Inessiivi: 'koulussa', Elatiivi: 'koulusta', Illatiivi: 'kouluun', Adessiivi: 'koululla', Ablatiivi: 'koululta', Allatiivi: 'koululle', Essiivi: 'kouluna', Translatiivi: 'kouluksi', Abessiivi: 'koulutta', Komitatiivi: 'kouluineen', Instruktiivi: 'kouluin' }},
-            { id: 'poyta', base: 'pöytä', meaning: '机', emoji: 'テーブル', emoji: '🪑', forms: { Nominatiivi: 'pöytä', Genetiivi: 'pöydän', Akkusatiivi: 'pöydän / pöytä', Partitiivi: 'pöytää', Inessiivi: 'pöydässä', Elatiivi: 'pöydästä', Illatiivi: 'pöytään', Adessiivi: 'pöydällä', Ablatiivi: 'pöydältä', Allatiivi: 'pöydälle', Essiivi: 'pöytänä', Translatiivi: 'pöydäksi', Abessiivi: 'pöydättä', Komitatiivi: 'pöytineen', Instruktiivi: 'pöydin' }},
-            { id: 'ystava', base: 'ystävä', meaning: '友達', emoji: '🤝', forms: { Nominatiivi: 'ystävä', Genetiivi: 'ystävän', Akkusatiivi: 'ystävän / ystävä', Partitiivi: 'ystävää', Inessiivi: 'ystävässä', Elatiivi: 'ystävästä', Illatiivi: 'ystävään', Adessiivi: 'ystävällä', Ablatiivi: 'ystävältä', Allatiivi: 'ystävälle', Essiivi: 'ystävänä', Translatiivi: 'ystäväksi', Abessiivi: 'ystävättä', Komitatiivi: 'ystävineen', Instruktiivi: 'ystävin' }}
+            { id: 'koulu', base: 'koulu', meaning: '学校', emoji: '🏫', forms: { Nominatiivi: 'koulu', Genetiivi: 'koulun', Akkusatiivi: 'koulun / koulu', Partitiivi: 'koulua', Inessiivi: 'koulussa', Elatiivi: 'koulusta', Illatiivi: 'kouluun', Adessiivi: 'koululla', Ablatiivi: 'koululta', Allatiivi: 'koululle', Essiivi: 'kouluna', Translatiivi: 'kouluksi', Abessiivi: 'koulutta', Komitatiivi: 'kouluineen', Instruktiivi: 'kouluin' }}
         ];
 
         const CASE_CONFIGS = [
-            { id: 'Nominatiivi', name: '主格', desc: '〜は', class: 'pos-nominative', color: '#6366f1' },
-            { id: 'Genetiivi', name: '属格', desc: '〜の', class: 'pos-genitive', color: '#818cf8' },
-            { id: 'Akkusatiivi', name: '対格', desc: '〜を', class: 'pos-akkusatiivi', color: '#a5b4fc' },
-            { id: 'Partitiivi', name: '分格', desc: '〜を(一部)', class: 'pos-partitive', color: '#94a3b8' },
-            { id: 'Inessiivi', name: '内格', desc: '中で', class: 'pos-inessive', color: '#f43f5e' },
-            { id: 'Illatiivi', name: '入格', desc: '中へ', class: 'pos-illative', color: '#fb7185' },
-            { id: 'Elatiivi', name: '出格', desc: '中から', class: 'pos-elative', color: '#fb7185' },
-            { id: 'Adessiivi', name: '接格', desc: '上で/で', class: 'pos-adessive', color: '#10b981' },
-            { id: 'Allatiivi', name: '向格', desc: '上へ/に', class: 'pos-allative', color: '#34d399' },
-            { id: 'Ablatiivi', name: '奪格', desc: '上から', class: 'pos-ablative', color: '#34d399' },
-            { id: 'Essiivi', name: '具格', desc: 'として', class: 'pos-essive', color: '#fbbf24' },
-            { id: 'Translatiivi', name: '変格', desc: 'になる', class: 'pos-translative', color: '#f59e0b' },
-            { id: 'Abessiivi', name: '処格', desc: 'なしで', class: 'pos-abessiivi', color: '#94a3b8' },
-            { id: 'Komitatiivi', name: '共格', desc: 'と共に', class: 'pos-komitatiivi', color: '#94a3b8' },
-            { id: 'Instruktiivi', name: '様格', desc: 'により', class: 'pos-instruktiivi', color: '#94a3b8' }
+            { id: 'Nominatiivi', name: '主格 (Nominatiivi)', desc: '〜は', class: 'pos-nominative', color: '#6366f1' },
+            { id: 'Genetiivi', name: '属格 (Genetiivi)', desc: '〜の', class: 'pos-genitive', color: '#818cf8' },
+            { id: 'Akkusatiivi', name: '対格 (Akkusatiivi)', desc: '〜を', class: 'pos-akkusatiivi', color: '#a5b4fc' },
+            { id: 'Partitiivi', name: '分格 (Partitiivi)', desc: '〜を(一部)', class: 'pos-partitive', color: '#94a3b8' },
+            { id: 'Inessiivi', name: '内格 (Inessiivi)', desc: '中で', class: 'pos-inessive', color: '#f43f5e' },
+            { id: 'Illatiivi', name: '入格 (Illatiivi)', desc: '中へ', class: 'pos-illative', color: '#fb7185' },
+            { id: 'Elatiivi', name: '出格 (Elatiivi)', desc: '中から', class: 'pos-elative', color: '#fb7185' },
+            { id: 'Adessiivi', name: '接格 (Adessiivi)', desc: '上で/で', class: 'pos-adessive', color: '#10b981' },
+            { id: 'Allatiivi', name: '向格 (Allatiivi)', desc: '上へ/に', class: 'pos-allative', color: '#34d399' },
+            { id: 'Ablatiivi', name: '奪格 (Ablatiivi)', desc: '上から', class: 'pos-ablative', color: '#34d399' },
+            { id: 'Essiivi', name: '具格 (Essiivi)', desc: 'として', class: 'pos-essive', color: '#fbbf24' },
+            { id: 'Translatiivi', name: '変格 (Translatiivi)', desc: 'になる', class: 'pos-translative', color: '#f59e0b' },
+            { id: 'Abessiivi', name: '処格 (Abessiivi)', desc: 'なしで', class: 'pos-abessiivi', color: '#94a3b8' },
+            { id: 'Komitatiivi', name: '共格 (Komitatiivi)', desc: 'と共に', class: 'pos-komitatiivi', color: '#94a3b8' },
+            { id: 'Instruktiivi', name: '様格 (Instruktiivi)', desc: 'により', class: 'pos-instruktiivi', color: '#94a3b8' }
         ];
 
         let currentWord = WORDS[0];
