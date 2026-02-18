@@ -542,6 +542,31 @@ const functions = {
        function pMulA(p) { return [0, ...p]; }           // p × a
        function pMul1pA2(p) { return pAdd(p, [0,0,...p]); } // p × (1+a²)
 
+        function polyConv(p, q) {
+            const r = new Array(p.length + q.length - 1).fill(0);
+            for (let i = 0; i < p.length; i++)
+                for (let j = 0; j < q.length; j++)
+                    r[i+j] += p[i] * q[j];
+            return r;
+        }
+
+        function formatPolyTan(coeffs) {
+            const terms = [];
+            for (let k = coeffs.length - 1; k >= 0; k--) {
+                const c = Math.round(coeffs[k]);
+                if (!c) continue;
+                const abs = Math.abs(c);
+                const sign = c > 0 ? '+' : '-';
+                const varPart = k === 0 ? '' : k === 1 ? 'tan(a)' : `tan<sup>${k}</sup>(a)`;
+                const coefPart = (abs === 1 && k > 0) ? '' : `${abs}`;
+                terms.push({ sign, term: coefPart + varPart });
+            }
+            if (!terms.length) return '0';
+            return terms.map(({sign, term}, i) =>
+                i === 0 ? (sign==='-' ? '-' : '') + term : ` ${sign} ${term}`
+            ).join('');
+        }
+
        let polyCache = null;
        function getPolys(maxN) {
            if (polyCache && polyCache.length > maxN) return polyCache;
