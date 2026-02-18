@@ -35,15 +35,21 @@
         }
 
         .case-card {
-            position: absolute; width: var(--card-width);
+            position: absolute;
+            width: var(--card-width);
             padding: calc(10px * var(--base-font-scale));
-            background: rgba(15, 23, 42, 0.95); border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1); text-align: center;
-            z-index: 20; box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            background-color: #0f172a !important; /* 濃い紺色で塗りつぶし */
+            opacity: 1 !important;               /* 透明度を完全に排除 */
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            z-index: 20; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
             animation-play-state: var(--ani-play-state) !important;
             animation-delay: var(--ani-delay) !important;
             animation-fill-mode: both !important;
         }
+
 
         .case-name { font-size: calc(9px * var(--base-font-scale)); font-weight: 900; text-transform: uppercase; margin-bottom: 2px; }
         .case-word { 
@@ -132,39 +138,37 @@
         }
 
         /* --- アニメーションの調整に合わせたガイドラインの修正 --- */
+        /* --- アニメーションの調整に合わせたガイドラインの修正 --- */
+        /* --- 修正箇所: カードを不透明にして点線を隠す --- */
+                /* --- 修正箇所: ガイドラインの座標をアニメーションと同期 --- */
+                .guide-path {
+                    position: absolute;
+                    border-top: 2px dotted rgba(255, 255, 255, 0.1);
+                    pointer-events: none;
+                    z-index: 5; /* カード(20)より背面、背景より前面 */
+                }
 
-        /* 入格ガイド: 5% から 40% まで（幅 35%） */
-        .path-illative { 
-            top: 50%; 
-            left: 5%; 
-            width: 35%; 
-        } 
+                /* 内格系: 50%のラインで固定 */
+                .path-illative { top: 50%; left: 5%; width: 35%; } 
+                .path-elative { top: 50%; left: 60%; width: 35%; } 
 
-        /* 出格ガイド: 60% から 95% まで（幅 35%） */
-        .path-elative { 
-            top: 50%; 
-            left: 60%; 
-            width: 35%; 
-        } 
+                /* 向格系: 始点(15%/25%)から着地点(接格の横)を結ぶ */
+                .path-allative { 
+                    top: calc(15% - 25px); /* カードの見た目の中央に補正 */
+                    left: 25%; 
+                    width: 15vw; 
+                    transform: rotate(18deg); 
+                    transform-origin: left center; 
+                } 
 
-        /* 向格ガイド: 15% の高さから 接格の左隣へ */
-        .path-allative { 
-            top: 15%; 
-            left: 25%; 
-            width: 180px; 
-            transform: rotate(22deg); /* 高さが 18%→15% になったので少し角度を下げて調整 */
-            transform-origin: left; 
-        } 
-
-        /* 奪格ガイド: 接格の右隣から 15% の高さへ */
-        .path-ablative { 
-            top: 15%; 
-            left: 75%; 
-            width: 180px; 
-            transform: rotate(-22deg); 
-            transform-origin: left; 
-        }
-
+                /* 奪格系: 始点(接格の右)から着地点(15%/75%)を結ぶ */
+                .path-ablative { 
+                    top: calc(15% - 25px); /* カードの見た目の中央に補正 */
+                    left: 75%; 
+                    width: 15vw; 
+                    transform: rotate(162deg); /* 角度を反転させて右端へ向かせる */
+                    transform-origin: left center; 
+                }
 
 
     </style>
