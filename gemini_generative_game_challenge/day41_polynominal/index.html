@@ -152,6 +152,24 @@
             .control-group:nth-child(4) { grid-area: 2 / 3 / 3 / 4; } /* Terms */
             .control-group:nth-child(5) { grid-area: 2 / 4 / 3 / 5; } /* Zoom */
         }
+
+        #play-btn {
+        background: var(--accent);
+        color: #000;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+    #play-btn:hover { background: #00e5ff; }
+    #play-btn.playing { background: #ff4081; }
     </style>
 </head>
 <body>
@@ -196,8 +214,11 @@
 
         <!-- 3. 項数スライダー -->
         <div class="control-group">
-            <div class="label-row"><span id="lbl-terms">項数 (n):</span> <b id="nVal">1</b></div>
-            <!-- 最大値を64に変更 -->
+            <div class="label-row" style="display:flex; align-items:center; gap:8px;">
+                 <button id="play-btn" title="Auto play">▶</button>
+                 <span id="lbl-terms" style="flex:1">項数 (n):</span>
+                 <b id="nVal">1</b>
+             </div>
             <input type="range" id="nSlider" min="0" max="64" value="1" step="1">
         </div>
 
@@ -675,6 +696,50 @@ function draw() {
     if (isFirstTerm) formulaHtml += "0";
     formulaText.innerHTML = formulaHtml;
 }
+
+
+
+// --- Animation ---
+const playBtn = document.getElementById('play-btn');
+let animTimer = null;
+let userTouching = false;
+
+function startAnim() {
+    if (animTimer) return;
+    playBtn.textContent = '⏸';
+    playBtn.classList.add('playing');
+    animTimer = setInterval(() => {
+        if (userTouching) return; // スライダー操作中はスキップ（止めない）
+        let cur = parseInt(nSlider.value);
+        if (cur >= parseInt(nSlider.max)) {
+            cur = 0; // ループ再生
+        } else {
+            cur++;
+        }
+        nSlider.value = cur;
+        nVal.textContent = cur;
+        playSound(cur);
+        requestAnimationFrame(draw);
+    }, 300); // 300ms間隔（お好みで調整）
+}
+
+function stopAnim() {
+    clearInterval(animTimer);
+    animTimer = null;
+    playBtn.textContent = '▶';
+    playBtn.classList.remove('playing');
+}
+
+playBtn.addEventListener('click', () => {
+    animTimer ? stopAnim() : startAnim();
+});
+
+// スライダーを触っている間はアニメのコマをスキップ（停止はしない）
+nSlider.addEventListener('mousedown', () => userTouching = true);
+nSlider.addEventListener('touchstart', () => userTouching = true);
+nSlider.addEventListener('mouseup', () => userTouching = false);
+nSlider.addEventListener('touchend', () => userTouching = false);
+
 
 // Events
 nSlider.addEventListener('input', (e) => { nVal.textContent = e.target.value; playSound(parseInt(e.target.value)); requestAnimationFrame(draw); });
