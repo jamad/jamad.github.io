@@ -18,222 +18,190 @@
         }
         body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Courier New', 'Consolas', monospace; color: var(--text); touch-action: none; }
 
-        
-        /* ヘッダー (言語切り替え) */
-        #header {
-            position: absolute; top: 10px; left: 20px;
-            background: rgba(30, 30, 30, 0.8);
-            padding: 8px 12px;
-            border-radius: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            backdrop-filter: blur(4px);
-            border: 1px solid #444;
-            z-index: 100;
-        }
-        .lang-option {
-            display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.8rem;
-        }
-        input[type="radio"] { accent-color: var(--accent); cursor: pointer; }
+        /* ── TOP BAR ── */
+       #top-bar {
+           position: fixed; top: 0; left: 0; right: 0; height: 38px;
+           background: rgba(10,10,10,0.97);
+           border-bottom: 1px solid #2a2a2a;
+           display: flex; align-items: center;
+           padding: 0 16px; gap: 12px;
+           z-index: 200;
+           backdrop-filter: blur(8px);
+       }
+       #top-bar .title {
+           font-size: 0.72rem; letter-spacing: 0.12em; color: var(--accent);
+           text-transform: uppercase; white-space: nowrap;
+       }
+       #top-bar .sep { color: #444; font-size: 0.8rem; }
+       #top-bar .sub { font-size: 0.65rem; color: #555; letter-spacing: 0.08em; text-transform: uppercase; }
+       #top-bar .spacer { flex: 1; }
+       #top-bar .lang-group { display: flex; gap: 4px; }
+       .lang-btn {
+           background: none; border: 1px solid #333; color: #666;
+           font-family: inherit; font-size: 0.65rem; letter-spacing: 0.1em;
+           padding: 2px 7px; border-radius: 3px; cursor: pointer; transition: all 0.15s;
+       }
+       .lang-btn:hover { border-color: #555; color: #aaa; }
+       .lang-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,188,212,0.08); }
 
-        /* UI レイアウト (下部パネル) */
-        #ui-layer {
-            position: absolute; bottom: 0; width: 100%;
-            background: rgba(30, 30, 30, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px 30px; /* iPhoneの下部バー考慮 */
-            box-sizing: border-box;
-            border-top: 1px solid #333;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-            display: flex; flex-direction: column; gap: 12px;
-            z-index: 100;
-        }
+       /* ── SIDEBAR ── */
+       #sidebar {
+           position: fixed; top: 38px; left: 0; bottom: 42px;
+           width: 190px;
+           background: rgba(14,14,14,0.97);
+           border-right: 1px solid #1e1e1e;
+           display: flex; flex-direction: column;
+           padding: 14px 14px 10px;
+           box-sizing: border-box;
+           gap: 0;
+           z-index: 100;
+           overflow-y: auto;
+       }
+       .sb-section {
+           border-top: 1px solid #1e1e1e;
+           padding: 12px 0 4px;
+       }
+       .sb-section:first-child { border-top: none; padding-top: 0; }
+       .sb-label {
+           font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+           color: #444; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;
+       }
+       .sb-value {
+           font-size: 0.82rem; color: var(--accent); font-weight: bold; letter-spacing: 0.05em;
+       }
+       select {
+           background: #0e0e0e; color: #ccc; border: 1px solid #2a2a2a;
+           padding: 7px 8px; border-radius: 3px; font-size: 0.78rem;
+           font-family: inherit; outline: none; width: 100%; box-sizing: border-box;
+           letter-spacing: 0.04em; cursor: pointer;
+       }
+       select:focus { border-color: #333; }
+       input[type=range] {
+           width: 100%; height: 3px; background: #222; border-radius: 2px;
+           outline: none; -webkit-appearance: none; margin-top: 6px; cursor: pointer;
+       }
+       input[type=range]::-webkit-slider-thumb {
+           -webkit-appearance: none; width: 14px; height: 14px;
+           background: var(--accent); border-radius: 50%; cursor: pointer;
+           border: 2px solid #0e0e0e; box-shadow: 0 0 6px rgba(0,188,212,0.5);
+       }
+       input[type="radio"] { display: none; }
 
-        /* 数式表示エリア */
-        #formula-container {
-            background: #000;
-            border-radius: 8px;
-            padding: 10px;
-            overflow-x: auto;
-            white-space: nowrap;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            border-left: 4px solid var(--accent);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
-            
-            /* スクロールバーのスタイリング (Webkit) */
-            scrollbar-width: thin;
-            scrollbar-color: #555 #000;
-        }
-        #formula-container::-webkit-scrollbar {
-            height: 8px;
-        }
-        #formula-container::-webkit-scrollbar-track {
-            background: #000; 
-        }
-        #formula-container::-webkit-scrollbar-thumb {
-            background: #555; 
-            border-radius: 4px;
-        }
+       /* ── PLAY / DANCE BTN ── */
+       .icon-btn {
+           background: none; border: 1px solid #2a2a2a; color: #555;
+           font-family: inherit; font-size: 0.6rem; letter-spacing: 0.1em;
+           padding: 2px 6px; border-radius: 2px; cursor: pointer; transition: all 0.15s;
+       }
+       .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+       .icon-btn.active { border-color: var(--target); color: var(--target); background: rgba(255,64,129,0.08); }
 
-        #formula-text {
-            font-family: 'Times New Roman', serif;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
-        }
-        
-        /* 各コントロール行 */
-        .control-group { display: flex; flex-direction: column; gap: 5px; }
-        .label-row { display: flex; justify-content: space-between; font-size: 0.9rem; color: #aaa; }
-        
-        /* 入力要素のスタイル */
-        select {
-            background: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 4px; font-size: 1rem;
-            outline: none; width: 100%; box-sizing: border-box;
-        }
-        input[type=range] {
-            width: 100%; height: 6px; background: #444; border-radius: 3px; outline: none; -webkit-appearance: none; margin-top: 5px;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 24px; height: 24px; background: var(--accent); border-radius: 50%; cursor: pointer; border: 2px solid #fff;
-        }
+       /* ── LEGEND ── */
+       .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 0.68rem; color: #555; }
+       .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+       .line-dashed { width: 16px; height: 0; border-top: 2px dashed var(--center); flex-shrink: 0; }
 
-        /* 横並びグリッド（PC・タブレット用） */
-        .controls-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        /* 凡例 */
-        #legend {
-            position: absolute; top: 10px; right: 20px;
-            background: rgba(0,0,0,0.6); padding: 10px; border-radius: 4px; pointer-events: none;
-            font-size: 0.8rem;
-            text-align: right;
-            z-index: 90;
-        }
-        .legend-item { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 4px; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; }
-        /* 中心点用の凡例スタイル追加 */
-        .line-dashed { width: 20px; height: 2px; border-top: 2px dashed var(--center); }
+       /* ── FORMULA BAR ── */
+       #formula-bar {
+           position: fixed; bottom: 0; left: 190px; right: 0; height: 42px;
+           background: rgba(0,0,0,0.97);
+           border-top: 1px solid #1a1a1a;
+           display: flex; align-items: center;
+           padding: 0 16px;
+           overflow-x: auto; white-space: nowrap;
+           z-index: 100;
+           scrollbar-width: thin; scrollbar-color: #222 #000;
+       }
+       #formula-bar::-webkit-scrollbar { height: 3px; }
+       #formula-bar::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+       #formula-text {
+           font-family: 'Times New Roman', Georgia, serif;
+           font-size: 1rem; color: #ccc; letter-spacing: 0.5px;
+       }
+       /* ── CANVAS AREA ── */
+       #graphCanvas {
+           position: fixed;
+           top: 38px; left: 190px; right: 0; bottom: 42px;
+       }
 
-        /* PC等でのレイアウト調整 */
-        @media (min-width: 768px) {
-            #ui-layer {
-                /* 幅制限を解除して画面下部全体を使う */
-                max-width: none;
-                width: 96%;
-                bottom: 20px; 
-                left: 2%; 
-                right: 2%;
-                border-radius: 12px;
-                padding: 20px;
-            }
+       /* ── MOBILE FALLBACK ── */
+       @media (max-width: 600px) {
+           #sidebar { width: 100%; top: auto; bottom: 42px; height: 220px; border-right: none; border-top: 1px solid #1e1e1e; flex-direction: row; flex-wrap: wrap; overflow-x: auto; padding: 10px; gap: 10px; }
+           #formula-bar { left: 0; }
+           #graphCanvas { left: 0; bottom: calc(220px + 42px); }
+           .sb-section { border-top: none; padding-top: 0; min-width: 130px; }
+       }
 
-            .controls-grid {
-                display: grid;
-                /* 変更: aを追加して4カラムに */
-                grid-template-columns: 1fr 2fr 2fr 1fr; /* 関数 | a | 項数 | ズーム */
-                gap: 20px;
-                align-items: end;
-            }
-            
-            /* 数式は全幅使う */
-            #formula-container {
-                grid-column: 1 / -1;
-                margin-bottom: 10px;
-            }
-            
-            /* グリッド配置の再定義 (aを追加したため調整) */
-            .control-group:nth-child(1) { grid-area: 2 / 1 / 3 / 2; } /* Select */
-            .control-group:nth-child(3) { grid-area: 2 / 2 / 3 / 3; } /* a (New) */
-            .control-group:nth-child(4) { grid-area: 2 / 3 / 3 / 4; } /* Terms */
-            .control-group:nth-child(5) { grid-area: 2 / 4 / 3 / 5; } /* Zoom */
-        }
 
-        #play-btn {
-        background: var(--accent);
-        color: #000;
-        border: none;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        font-size: 1.1rem;
-        cursor: pointer;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-    }
-    #play-btn:hover { background: #00e5ff; }
-    #play-btn.playing { background: #ff4081; }
     </style>
 </head>
 <body>
 
+<!-- TOP BAR -->
+<div id="top-bar">
+   <span class="title">Taylor Shift</span>
+   <span class="sep">//</span>
+   <span class="sub">Dancing with Maclaurin</span>
+   <div class="spacer"></div>
+   <div class="lang-group">
+       <button class="lang-btn" data-lang="en">EN</button>
+       <button class="lang-btn active" data-lang="ja">JP</button>
+       <button class="lang-btn" data-lang="fi">FI</button>
+       <button class="lang-btn" data-lang="da">DA</button>
+   </div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+   <div class="sb-section">
+       <div class="sb-label"><span id="lbl-func">FUNCTION</span></div>
+       <select id="funcSelect"></select>
+   </div>
+
+   <div class="sb-section">
+       <div class="sb-label">
+           <span id="lbl-center">CENTER (a)</span>
+           <span class="sb-value" id="aVal">0</span>
+       </div>
+       <input type="range" id="aSlider" min="-3.2" max="3.2" value="0" step="0.1">
+       <div style="margin-top:8px;">
+           <button id="dance-btn" class="icon-btn">⟳ DANCE</button>
+       </div>
+   </div>
+
+   <div class="sb-section">
+       <div class="sb-label">
+           <span id="lbl-terms">TERMS (n)</span>
+           <span class="sb-value" id="nVal">1</span>
+       </div>
+       <input type="range" id="nSlider" min="0" max="64" value="1" step="1">
+       <div style="margin-top:8px;">
+           <button id="play-btn" class="icon-btn">▶ PLAY</button>
+       </div>
+   </div>
+
+   <div class="sb-section">
+       <div class="sb-label">
+           <span id="lbl-zoom">ZOOM</span>
+           <span class="sb-value" id="zoomVal">±5</span>
+       </div>
+       <input type="range" id="zoomSlider" min="2" max="20" value="6" step="0.5">
+   </div>
+
+   <div class="sb-section" style="margin-top:auto; padding-top:16px;">
+       <div class="sb-label">LEGEND</div>
+       <div class="legend-item"><div class="dot" style="background:var(--target)"></div><span id="legend-original">f(x)</span></div>
+       <div class="legend-item"><div class="dot" style="background:var(--accent)"></div><span id="legend-approx">P(x)</span></div>
+       <div class="legend-item"><div class="line-dashed"></div><span id="legend-center">center a</span></div>
+   </div>
+</div>
+
+<!-- CANVAS -->
 <canvas id="graphCanvas"></canvas>
 
-<!-- 言語切り替えヘッダー -->
-<div id="header">
-    <label class="lang-option"><input type="radio" name="lang" value="en"> EN</label>
-    <label class="lang-option"><input type="radio" name="lang" value="ja" checked> JP</label>
-    <label class="lang-option"><input type="radio" name="lang" value="fi"> FI</label>
-    <label class="lang-option"><input type="radio" name="lang" value="da"> DA</label>
-</div>
-
-<!-- 凡例 -->
-<div id="legend">
-    <div class="legend-item"><div class="dot" style="background:var(--target)"></div> <span id="legend-original">元の関数 f(x)</span></div>
-    <div class="legend-item"><div class="dot" style="background:var(--accent)"></div> <span id="legend-approx">近似多項式 P(x)</span></div>
-    <!-- 中心点の凡例追加 -->
-    <div class="legend-item"><div class="line-dashed"></div> <span id="legend-center">中心点 (a)</span></div>
-</div>
-
-<!-- コントロールパネル -->
-<div id="ui-layer">
-    <div class="controls-grid">
-        <!-- 2. 数式 (PCではgrid-column 1/-1) -->
-        <div id="formula-container">
-            <span id="formula-text"></span>
-        </div>
-
-        <!-- 1. 関数選択 -->
-        <div class="control-group">
-            <div class="label-row"><span id="lbl-func">関数選択</span></div>
-            <select id="funcSelect"></select>
-        </div>
-
-        <!-- 新規: 中心点スライダー -->
-        <div class="control-group">
-
-           <div class="label-row" style="display:flex; align-items:center; gap:8px;">
-               <button id="dance-btn" title="Dance with Maclaurin" style="background:var(--center); border:none; border-radius:12px; padding:2px 8px; cursor:pointer; font-size:0.7rem; color:#000; font-weight:bold;">DANCE</button>
-               <span id="lbl-center" style="flex:1">中心点 (a):</span> <b id="aVal">0</b>
-           </div>
-
-            <input type="range" id="aSlider" min="-3.2" max="3.2" value="0" step="0.1">
-        </div>
-
-        <!-- 3. 項数スライダー -->
-        <div class="control-group">
-            <div class="label-row" style="display:flex; align-items:center; gap:8px;">
-                 <button id="play-btn" title="Auto play">▶</button>
-                 <span id="lbl-terms" style="flex:1">項数 (n):</span>
-                 <b id="nVal">1</b>
-             </div>
-            <input type="range" id="nSlider" min="0" max="64" value="1" step="1">
-        </div>
-
-        <!-- 4. ズームスライダー -->
-        <div class="control-group">
-            <div class="label-row"><span id="lbl-zoom">ズーム (表示範囲):</span> <b id="zoomVal">x: ±5</b></div>
-            <input type="range" id="zoomSlider" min="2" max="20" value="6" step="0.5">
-        </div>
-    </div>
+<!-- FORMULA BAR -->
+<div id="formula-bar">
+   <span id="formula-text"></span>
 </div>
 
 
@@ -902,7 +870,15 @@ function updateLanguage(lang) {
     funcSelect.value = functions[currentVal] ? currentVal : "sin";
 }
 
-langRadios.forEach(radio => radio.addEventListener('change', (e) => updateLanguage(e.target.value)));
+
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+   btn.addEventListener('click', () => {
+       document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+       btn.classList.add('active');
+       updateLanguage(btn.dataset.lang);
+   });
+});
 updateLanguage('ja');
 
 function playSound(n) {
@@ -1033,8 +1009,11 @@ let userTouching = false;
 
 function startAnim() {
     if (animTimer) return;
-    playBtn.textContent = '⏸';
-    playBtn.classList.add('playing');
+    
+
+    playBtn.textContent = '⏸ STOP';
+    playBtn.classList.add('active');
+
     animTimer = setInterval(() => {
         if (userTouching) return; // スライダー操作中はスキップ（止めない）
         let cur = parseInt(nSlider.value);
@@ -1053,8 +1032,9 @@ function startAnim() {
 function stopAnim() {
     clearInterval(animTimer);
     animTimer = null;
-    playBtn.textContent = '▶';
-    playBtn.classList.remove('playing');
+
+    playBtn.textContent = '▶ PLAY';
+    playBtn.classList.remove('active');
 }
 
 playBtn.addEventListener('click', () => {
