@@ -242,7 +242,8 @@ const translations = {
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x (指数関数)",
             log: "ln(1+x) (対数)", inv: "1/(1-x) (幾何級数)",
-            arctan: "arctan(x)", sinh: "sinh(x)", cosh: "cosh(x)"
+            arctan: "arctan(x)", sinh: "sinh(x)", cosh: "cosh(x)",
+            tan: "tan(x)", sqrt: "√(1+x) (二項展開)", gauss: "e^(-x²) (ガウス)", inv2: "1/(1+x²)"
         }
     },
     en: {
@@ -251,7 +252,8 @@ const translations = {
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x",
             log: "ln(1+x)", inv: "1/(1-x)",
-            arctan: "arctan(x)", sinh: "sinh(x)", cosh: "cosh(x)"
+            arctan: "arctan(x)", sinh: "sinh(x)", cosh: "cosh(x)",
+            tan: "tan(x)", sqrt: "√(1+x) (Binomial)", gauss: "e^(-x²) (Gaussian)", inv2: "1/(1+x²)"
         }
     },
     fi: {
@@ -260,7 +262,8 @@ const translations = {
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x",
             log: "ln(1+x)", inv: "1/(1-x)",
-            arctan: "arctan(x)", sinh: "sinh(x)", cosh: "cosh(x)"
+            arctan: "arctan(x)", sinh: "sinh(x)", cosh: "cosh(x)",
+            tan: "tan(x)", sqrt: "√(1+x) (Binominen)", gauss: "e^(-x²) (Gaussinen)", inv2: "1/(1+x²)"
         }
     },
     da: {
@@ -269,7 +272,8 @@ const translations = {
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x",
             log: "ln(1+x)", inv: "1/(1-x)",
-            arctan: "arctan(x)", sinh: "sinh(x)", cosh: "cosh(x)"
+            arctan: "arctan(x)", sinh: "sinh(x)", cosh: "cosh(x)",
+            tan: "tan(x)", sqrt: "√(1+x) (Binomisk)", gauss: "e^(-x²) (Gaussisk)", inv2: "1/(1+x²)"
         }
     }
 };
@@ -284,6 +288,14 @@ function factorial(n) {
     let r = 1;
     for (let i = 2; i <= n; i++) r *= i;
     return r;
+}
+
+function binom(n, k) {
+    if (k < 0 || k > n) return 0;
+    if (k === 0 || k === n) return 1;
+    let r = 1;
+    for (let i = 0; i < k; i++) r = r * (n - i) / (i + 1);
+    return Math.round(r);
 }
 
 // 数式文字列生成ヘルパー
@@ -516,6 +528,9 @@ const functions = {
            return d;
        }
 
+
+
+
        // 記号多項式演算: f^(n)(a) = p_n(a) / (1+a²)^n
        // 漸化式: p_{n+1} = deriv(p_n)·(1+a²) − 2n·a·p_n
        function pAdd(p, q) {
@@ -591,7 +606,114 @@ const functions = {
                }
            }
        };
-   })()
+   })(),
+
+tan: (() => {
+        let cache = { a: null, derivs: [] };
+        function getDerivs(a, maxN) {
+            if (cache.a === a && cache.derivs.length > maxN) return cache.derivs;
+            const d = [Math.tan(a)];
+            d[1] = 1 + d[0] * d[0];
+            for (let n = 2; n <= maxN; n++) {
+                let s = 0;
+                for (let k = 0; k < n; k++) s += binom(n - 1, k) * d[k] * d[n - 1 - k];
+                d[n] = s;
+            }
+            cache = { a, derivs: d };
+            return d;
+        }
+        return {
+            func: Math.tan,
+            getTerm: (n, x, a) => {
+                const d0 = Math.tan(a);
+                if (!isFinite(d0)) return { val: 0, text: "" };
+                const derivs = getDerivs(a, Math.max(n + 1, 2));
+                return buildTermHtml(n, x, a, derivs[n] ?? 0, true, null, null);
+            }
+        };
+    })(),
+
+    sqrt: {
+        func: (x) => Math.sqrt(1 + x),
+        getTerm: (n, x, a) => {
+            if (1 + a <= 0) return { val: 0, text: "" };
+            let falling = 1;
+            for (let j = 0; j < n; j++) falling *= (0.5 - j);
+            const deriv = falling * Math.pow(1 + a, 0.5 - n);
+            return buildTermHtml(n, x, a, deriv, true, null, null);
+        }
+    },
+
+    gauss: (() => {
+        let cache = { a: null, derivs: [] };
+        function getDerivs(a, maxN) {
+            if (cache.a === a && cache.derivs.length > maxN) return cache.derivs;
+            const ea = Math.exp(-a * a);
+            const d = [ea, -2 * a * ea];
+            for (let n = 1; n < maxN; n++) {
+                d[n + 1] = -2 * a * d[n] - 2 * n * d[n - 1];
+            }
+            cache = { a, derivs: d };
+            return d;
+        }
+        return {
+            func: (x) => Math.exp(-x * x),
+            getTerm: (n, x, a) => {
+                if (Math.abs(a) < 0.001) {
+                    // マクローリン: 偶数項のみ、係数 = (-1)^k / k! (n=2k)
+                    if (n % 2 !== 0) return { val: 0, text: "" };
+                    const k = n / 2;
+                    const signVal = (k % 2 === 0) ? 1 : -1;
+                    const val = (signVal / factorial(k)) * Math.pow(x, n);
+                    const signStr = signVal > 0 ? " + " : " - ";
+                    let text;
+                    if (n === 0) {
+                        text = " + 1";
+                    } else if (k === 1) {
+                        text = ` - x<sup>2</sup>`;
+                    } else {
+                        text = `${signStr}<span class="frac"><span class="frac-top">x<sup>${n}</sup></span><span class="frac-bottom">${k}!</span></span>`;
+                    }
+                    return { val, text };
+                } else {
+                    const derivs = getDerivs(a, Math.max(n + 1, 2));
+                    return buildTermHtml(n, x, a, derivs[n] ?? 0, true, null, null);
+                }
+            }
+        };
+    })(),
+
+    inv2: (() => {
+        let cache = { a: null, derivs: [] };
+        function getDerivs(a, maxN) {
+            if (cache.a === a && cache.derivs.length > maxN) return cache.derivs;
+            const a2 = 1 + a * a;
+            const d = [1 / a2, -2 * a / (a2 * a2)];
+            for (let n = 1; n < maxN; n++) {
+                d[n + 1] = (-(2 * n + 2) * a * d[n] - n * (n + 1) * d[n - 1]) / a2;
+            }
+            cache = { a, derivs: d };
+            return d;
+        }
+        return {
+            func: (x) => 1 / (1 + x * x),
+            getTerm: (n, x, a) => {
+                if (Math.abs(a) < 0.001) {
+                    // マクローリン: 偶数項のみ、係数 = (-1)^k (n=2k)
+                    if (n % 2 !== 0) return { val: 0, text: "" };
+                    const k = n / 2;
+                    const signVal = (k % 2 === 0) ? 1 : -1;
+                    const val = signVal * Math.pow(x, n);
+                    const signStr = signVal > 0 ? " + " : " - ";
+                    const text = n === 0 ? " + 1" : `${signStr}x<sup>${n}</sup>`;
+                    return { val, text };
+                } else {
+                    const derivs = getDerivs(a, Math.max(n + 1, 2));
+                    return buildTermHtml(n, x, a, derivs[n] ?? 0, true, null, null);
+                }
+            }
+        };
+    })()
 };
 
 /**
@@ -720,7 +842,7 @@ function draw() {
         if (funcKey === 'log' && x <= -1) continue;
         if (funcKey === 'inv' && Math.abs(x - 1) < 0.05) { first = true; continue; }
         const y = currentFunc.func(x);
-        if (Math.abs(y) > rangeY * 2) { first = true; continue; }
+        if (!isFinite(y) || Math.abs(y) > rangeY * 2) { first = true; continue; }//NaN ガード（sqrt の定義域外対策）
         const py = toCanvasY(y, rangeX);
         if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
     }
@@ -743,7 +865,8 @@ function draw() {
              yApprox += t.val;
         }
         
-        if (Math.abs(yApprox) > rangeY * 2) { first = true; continue; }
+        if (!isFinite(yApprox) || Math.abs(yApprox) > rangeY * 2) { first = true; continue; }//NaN ガード（sqrt の定義域外対策）
+
         const py = toCanvasY(yApprox, rangeX);
         if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
     }
