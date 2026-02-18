@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Polynomial Morph v4 - Taylor</title>
+    <title>Taylor Shift "Dancing with Maclaurin"</title>
     <style>
         :root {
             --bg: #121212;
@@ -208,7 +208,12 @@
 
         <!-- 新規: 中心点スライダー -->
         <div class="control-group">
-            <div class="label-row"><span id="lbl-center">中心点 (a):</span> <b id="aVal">0</b></div>
+
+           <div class="label-row" style="display:flex; align-items:center; gap:8px;">
+               <button id="dance-btn" title="Dance with Maclaurin" style="background:var(--center); border:none; border-radius:12px; padding:2px 8px; cursor:pointer; font-size:0.7rem; color:#000; font-weight:bold;">DANCE</button>
+               <span id="lbl-center" style="flex:1">中心点 (a):</span> <b id="aVal">0</b>
+           </div>
+
             <input type="range" id="aSlider" min="-3.2" max="3.2" value="0" step="0.1">
         </div>
 
@@ -237,7 +242,7 @@
  */
 const translations = {
     ja: {
-        lblFunc: "関数選択", lblTerms: "項数 (n)", lblZoom: "ズーム", lblCenter: "中心点 (a)",
+        lblFunc: "関数選択", lblTerms: "項数 (n)", lblZoom: "ズーム", lblCenter: "中心点 (a)", btnDance: "Dance!",
         legendOriginal: "元の関数 f(x)", legendApprox: "近似多項式 P(x)", legendCenter: "中心点 (a)",
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x (指数関数)",
@@ -247,7 +252,7 @@ const translations = {
         }
     },
     en: {
-        lblFunc: "Function", lblTerms: "Terms (n)", lblZoom: "Zoom", lblCenter: "Center (a)",
+        lblFunc: "Function", lblTerms: "Terms (n)", lblZoom: "Zoom", lblCenter: "Center (a)", btnDance: "Dance!",
         legendOriginal: "Original f(x)", legendApprox: "Polynomial P(x)", legendCenter: "Center (a)",
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x",
@@ -257,7 +262,7 @@ const translations = {
         }
     },
     fi: {
-        lblFunc: "Funktio", lblTerms: "Termit (n)", lblZoom: "Zoomaus", lblCenter: "Keskipiste (a)",
+        lblFunc: "Funktio", lblTerms: "Termit (n)", lblZoom: "Zoomaus", lblCenter: "Keskipiste (a)", btnDance: "Dance!",
         legendOriginal: "f(x)", legendApprox: "P(x)", legendCenter: "Keskipiste (a)",
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x",
@@ -267,7 +272,7 @@ const translations = {
         }
     },
     da: {
-        lblFunc: "Funktion", lblTerms: "Led (n)", lblZoom: "Zoom", lblCenter: "Centrum (a)",
+        lblFunc: "Funktion", lblTerms: "Led (n)", lblZoom: "Zoom", lblCenter: "Centrum (a)", btnDance: "Dance!",
         legendOriginal: "f(x)", legendApprox: "P(x)", legendCenter: "Centrum (a)",
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x",
@@ -867,6 +872,8 @@ const elLegendOriginal = document.getElementById('legend-original');
 const elLegendApprox = document.getElementById('legend-approx');
 const elLegendCenter = document.getElementById('legend-center');
 
+const danceBtn = document.getElementById('dance-btn');
+
 let audioCtx = null;
 let width, height;
 
@@ -877,6 +884,9 @@ function updateLanguage(lang) {
     elLblCenter.innerText = t.lblCenter;
     elLblTerms.innerText = t.lblTerms;
     elLblZoom.innerText = t.lblZoom;
+
+    danceBtn.innerText = t.btnDance;
+
     elLegendOriginal.innerText = t.legendOriginal;
     elLegendApprox.innerText = t.legendApprox;
     elLegendCenter.innerText = t.legendCenter;
@@ -1056,6 +1066,13 @@ nSlider.addEventListener('touchstart', () => userTouching = true);
 nSlider.addEventListener('mouseup', () => userTouching = false);
 nSlider.addEventListener('touchend', () => userTouching = false);
 
+
+// Dance with Maclaurin (Reset a to 0)
+danceBtn.addEventListener('click', () => {
+    aSlider.value = 0;
+    aVal.textContent = "0";
+    requestAnimationFrame(draw);
+});
 
 // Events
 nSlider.addEventListener('input', (e) => { nVal.textContent = e.target.value; playSound(parseInt(e.target.value)); requestAnimationFrame(draw); });
