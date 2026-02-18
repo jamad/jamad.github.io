@@ -202,12 +202,13 @@
             </div>
             <div id="word-list" class="max-h-[45vh] overflow-y-auto mb-6 pr-1 custom-scrollbar"></div>
             <div class="space-y-4">
+                <!-- --- 修正：スライダーを削除し、トグルスイッチのみに変更 --- -->
                 <div class="p-3 bg-slate-800/50 rounded-xl">
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Animation Scrub</label>
-                        <button id="play-pause" class="text-[9px] bg-indigo-600 px-2 py-0.5 rounded text-white font-bold">Pause</button>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Animation Control</label>
+                    <div class="stage-toggle !static !transform-none w-full">
+                        <div id="play-btn-tab" class="toggle-btn flex-1 text-center active" onclick="togglePlay(false)">Play</div>
+                        <div id="pause-btn-tab" class="toggle-btn flex-1 text-center" onclick="togglePlay(true)">Pause</div>
                     </div>
-                    <input type="range" id="ani-scrub" min="0" max="100" value="0">
                 </div>
                 <div class="p-3 bg-slate-800/50 rounded-xl">
                     <label class="block text-[10px] font-bold text-slate-400 mb-2 uppercase">Card Scale</label>
@@ -272,19 +273,19 @@
 
         function setupControls() {
             document.getElementById('font-slider').oninput = (e) => document.documentElement.style.setProperty('--base-font-scale', e.target.value);
-            document.getElementById('ani-scrub').oninput = (e) => {
-                if(!isPaused) togglePlay(true);
-                const delay = -(parseFloat(e.target.value) / 100 * 6);
-                document.documentElement.style.setProperty('--ani-delay', `${delay}s`);
-            };
             document.getElementById('play-pause').onclick = () => togglePlay(!isPaused);
         }
 
+        // --- 修正：スライダーロジックを削除し、トグルのみに ---
         function togglePlay(p) {
             isPaused = p;
             document.documentElement.style.setProperty('--ani-play-state', isPaused ? 'paused' : 'running');
-            document.getElementById('play-pause').textContent = isPaused ? 'Play' : 'Pause';
+            
+            // ボタンの見た目を更新
+            document.getElementById('play-btn-tab').classList.toggle('active', !isPaused);
+            document.getElementById('pause-btn-tab').classList.toggle('active', isPaused);
         }
+
 
         function setNumber(n) {
             currentNum = n;
