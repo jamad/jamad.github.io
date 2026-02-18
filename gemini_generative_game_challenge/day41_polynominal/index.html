@@ -501,31 +501,44 @@ const functions = {
             return { val, text };
         }
     },
-    arctan: {
+    arctan: (() => {
+    // (1+a²)f^(n+1) + 2a·n·f^(n) + n(n-1)·f^(n-1) = 0 の漸化式でn階微分を計算
+    let cache = { a: null, derivs: [] };
+
+    function getDerivs(a, maxN) {
+        if (cache.a === a && cache.derivs.length > maxN) return cache.derivs;
+        const d = [];
+        d[0] = Math.atan(a);
+        if (maxN >= 1) d[1] = 1 / (1 + a * a);
+        for (let k = 1; k < maxN; k++) {
+            d[k+1] = -(2*a*k*d[k] + k*(k-1)*(d[k-1] ?? 0)) / (1 + a*a);
+        }
+        cache = { a, derivs: d };
+        return d;
+    }
+
+    return {
         func: Math.atan,
         getTerm: (n, x, a) => {
-            // Arctanはa!=0での式が非常に複雑（複素数が絡むレベル）なので、
-            // ユーザー体験のため a=0 (マクローリン) 以外は数値表示を意図的に停止または簡易表示します
             if (Math.abs(a) < 0.001) {
+                // マクローリン展開（奇数項のみ）：従来通り
                 if (n % 2 === 0) return { val: 0, text: "" };
                 let k = (n - 1) / 2;
                 let signVal = (k % 2 === 0) ? 1 : -1;
                 let val = (signVal / n) * Math.pow(x, n);
-                
                 let signStr = signVal > 0 ? " + " : " - ";
                 let xPart = (n===1) ? "x" : `x<sup>${n}</sup>`;
                 let text = (n===1) ? (signStr+"x") : `${signStr}<span class="frac"><span class="frac-top">${xPart}</span><span class="frac-bottom">${n}</span></span>`;
                 return { val, text };
             } else {
-                // a!=0の場合は定数項のみ表示し、以降は省略 (複雑すぎるため)
-                if (n===0) {
-                    let v = Math.atan(a);
-                    return { val: v, text: " + arctan(a)" }; // ここも記号化
-                }
-                return { val: 0, text: "" };
+                // テイラー展開：漸化式で全項計算
+                const derivs = getDerivs(a, Math.max(n + 1, 2));
+                const deriv = derivs[n] ?? 0;
+                return buildTermHtml(n, x, a, deriv, true, null, null);
             }
         }
-    }
+    };
+    })()
 };
 
 /**
