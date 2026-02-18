@@ -46,7 +46,7 @@
 
        /* ── SIDEBAR ── */
        #sidebar {
-           position: fixed; top: 38px; left: 0; bottom: 42px;
+           position: fixed; top: 38px; right: 0; bottom: 42px;
            width: 190px;
            background: rgba(14,14,14,0.97);
            border-right: 1px solid #1e1e1e;
@@ -76,6 +76,18 @@
            letter-spacing: 0.04em; cursor: pointer;
        }
        select:focus { border-color: #333; }
+
+
+       /* 関数リスト */
+       #func-list { display: flex; flex-direction: column; gap: 2px; }
+       .func-item {
+           font-size: 0.72rem; padding: 5px 8px; border-radius: 2px; cursor: pointer;
+           color: #555; border: 1px solid transparent; transition: all 0.12s;
+           letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+       }
+       .func-item:hover { color: #aaa; border-color: #2a2a2a; }
+       .func-item.selected { color: var(--accent); border-color: rgba(0,188,212,0.3); background: rgba(0,188,212,0.06); }
+
        input[type=range] {
            width: 100%; height: 3px; background: #222; border-radius: 2px;
            outline: none; -webkit-appearance: none; margin-top: 6px; cursor: pointer;
@@ -102,8 +114,8 @@
        .line-dashed { width: 16px; height: 0; border-top: 2px dashed var(--center); flex-shrink: 0; }
 
        /* ── FORMULA BAR ── */
-       #formula-bar {
-           position: fixed; bottom: 0; left: 190px; right: 0; height: 42px;
+        #formula-bar {
+           position: fixed; bottom: 0; left: 0; right: 190px; height: 42px;
            background: rgba(0,0,0,0.97);
            border-top: 1px solid #1a1a1a;
            display: flex; align-items: center;
@@ -121,14 +133,14 @@
        /* ── CANVAS AREA ── */
        #graphCanvas {
            position: fixed;
-           top: 38px; left: 190px; right: 0; bottom: 42px;
+           top: 38px; left: 0; right: 190px; bottom: 42px;
        }
 
        /* ── MOBILE FALLBACK ── */
        @media (max-width: 600px) {
-           #sidebar { width: 100%; top: auto; bottom: 42px; height: 220px; border-right: none; border-top: 1px solid #1e1e1e; flex-direction: row; flex-wrap: wrap; overflow-x: auto; padding: 10px; gap: 10px; }
-           #formula-bar { left: 0; }
-           #graphCanvas { left: 0; bottom: calc(220px + 42px); }
+           #sidebar { width: 100%; top: auto; bottom: 42px; height: 220px; border-left: none; border-top: 1px solid #1e1e1e; flex-direction: row; flex-wrap: wrap; overflow-x: auto; padding: 10px; gap: 10px; }
+           #formula-bar { right: 0; }
+           #graphCanvas { right: 0; bottom: calc(220px + 42px); }
            .sb-section { border-top: none; padding-top: 0; min-width: 130px; }
        }
 
@@ -155,7 +167,7 @@
 <div id="sidebar">
    <div class="sb-section">
        <div class="sb-label"><span id="lbl-func">FUNCTION</span></div>
-       <select id="funcSelect"></select>
+       <div id="func-list"></div>
    </div>
 
    <div class="sb-section">
@@ -185,7 +197,7 @@
            <span id="lbl-zoom">ZOOM</span>
            <span class="sb-value" id="zoomVal">±5</span>
        </div>
-       <input type="range" id="zoomSlider" min="2" max="20" value="6" step="0.5">
+       <input type="range" id="zoomSlider" min="2" max="32" value="6" step="0.5">
    </div>
 
    <div class="sb-section" style="margin-top:auto; padding-top:16px;">
@@ -843,6 +855,7 @@ const elLegendCenter = document.getElementById('legend-center');
 
 const danceBtn = document.getElementById('dance-btn');
 
+let currentFuncKey = 'sin';
 let audioCtx = null;
 let width, height;
 
@@ -860,14 +873,23 @@ function updateLanguage(lang) {
     elLegendApprox.innerText = t.legendApprox;
     elLegendCenter.innerText = t.legendCenter;
 
-    const currentVal = funcSelect.value;
-    funcSelect.innerHTML = "";
-    for (let key in functions) {
-        let opt = document.createElement('option');
-        opt.value = key; opt.text = t.funcs[key];
-        funcSelect.appendChild(opt);
-    }
-    funcSelect.value = functions[currentVal] ? currentVal : "sin";
+    const currentVal = currentFuncKey;
+   const list = document.getElementById('func-list');
+   list.innerHTML = "";
+   for (let key in functions) {
+       const item = document.createElement('div');
+       item.className = 'func-item' + (key === currentVal ? ' selected' : '');
+       item.textContent = t.funcs[key];
+       item.dataset.key = key;
+       item.addEventListener('click', () => {
+           document.querySelectorAll('.func-item').forEach(el => el.classList.remove('selected'));
+           item.classList.add('selected');
+           currentFuncKey = key;
+           nSlider.value = 1; nVal.textContent = 1; aSlider.value = 0; aVal.textContent = 0;
+           requestAnimationFrame(draw);
+       });
+       list.appendChild(item);
+   }
 }
 
 
@@ -909,7 +931,9 @@ function draw() {
     const rangeX = parseFloat(zoomSlider.value);
     const nMax = parseInt(nSlider.value);
     const a = parseFloat(aSlider.value);
-    const funcKey = funcSelect.value;
+
+    const funcKey = currentFuncKey;
+
     const currentFunc = functions[funcKey];
     
     ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg');
@@ -1059,10 +1083,7 @@ danceBtn.addEventListener('click', () => {
 nSlider.addEventListener('input', (e) => { nVal.textContent = e.target.value; playSound(parseInt(e.target.value)); requestAnimationFrame(draw); });
 aSlider.addEventListener('input', (e) => { aVal.textContent = e.target.value; requestAnimationFrame(draw); });
 zoomSlider.addEventListener('input', (e) => { zoomVal.textContent = "x: ±" + e.target.value; requestAnimationFrame(draw); });
-funcSelect.addEventListener('change', () => { 
-    nSlider.value = 1; nVal.textContent = 1; aSlider.value = 0; aVal.textContent = 0; 
-    requestAnimationFrame(draw); 
-});
+
 window.addEventListener('resize', draw);
 
 draw();
