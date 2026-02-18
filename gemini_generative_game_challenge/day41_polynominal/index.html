@@ -33,15 +33,15 @@
            text-transform: uppercase; white-space: nowrap;
        }
        #top-bar .sep { color: #444; font-size: 0.8rem; }
-       #top-bar .sub { font-size: 0.65rem; color: #555; letter-spacing: 0.08em; text-transform: uppercase; }
+       #top-bar .sub { font-size: 0.65rem; color: #888; letter-spacing: 0.08em; text-transform: uppercase; }
        #top-bar .spacer { flex: 1; }
        #top-bar .lang-group { display: flex; gap: 4px; }
        .lang-btn {
-           background: none; border: 1px solid #333; color: #666;
+           background: none; border: 1px solid #333; color: #888;
            font-family: inherit; font-size: 0.65rem; letter-spacing: 0.1em;
            padding: 2px 7px; border-radius: 3px; cursor: pointer; transition: all 0.15s;
        }
-       .lang-btn:hover { border-color: #555; color: #aaa; }
+       .lang-btn:hover { border-color: #888; color: #aaa; }
        .lang-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,188,212,0.08); }
 
        /* ── SIDEBAR ── */
@@ -66,7 +66,7 @@
 
         .sb-label {
            font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
-           color: #666; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;
+           color: #888; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;
 
         }
        .sb-value {
@@ -91,7 +91,7 @@
        
            letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
        }
-       
+
        .func-item:hover { color: #ccc; border-color: #2a2a2a; }
        .func-item.selected { color: var(--accent); border-color: rgba(0,188,212,0.3); background: rgba(0,188,212,0.06); }
 
@@ -108,7 +108,7 @@
 
        /* ── PLAY / DANCE BTN ── */
        .icon-btn {
-           background: none; border: 1px solid #2a2a2a; color: #555;
+           background: none; border: 1px solid #2a2a2a; color: #888;
            font-family: inherit; font-size: 0.6rem; letter-spacing: 0.1em;
            padding: 2px 6px; border-radius: 2px; cursor: pointer; transition: all 0.15s;
        }
@@ -116,7 +116,7 @@
        .icon-btn.active { border-color: var(--target); color: var(--target); background: rgba(255,64,129,0.08); }
 
        /* ── LEGEND ── */
-       .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 0.68rem; color: #555; }
+       .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 0.68rem; color: #888; }
        .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
        .line-dashed { width: 16px; height: 0; border-top: 2px dashed var(--center); flex-shrink: 0; }
 
@@ -231,7 +231,7 @@
  */
 const translations = {
     ja: {
-        lblFunc: "関数選択", lblTerms: "項数 (n)", lblZoom: "ズーム", lblCenter: "中心点 (a)", btnDance: "Dance!",
+        lblFunc: "関数選択", lblTerms: "項数 (n)", lblZoom: "ズーム", lblCenter: "中心点 (a)", btnDance: "Dance with Maclaurin!",
         legendOriginal: "元の関数 f(x)", legendApprox: "近似多項式 P(x)", legendCenter: "中心点 (a)",
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x (指数関数)",
@@ -241,7 +241,7 @@ const translations = {
         }
     },
     en: {
-        lblFunc: "Function", lblTerms: "Terms (n)", lblZoom: "Zoom", lblCenter: "Center (a)", btnDance: "Dance!",
+        lblFunc: "Function", lblTerms: "Terms (n)", lblZoom: "Zoom", lblCenter: "Center (a)", btnDance: "Dance with Maclaurin!",
         legendOriginal: "Original f(x)", legendApprox: "Polynomial P(x)", legendCenter: "Center (a)",
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x",
@@ -251,7 +251,7 @@ const translations = {
         }
     },
     fi: {
-        lblFunc: "Funktio", lblTerms: "Termit (n)", lblZoom: "Zoomaus", lblCenter: "Keskipiste (a)", btnDance: "Dance!",
+        lblFunc: "Funktio", lblTerms: "Termit (n)", lblZoom: "Zoomaus", lblCenter: "Keskipiste (a)", btnDance: "Dance with Maclaurin!",
         legendOriginal: "f(x)", legendApprox: "P(x)", legendCenter: "Keskipiste (a)",
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x",
@@ -261,7 +261,7 @@ const translations = {
         }
     },
     da: {
-        lblFunc: "Funktion", lblTerms: "Led (n)", lblZoom: "Zoom", lblCenter: "Centrum (a)", btnDance: "Dance!",
+        lblFunc: "Funktion", lblTerms: "Led (n)", lblZoom: "Zoom", lblCenter: "Centrum (a)", btnDance: "Dance with Maclaurin!",
         legendOriginal: "f(x)", legendApprox: "P(x)", legendCenter: "Centrum (a)",
         funcs: {
             sin: "sin(x)", cos: "cos(x)", exp: "e^x",
