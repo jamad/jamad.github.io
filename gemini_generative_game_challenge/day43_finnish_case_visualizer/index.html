@@ -316,20 +316,46 @@
             });
         }
 
+        // --- renderCases を以下のように変更 ---
         function renderCases() {
-            const container = document.getElementById('case-layer'); container.innerHTML = '';
+            const container = document.getElementById('case-layer'); 
+            container.innerHTML = '';
             CASE_CONFIGS.forEach(c => {
                 const card = document.createElement('div');
-                card.className = `case-card ${c.class}`; card.id = `node-${c.id}`;
+                card.className = `case-card ${c.class}`; 
+                card.id = `node-${c.id}`;
+                // 中身の枠だけ先に作る
                 card.innerHTML = `<div class="case-name" style="color: ${c.color}">${c.name}</div><div class="case-word"></div><div class="case-desc">${c.desc}</div>`;
                 container.appendChild(card);
             });
+            // 全カード作成直後にデータを注入する
+            updateUI(); 
         }
 
         function formatWord(text, configId) {
             if(!text) return '';
             let val = text.split(' / ')[0];
-            const suffixes = ['ssa','sta','an','en','un','in','lla','lta','lle','na','ksi','tta','it','at','ut','ja','ia','ien','jen','den','neen'];
+
+
+            const suffixes = [
+                    // 1. 特別に長い語尾（4文字以上）
+                    'neen', 'tten', 'seen', 'den', 'ien', 'jen',
+                    // 2. 複数形のiを含む語尾（3文字以上）
+                    // これを入れることで leiv-illä のように「i」から分離されます
+                    'illa', 'illä', 'ilta', 'iltä', 'ille', 'issa', 'issä', 'ista', 'istä',
+                    // 3. 基本的な語尾
+                    'ssa', 'ssä', 'sta', 'stä', 'lla', 'llä', 'lta', 'ltä', 'tta', 'ttä',
+                    // 4. 入格（Vn）パターン
+                    'an', 'en', 'in', 'on', 'un', 'än', 'ön', 'yn',
+                    // 5a. 向格・変格・具格・分格
+                    'lle','ksi','na','nä',
+                    // 5b. 複数形主格・分格など
+                    'it','at','ut','yt','ja','ia','jä','iä',
+                    // 6. 最も短い語尾（最後に判定）属格の基本
+                    'n', 't'
+                ];
+
+
             let root = val, suf = '';
             for(let s of suffixes) {
                 if(val.endsWith(s) && configId !== 'Nominatiivi') {
