@@ -46,8 +46,9 @@
 
        /* ── SIDEBAR ── */
        #sidebar {
-           position: fixed; top: 38px; right: 0; bottom: 42px;
-           width: 190px;
+           position: fixed; top: 74px; right: 0; bottom: 0;
+
+            width: 190px;
            background: rgba(14,14,14,0.97);
            border-right: 1px solid #1e1e1e;
            display: flex; flex-direction: column;
@@ -115,9 +116,9 @@
 
        /* ── FORMULA BAR ── */
         #formula-bar {
-           position: fixed; bottom: 0; left: 0; right: 190px; height: 42px;
+           position: fixed; top: 38px; left: 0; right: 0; height: 36px;
            background: rgba(0,0,0,0.97);
-           border-top: 1px solid #1a1a1a;
+           border-bottom: 1px solid #1a1a1a;
            display: flex; align-items: center;
            padding: 0 16px;
            overflow-x: auto; white-space: nowrap;
@@ -133,14 +134,15 @@
        /* ── CANVAS AREA ── */
        #graphCanvas {
            position: fixed;
-           top: 38px; left: 0; right: 190px; bottom: 42px;
+           top: 74px; left: 0; right: 190px; bottom: 0;
+
        }
 
        /* ── MOBILE FALLBACK ── */
        @media (max-width: 600px) {
            #sidebar { width: 100%; top: auto; bottom: 42px; height: 220px; border-left: none; border-top: 1px solid #1e1e1e; flex-direction: row; flex-wrap: wrap; overflow-x: auto; padding: 10px; gap: 10px; }
            #formula-bar { right: 0; }
-           #graphCanvas { right: 0; bottom: calc(220px + 42px); }
+           #graphCanvas { right: 0; bottom: 220px; }
            .sb-section { border-top: none; padding-top: 0; min-width: 130px; }
        }
 
@@ -975,20 +977,24 @@ function draw() {
     // Original
     ctx.beginPath(); ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--target'); ctx.lineWidth = 3;
     let first = true;
+    let prevY = null;
     for (let px = 0; px < width; px+=3) {
         const x = (px - width/2) / scale;
         if (funcKey === 'log' && x <= -1) continue;
         if (funcKey === 'inv' && Math.abs(x - 1) < 0.05) { first = true; continue; }
         const y = currentFunc.func(x);
         if (!isFinite(y) || Math.abs(y) > rangeY * 2) { first = true; continue; }//NaN ガード（sqrt の定義域外対策）
+        if (prevY !== null && Math.abs(y - prevY) > rangeY * 1.5) { first = true; }//「急変検出」を追加
         const py = toCanvasY(y, rangeX);
         if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
+        prevY = y;
     }
     ctx.stroke();
 
     // Approx
     ctx.beginPath(); ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--accent'); ctx.lineWidth = 3;
     first = true;
+    let prevYA = null;
     
     // Formula Text Gen
     let formulaHtml = `P(x) ≈ `;
@@ -1004,9 +1010,12 @@ function draw() {
         }
         
         if (!isFinite(yApprox) || Math.abs(yApprox) > rangeY * 2) { first = true; continue; }//NaN ガード（sqrt の定義域外対策）
+        if (prevYA !== null && Math.abs(yApprox - prevYA) > rangeY * 1.5) { first = true; }
+
 
         const py = toCanvasY(yApprox, rangeX);
         if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
+        prevYA = yApprox;
     }
     ctx.stroke();
     
@@ -1089,6 +1098,36 @@ window.addEventListener('resize', draw);
 draw();
 </script>
 
-
-</body>
+<script>
+class GlobalFooter extends HTMLElement {
+ constructor() { super(); this.attachShadow({ mode: 'open' }); }
+ static get observedAttributes() { return ['version', 'project']; }
+ connectedCallback() { this.render(); }
+ render() {
+   const version = this.getAttribute('version') || 'v0.0.0';
+   const project = this.getAttribute('project');
+   const homeUrl = "https://junichiyamada.gitlab.io/";
+   let bugUrl = homeUrl;
+   if (project) bugUrl = `https://gitlab.com/junichiyamada/${project}/-/issues/new?issue[title]=Bug+Report+(${version})`;
+   this.shadowRoot.innerHTML = `
+     <style>
+       :host { display: block !important; position: fixed !important; bottom: 10px !important; left: 0 !important; width: 100% !important; z-index: 2147483647 !important; pointer-events: none; }
+       footer { pointer-events: auto; color: rgba(255,255,255,0.4); text-align: center; font-family: sans-serif; font-size: 11px; display: flex; justify-content: center; align-items: center; gap: 12px; }
+       a { color: rgba(255,255,255,0.6); text-decoration: none; }
+       a:hover { color: #fff; text-decoration: underline; }
+       .sep { color: rgba(255,255,255,0.2); }
+     </style>
+     <footer>
+       <span>${version}</span>
+       <span class="sep">|</span>
+       <a href="${homeUrl}">Home</a>
+       <span class="sep">|</span>
+       <a href="${bugUrl}" target="_blank">Bug Report</a>
+     </footer>`;
+ }
+}
+customElements.define('shared-footer', GlobalFooter);
+</script>
+<shared-footer version="v20260219.1" project="polynomial-morph"></shared-footer>
+ </body>
 </html>
