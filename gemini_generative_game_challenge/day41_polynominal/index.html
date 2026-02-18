@@ -501,44 +501,97 @@ const functions = {
             return { val, text };
         }
     },
-    arctan: (() => {
-    // (1+a²)f^(n+1) + 2a·n·f^(n) + n(n-1)·f^(n-1) = 0 の漸化式でn階微分を計算
-    let cache = { a: null, derivs: [] };
+       arctan: (() => {
+       // 数値微分キャッシュ (グラフ描画用)
+       let numCache = { a: null, derivs: [] };
+       function getDerivs(a, maxN) {
+           if (numCache.a === a && numCache.derivs.length > maxN) return numCache.derivs;
+           const d = [];
+           d[0] = Math.atan(a);
+           if (maxN >= 1) d[1] = 1 / (1 + a * a);
+           for (let k = 1; k < maxN; k++) {
+               d[k+1] = -(2*a*k*d[k] + k*(k-1)*(d[k-1] ?? 0)) / (1 + a*a);
+           }
+           numCache = { a, derivs: d };
+           return d;
+       }
 
-    function getDerivs(a, maxN) {
-        if (cache.a === a && cache.derivs.length > maxN) return cache.derivs;
-        const d = [];
-        d[0] = Math.atan(a);
-        if (maxN >= 1) d[1] = 1 / (1 + a * a);
-        for (let k = 1; k < maxN; k++) {
-            d[k+1] = -(2*a*k*d[k] + k*(k-1)*(d[k-1] ?? 0)) / (1 + a*a);
-        }
-        cache = { a, derivs: d };
-        return d;
-    }
+       // 記号多項式演算: f^(n)(a) = p_n(a) / (1+a²)^n
+       // 漸化式: p_{n+1} = deriv(p_n)·(1+a²) − 2n·a·p_n
+       function pAdd(p, q) {
+           const r = new Array(Math.max(p.length, q.length)).fill(0);
+           p.forEach((c,i) => r[i] += c); q.forEach((c,i) => r[i] += c); return r;
+       }
+       function pScale(p, s) { return p.map(c => c*s); }
+       function pDeriv(p) { return p.slice(1).map((c,i) => c*(i+1)); }
+       function pMulA(p) { return [0, ...p]; }           // p × a
+       function pMul1pA2(p) { return pAdd(p, [0,0,...p]); } // p × (1+a²)
 
-    return {
-        func: Math.atan,
-        getTerm: (n, x, a) => {
-            if (Math.abs(a) < 0.001) {
-                // マクローリン展開（奇数項のみ）：従来通り
-                if (n % 2 === 0) return { val: 0, text: "" };
-                let k = (n - 1) / 2;
-                let signVal = (k % 2 === 0) ? 1 : -1;
-                let val = (signVal / n) * Math.pow(x, n);
-                let signStr = signVal > 0 ? " + " : " - ";
-                let xPart = (n===1) ? "x" : `x<sup>${n}</sup>`;
-                let text = (n===1) ? (signStr+"x") : `${signStr}<span class="frac"><span class="frac-top">${xPart}</span><span class="frac-bottom">${n}</span></span>`;
-                return { val, text };
-            } else {
-                // テイラー展開：漸化式で全項計算
-                const derivs = getDerivs(a, Math.max(n + 1, 2));
-                const deriv = derivs[n] ?? 0;
-                return buildTermHtml(n, x, a, deriv, true, null, null);
-            }
-        }
-    };
-    })()
+       let polyCache = null;
+       function getPolys(maxN) {
+           if (polyCache && polyCache.length > maxN) return polyCache;
+           const ps = [null, [1]]; // p_0=special(arctan), p_1=1
+           for (let n = 1; n < maxN; n++) {
+               ps[n+1] = pAdd(pMul1pA2(pDeriv(ps[n])), pScale(pMulA(ps[n]), -2*n));
+           }
+           polyCache = ps;
+           return ps;
+       }
+
+       // 多項式を HTML 文字列に変換: [-2,0,6] → "6a²-2"
+       function formatPoly(coeffs) {
+           const terms = [];
+           for (let k = coeffs.length - 1; k >= 0; k--) {
+               const c = Math.round(coeffs[k]);
+               if (!c) continue;
+               const abs = Math.abs(c);
+               const sign = c > 0 ? '+' : '-';
+               const varPart = k === 0 ? '' : k === 1 ? 'a' : `a<sup>${k}</sup>`;
+               const coefPart = (abs === 1 && k > 0) ? '' : `${abs}`;
+               terms.push({ sign, term: coefPart + varPart });
+           }
+           if (!terms.length) return '0';
+           return terms.map(({sign, term}, i) =>
+               i === 0 ? (sign==='-' ? '-' : '') + term : ` ${sign} ${term}`
+           ).join('');
+       }
+
+       return {
+           func: Math.atan,
+           getTerm: (n, x, a) => {
+               if (Math.abs(a) < 0.001) {
+                   // マクローリン (a=0): 奇数項のみ・従来通り
+                   if (n % 2 === 0) return { val: 0, text: "" };
+                   const k = (n-1)/2;
+                   const signVal = (k%2===0) ? 1 : -1;
+                   const val = (signVal/n) * Math.pow(x, n);
+                   const signStr = signVal > 0 ? " + " : " - ";
+                   const xPart = n===1 ? "x" : `x<sup>${n}</sup>`;
+                   const text = n===1 ? (signStr+"x") : `${signStr}<span class="frac"><span class="frac-top">${xPart}</span><span class="frac-bottom">${n}</span></span>`;
+                   return { val, text };
+               } else {
+                   // テイラー (a≠0): 漸化式多項式で記号表示
+                   const derivs = getDerivs(a, Math.max(n+1, 2));
+                   const deriv = derivs[n] ?? 0;
+                   const val = (deriv / factorial(n)) * Math.pow(x - a, n);
+
+                   let text = "";
+                   if (n === 0) {
+                       text = " + arctan(a)";
+                   } else {
+                       const ps = getPolys(n+1);
+                       const polyStr = formatPoly(ps[n]);
+                       const xPart = n===1 ? "(x - a)" : `(x - a)<sup>${n}</sup>`;
+                       const denomBase = n===1 ? "(1+a²)" : `(1+a²)<sup>${n}</sup>`;
+                       const denom = n===1 ? denomBase : `${n}!·${denomBase}`;
+                       const numer = polyStr === '1' ? xPart : `(${polyStr})·${xPart}`;
+                       text = ` + <span class="frac"><span class="frac-top">${numer}</span><span class="frac-bottom">${denom}</span></span>`;
+                   }
+                   return { val, text };
+               }
+           }
+       };
+   })()
 };
 
 /**
