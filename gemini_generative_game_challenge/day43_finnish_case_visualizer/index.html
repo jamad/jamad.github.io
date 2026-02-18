@@ -359,7 +359,8 @@
             let root = val, suf = '';
             for(let s of suffixes) {
                 if(val.endsWith(s) && configId !== 'Nominatiivi') {
-                    root = val.slice(0, -s.length); suf = '-' + s; break;
+                    root = val.slice(0, -s.length); suf = '' + s; // ここ：'-' + s からハイフンを削除しました
+                    break;
                 }
             }
             if (currentWord.kpt) {
