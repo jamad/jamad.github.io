@@ -63,10 +63,12 @@
            padding: 12px 0 4px;
        }
        .sb-section:first-child { border-top: none; padding-top: 0; }
-       .sb-label {
+
+        .sb-label {
            font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
-           color: #444; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;
-       }
+           color: #666; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;
+
+        }
        .sb-value {
            font-size: 0.82rem; color: var(--accent); font-weight: bold; letter-spacing: 0.05em;
        }
@@ -81,12 +83,16 @@
 
        /* 関数リスト */
        #func-list { display: flex; flex-direction: column; gap: 2px; }
-       .func-item {
+
+
+        .func-item {
            font-size: 0.72rem; padding: 5px 8px; border-radius: 2px; cursor: pointer;
-           color: #555; border: 1px solid transparent; transition: all 0.12s;
+           color: #888; border: 1px solid transparent; transition: all 0.12s;
+       
            letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
        }
-       .func-item:hover { color: #aaa; border-color: #2a2a2a; }
+       
+       .func-item:hover { color: #ccc; border-color: #2a2a2a; }
        .func-item.selected { color: var(--accent); border-color: rgba(0,188,212,0.3); background: rgba(0,188,212,0.06); }
 
        input[type=range] {
@@ -983,8 +989,10 @@ function draw() {
         if (funcKey === 'log' && x <= -1) continue;
         if (funcKey === 'inv' && Math.abs(x - 1) < 0.05) { first = true; continue; }
         const y = currentFunc.func(x);
-        if (!isFinite(y) || Math.abs(y) > rangeY * 2) { first = true; continue; }//NaN ガード（sqrt の定義域外対策）
-        if (prevY !== null && Math.abs(y - prevY) > rangeY * 1.5) { first = true; }//「急変検出」を追加
+
+        if (!isFinite(y) || Math.abs(y) > rangeY) { first = true; prevY = null; continue; } //NaN ガード（sqrt の定義域外対策）
+        if (prevY !== null && Math.abs(y - prevY) > rangeY) { first = true; }//「急変検出」を追加
+
         const py = toCanvasY(y, rangeX);
         if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
         prevY = y;
@@ -1009,8 +1017,9 @@ function draw() {
              yApprox += t.val;
         }
         
-        if (!isFinite(yApprox) || Math.abs(yApprox) > rangeY * 2) { first = true; continue; }//NaN ガード（sqrt の定義域外対策）
-        if (prevYA !== null && Math.abs(yApprox - prevYA) > rangeY * 1.5) { first = true; }
+
+        if (!isFinite(yApprox) || Math.abs(yApprox) > rangeY) { first = true; prevYA = null; continue; } //NaN ガード（sqrt の定義域外対策）
+        if (prevYA !== null && Math.abs(yApprox - prevYA) > rangeY) { first = true; }
 
 
         const py = toCanvasY(yApprox, rangeX);
