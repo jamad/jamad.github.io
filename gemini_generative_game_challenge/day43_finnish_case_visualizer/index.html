@@ -124,12 +124,45 @@
         .word-btn.active { border-color: #6366f1; background: #1e1b4b; }
         input[type="range"] { width: 100%; height: 4px; background: #334155; border-radius: 2px; appearance: none; cursor: pointer; }
         input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: #6366f1; border-radius: 50%; border: 2px solid #fff; }
+
+        /* --- 追加部分: ガイドラインのスタイル --- */
+        .guide-path {
+            position: absolute;
+            border-top: 2px dotted rgba(255, 255, 255, 0.1); /* 薄いドット線 */
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* 内格系ガイド (水平) */
+        .path-illative { top: 50%; left: 5%; width: 25%; }
+        .path-elative { top: 50%; left: 70%; width: 25%; }
+
+        /* 接格系ガイド (斜め) - 角度と長さはレイアウトに合わせて調整 */
+        .path-allative { 
+            top: 5%; left: 20%; width: 200px; 
+            transform: rotate(35deg); transform-origin: left center; 
+        }
+        .path-ablative { 
+            top: 5%; left: 80%; width: 200px; 
+            transform: rotate(145deg); transform-origin: left center; 
+        }
+
     </style>
 </head>
 <body>
     <div class="main-container">
         <div class="stage">
             <div class="target-box"></div>
+
+            <!-- ここから追加 -->
+            <div class="guide-layer w-full h-full absolute pointer-events-none">
+                <div class="guide-path path-illative"></div>
+                <div class="guide-path path-elative"></div>
+                <div class="guide-path path-allative"></div>
+                <div class="guide-path path-ablative"></div>
+            </div>
+            <!-- ここまで追加 -->
+
             <div id="emoji-container" class="emoji-container sg"></div>
             <div class="stage-toggle">
                 <div id="sg-btn" class="toggle-btn active" onclick="setNumber('sg')">Yksikkö (SG)</div>
