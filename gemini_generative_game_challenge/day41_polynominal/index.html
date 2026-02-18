@@ -298,6 +298,8 @@ function binom(n, k) {
     return Math.round(r);
 }
 
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); };
+
 // 数式文字列生成ヘルパー
 // symbolStr: "sin(a)" などの記号文字列。nullの場合は数値計算値を使用。
 // forceSign: 記号表示時の強制符号 (+1 または -1)。nullなら自動。
@@ -388,6 +390,33 @@ function buildTermHtml(n, xVal, a, derivVal, useFactorial = true, symbolStr = nu
     let val = coeff * Math.pow(xVal - a, n);
 
     return { val, text };
+}
+
+
+// --- Polynomial helpers (グローバルスコープ) ---
+function pAdd(p, q) {
+   const r = new Array(Math.max(p.length, q.length)).fill(0);
+   p.forEach((c,i) => r[i] += c); q.forEach((c,i) => r[i] += c); return r;
+}
+function pScale(p, s) { return p.map(c => c*s); }
+function pDeriv(p) { return p.slice(1).map((c,i) => c*(i+1)); }
+function pMulA(p) { return [0, ...p]; }
+function pMul1pA2(p) { return pAdd(p, [0,0,...p]); }
+function formatPoly(coeffs) {
+   const terms = [];
+   for (let k = coeffs.length - 1; k >= 0; k--) {
+       const c = Math.round(coeffs[k]);
+       if (!c) continue;
+       const abs = Math.abs(c);
+       const sign = c > 0 ? '+' : '-';
+       const varPart = k === 0 ? '' : k === 1 ? 'a' : `a<sup>${k}</sup>`;
+       const coefPart = (abs === 1 && k > 0) ? '' : `${abs}`;
+       terms.push({ sign, term: coefPart + varPart });
+   }
+   if (!terms.length) return '0';
+   return terms.map(({sign, term}, i) =>
+       i === 0 ? (sign==='-' ? '-' : '') + term : ` ${sign} ${term}`
+   ).join('');
 }
 
 const functions = {
@@ -531,16 +560,6 @@ const functions = {
 
 
 
-       // 記号多項式演算: f^(n)(a) = p_n(a) / (1+a²)^n
-       // 漸化式: p_{n+1} = deriv(p_n)·(1+a²) − 2n·a·p_n
-       function pAdd(p, q) {
-           const r = new Array(Math.max(p.length, q.length)).fill(0);
-           p.forEach((c,i) => r[i] += c); q.forEach((c,i) => r[i] += c); return r;
-       }
-       function pScale(p, s) { return p.map(c => c*s); }
-       function pDeriv(p) { return p.slice(1).map((c,i) => c*(i+1)); }
-       function pMulA(p) { return [0, ...p]; }           // p × a
-       function pMul1pA2(p) { return pAdd(p, [0,0,...p]); } // p × (1+a²)
 
         function polyConv(p, q) {
             const r = new Array(p.length + q.length - 1).fill(0);
@@ -578,23 +597,6 @@ const functions = {
            return ps;
        }
 
-       // 多項式を HTML 文字列に変換: [-2,0,6] → "6a²-2"
-       function formatPoly(coeffs) {
-           const terms = [];
-           for (let k = coeffs.length - 1; k >= 0; k--) {
-               const c = Math.round(coeffs[k]);
-               if (!c) continue;
-               const abs = Math.abs(c);
-               const sign = c > 0 ? '+' : '-';
-               const varPart = k === 0 ? '' : k === 1 ? 'a' : `a<sup>${k}</sup>`;
-               const coefPart = (abs === 1 && k > 0) ? '' : `${abs}`;
-               terms.push({ sign, term: coefPart + varPart });
-           }
-           if (!terms.length) return '0';
-           return terms.map(({sign, term}, i) =>
-               i === 0 ? (sign==='-' ? '-' : '') + term : ` ${sign} ${term}`
-           ).join('');
-       }
 
        return {
            func: Math.atan,
@@ -633,39 +635,96 @@ const functions = {
        };
    })(),
 
-tan: (() => {
-        let cache = { a: null, derivs: [] };
+    tan: (() => {
+        // 全微分はtan(a)の多項式: d_n = p_n(tan(a))
+        // 漸化式: d_n = Σ C(n-1,k) d_k d_{n-1-k} → 多項式畳み込みで追跡
+        let tanPolyCache = null;
+        function getTanPolys(maxN) {
+            if (tanPolyCache && tanPolyCache.length > maxN) return tanPolyCache;
+            const ps = [[0,1], [1,0,1]]; // p0=t, p1=1+t²
+            for (let n = 2; n <= maxN; n++) {
+                let poly = [0];
+                for (let k = 0; k < n; k++) {
+                    const term = polyConv(ps[k], ps[n-1-k]).map(c => c * binom(n-1, k));
+                    while (poly.length < term.length) poly.push(0);
+                    term.forEach((c, i) => poly[i] += c);
+                }
+                ps.push(poly);
+            }
+            tanPolyCache = ps;
+            return ps;
+        }
+        let numCache = { a: null, derivs: [] };
         function getDerivs(a, maxN) {
-            if (cache.a === a && cache.derivs.length > maxN) return cache.derivs;
+            if (numCache.a === a && numCache.derivs.length > maxN) return numCache.derivs;
             const d = [Math.tan(a)];
             d[1] = 1 + d[0] * d[0];
             for (let n = 2; n <= maxN; n++) {
                 let s = 0;
-                for (let k = 0; k < n; k++) s += binom(n - 1, k) * d[k] * d[n - 1 - k];
+                for (let k = 0; k < n; k++) s += binom(n-1, k) * d[k] * d[n-1-k];
                 d[n] = s;
             }
-            cache = { a, derivs: d };
+            numCache = { a, derivs: d };
             return d;
         }
         return {
             func: Math.tan,
             getTerm: (n, x, a) => {
-                const d0 = Math.tan(a);
-                if (!isFinite(d0)) return { val: 0, text: "" };
-                const derivs = getDerivs(a, Math.max(n + 1, 2));
-                return buildTermHtml(n, x, a, derivs[n] ?? 0, true, null, null);
+                const t0 = Math.tan(a);
+                if (!isFinite(t0)) return { val: 0, text: "" };
+                const derivs = getDerivs(a, Math.max(n+1, 2));
+                const deriv = derivs[n] ?? 0;
+                const val = (deriv / factorial(n)) * Math.pow(x - a, n);
+
+                const ps = getTanPolys(Math.max(n+1, 2));
+                const polyStr = formatPolyTan(ps[n]);
+                let text = "";
+                if (n === 0) {
+                    text = " + tan(a)";
+                } else {
+                    const xPart = n === 1 ? "(x - a)" : `(x - a)<sup>${n}</sup>`;
+                    const numer = polyStr === "1" ? xPart : `(${polyStr})·${xPart}`;
+                    const denom = n === 1 ? "" : `${n}!`;
+                    text = denom
+                        ? ` + <span class="frac"><span class="frac-top">${numer}</span><span class="frac-bottom">${denom}</span></span>`
+                        : ` + ${numer}`;
+                }
+                return { val, text };
             }
         };
     })(),
 
     sqrt: {
+        // f^(n)(a) = c_num/c_den · (1+a)^(1/2-n)
+        // c_num = product_{j=0}^{n-1}(1-2j), c_den = 2^n
+        // 表示: c_num·(x-a)^n / (c_den·n!·√((1+a)^(2n-1)))
         func: (x) => Math.sqrt(1 + x),
         getTerm: (n, x, a) => {
             if (1 + a <= 0) return { val: 0, text: "" };
-            let falling = 1;
-            for (let j = 0; j < n; j++) falling *= (0.5 - j);
-            const deriv = falling * Math.pow(1 + a, 0.5 - n);
-            return buildTermHtml(n, x, a, deriv, true, null, null);
+            // 有理係数を整数で計算 (GCD約分)
+            let cNum = 1, cDen = Math.pow(2, n);
+            for (let j = 0; j < n; j++) cNum *= (1 - 2*j);
+            const g = gcd(Math.abs(cNum), cDen);
+            const rNum = cNum / g, rDen = cDen / g;
+            const deriv = (cNum / cDen) * Math.pow(1 + a, 0.5 - n);
+            const val = (deriv / factorial(n)) * Math.pow(x - a, n);
+
+            let text = "";
+            if (n === 0) {
+                text = " + √(1+a)";
+            } else {
+                const signStr = rNum >= 0 ? " + " : " - ";
+                const absNum = Math.abs(rNum);
+                const xPart = n === 1 ? "(x - a)" : `(x - a)<sup>${n}</sup>`;
+                const sqrtExp = 2*n - 1;
+                const sqrtPart = sqrtExp === 1 ? "√(1+a)" : `√((1+a)<sup>${sqrtExp}</sup>)`;
+                const denomFact = factorial(n);
+                const denomNum = rDen * denomFact;
+                const fullDenom = denomNum === 1 ? sqrtPart : `${denomNum}·${sqrtPart}`;
+                const fullNum = absNum === 1 ? xPart : `${absNum}·${xPart}`;
+                text = `${signStr}<span class="frac"><span class="frac-top">${fullNum}</span><span class="frac-bottom">${fullDenom}</span></span>`;
+            }
+            return { val, text };
         }
     },
 
@@ -708,23 +767,38 @@ tan: (() => {
         };
     })(),
 
-    inv2: (() => {
-        let cache = { a: null, derivs: [] };
-        function getDerivs(a, maxN) {
-            if (cache.a === a && cache.derivs.length > maxN) return cache.derivs;
-            const a2 = 1 + a * a;
-            const d = [1 / a2, -2 * a / (a2 * a2)];
+        inv2: (() => {
+        // f = 1/(1+x²) = arctan'(x)
+        // f^(n)(a) = p_n(a) / (1+a²)^(n+1)
+        // 漸化式: p_{n+1} = -(2n+2)a·p_n - n(n+1)·p_{n-1}·(1+a²)
+        let inv2PolyCache = null;
+        function getInv2Polys(maxN) {
+            if (inv2PolyCache && inv2PolyCache.length > maxN) return inv2PolyCache;
+            const ps = [[1], [0, -2]]; // p0=1, p1=-2a
             for (let n = 1; n < maxN; n++) {
-                d[n + 1] = (-(2 * n + 2) * a * d[n] - n * (n + 1) * d[n - 1]) / a2;
+                const t1 = pScale(pMulA(ps[n]), -(2*n+2));
+                const t2 = pScale(pMul1pA2(ps[n-1]), -n*(n+1));
+                ps.push(pAdd(t1, t2));
             }
-            cache = { a, derivs: d };
+            inv2PolyCache = ps;
+            return ps;
+        }
+        let numCache = { a: null, derivs: [] };
+        function getDerivs(a, maxN) {
+            if (numCache.a === a && numCache.derivs.length > maxN) return numCache.derivs;
+            const a2 = 1 + a * a;
+            const d = [1/a2, -2*a/(a2*a2)];
+            for (let n = 1; n < maxN; n++) {
+                d[n+1] = (-(2*n+2)*a*d[n] - n*(n+1)*d[n-1]) / a2;
+            }
+            numCache = { a, derivs: d };
             return d;
         }
         return {
             func: (x) => 1 / (1 + x * x),
             getTerm: (n, x, a) => {
                 if (Math.abs(a) < 0.001) {
-                    // マクローリン: 偶数項のみ、係数 = (-1)^k (n=2k)
+                    // マクローリン: 偶数項のみ (-1)^k, n=2k
                     if (n % 2 !== 0) return { val: 0, text: "" };
                     const k = n / 2;
                     const signVal = (k % 2 === 0) ? 1 : -1;
@@ -733,12 +807,24 @@ tan: (() => {
                     const text = n === 0 ? " + 1" : `${signStr}x<sup>${n}</sup>`;
                     return { val, text };
                 } else {
-                    const derivs = getDerivs(a, Math.max(n + 1, 2));
-                    return buildTermHtml(n, x, a, derivs[n] ?? 0, true, null, null);
+                    // テイラー: p_n(a) / (1+a²)^(n+1)
+                    const derivs = getDerivs(a, Math.max(n+1, 2));
+                    const deriv = derivs[n] ?? 0;
+                    const val = (deriv / factorial(n)) * Math.pow(x - a, n);
+
+                    const ps = getInv2Polys(Math.max(n+1, 2));
+                    const polyStr = formatPoly(ps[n]); // arctan用と共用
+                    let text = "";
+                    const xPart = n === 0 ? "" : n === 1 ? "(x - a)" : `(x - a)<sup>${n}</sup>`;
+                    const denom1 = n === 0 ? "(1+a²)" : n === 1 ? "(1+a²)²" : `(1+a²)<sup>${n+1}</sup>`;
+                    const denom = n <= 1 ? denom1 : `${n}!·${denom1}`;
+                    const numer = n === 0 ? polyStr : `(${polyStr})·${xPart}`;
+                    text = ` + <span class="frac"><span class="frac-top">${numer}</span><span class="frac-bottom">${denom}</span></span>`;
+                    return { val, text };
                 }
             }
         };
-    })()
+    })(),
 };
 
 /**
