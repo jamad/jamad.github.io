@@ -1409,10 +1409,8 @@ color は "cyan", "gold", "pink", "green" のいずれか。
           const msg = data.error.message||'';
           if(msg.includes('API_KEY') || msg.includes('key') || msg.toLowerCase().includes('invalid')){
             throw new Error(
-              'APIキーが無効です。
-' +
-              '• Google AI Studio でキーを再確認してください
-' +
+              'APIキーが無効です。'
+              '• Google AI Studio でキーを再確認してください'
               '• https://aistudio.google.com/app/apikey'
             );
           }
@@ -1420,8 +1418,7 @@ color は "cyan", "gold", "pink", "green" のいずれか。
         }
         if(code===403){
           throw new Error(
-            'アクセスが拒否されました (403)。
-' +
+            'アクセスが拒否されました (403)。'
             '• APIキーに Gemini API の権限があるか確認してください'
           );
         }
