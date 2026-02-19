@@ -1282,20 +1282,52 @@ color は "cyan", "gold", "pink", "green" のいずれか。
 
 【quiz】3問必須。理解度を試す問題（暗記でなく理解を問う）。`;
 
-  const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  // Model candidates in priority order (newest first)
+  const MODELS = [
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite',
+    'gemini-1.5-flash-latest',
+    'gemini-1.5-flash',
+    'gemini-1.5-flash-8b',
+  ];
+  const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+
   const body={
     system_instruction:{parts:[{text:SYSTEM}]},
     contents:[{role:'user',parts:[{text:userContent}]}],
     generationConfig:{temperature:0.35,maxOutputTokens:4096,responseMimeType:'application/json'}
   };
 
-  const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  const data=await res.json();
-  if(data.error) throw new Error('Gemini API エラー: '+data.error.message);
-  const raw=data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if(!raw) throw new Error('Gemini からの応答が空です');
-  try{ return JSON.parse(raw); }
-  catch(e){ throw new Error('Gemini の応答を解析できませんでした: '+e.message); }
+  let lastErr = null;
+  for(const model of MODELS){
+    const endpoint=`${BASE}/${model}:generateContent?key=${apiKey}`;
+    try{
+      const res=await withTimeout(
+        fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),
+        60000, 'Gemini'
+      );
+      const data=await res.json();
+      if(data.error){
+        // Model not found → try next
+        if(data.error.code===404 || data.error.status==='NOT_FOUND'){
+          console.warn(`Model ${model} not available, trying next...`);
+          lastErr = data.error.message;
+          continue;
+        }
+        throw new Error('Gemini API エラー: '+data.error.message);
+      }
+      const raw=data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if(!raw) throw new Error('Gemini からの応答が空です');
+      console.log(`✅ Used model: ${model}`);
+      try{ return JSON.parse(raw); }
+      catch(e){ throw new Error('Gemini の応答を解析できませんでした: '+e.message); }
+    } catch(e){
+      if(e.message.includes('Gemini API エラー') || e.message.includes('解析')) throw e;
+      lastErr = e.message;
+      console.warn(`Model ${model} failed:`, e.message);
+    }
+  }
+  throw new Error('利用可能な Gemini モデルが見つかりませんでした。APIキーを確認してください。\n詳細: '+lastErr);
 }
 
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
