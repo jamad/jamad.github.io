@@ -514,10 +514,13 @@ input[type=range]::-moz-range-thumb{
 /* ═══════════════ ERROR ═══════════════ */
 .error-box{
   background:rgba(255,68,102,0.1);border:1px solid rgba(255,68,102,0.35);
-  border-radius:12px;padding:16px;margin-top:14px;font-size:13px;
-  color:var(--red);line-height:1.6;display:none;
+  border-radius:12px;padding:14px 16px;margin-top:10px;font-size:13px;
+  color:var(--red);line-height:1.7;display:none;
 }
 .error-box.show{display:block}
+textarea.pq-input{resize:vertical;min-height:100px;font-size:13px;line-height:1.6}
+#manual-panel{border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;margin-top:4px;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 
 /* ═══════════════ MISC ═══════════════ */
 @media(min-width:768px){
@@ -544,13 +547,27 @@ input[type=range]::-moz-range-thumb{
     </div>
 
     <div class="input-group">
-      <div class="input-label">
-        arXiv URL
-        <span class="badge">例: arxiv.org/pdf/2208.04717</span>
+      <div class="input-label" style="justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <span>arXiv URL <span class="badge">例: arxiv.org/pdf/2208.04717</span></span>
+        <span onclick="toggleManualMode()" id="mode-toggle" style="cursor:pointer;color:var(--text-dim);font-size:10px;text-decoration:underline">✏ 手動入力に切り替え</span>
       </div>
       <input class="pq-input" id="arxiv-url" type="url"
         placeholder="https://arxiv.org/pdf/2208.04717">
       <div class="error-box" id="url-error"></div>
+    </div>
+
+    <!-- Manual abstract mode -->
+    <div id="manual-panel" style="display:none">
+      <div class="input-group">
+        <div class="input-label">論文タイトル（英語 or 日本語）</div>
+        <input class="pq-input" id="manual-title" type="text" placeholder="例: Attention Is All You Need (2017)">
+      </div>
+      <div class="input-group">
+        <div class="input-label">アブストラクト <span class="badge">arXiv の Abstract ページからコピー</span></div>
+        <textarea class="pq-input" id="manual-abstract"
+          style="min-height:120px;resize:vertical;line-height:1.6;font-size:13px"
+          placeholder="アブストラクトを貼り付けてください..."></textarea>
+      </div>
     </div>
 
     <div class="input-group">
@@ -865,35 +882,54 @@ function extractArxivId(url){
   return m?m[1]:null;
 }
 
-async function startQuest(){
-  // Init audio context on user gesture
-  try{ getACtx(); }catch{}
+let manualMode = false;
+function toggleManualMode(){
+  manualMode = !manualMode;
+  document.getElementById('manual-panel').style.display = manualMode ? 'block' : 'none';
+  document.getElementById('arxiv-url').style.display = manualMode ? 'none' : '';
+  document.getElementById('mode-toggle').textContent = manualMode ? '🔗 URL入力に戻す' : '✏ 手動入力に切り替え';
+}
 
-  const urlVal=document.getElementById('arxiv-url').value.trim();
+async function startQuest(){
+  try{ getACtx(); }catch{}
   const keyVal=document.getElementById('api-key').value.trim();
   const errBox=document.getElementById('url-error');
-
   errBox.classList.remove('show');
 
+  if(!keyVal){ errBox.textContent='Gemini API Key を入力してください'; errBox.classList.add('show'); return; }
+  LS.set('pq_gemini_key', keyVal);
+
+  if(manualMode){
+    // Manual abstract input path
+    const title = document.getElementById('manual-title').value.trim();
+    const abstract = document.getElementById('manual-abstract').value.trim();
+    if(!abstract){ errBox.textContent='アブストラクトを入力してください'; errBox.classList.add('show'); return; }
+    loadCancelled=false;
+    showScreen('s-loading');
+    document.getElementById('load-bar').style.width='0%';
+    document.getElementById('load-paper-title').textContent = title || '論文を処理中...';
+    await runLoadPipelineManual({title: title||'(タイトル不明)', abstract, authors:[], year:'', categories:[]}, keyVal);
+    return;
+  }
+
+  // URL path
+  const urlVal=document.getElementById('arxiv-url').value.trim();
   const arxivId=extractArxivId(urlVal);
   if(!arxivId){ errBox.textContent='有効な arXiv URL または ID を入力してください（例: 2208.04717）'; errBox.classList.add('show'); return; }
-  if(!keyVal){ errBox.textContent='Gemini API Key を入力してください'; errBox.classList.add('show'); return; }
 
   // Check cache
   const hist=LS.get('pq_history')||[];
   const cached=hist.find(h=>h.arxiv_id===arxivId);
   if(cached && cached.content){
     content=cached.content;
-    LS.set('pq_gemini_key',keyVal);
     buildAndShow();
     return;
   }
 
-  LS.set('pq_gemini_key',keyVal);
   loadCancelled=false;
   showScreen('s-loading');
   document.getElementById('load-bar').style.width='0%';
-  await runLoadPipeline(arxivId,keyVal);
+  await runLoadPipeline(arxivId, keyVal);
 }
 
 function cancelLoad(){
@@ -999,43 +1035,139 @@ async function runLoadPipeline(arxivId, apiKey){
     showScreen('s-landing');
     loadLanding();
     const eb=document.getElementById('url-error');
-    eb.textContent='エラー: '+e.message;
+    eb.innerHTML='⚠ ' + e.message.replace(/\n/g,'<br>') +
+      '<br><br><button onclick="toggleManualMode()" style="background:rgba(0,220,255,0.1);border:1px solid rgba(0,220,255,0.4);color:var(--cyan);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12px;margin-top:4px">✏ 手動入力モードに切り替える</button>';
     eb.classList.add('show');
   }
 }
 
+async function runLoadPipelineManual(meta, apiKey){
+  const trivTimer = setInterval(cycleTriva, 5000);
+  try{
+    setStep(0, true); // skip meta step
+    setStep(1, true); // skip PDF step
+    document.getElementById('load-bar').style.width='75%';
+    setStep(2);
+    const inputText = buildGeminiInput(meta, '');
+    content = await callGemini(apiKey, inputText);
+    if(loadCancelled){ clearInterval(trivTimer); return; }
+    setStep(2, true);
+    setStep(3);
+    sfxReady();
+    setStep(3, true);
+    document.getElementById('load-bar').style.width='100%';
+    clearInterval(trivTimer);
+    await sleep(600);
+    buildAndShow();
+  } catch(e){
+    clearInterval(trivTimer);
+    console.error(e);
+    showScreen('s-landing');
+    loadLanding();
+    const eb=document.getElementById('url-error');
+    eb.innerHTML='⚠ ' + e.message;
+    eb.classList.add('show');
+  }
+}
+
+// ── CORS Proxy helpers ──────────────────────────────────
+// NOTE: AbortController/AbortSignal cannot be used here (postMessage clone error).
+// We use Promise.race() with a plain timeout rejection instead.
+
+const PROXIES = [
+  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://thingproxy.freeboard.io/fetch/${url}`,
+];
+
+function withTimeout(promise, ms, label=''){
+  return Promise.race([
+    promise,
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error(`timeout: ${label}`)), ms))
+  ]);
+}
+
+async function safeFetch(url, opts={}){
+  // Plain fetch — no AbortSignal to avoid postMessage clone errors
+  return fetch(url, opts);
+}
+
+async function fetchText(url, ms=12000){
+  const res = await withTimeout(safeFetch(url), ms, url);
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.text();
+}
+
+async function fetchBinary(url, ms=20000){
+  const res = await withTimeout(safeFetch(url), ms, url);
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.arrayBuffer();
+}
+
 async function fetchArxivMeta(arxivId){
-  const res=await fetch(`https://export.arxiv.org/api/query?id_list=${arxivId}`);
-  const text=await res.text();
-  const parser=new DOMParser();
-  const xml=parser.parseFromString(text,'application/xml');
-  const entry=xml.querySelector('entry');
-  if(!entry) throw new Error('arXiv論文が見つかりませんでした。IDを確認してください。');
-  const title=entry.querySelector('title').textContent.trim().replace(/\s+/g,' ');
-  const abstract=entry.querySelector('summary').textContent.trim();
-  const authors=Array.from(xml.querySelectorAll('author name')).map(n=>n.textContent.trim());
-  const year=new Date(entry.querySelector('published').textContent).getFullYear();
-  const cats=Array.from(xml.querySelectorAll('category')).map(c=>c.getAttribute('term'));
-  return {title,abstract,authors,year,categories:cats,arxivId};
+  const apiUrl = `https://export.arxiv.org/api/query?id_list=${arxivId}&max_results=1`;
+  const allUrls = [apiUrl, ...PROXIES.map(p=>p(apiUrl))];
+  let xmlText = null;
+
+  for(const url of allUrls){
+    try {
+      xmlText = await fetchText(url, 12000);
+      if(xmlText && xmlText.includes('<entry>')) break;
+      xmlText = null;
+    } catch(e){ console.warn('arXiv fetch failed:', url, e.message); }
+  }
+
+  if(!xmlText){
+    throw new Error(
+      'arXiv への接続に失敗しました。\n' +
+      '• 右上「✏ 手動入力に切り替え」でアブストラクトを貼り付けてください'
+    );
+  }
+
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(xmlText, 'application/xml');
+  const entry = xml.querySelector('entry');
+  if(!entry) throw new Error('arXiv IDが見つかりませんでした（例: 2208.04717）');
+
+  const title    = entry.querySelector('title').textContent.trim().replace(/\s+/g,' ');
+  const abstract = entry.querySelector('summary').textContent.trim();
+  const authors  = Array.from(xml.querySelectorAll('author name')).map(n=>n.textContent.trim());
+  const year     = new Date(entry.querySelector('published').textContent).getFullYear();
+  const cats     = Array.from(xml.querySelectorAll('category')).map(c=>c.getAttribute('term'));
+  return {title, abstract, authors, year, categories:cats, arxivId};
 }
 
 async function fetchPdfText(arxivId){
-  if(typeof pdfjsLib==='undefined') throw new Error('PDF.js not loaded');
-  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  if(typeof pdfjsLib === 'undefined'){ console.warn('PDF.js not loaded'); return ''; }
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-  const proxyUrl=`https://corsproxy.io/?url=${encodeURIComponent('https://arxiv.org/pdf/'+arxivId)}`;
-  const res=await fetch(proxyUrl);
-  if(!res.ok) throw new Error('PDF取得失敗');
-  const buf=await res.arrayBuffer();
-  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-  let text='';
-  const maxPages=Math.min(pdf.numPages,18);
-  for(let i=1;i<=maxPages;i++){
-    const page=await pdf.getPage(i);
-    const ct=await page.getTextContent();
-    text+=ct.items.map(it=>it.str).join(' ')+'\n';
+  const pdfUrl = `https://arxiv.org/pdf/${arxivId}`;
+  let buf = null;
+
+  for(const makeProxy of PROXIES){
+    try {
+      buf = await fetchBinary(makeProxy(pdfUrl), 25000);
+      if(buf && buf.byteLength > 5000) break;
+      buf = null;
+    } catch(e){ console.warn('PDF proxy failed:', e.message); }
   }
-  return text.slice(0,40000);
+  if(!buf || buf.byteLength < 1000) return '';
+
+  try {
+    const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+    let text = '';
+    const maxPages = Math.min(pdf.numPages, 16);
+    for(let i=1; i<=maxPages; i++){
+      const page = await pdf.getPage(i);
+      const ct   = await page.getTextContent();
+      text += ct.items.map(it=>it.str).join(' ') + '\n';
+    }
+    return text.slice(0, 40000);
+  } catch(e){
+    console.warn('PDF parse error:', e);
+    return '';
+  }
 }
 
 function buildGeminiInput(meta, pdfText){
