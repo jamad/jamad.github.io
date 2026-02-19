@@ -584,7 +584,10 @@ textarea.pq-input{resize:vertical;min-height:100px;font-size:13px;line-height:1.
         APIキーをお持ちでない方は
         <a href="https://aistudio.google.com/app/apikey" target="_blank">こちらで無料取得</a>
         （Googleアカウント必要）
+        &nbsp;·&nbsp;
+        <span id="test-key-btn" onclick="testApiKey()" style="cursor:pointer;color:var(--cyan);text-decoration:underline">キーをテスト</span>
       </div>
+      <div id="key-test-result" style="display:none;margin-top:8px;padding:10px 14px;border-radius:10px;font-size:12px;line-height:1.6"></div>
     </div>
 
     <button class="start-btn" id="start-btn" onclick="startQuest()">
@@ -844,6 +847,62 @@ function showScreen(id){
 function toggleKeyVis(){
   const i=document.getElementById('api-key');
   i.type=i.type==='password'?'text':'password';
+}
+
+async function testApiKey(){
+  const keyVal = document.getElementById('api-key').value.trim();
+  const box = document.getElementById('key-test-result');
+  const btn = document.getElementById('test-key-btn');
+  if(!keyVal){
+    box.style.display='block';
+    box.style.background='rgba(255,68,102,0.1)';
+    box.style.border='1px solid rgba(255,68,102,0.3)';
+    box.style.color='var(--red)';
+    box.textContent='APIキーを入力してください';
+    return;
+  }
+  btn.textContent='テスト中...';
+  box.style.display='block';
+  box.style.background='rgba(0,220,255,0.05)';
+  box.style.border='1px solid rgba(0,220,255,0.2)';
+  box.style.color='var(--text-dim)';
+  box.textContent='🔄 Gemini API に接続中...';
+
+  try{
+    const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+    const res = await withTimeout(fetch(`${BASE}?key=${keyVal}`), 12000, 'test');
+    const data = await res.json();
+
+    if(data.error){
+      const code = data.error.code;
+      box.style.background='rgba(255,68,102,0.1)';
+      box.style.border='1px solid rgba(255,68,102,0.3)';
+      box.style.color='var(--red)';
+      if(code===400 || code===403){
+        box.textContent='❌ APIキーが無効です。Google AI Studio で確認してください。';
+      } else {
+        box.textContent='❌ エラー ('+code+'): '+data.error.message.slice(0,80);
+      }
+    } else {
+      const models = (data.models||[])
+        .filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent'))
+        .map(m=>m.name.replace('models/',''));
+      const flashModels = models.filter(m=>m.includes('flash'));
+      box.style.background='rgba(77,255,145,0.08)';
+      box.style.border='1px solid rgba(77,255,145,0.3)';
+      box.style.color='var(--green)';
+      box.innerHTML = '✅ APIキー有効！<br>利用可能モデル (' + models.length + '件): ' +
+        flashModels.slice(0,4).join(', ') +
+        (flashModels.length > 4 ? ' ...' : '');
+      LS.set('pq_gemini_key', keyVal);
+    }
+  } catch(e){
+    box.style.background='rgba(255,68,102,0.1)';
+    box.style.border='1px solid rgba(255,68,102,0.3)';
+    box.style.color='var(--red)';
+    box.textContent='❌ 接続エラー: '+e.message.slice(0,80);
+  }
+  btn.textContent='キーをテスト';
 }
 
 function loadLanding(){
@@ -1275,26 +1334,59 @@ color は "cyan", "gold", "pink", "green" のいずれか。
 
 【quiz】3問必須。理解度を試す問題（暗記でなく理解を問う）。`;
 
-  // Models tried in priority order. Older/lighter models as fallback for 429.
-  const MODELS = [
-    'gemini-2.0-flash-lite',   // free tier, high rate limit
-    'gemini-2.0-flash',
-    'gemini-1.5-flash-8b',     // smallest, highest quota
-    'gemini-1.5-flash-latest',
-    'gemini-1.5-pro-latest',
-  ];
   const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+  // ── Step 1: Discover which models this API key can actually use ──
+  // Prefer flash/lite models (higher free quota, lower latency)
+  const PREFERRED = [
+    'gemini-2.0-flash-lite',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash-8b',
+    'gemini-1.5-flash',
+  ];
+
+  async function listAvailableModels(){
+    try{
+      const res = await withTimeout(
+        fetch(`${BASE}?key=${apiKey}`), 12000, 'listModels'
+      );
+      const data = await res.json();
+      if(data.error || !data.models) return null;
+      // Return names that support generateContent, prefer flash-family
+      const names = data.models
+        .filter(m => (m.supportedGenerationMethods||[]).includes('generateContent'))
+        .map(m => m.name.replace('models/',''));
+      console.log('Available models:', names);
+      // Sort: preferred order first, then rest
+      const sorted = [
+        ...PREFERRED.filter(p => names.includes(p)),
+        ...names.filter(n => !PREFERRED.includes(n) && n.includes('flash')),
+        ...names.filter(n => !PREFERRED.includes(n) && !n.includes('flash')),
+      ];
+      return sorted.length ? sorted : null;
+    } catch(e){
+      console.warn('ListModels failed:', e.message);
+      return null;
+    }
+  }
+
+  const availableModels = await listAvailableModels();
+  const MODELS = availableModels || PREFERRED;
+  console.log('Will try models:', MODELS.slice(0,4));
+
+  // ── Step 2: Try models in order ──
   const body = {
     system_instruction: {parts:[{text:SYSTEM}]},
     contents: [{role:'user', parts:[{text:userContent}]}],
     generationConfig: {temperature:0.35, maxOutputTokens:4096, responseMimeType:'application/json'}
   };
 
-  let lastErr = '不明なエラー';
-  for(const model of MODELS){
+  const errors = [];
+
+  for(const model of MODELS.slice(0, 6)){  // cap at 6 attempts
     const endpoint = `${BASE}/${model}:generateContent?key=${apiKey}`;
     try{
-      console.log(`🔄 Trying model: ${model}`);
+      console.log(`🔄 Trying: ${model}`);
       const res = await withTimeout(
         fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}),
         90000, model
@@ -1303,55 +1395,91 @@ color は "cyan", "gold", "pink", "green" のいずれか。
 
       if(data.error){
         const code = data.error.code;
-        const status = data.error.status;
-        // 404 / NOT_FOUND → model doesn't exist, try next
+        const status = data.error.status || '';
         if(code===404 || status==='NOT_FOUND'){
-          console.warn(`Model ${model} not found, skipping`);
-          lastErr = `${model}: 利用不可`;
+          errors.push(`${model}: 利用不可`);
           continue;
         }
-        // 429 → rate limited, wait briefly then try next model
         if(code===429 || status==='RESOURCE_EXHAUSTED'){
-          console.warn(`Model ${model} rate limited (429), trying next model`);
-          lastErr = `${model}: レート制限`;
-          await sleep(2000);
+          errors.push(`${model}: レート制限`);
+          await sleep(1500);
           continue;
         }
-        // 400 → bad request (usually API key issue)
         if(code===400){
-          throw new Error('APIキーが無効か、リクエストが不正です: '+data.error.message);
+          const msg = data.error.message||'';
+          if(msg.includes('API_KEY') || msg.includes('key') || msg.toLowerCase().includes('invalid')){
+            throw new Error(
+              'APIキーが無効です。
+' +
+              '• Google AI Studio でキーを再確認してください
+' +
+              '• https://aistudio.google.com/app/apikey'
+            );
+          }
+          throw new Error(`リクエストエラー (400): ${msg}`);
         }
-        throw new Error('Gemini エラー ('+code+'): '+data.error.message);
+        if(code===403){
+          throw new Error(
+            'アクセスが拒否されました (403)。
+' +
+            '• APIキーに Gemini API の権限があるか確認してください'
+          );
+        }
+        errors.push(`${model}: HTTP ${code}`);
+        continue;
       }
 
       const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if(!raw){
-        console.warn('Empty response from', model);
-        lastErr = `${model}: 応答が空`;
-        continue;
-      }
-      console.log(`✅ Success with model: ${model}`);
+      if(!raw){ errors.push(`${model}: 応答空`); continue; }
+
+      console.log(`✅ Success: ${model}`);
       try{ return JSON.parse(raw); }
-      catch(e){ throw new Error('JSONの解析に失敗しました。もう一度お試しください。'); }
+      catch(e){ throw new Error('AIの応答をJSONとして解析できませんでした。もう一度お試しください。'); }
 
     } catch(e){
-      // Re-throw fatal errors immediately
-      if(e.message.includes('APIキー') || e.message.includes('JSON') || e.message.includes('不正')) throw e;
-      lastErr = e.message;
-      console.warn(`Model ${model} error:`, e.message);
+      if(e.message.includes('APIキー') || e.message.includes('JSON') ||
+         e.message.includes('無効') || e.message.includes('拒否') ||
+         e.message.includes('解析') || e.message.includes('400') || e.message.includes('403')){
+        throw e;
+      }
+      errors.push(`${model}: ${e.message.slice(0,40)}`);
+      console.warn(`${model} error:`, e.message);
     }
   }
 
-  // All models failed — give a clear user-facing message
-  const is429 = lastErr.includes('レート制限') || lastErr.includes('quota') || lastErr.includes('429');
-  if(is429){
+  // ── All failed: give specific helpful guidance ──
+  const allRateLimited = errors.every(e => e.includes('レート制限'));
+  const allUnavailable = errors.every(e => e.includes('利用不可'));
+
+  if(allRateLimited){
     throw new Error(
-      'Gemini の無料枠の上限に達しました。\n' +
-      '• 1〜2分待ってから再試行してください\n' +
-      '• または別のAPIキーをお試しください'
+      'Gemini の無料枠の上限に達しました。
+' +
+      '• 1〜2分待ってから再試行してください
+' +
+      '• または別のGemini APIキーをご利用ください'
     );
   }
-  throw new Error('すべてのGeminiモデルで失敗しました。\nAPIキーを確認してください。\n最後のエラー: '+lastErr);
+  if(allUnavailable){
+    throw new Error(
+      'このAPIキーで利用できるモデルがありません。
+' +
+      '• Google AI Studio でキーを再確認してください
+' +
+      '• 新しいAPIキーを発行してみてください
+' +
+      '• https://aistudio.google.com/app/apikey'
+    );
+  }
+  throw new Error(
+    'Gemini APIへの接続に失敗しました。
+' +
+    '試したモデル: ' + errors.slice(0,3).join(', ') + '
+' +
+    '• APIキーを確認してください
+' +
+    '• https://aistudio.google.com/app/apikey'
+  );
 }
 
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
