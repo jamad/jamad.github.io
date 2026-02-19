@@ -1409,8 +1409,8 @@ color は "cyan", "gold", "pink", "green" のいずれか。
           const msg = data.error.message||'';
           if(msg.includes('API_KEY') || msg.includes('key') || msg.toLowerCase().includes('invalid')){
             throw new Error(
-              'APIキーが無効です。'
-              '• Google AI Studio でキーを再確認してください'
+              'APIキーが無効です。\n' +
+              '• Google AI Studio でキーを再確認してください\n' +
               '• https://aistudio.google.com/app/apikey'
             );
           }
@@ -1450,31 +1450,23 @@ color は "cyan", "gold", "pink", "green" のいずれか。
 
   if(allRateLimited){
     throw new Error(
-      'Gemini の無料枠の上限に達しました。
-' +
-      '• 1〜2分待ってから再試行してください
-' +
+      'Gemini の無料枠の上限に達しました。\n' +
+      '• 1〜2分待ってから再試行してください\n' +
       '• または別のGemini APIキーをご利用ください'
     );
   }
   if(allUnavailable){
     throw new Error(
-      'このAPIキーで利用できるモデルがありません。
-' +
-      '• Google AI Studio でキーを再確認してください
-' +
-      '• 新しいAPIキーを発行してみてください
-' +
+      'このAPIキーで利用できるモデルがありません。\n' +
+      '• Google AI Studio でキーを再確認してください\n' +
+      '• 新しいAPIキーを発行してみてください\n' +
       '• https://aistudio.google.com/app/apikey'
     );
   }
   throw new Error(
-    'Gemini APIへの接続に失敗しました。
-' +
-    '試したモデル: ' + errors.slice(0,3).join(', ') + '
-' +
-    '• APIキーを確認してください
-' +
+    'Gemini APIへの接続に失敗しました。\n' +
+    '試したモデル: ' + errors.slice(0,3).join(', ') + '\n' +
+    '• APIキーを確認してください\n' +
     '• https://aistudio.google.com/app/apikey'
   );
 }
