@@ -616,8 +616,8 @@ textarea.pq-input{resize:vertical;min-height:100px;font-size:13px;line-height:1.
       <div class="step-item" id="step-1">
         <div class="step-icon">📖</div>
         <div class="step-text">
-          <div class="step-name">本文を解読</div>
-          <div class="step-detail">PDF のテキストを読み込み中...</div>
+          <div class="step-name">本文テキスト取得</div>
+          <div class="step-detail">論文の本文を取得中（失敗しても続行）...</div>
         </div>
         <div class="step-status" id="ss-1">⏳</div>
       </div>
@@ -1070,57 +1070,56 @@ async function runLoadPipelineManual(meta, apiKey){
   }
 }
 
-// ── CORS Proxy helpers ──────────────────────────────────
-// NOTE: AbortController/AbortSignal cannot be used here (postMessage clone error).
-// We use Promise.race() with a plain timeout rejection instead.
+// ── Network helpers ──────────────────────────────────────
+// AbortController/AbortSignal are NOT used (postMessage clone error in some envs).
+// Timeout is implemented with Promise.race() only.
 
-const PROXIES = [
+// CORS proxies — tried in order for text fetches (small payloads only)
+const TEXT_PROXIES = [
   url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://thingproxy.freeboard.io/fetch/${url}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://proxy.cors.sh/${url}`,
 ];
 
 function withTimeout(promise, ms, label=''){
   return Promise.race([
     promise,
-    new Promise((_,rej)=>setTimeout(()=>rej(new Error(`timeout: ${label}`)), ms))
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error(`Timeout(${ms}ms): ${label}`)), ms))
   ]);
 }
 
 async function safeFetch(url, opts={}){
-  // Plain fetch — no AbortSignal to avoid postMessage clone errors
   return fetch(url, opts);
 }
 
-async function fetchText(url, ms=12000){
-  const res = await withTimeout(safeFetch(url), ms, url);
+async function fetchText(url, ms=14000){
+  const res = await withTimeout(safeFetch(url), ms, url.slice(0,60));
   if(!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.text();
 }
 
-async function fetchBinary(url, ms=20000){
-  const res = await withTimeout(safeFetch(url), ms, url);
-  if(!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.arrayBuffer();
-}
-
+// ── arXiv metadata via Atom API ───────────────────────────
 async function fetchArxivMeta(arxivId){
   const apiUrl = `https://export.arxiv.org/api/query?id_list=${arxivId}&max_results=1`;
-  const allUrls = [apiUrl, ...PROXIES.map(p=>p(apiUrl))];
+  // Direct fetch is blocked by CORS on most hosts → use proxies only
+  const proxyUrls = TEXT_PROXIES.map(p=>p(apiUrl));
   let xmlText = null;
 
-  for(const url of allUrls){
+  for(const url of proxyUrls){
     try {
-      xmlText = await fetchText(url, 12000);
-      if(xmlText && xmlText.includes('<entry>')) break;
-      xmlText = null;
-    } catch(e){ console.warn('arXiv fetch failed:', url, e.message); }
+      const txt = await fetchText(url, 14000);
+      if(txt && txt.includes('<entry>')){
+        xmlText = txt;
+        console.log('arXiv meta OK via:', url.slice(0,40));
+        break;
+      }
+    } catch(e){ console.warn('arXiv proxy failed:', e.message); }
   }
 
   if(!xmlText){
     throw new Error(
       'arXiv への接続に失敗しました。\n' +
-      '• 右上「✏ 手動入力に切り替え」でアブストラクトを貼り付けてください'
+      '「✏ 手動入力に切り替え」でアブストラクトをコピー貼り付けしてください。'
     );
   }
 
@@ -1137,37 +1136,31 @@ async function fetchArxivMeta(arxivId){
   return {title, abstract, authors, year, categories:cats, arxivId};
 }
 
+// ── Paper body text — HTML version of arXiv paper ────────
+// PDFs are too large for CORS proxies (413). Use arXiv HTML instead (much smaller).
 async function fetchPdfText(arxivId){
-  if(typeof pdfjsLib === 'undefined'){ console.warn('PDF.js not loaded'); return ''; }
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-  const pdfUrl = `https://arxiv.org/pdf/${arxivId}`;
-  let buf = null;
-
-  for(const makeProxy of PROXIES){
+  // Try arXiv HTML page (lighter than PDF, available for most recent papers)
+  const htmlUrl = `https://arxiv.org/html/${arxivId}`;
+  for(const makeProxy of TEXT_PROXIES){
     try {
-      buf = await fetchBinary(makeProxy(pdfUrl), 25000);
-      if(buf && buf.byteLength > 5000) break;
-      buf = null;
-    } catch(e){ console.warn('PDF proxy failed:', e.message); }
+      const html = await fetchText(makeProxy(htmlUrl), 20000);
+      if(!html || html.length < 500) continue;
+      // Strip HTML tags and extract readable text
+      const div = document.createElement('div');
+      div.innerHTML = html
+        .replace(/<script[\s\S]*?<\/script>/gi,'')
+        .replace(/<style[\s\S]*?<\/style>/gi,'')
+        .replace(/<[^>]+>/g,' ')
+        .replace(/\s+/g,' ');
+      const text = div.textContent.trim();
+      if(text.length > 500){
+        console.log('Got HTML body text, length:', text.length);
+        return text.slice(0, 40000);
+      }
+    } catch(e){ console.warn('HTML fetch failed:', e.message); }
   }
-  if(!buf || buf.byteLength < 1000) return '';
-
-  try {
-    const pdf = await pdfjsLib.getDocument({data:buf}).promise;
-    let text = '';
-    const maxPages = Math.min(pdf.numPages, 16);
-    for(let i=1; i<=maxPages; i++){
-      const page = await pdf.getPage(i);
-      const ct   = await page.getTextContent();
-      text += ct.items.map(it=>it.str).join(' ') + '\n';
-    }
-    return text.slice(0, 40000);
-  } catch(e){
-    console.warn('PDF parse error:', e);
-    return '';
-  }
+  console.warn('All body text fetches failed — using abstract only');
+  return '';  // Graceful fallback: Gemini will use abstract only
 }
 
 function buildGeminiInput(meta, pdfText){
@@ -1282,52 +1275,83 @@ color は "cyan", "gold", "pink", "green" のいずれか。
 
 【quiz】3問必須。理解度を試す問題（暗記でなく理解を問う）。`;
 
-  // Model candidates in priority order (newest first)
+  // Models tried in priority order. Older/lighter models as fallback for 429.
   const MODELS = [
+    'gemini-2.0-flash-lite',   // free tier, high rate limit
     'gemini-2.0-flash',
-    'gemini-2.0-flash-lite',
+    'gemini-1.5-flash-8b',     // smallest, highest quota
     'gemini-1.5-flash-latest',
-    'gemini-1.5-flash',
-    'gemini-1.5-flash-8b',
+    'gemini-1.5-pro-latest',
   ];
   const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-
-  const body={
-    system_instruction:{parts:[{text:SYSTEM}]},
-    contents:[{role:'user',parts:[{text:userContent}]}],
-    generationConfig:{temperature:0.35,maxOutputTokens:4096,responseMimeType:'application/json'}
+  const body = {
+    system_instruction: {parts:[{text:SYSTEM}]},
+    contents: [{role:'user', parts:[{text:userContent}]}],
+    generationConfig: {temperature:0.35, maxOutputTokens:4096, responseMimeType:'application/json'}
   };
 
-  let lastErr = null;
+  let lastErr = '不明なエラー';
   for(const model of MODELS){
-    const endpoint=`${BASE}/${model}:generateContent?key=${apiKey}`;
+    const endpoint = `${BASE}/${model}:generateContent?key=${apiKey}`;
     try{
-      const res=await withTimeout(
-        fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),
-        60000, 'Gemini'
+      console.log(`🔄 Trying model: ${model}`);
+      const res = await withTimeout(
+        fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}),
+        90000, model
       );
-      const data=await res.json();
+      const data = await res.json();
+
       if(data.error){
-        // Model not found → try next
-        if(data.error.code===404 || data.error.status==='NOT_FOUND'){
-          console.warn(`Model ${model} not available, trying next...`);
-          lastErr = data.error.message;
+        const code = data.error.code;
+        const status = data.error.status;
+        // 404 / NOT_FOUND → model doesn't exist, try next
+        if(code===404 || status==='NOT_FOUND'){
+          console.warn(`Model ${model} not found, skipping`);
+          lastErr = `${model}: 利用不可`;
           continue;
         }
-        throw new Error('Gemini API エラー: '+data.error.message);
+        // 429 → rate limited, wait briefly then try next model
+        if(code===429 || status==='RESOURCE_EXHAUSTED'){
+          console.warn(`Model ${model} rate limited (429), trying next model`);
+          lastErr = `${model}: レート制限`;
+          await sleep(2000);
+          continue;
+        }
+        // 400 → bad request (usually API key issue)
+        if(code===400){
+          throw new Error('APIキーが無効か、リクエストが不正です: '+data.error.message);
+        }
+        throw new Error('Gemini エラー ('+code+'): '+data.error.message);
       }
-      const raw=data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if(!raw) throw new Error('Gemini からの応答が空です');
-      console.log(`✅ Used model: ${model}`);
+
+      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if(!raw){
+        console.warn('Empty response from', model);
+        lastErr = `${model}: 応答が空`;
+        continue;
+      }
+      console.log(`✅ Success with model: ${model}`);
       try{ return JSON.parse(raw); }
-      catch(e){ throw new Error('Gemini の応答を解析できませんでした: '+e.message); }
+      catch(e){ throw new Error('JSONの解析に失敗しました。もう一度お試しください。'); }
+
     } catch(e){
-      if(e.message.includes('Gemini API エラー') || e.message.includes('解析')) throw e;
+      // Re-throw fatal errors immediately
+      if(e.message.includes('APIキー') || e.message.includes('JSON') || e.message.includes('不正')) throw e;
       lastErr = e.message;
-      console.warn(`Model ${model} failed:`, e.message);
+      console.warn(`Model ${model} error:`, e.message);
     }
   }
-  throw new Error('利用可能な Gemini モデルが見つかりませんでした。APIキーを確認してください。\n詳細: '+lastErr);
+
+  // All models failed — give a clear user-facing message
+  const is429 = lastErr.includes('レート制限') || lastErr.includes('quota') || lastErr.includes('429');
+  if(is429){
+    throw new Error(
+      'Gemini の無料枠の上限に達しました。\n' +
+      '• 1〜2分待ってから再試行してください\n' +
+      '• または別のAPIキーをお試しください'
+    );
+  }
+  throw new Error('すべてのGeminiモデルで失敗しました。\nAPIキーを確認してください。\n最後のエラー: '+lastErr);
 }
 
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
