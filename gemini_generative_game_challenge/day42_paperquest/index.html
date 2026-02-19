@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PaperQuest — 論文を冒険しよう</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN SYSTEM
+═══════════════════════════════════════════ */
+:root {
+  --bg:         #03040f;
+  --bg2:        #080b22;
+  --surface:    #0d1035;
+  --surface2:   #131845;
+  --border:     rgba(0,220,255,0.18);
+  --cyan:       #00dcff;
+  --cyan-d:     #0099cc;
+  --gold:       #ffcc44;
+  --gold-d:     #cc9900;
+  --pink:       #ff7eb3;
+  --green:      #4dff91;
+  --red:        #ff4466;
+  --text:       #cce0ff;
+  --text-dim:   #6080b0;
+  --glow-c:     0 0 24px rgba(0,220,255,0.35);
+  --glow-g:     0 0 24px rgba(255,204,68,0.4);
+  --r:          14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  height:100%;background:var(--bg);color:var(--text);
+  font-family:'Noto Sans JP',sans-serif;overflow:hidden;
+  user-select:none;-webkit-user-select:none;
+}
+#stars-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.orb{font-family:'Orbitron',sans-serif}
+
+/* ═══════════════ SCREENS ═══════════════ */
+.screen{
+  position:fixed;inset:0;z-index:10;
+  display:none;flex-direction:column;
+  overflow:hidden;
+}
+.screen.active{display:flex}
+
+/* ═══════════════ LANDING ═══════════════ */
+#s-landing{
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+.landing-inner{
+  width:100%;max-width:560px;
+  display:flex;flex-direction:column;gap:0;
+}
+.logo-area{text-align:center;margin-bottom:28px}
+.logo-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(28px,6vw,42px);font-weight:900;
+  background:linear-gradient(135deg,#fff,var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;letter-spacing:3px;
+  text-shadow:none;
+}
+.logo-sub{
+  font-size:13px;color:var(--text-dim);margin-top:6px;letter-spacing:2px;
+}
+.logo-emoji{font-size:48px;margin-bottom:10px;display:block}
+
+.input-group{margin-bottom:14px}
+.input-label{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;color:var(--cyan);font-family:'Orbitron',sans-serif;
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;
+}
+.input-label .badge{
+  background:rgba(0,220,255,0.12);border:1px solid rgba(0,220,255,0.3);
+  border-radius:10px;padding:2px 8px;font-size:9px;color:var(--cyan-d);
+}
+.pq-input{
+  width:100%;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text);font-family:'Noto Sans JP',sans-serif;
+  font-size:14px;padding:13px 16px;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  -webkit-appearance:none;
+}
+.pq-input:focus{border-color:var(--cyan);box-shadow:var(--glow-c)}
+.pq-input::placeholder{color:var(--text-dim)}
+
+.key-row{display:flex;gap:8px}
+.key-row .pq-input{flex:1}
+.key-toggle{
+  flex-shrink:0;background:var(--surface);border:1px solid var(--border);
+  color:var(--text-dim);border-radius:var(--r);padding:0 14px;
+  cursor:pointer;font-size:18px;transition:all .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.key-toggle:hover{border-color:var(--cyan);color:var(--cyan)}
+
+.key-hint{
+  font-size:11px;color:var(--text-dim);margin-top:6px;
+  display:flex;align-items:center;gap:6px;
+}
+.key-hint a{color:var(--cyan);text-decoration:none}
+
+.start-btn{
+  width:100%;padding:16px;border:none;border-radius:var(--r);
+  background:linear-gradient(135deg,var(--cyan-d),var(--cyan));
+  color:#000;font-family:'Orbitron',sans-serif;font-weight:700;
+  font-size:14px;letter-spacing:2px;cursor:pointer;
+  box-shadow:var(--glow-c);transition:transform .2s,box-shadow .2s;
+  -webkit-tap-highlight-color:transparent;margin-top:4px;
+}
+.start-btn:hover{transform:scale(1.02);box-shadow:0 0 36px rgba(0,220,255,0.5)}
+.start-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.history-area{margin-top:20px}
+.history-label{
+  font-size:10px;color:var(--text-dim);font-family:'Orbitron',sans-serif;
+  letter-spacing:2px;margin-bottom:8px;text-align:center;
+}
+.history-list{display:flex;flex-direction:column;gap:6px}
+.history-item{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;padding:10px 12px;cursor:pointer;
+  transition:all .2s;-webkit-tap-highlight-color:transparent;
+}
+.history-item:hover{border-color:var(--border);background:rgba(0,220,255,0.06)}
+.history-emoji{font-size:20px;flex-shrink:0}
+.history-info{flex:1;min-width:0}
+.history-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-sub{font-size:11px;color:var(--text-dim);margin-top:2px}
+.history-play{
+  color:var(--cyan);font-size:11px;font-family:'Orbitron',sans-serif;
+  flex-shrink:0;
+}
+
+/* ═══════════════ LOADING ═══════════════ */
+#s-loading{align-items:center;justify-content:center;padding:30px}
+.loading-inner{width:100%;max-width:480px;text-align:center}
+.loading-title{
+  font-family:'Orbitron',sans-serif;font-size:clamp(18px,4vw,24px);
+  font-weight:900;color:var(--cyan);margin-bottom:6px;letter-spacing:2px;
+}
+.loading-paper-title{
+  font-size:14px;color:var(--text-dim);margin-bottom:32px;
+  line-height:1.5;max-height:48px;overflow:hidden;
+}
+.steps-list{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.step-item{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:12px 16px;text-align:left;
+  transition:all .4s;
+}
+.step-item.active{border-color:var(--cyan);box-shadow:var(--glow-c)}
+.step-item.done{border-color:rgba(77,255,145,0.4);background:rgba(77,255,145,0.06)}
+.step-icon{font-size:22px;width:28px;flex-shrink:0;text-align:center}
+.step-text{flex:1}
+.step-name{font-size:13px;font-weight:700}
+.step-detail{font-size:11px;color:var(--text-dim);margin-top:2px}
+.step-status{font-size:18px;flex-shrink:0}
+
+.loading-bar-wrap{
+  height:6px;background:rgba(255,255,255,0.08);
+  border-radius:3px;overflow:hidden;margin-bottom:16px;
+}
+.loading-bar-fill{
+  height:100%;background:linear-gradient(90deg,var(--cyan-d),var(--cyan));
+  border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1);width:0%;
+}
+.loading-trivia{
+  font-size:12px;color:var(--text-dim);line-height:1.6;
+  min-height:40px;padding:0 10px;
+  transition:opacity .5s;
+}
+.loading-cancel{
+  margin-top:20px;background:none;border:1px solid rgba(255,255,255,0.15);
+  color:var(--text-dim);border-radius:8px;padding:8px 20px;
+  cursor:pointer;font-size:12px;-webkit-tap-highlight-color:transparent;
+}
+
+/* ═══════════════ MAP ═══════════════ */
+#s-map{align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.map-inner{width:100%;max-width:560px}
+.map-header{text-align:center;margin-bottom:20px}
+.map-emoji{font-size:56px;display:block;margin-bottom:8px}
+.map-field{
+  font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:3px;
+  color:var(--cyan);text-transform:uppercase;margin-bottom:8px;
+}
+.map-title{
+  font-size:clamp(18px,3.5vw,24px);font-weight:700;line-height:1.35;
+  margin-bottom:4px;
+}
+.map-authors{font-size:12px;color:var(--text-dim);margin-bottom:14px}
+.map-badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.map-badge{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:4px 12px;font-size:12px;
+  display:flex;align-items:center;gap:5px;
+}
+.map-oneliner{
+  background:linear-gradient(135deg,rgba(255,204,68,0.1),rgba(0,220,255,0.08));
+  border:1px solid rgba(255,204,68,0.3);border-radius:12px;
+  padding:14px 18px;margin-bottom:20px;
+  font-size:15px;font-weight:700;color:var(--gold);
+  text-align:center;line-height:1.5;
+  box-shadow:var(--glow-g);
+}
+.map-chapters{margin-bottom:20px}
+.map-ch-label{
+  font-family:'Orbitron',sans-serif;font-size:10px;color:var(--text-dim);
+  letter-spacing:2px;margin-bottom:8px;
+}
+.map-ch-list{display:flex;flex-direction:column;gap:5px}
+.map-ch-item{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+  border-radius:8px;padding:9px 12px;font-size:13px;
+}
+.map-ch-num{
+  font-family:'Orbitron',sans-serif;font-size:9px;color:var(--text-dim);
+  width:20px;flex-shrink:0;
+}
+.play-btn{
+  width:100%;padding:16px;border:none;border-radius:var(--r);
+  background:linear-gradient(135deg,var(--cyan-d),var(--cyan));
+  color:#000;font-family:'Orbitron',sans-serif;font-weight:700;
+  font-size:14px;letter-spacing:2px;cursor:pointer;
+  box-shadow:var(--glow-c);transition:transform .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.play-btn:hover{transform:scale(1.02)}
+
+/* ═══════════════ CARDS SCREEN ═══════════════ */
+#s-cards{background:var(--bg)}
+#cards-header{
+  flex-shrink:0;padding:10px 16px 6px;
+  background:linear-gradient(180deg,rgba(3,4,15,.97) 70%,transparent);
+  z-index:5;
+}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.hdr-logo{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:3px;color:var(--cyan)}
+.hdr-ch{
+  font-family:'Orbitron',sans-serif;font-size:9px;color:var(--gold);
+  background:rgba(255,204,68,0.1);border:1px solid rgba(255,204,68,0.3);
+  padding:2px 8px;border-radius:12px;letter-spacing:1px;
+}
+.hdr-mute{
+  background:none;border:none;color:var(--text-dim);font-size:18px;
+  cursor:pointer;padding:2px 6px;-webkit-tap-highlight-color:transparent;
+  transition:color .2s;
+}
+.hdr-mute:hover{color:var(--text)}
+.xp-bar-wrap{height:7px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;border:1px solid rgba(0,220,255,0.12)}
+.xp-bar-inner{
+  height:100%;border-radius:4px;
+  background:linear-gradient(90deg,var(--cyan-d),var(--cyan),#aaeeff);
+  transition:width .7s cubic-bezier(.4,0,.2,1);position:relative;
+}
+.xp-bar-inner::after{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:4px;
+  background:#fff;filter:blur(3px);border-radius:2px;
+  animation:xp-pulse 1.6s ease-in-out infinite;
+}
+@keyframes xp-pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.xp-row{display:flex;justify-content:space-between;font-size:9px;color:var(--text-dim);margin-top:3px;font-family:'Orbitron',sans-serif;letter-spacing:1px}
+
+#card-viewport{flex:1;position:relative;overflow:hidden;padding:8px 14px}
+
+/* Cards */
+.card{
+  position:absolute;inset:8px 14px;
+  background:linear-gradient(145deg,var(--surface),var(--surface2));
+  border:1px solid var(--border);border-radius:var(--r);
+  padding:22px 20px;
+  box-shadow:var(--glow-c),inset 0 1px 0 rgba(255,255,255,0.04);
+  display:flex;flex-direction:column;
+  overflow-y:auto;overflow-x:hidden;
+  transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .38s ease;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;scrollbar-color:var(--cyan-d) transparent;
+}
+.card::-webkit-scrollbar{width:3px}
+.card::-webkit-scrollbar-thumb{background:var(--cyan-d);border-radius:2px}
+.card.out-left{transform:translateX(-110%);opacity:0}
+.card.out-right{transform:translateX(110%);opacity:0}
+.card.in-left{transform:translateX(-110%);opacity:0}
+.card.in-right{transform:translateX(110%);opacity:0}
+.card.active{transform:translateX(0);opacity:1}
+
+/* Card internals */
+.card-eyebrow{
+  font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:3px;
+  color:var(--cyan);text-transform:uppercase;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.card-eyebrow::before{content:'';width:16px;height:1px;background:var(--cyan)}
+.card-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(17px,3.8vw,24px);font-weight:900;line-height:1.25;
+  margin-bottom:8px;
+  background:linear-gradient(135deg,#fff,var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.card-hook{
+  font-size:14px;color:var(--gold);font-weight:700;
+  margin-bottom:14px;line-height:1.6;padding:10px 14px;
+  background:rgba(255,204,68,0.07);border-left:3px solid var(--gold);
+  border-radius:0 8px 8px 0;
+}
+.card-body{font-size:clamp(14px,2.2vw,15px);line-height:1.85;color:var(--text);flex:1}
+.card-body p{margin-bottom:10px}
+.hl{color:var(--cyan);font-weight:700}
+
+/* Visual items grid */
+.visual-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
+  gap:8px;margin:14px 0;
+}
+.visual-item{
+  background:rgba(0,0,0,0.3);border:1px solid rgba(0,220,255,0.12);
+  border-radius:10px;padding:10px 8px;text-align:center;
+}
+.visual-item .vi-emoji{font-size:26px;margin-bottom:5px;display:block}
+.visual-item .vi-text{font-size:11px;color:var(--text-dim);line-height:1.35}
+
+/* Terms */
+.terms-wrap{margin-top:14px;display:flex;flex-wrap:wrap;gap:7px}
+.term-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,126,179,0.1);border:1px solid rgba(255,126,179,0.35);
+  color:var(--pink);padding:6px 12px;border-radius:20px;
+  cursor:pointer;font-size:12px;font-weight:700;
+  transition:all .2s;-webkit-tap-highlight-color:transparent;
+}
+.term-chip:hover,.term-chip:active{background:rgba(255,126,179,0.22);transform:scale(1.05)}
+.term-chip::before{content:'💡';font-size:12px}
+
+/* Interactive diagram */
+.diagram-wrap{
+  background:rgba(0,0,0,0.4);border:1px solid rgba(0,220,255,0.18);
+  border-radius:12px;padding:16px;margin:12px 0;
+}
+.diagram-eyebrow{
+  font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;
+  color:var(--cyan);margin-bottom:14px;text-align:center;
+}
+.slider-row{margin:10px 0}
+.slider-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);margin-bottom:6px}
+.slider-label .sv{color:var(--cyan);font-weight:700;font-family:'Orbitron',sans-serif;font-size:11px}
+input[type=range]{
+  width:100%;height:6px;background:rgba(255,255,255,0.1);
+  border-radius:3px;outline:none;-webkit-appearance:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:24px;height:24px;background:var(--cyan);
+  border-radius:50%;box-shadow:0 0 10px var(--cyan);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{
+  width:24px;height:24px;background:var(--cyan);border:none;
+  border-radius:50%;box-shadow:0 0 10px var(--cyan);cursor:pointer;
+}
+.outputs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:12px}
+.output-card{
+  background:rgba(0,220,255,0.05);border:1px solid rgba(0,220,255,0.18);
+  border-radius:10px;padding:12px;text-align:center;
+}
+.output-card.gold{background:rgba(255,204,68,0.05);border-color:rgba(255,204,68,0.2)}
+.output-card.pink{background:rgba(255,126,179,0.05);border-color:rgba(255,126,179,0.2)}
+.output-card.green{background:rgba(77,255,145,0.05);border-color:rgba(77,255,145,0.2)}
+.output-val{font-family:'Orbitron',sans-serif;font-size:clamp(18px,4vw,24px);font-weight:900;display:block;color:var(--cyan)}
+.output-card.gold .output-val{color:var(--gold)}
+.output-card.pink .output-val{color:var(--pink)}
+.output-card.green .output-val{color:var(--green)}
+.output-lbl{font-size:10px;color:var(--text-dim);margin-top:3px}
+.narrative-box{
+  margin-top:12px;background:rgba(255,255,255,0.03);border-radius:8px;
+  padding:10px 12px;font-size:13px;line-height:1.65;color:var(--text);
+  border:1px solid rgba(255,255,255,0.06);
+}
+
+/* Quiz */
+.quiz-header{margin-bottom:16px}
+.quiz-qnum{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--gold);letter-spacing:2px;margin-bottom:6px}
+.quiz-q{font-size:clamp(14px,2.5vw,16px);font-weight:700;line-height:1.6;color:var(--text)}
+.quiz-options{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.qbtn{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.13);
+  border-radius:10px;padding:13px 15px;cursor:pointer;text-align:left;
+  color:var(--text);font-size:13px;font-family:'Noto Sans JP',sans-serif;
+  transition:all .2s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:10px;
+}
+.qbtn .qi{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--cyan-d);flex-shrink:0}
+.qbtn:hover{border-color:var(--cyan);background:rgba(0,220,255,0.07)}
+.qbtn.correct{border-color:var(--green);background:rgba(77,255,145,0.1);color:var(--green);font-weight:700}
+.qbtn.wrong{border-color:var(--red);background:rgba(255,68,102,0.1);color:var(--red)}
+.qbtn:disabled{cursor:default}
+.quiz-feedback{
+  margin-top:14px;padding:12px 14px;border-radius:10px;
+  font-size:13px;line-height:1.6;display:none;
+}
+.quiz-feedback.show{display:block}
+.quiz-feedback.correct{background:rgba(77,255,145,0.09);border:1px solid rgba(77,255,145,0.3);color:var(--green)}
+.quiz-feedback.wrong{background:rgba(255,68,102,0.09);border:1px solid rgba(255,68,102,0.3);color:var(--red)}
+.quiz-dots{display:flex;justify-content:center;gap:7px;margin-bottom:14px}
+.qdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:background .3s}
+.qdot.done-c{background:var(--green)}
+.qdot.done-w{background:var(--red)}
+.qdot.cur{background:var(--cyan)}
+
+/* Reward */
+.reward-trophy{font-size:clamp(56px,14vw,80px);text-align:center;display:block;margin:10px 0;animation:trophy-anim .9s cubic-bezier(.36,.07,.19,.97) infinite alternate}
+@keyframes trophy-anim{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-10px) rotate(4deg)}}
+.reward-title{font-family:'Orbitron',sans-serif;font-size:clamp(20px,5vw,28px);font-weight:900;text-align:center;color:var(--gold);text-shadow:0 0 20px rgba(255,204,68,.5);margin-bottom:6px;line-height:1.3}
+.reward-sub{text-align:center;color:var(--text-dim);font-size:13px;margin-bottom:18px}
+.souvenir-card{
+  background:linear-gradient(135deg,rgba(255,204,68,0.1),rgba(0,220,255,0.07));
+  border:1px solid rgba(255,204,68,0.4);border-radius:14px;
+  padding:18px 20px;box-shadow:var(--glow-g);margin-bottom:14px;
+}
+.souvenir-lbl{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:3px;color:var(--gold);margin-bottom:8px}
+.souvenir-text{font-size:clamp(14px,2.5vw,16px);line-height:1.7;color:var(--text);font-weight:700}
+.related-qs{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;margin-bottom:16px;
+}
+.related-lbl{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text-dim);margin-bottom:10px}
+.related-q{font-size:13px;color:var(--text);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);line-height:1.5}
+.related-q:last-child{border-bottom:none}
+.score-box{text-align:center;margin-bottom:14px}
+.score-num{font-family:'Orbitron',sans-serif;font-size:44px;font-weight:900;color:var(--gold);text-shadow:var(--glow-g);display:block}
+.score-label{font-size:12px;color:var(--text-dim)}
+.reward-btns{display:flex;flex-direction:column;gap:8px}
+.reward-btn{
+  padding:14px;border-radius:var(--r);cursor:pointer;
+  font-family:'Orbitron',sans-serif;font-weight:700;
+  font-size:13px;letter-spacing:2px;border:none;
+  transition:transform .2s;-webkit-tap-highlight-color:transparent;
+}
+.reward-btn:hover{transform:scale(1.02)}
+.reward-btn.primary{background:linear-gradient(135deg,var(--cyan-d),var(--cyan));color:#000;box-shadow:var(--glow-c)}
+.reward-btn.secondary{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:var(--text)}
+
+/* ═══════════════ FOOTER NAV ═══════════════ */
+#cards-footer{
+  flex-shrink:0;padding:10px 16px 14px;
+  background:linear-gradient(0deg,rgba(3,4,15,.98) 70%,transparent);
+  display:flex;align-items:center;gap:10px;
+}
+.nav-btn{
+  flex-shrink:0;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.14);color:var(--text);
+  border-radius:10px;padding:13px 16px;cursor:pointer;
+  font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:1px;
+  transition:all .2s;-webkit-tap-highlight-color:transparent;
+  min-width:72px;text-align:center;
+}
+.nav-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.nav-btn.primary-nav{
+  flex:1;background:linear-gradient(135deg,rgba(0,220,255,0.13),rgba(0,220,255,0.07));
+  border-color:rgba(0,220,255,0.45);color:var(--cyan);font-size:13px;
+}
+.nav-btn.primary-nav:hover{background:linear-gradient(135deg,rgba(0,220,255,0.22),rgba(0,220,255,0.13));box-shadow:var(--glow-c)}
+.card-counter{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--text-dim);text-align:center;min-width:38px}
+
+/* ═══════════════ POPUP ═══════════════ */
+#popup-bg{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(5px);
+  display:flex;align-items:flex-end;justify-content:center;padding:16px;
+  opacity:0;pointer-events:none;transition:opacity .28s;
+}
+#popup-bg.open{opacity:1;pointer-events:all}
+.popup-card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:18px 18px 14px 14px;padding:22px 20px;
+  max-width:560px;width:100%;
+  box-shadow:var(--glow-c),0 -16px 50px rgba(0,0,0,.5);
+  transform:translateY(24px);transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+#popup-bg.open .popup-card{transform:translateY(0)}
+.popup-emoji{font-size:32px;margin-bottom:10px}
+.popup-word{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:700;color:var(--pink);margin-bottom:8px}
+.popup-sub{font-size:11px;color:var(--gold);font-weight:700;margin-bottom:8px;letter-spacing:1px}
+.popup-body{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:16px}
+.popup-close{
+  width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);
+  color:var(--text);border-radius:8px;padding:11px;cursor:pointer;
+  font-family:'Noto Sans JP',sans-serif;font-size:14px;
+  transition:all .2s;-webkit-tap-highlight-color:transparent;
+}
+.popup-close:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ═══════════════ TOAST / PARTICLES ═══════════════ */
+.sfx-toast{
+  position:fixed;top:56px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.85);color:var(--cyan);
+  font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;
+  padding:5px 14px;border-radius:20px;border:1px solid rgba(0,220,255,0.3);
+  z-index:300;opacity:0;white-space:nowrap;
+  animation:toast-anim 1.6s ease forwards;
+}
+@keyframes toast-anim{0%{opacity:0;transform:translateX(-50%) translateY(-8px)}20%{opacity:1;transform:translateX(-50%) translateY(0)}70%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-8px)}}
+.particle{position:fixed;border-radius:50%;pointer-events:none;z-index:200;animation:pfly .7s ease-out forwards}
+@keyframes pfly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+
+/* ═══════════════ ERROR ═══════════════ */
+.error-box{
+  background:rgba(255,68,102,0.1);border:1px solid rgba(255,68,102,0.35);
+  border-radius:12px;padding:16px;margin-top:14px;font-size:13px;
+  color:var(--red);line-height:1.6;display:none;
+}
+.error-box.show{display:block}
+
+/* ═══════════════ MISC ═══════════════ */
+@media(min-width:768px){
+  .card{padding:28px 30px}
+  .landing-inner,.map-inner{max-width:600px}
+}
+@media(max-height:680px){
+  .card{padding:14px 16px}
+  .card-hook{padding:8px 12px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+
+<!-- ═══ LANDING ═══ -->
+<div id="s-landing" class="screen active">
+  <div class="landing-inner">
+    <div class="logo-area">
+      <span class="logo-emoji">🚀</span>
+      <div class="logo-title orb">PAPER QUEST</div>
+      <div class="logo-sub">論文を冒険に変えるツール</div>
+    </div>
+
+    <div class="input-group">
+      <div class="input-label">
+        arXiv URL
+        <span class="badge">例: arxiv.org/pdf/2208.04717</span>
+      </div>
+      <input class="pq-input" id="arxiv-url" type="url"
+        placeholder="https://arxiv.org/pdf/2208.04717">
+      <div class="error-box" id="url-error"></div>
+    </div>
+
+    <div class="input-group">
+      <div class="input-label">
+        Gemini API Key
+        <span class="badge">無料</span>
+      </div>
+      <div class="key-row">
+        <input class="pq-input" id="api-key" type="password"
+          placeholder="AIza...（Google AI Studioで取得）">
+        <button class="key-toggle" id="key-toggle" onclick="toggleKeyVis()">👁</button>
+      </div>
+      <div class="key-hint">
+        APIキーをお持ちでない方は
+        <a href="https://aistudio.google.com/app/apikey" target="_blank">こちらで無料取得</a>
+        （Googleアカウント必要）
+      </div>
+    </div>
+
+    <button class="start-btn" id="start-btn" onclick="startQuest()">
+      ⚡ 冒険を始める
+    </button>
+
+    <div class="history-area" id="history-area" style="display:none">
+      <div class="history-label">── 最近プレイした論文 ──</div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOADING ═══ -->
+<div id="s-loading" class="screen">
+  <div class="loading-inner">
+    <div class="loading-title orb">⚡ 論文を解読中</div>
+    <div class="loading-paper-title" id="load-paper-title">...</div>
+
+    <div class="steps-list" id="steps-list">
+      <div class="step-item" id="step-0">
+        <div class="step-icon">🔍</div>
+        <div class="step-text">
+          <div class="step-name">メタデータ取得</div>
+          <div class="step-detail">arXiv から論文情報を取得中...</div>
+        </div>
+        <div class="step-status" id="ss-0">⏳</div>
+      </div>
+      <div class="step-item" id="step-1">
+        <div class="step-icon">📖</div>
+        <div class="step-text">
+          <div class="step-name">本文を解読</div>
+          <div class="step-detail">PDF のテキストを読み込み中...</div>
+        </div>
+        <div class="step-status" id="ss-1">⏳</div>
+      </div>
+      <div class="step-item" id="step-2">
+        <div class="step-icon">🧠</div>
+        <div class="step-text">
+          <div class="step-name">AI が学習体験を構築</div>
+          <div class="step-detail">Gemini が内容を整理中...</div>
+        </div>
+        <div class="step-status" id="ss-2">⏳</div>
+      </div>
+      <div class="step-item" id="step-3">
+        <div class="step-icon">✨</div>
+        <div class="step-text">
+          <div class="step-name">冒険の準備完了</div>
+          <div class="step-detail">もうすぐ出発！</div>
+        </div>
+        <div class="step-status" id="ss-3">⏳</div>
+      </div>
+    </div>
+
+    <div class="loading-bar-wrap">
+      <div class="loading-bar-fill" id="load-bar"></div>
+    </div>
+    <div class="loading-trivia" id="load-trivia"></div>
+    <button class="loading-cancel" onclick="cancelLoad()">キャンセル</button>
+  </div>
+</div>
+
+<!-- ═══ MAP ═══ -->
+<div id="s-map" class="screen">
+  <div style="flex:1;overflow-y:auto;padding:20px;display:flex;align-items:flex-start;justify-content:center">
+    <div class="map-inner" id="map-inner"></div>
+  </div>
+</div>
+
+<!-- ═══ CARDS ═══ -->
+<div id="s-cards" class="screen">
+  <div id="cards-header">
+    <div class="hdr-top">
+      <div class="hdr-logo orb">⚡ PAPER QUEST</div>
+      <div class="hdr-ch orb" id="hdr-ch">PROLOGUE</div>
+      <button class="hdr-mute" id="mute-btn" onclick="toggleMute()">🔊</button>
+    </div>
+    <div class="xp-bar-wrap"><div class="xp-bar-inner" id="xp-bar" style="width:0%"></div></div>
+    <div class="xp-row"><span id="field-label">FIELD</span><span id="xp-label">0 / 100 XP</span></div>
+  </div>
+
+  <div id="card-viewport"></div>
+
+  <div id="cards-footer">
+    <button class="nav-btn" id="btn-prev" onclick="goPrev()" disabled>◀ 戻る</button>
+    <div class="card-counter" id="card-counter">1 / 1</div>
+    <button class="nav-btn primary-nav" id="btn-next" onclick="goNext()">次へ ▶</button>
+  </div>
+</div>
+
+<!-- ═══ POPUP ═══ -->
+<div id="popup-bg" onclick="closePopup(event)">
+  <div class="popup-card" onclick="event.stopPropagation()">
+    <div class="popup-emoji" id="pop-emoji">💡</div>
+    <div class="popup-word" id="pop-word">用語</div>
+    <div class="popup-sub" id="pop-sub">例えると...</div>
+    <div class="popup-body" id="pop-body">説明</div>
+    <button class="popup-close" onclick="closePopupOk()">理解した！ ✓</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════
+//  STARS
+// ══════════════════════════════════════════════
+(function(){
+  const c = document.getElementById('stars-canvas');
+  const ctx = c.getContext('2d');
+  let stars = [];
+  function resize(){
+    c.width = innerWidth; c.height = innerHeight;
+    stars = Array.from({length:130},()=>({
+      x:Math.random()*c.width, y:Math.random()*c.height,
+      r:Math.random()*1.4+0.3, s:Math.random()*.25+.04,
+      o:Math.random()*.6+.2
+    }));
+  }
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    stars.forEach(s=>{
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(180,210,255,${s.o})`; ctx.fill();
+      s.y+=s.s; if(s.y>c.height) s.y=-2;
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);
+  resize(); draw();
+})();
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let content = null;       // Parsed Gemini JSON
+let allCards = [];        // Rendered card sequence
+let curIdx = 0;
+let quizState = { qIdx:0, answers:[] };
+let muted = false;
+let loadCancelled = false;
+let audioCtx = null;
+
+function getACtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// ══════════════════════════════════════════════
+//  AUDIO ENGINE
+// ══════════════════════════════════════════════
+function tone(freq,dur,type='sine',gain=0.28,delay=0){
+  if(muted) return;
+  const ctx = getACtx();
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination);
+  osc.type=type; osc.frequency.value=freq;
+  const t=ctx.currentTime+delay;
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(gain,t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  osc.start(t); osc.stop(t+dur+0.05);
+}
+function sfxPing(){ tone(523,.12,'sine',.22); tone(659,.25,'sine',.16,.1); }
+function sfxReady(){
+  tone(440,.1,'square',.18); tone(554,.1,'square',.18,.12);
+  tone(659,.1,'square',.18,.24); tone(880,.35,'square',.18,.36);
+  showToast('準備完了！');
+}
+function sfxSection(){
+  tone(440,.1,'square',.18); tone(660,.1,'square',.18,.08);
+  tone(880,.22,'square',.18,.16); tone(1100,.4,'sine',.14,.28);
+  showToast('シャキーン！');
+}
+function sfxTerm(){ tone(523,.14,'sine',.2); tone(659,.28,'sine',.15,.12); showToast('ポーン♪'); }
+function sfxDiagram(){
+  const ctx=getACtx(); const osc=ctx.createOscillator(); const g=ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination); osc.type='sawtooth';
+  const t=ctx.currentTime;
+  osc.frequency.setValueAtTime(200,t); osc.frequency.linearRampToValueAtTime(800,t+.45);
+  g.gain.setValueAtTime(.2,t); g.gain.exponentialRampToValueAtTime(.001,t+.45);
+  osc.start(t); osc.stop(t+.5);
+  showToast('ウィーン');
+}
+function sfxCorrect(){ tone(523,.1,'sine',.22); tone(784,.3,'sine',.16,.1); }
+function sfxWrong(){ tone(200,.28,'sawtooth',.16); }
+function sfxFanfare(){
+  [523,659,784,1047].forEach((f,i)=>tone(f,.28,'square',.2,i*.16));
+  tone(1047,.9,'sine',.15,.64);
+  showToast('🎺 クリア！');
+  burst(innerWidth/2,innerHeight*.4);
+}
+function sfxClick(){ tone(800,.04,'sine',.1); }
+
+let throttleT=0;
+function sfxSlide(){
+  const now=Date.now();
+  if(now-throttleT<90) return;
+  throttleT=now;
+  if(!muted){
+    const ctx=getACtx(); const osc=ctx.createOscillator(); const g=ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination); osc.type='sine';
+    osc.frequency.value=600; const t=ctx.currentTime;
+    g.gain.setValueAtTime(.08,t); g.gain.exponentialRampToValueAtTime(.001,t+.05);
+    osc.start(t); osc.stop(t+.06);
+  }
+}
+
+function showToast(msg){
+  const old=document.querySelector('.sfx-toast'); if(old) old.remove();
+  const t=document.createElement('div'); t.className='sfx-toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  t.addEventListener('animationend',()=>t.remove());
+}
+function burst(x,y){
+  const cols=['#00dcff','#ffcc44','#ff7eb3','#4dff91','#fff'];
+  for(let i=0;i<28;i++){
+    const p=document.createElement('div'); p.className='particle';
+    const a=(Math.PI*2*i)/28, d=60+Math.random()*110;
+    p.style.cssText=`left:${x}px;top:${y}px;width:${4+Math.random()*5}px;height:${4+Math.random()*5}px;background:${cols[Math.floor(Math.random()*cols.length)]};--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px;animation-duration:${.5+Math.random()*.4}s`;
+    document.body.appendChild(p);
+    p.addEventListener('animationend',()=>p.remove());
+  }
+}
+
+// ══════════════════════════════════════════════
+//  AUDIO TOGGLE
+// ══════════════════════════════════════════════
+function toggleMute(){
+  muted=!muted;
+  document.getElementById('mute-btn').textContent=muted?'🔇':'🔊';
+  LS.set('pq_mute',muted);
+}
+
+// ══════════════════════════════════════════════
+//  LOCAL STORAGE
+// ══════════════════════════════════════════════
+const LS={
+  get:(k)=>{ try{ return JSON.parse(localStorage.getItem(k)); }catch{ return null; } },
+  set:(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch{} }
+};
+
+// ══════════════════════════════════════════════
+//  SCREENS
+// ══════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active'); s.style.display='';});
+  const el=document.getElementById(id);
+  el.style.display='flex';
+  el.classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+//  LANDING
+// ══════════════════════════════════════════════
+function toggleKeyVis(){
+  const i=document.getElementById('api-key');
+  i.type=i.type==='password'?'text':'password';
+}
+
+function loadLanding(){
+  // Restore saved values
+  const key=LS.get('pq_gemini_key');
+  if(key) document.getElementById('api-key').value=key;
+  muted=LS.get('pq_mute')||false;
+
+  const hist=LS.get('pq_history')||[];
+  const area=document.getElementById('history-area');
+  const list=document.getElementById('history-list');
+  if(hist.length>0){
+    area.style.display='block';
+    list.innerHTML=hist.slice().reverse().map((h,i)=>`
+      <div class="history-item" onclick="loadFromHistory(${hist.length-1-i})">
+        <div class="history-emoji">${h.field_emoji||'📄'}</div>
+        <div class="history-info">
+          <div class="history-title">${h.title_ja||h.title_en||'論文'}</div>
+          <div class="history-sub">${h.field||''} · ${h.year||''}</div>
+        </div>
+        <div class="history-play orb">▶ PLAY</div>
+      </div>`).join('');
+  }
+}
+
+function loadFromHistory(idx){
+  const hist=LS.get('pq_history')||[];
+  if(hist[idx] && hist[idx].content){
+    content=hist[idx].content;
+    buildAndShow();
+  }
+}
+
+function extractArxivId(url){
+  const m=url.trim().match(/(\d{4}\.\d{4,5})(v\d+)?/);
+  return m?m[1]:null;
+}
+
+async function startQuest(){
+  // Init audio context on user gesture
+  try{ getACtx(); }catch{}
+
+  const urlVal=document.getElementById('arxiv-url').value.trim();
+  const keyVal=document.getElementById('api-key').value.trim();
+  const errBox=document.getElementById('url-error');
+
+  errBox.classList.remove('show');
+
+  const arxivId=extractArxivId(urlVal);
+  if(!arxivId){ errBox.textContent='有効な arXiv URL または ID を入力してください（例: 2208.04717）'; errBox.classList.add('show'); return; }
+  if(!keyVal){ errBox.textContent='Gemini API Key を入力してください'; errBox.classList.add('show'); return; }
+
+  // Check cache
+  const hist=LS.get('pq_history')||[];
+  const cached=hist.find(h=>h.arxiv_id===arxivId);
+  if(cached && cached.content){
+    content=cached.content;
+    LS.set('pq_gemini_key',keyVal);
+    buildAndShow();
+    return;
+  }
+
+  LS.set('pq_gemini_key',keyVal);
+  loadCancelled=false;
+  showScreen('s-loading');
+  document.getElementById('load-bar').style.width='0%';
+  await runLoadPipeline(arxivId,keyVal);
+}
+
+function cancelLoad(){
+  loadCancelled=true;
+  showScreen('s-landing');
+  loadLanding();
+}
+
+// ══════════════════════════════════════════════
+//  TRIVIA
+// ══════════════════════════════════════════════
+const TRIVIA=[
+  'arXiv には毎日約 2,000 本以上の論文が投稿されます。',
+  '「arXiv」は "archive" の意味で、1991年に物理学者 Paul Ginsparg が開設しました。',
+  '論文の参照リスト（Reference）だけで、他の研究との関係性が見えてきます。',
+  'Albert Einstein の「奇跡の年」1905年、彼は 4 本の歴史的論文を発表しました。',
+  'ChatGPT の基盤となった Transformer 論文は 2017年の arXiv で公開されました。',
+  'Gemini 1.5 Flash の 1M トークンは、約 700,000 語の英文を処理できます。',
+  '論文のアブストラクトを読むだけで、内容の 80% は把握できると言われています。',
+];
+let triviaIdx=0;
+function cycleTriva(){
+  const el=document.getElementById('load-trivia');
+  el.style.opacity=0;
+  setTimeout(()=>{
+    el.textContent='💡 ' + TRIVIA[triviaIdx%TRIVIA.length];
+    triviaIdx++;
+    el.style.opacity=1;
+  },400);
+}
+
+// ══════════════════════════════════════════════
+//  LOAD PIPELINE
+// ══════════════════════════════════════════════
+function setStep(n, done=false){
+  const item=document.getElementById(`step-${n}`);
+  const ss=document.getElementById(`ss-${n}`);
+  if(!item) return;
+  item.classList.remove('active','done');
+  if(done){ item.classList.add('done'); ss.textContent='✅'; }
+  else { item.classList.add('active'); ss.textContent='⏳'; }
+  const pcts=[5,30,75,100];
+  document.getElementById('load-bar').style.width=(done?pcts[n]:pcts[Math.max(0,n-1)])+'%';
+}
+
+async function runLoadPipeline(arxivId, apiKey){
+  triviaIdx=0;
+  cycleTriva();
+  const trivTimer=setInterval(cycleTriva,5000);
+
+  try{
+    // Step 0: Metadata
+    setStep(0);
+    document.getElementById('load-paper-title').textContent='arXiv:'+arxivId;
+    sfxPing();
+    const meta=await fetchArxivMeta(arxivId);
+    if(loadCancelled){ clearInterval(trivTimer); return; }
+    document.getElementById('load-paper-title').textContent=meta.title;
+    setStep(0,true);
+
+    // Step 1: PDF Text
+    setStep(1);
+    let pdfText='';
+    try{ pdfText=await fetchPdfText(arxivId); }
+    catch(e){ console.warn('PDF fetch failed, using abstract only',e); }
+    if(loadCancelled){ clearInterval(trivTimer); return; }
+    setStep(1,true);
+
+    // Step 2: Gemini
+    setStep(2);
+    const inputText=buildGeminiInput(meta, pdfText);
+    content=await callGemini(apiKey, inputText);
+    if(loadCancelled){ clearInterval(trivTimer); return; }
+    setStep(2,true);
+
+    // Step 3: Prep
+    setStep(3);
+    sfxReady();
+    // Cache
+    const hist=LS.get('pq_history')||[];
+    const newEntry={
+      arxiv_id:arxivId,
+      title_ja:content.meta.title_ja,
+      title_en:content.meta.title_en,
+      field:content.meta.field,
+      field_emoji:content.meta.field_emoji,
+      year:content.meta.year,
+      processed_at:new Date().toISOString(),
+      content
+    };
+    const filtered=hist.filter(h=>h.arxiv_id!==arxivId);
+    filtered.push(newEntry);
+    LS.set('pq_history',filtered.slice(-10));
+    setStep(3,true);
+    document.getElementById('load-bar').style.width='100%';
+
+    clearInterval(trivTimer);
+    await sleep(800);
+    buildAndShow();
+  } catch(e){
+    clearInterval(trivTimer);
+    console.error(e);
+    showScreen('s-landing');
+    loadLanding();
+    const eb=document.getElementById('url-error');
+    eb.textContent='エラー: '+e.message;
+    eb.classList.add('show');
+  }
+}
+
+async function fetchArxivMeta(arxivId){
+  const res=await fetch(`https://export.arxiv.org/api/query?id_list=${arxivId}`);
+  const text=await res.text();
+  const parser=new DOMParser();
+  const xml=parser.parseFromString(text,'application/xml');
+  const entry=xml.querySelector('entry');
+  if(!entry) throw new Error('arXiv論文が見つかりませんでした。IDを確認してください。');
+  const title=entry.querySelector('title').textContent.trim().replace(/\s+/g,' ');
+  const abstract=entry.querySelector('summary').textContent.trim();
+  const authors=Array.from(xml.querySelectorAll('author name')).map(n=>n.textContent.trim());
+  const year=new Date(entry.querySelector('published').textContent).getFullYear();
+  const cats=Array.from(xml.querySelectorAll('category')).map(c=>c.getAttribute('term'));
+  return {title,abstract,authors,year,categories:cats,arxivId};
+}
+
+async function fetchPdfText(arxivId){
+  if(typeof pdfjsLib==='undefined') throw new Error('PDF.js not loaded');
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const proxyUrl=`https://corsproxy.io/?url=${encodeURIComponent('https://arxiv.org/pdf/'+arxivId)}`;
+  const res=await fetch(proxyUrl);
+  if(!res.ok) throw new Error('PDF取得失敗');
+  const buf=await res.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  let text='';
+  const maxPages=Math.min(pdf.numPages,18);
+  for(let i=1;i<=maxPages;i++){
+    const page=await pdf.getPage(i);
+    const ct=await page.getTextContent();
+    text+=ct.items.map(it=>it.str).join(' ')+'\n';
+  }
+  return text.slice(0,40000);
+}
+
+function buildGeminiInput(meta, pdfText){
+  return `論文情報:
+タイトル: ${meta.title}
+著者: ${meta.authors.slice(0,5).join(', ')}
+発行年: ${meta.year}
+カテゴリ: ${meta.categories.join(', ')}
+
+アブストラクト:
+${meta.abstract}
+
+${pdfText ? `本文（抜粋）:\n${pdfText}` : ''}`;
+}
+
+async function callGemini(apiKey, userContent){
+  const SYSTEM=`あなたは PaperQuest というインタラクティブ学習体験を生成する AI です。
+学術論文のテキストを受け取り、専門知識のない日本の一般ユーザー（高校生レベル）が楽しめるゲーム的な学習体験に変換してください。
+
+【絶対に守るルール】
+- 出力は JSON のみ（マークダウン記法・コードブロック・説明文は一切含めない）
+- ユーザー向けのテキストはすべて自然な日本語で書く
+- 専門用語は必ず日常的な比喩で説明する
+- body は3文以内、分かりやすく、高校生に説明するように書く
+
+【出力 JSON スキーマ（このスキーマに厳密に従うこと）】
+{
+  "meta": {
+    "title_ja": "論文タイトルの日本語訳",
+    "title_en": "原題（英語）",
+    "authors": ["著者1", "著者2"],
+    "year": 2022,
+    "field": "研究分野（日本語）例：機械学習・量子物理学・生命科学",
+    "field_emoji": "分野を表す絵文字1文字",
+    "one_line": "30文字以内の一行要約（日本語）",
+    "difficulty": 3,
+    "estimated_minutes": 8
+  },
+  "cards": [
+    {
+      "id": "intro",
+      "chapter": "プロローグ",
+      "title": "カードのタイトル",
+      "hook": "読者を引き込む問いかけや驚きの事実（1〜2文）",
+      "body": "本文。専門用語を使わず、高校生に説明するように書く。改行は\\n\\nで示す。",
+      "highlight": "このカードのキーワードや強調フレーズ",
+      "visual_items": [
+        {"emoji": "🔬", "text": "短いラベル（10文字以内）"}
+      ],
+      "terms": [
+        {
+          "word": "専門用語",
+          "emoji": "💡",
+          "subtitle": "〇〇で例えると…",
+          "explanation": "日常的な比喩を使った分かりやすい説明（80文字程度）"
+        }
+      ]
+    }
+  ],
+  "interactive": {
+    "title": "インタラクティブ図解のタイトル",
+    "concept": "この図解で体験できる概念",
+    "params": [
+      {
+        "id": "p1",
+        "label": "パラメータ名",
+        "unit": "単位（空文字可）",
+        "min": 0,
+        "max": 100,
+        "default": 50,
+        "step": 1
+      }
+    ],
+    "outputs": [
+      {
+        "id": "o1",
+        "label": "出力値の名前",
+        "formula_js": "p1 * 2",
+        "unit": "単位",
+        "color": "cyan"
+      }
+    ],
+    "narrative_template": "{{p1}}のとき、{{o1}}になります。"
+  },
+  "quiz": [
+    {
+      "question": "問題文",
+      "options": ["選択肢A", "選択肢B", "選択肢C"],
+      "correct": 0,
+      "feedback_correct": "正解時の解説（なぜ正解か）",
+      "feedback_wrong": "不正解時の解説（正解と理由）"
+    }
+  ],
+  "souvenir": "論文全体を一言でまとめた「お土産フレーズ」（40文字以内）",
+  "related_questions": ["この論文を読んで気になる問い1", "この論文を読んで気になる問い2"]
+}
+
+【cards の構成】
+5〜7枚のカードを作成：
+1. プロローグ（この研究が解く「日常の謎」）
+2. 問題設定（なぜこの研究が必要だったか）
+3. 手法（どうやって解いたか）
+4. 発見・結果（何が分かったか）
+5. 意義（世界への影響・応用）
+必要に応じてカードを追加してよい。
+
+【interactive の formula_js について】
+JavaScript の数式として書く。パラメータ ID（p1 など）が変数として使える。
+例: "Math.min(99, 50 + p1 * 0.49)" または "p1 * p2 / 100"
+出力が大きすぎる・小さすぎる場合は Math.min/Math.max で調整する。
+color は "cyan", "gold", "pink", "green" のいずれか。
+
+【quiz】3問必須。理解度を試す問題（暗記でなく理解を問う）。`;
+
+  const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const body={
+    system_instruction:{parts:[{text:SYSTEM}]},
+    contents:[{role:'user',parts:[{text:userContent}]}],
+    generationConfig:{temperature:0.35,maxOutputTokens:4096,responseMimeType:'application/json'}
+  };
+
+  const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const data=await res.json();
+  if(data.error) throw new Error('Gemini API エラー: '+data.error.message);
+  const raw=data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!raw) throw new Error('Gemini からの応答が空です');
+  try{ return JSON.parse(raw); }
+  catch(e){ throw new Error('Gemini の応答を解析できませんでした: '+e.message); }
+}
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ══════════════════════════════════════════════
+//  BUILD & SHOW
+// ══════════════════════════════════════════════
+function buildAndShow(){
+  buildMap();
+  showScreen('s-map');
+}
+
+// ══════════════════════════════════════════════
+//  MAP SCREEN
+// ══════════════════════════════════════════════
+function buildMap(){
+  const m=content.meta;
+  const cards=content.cards||[];
+  const chList=cards.map((c,i)=>`
+    <div class="map-ch-item">
+      <span class="map-ch-num orb">CH.${i}</span>
+      <span>${c.chapter} — ${c.title}</span>
+    </div>`).join('');
+
+  document.getElementById('map-inner').innerHTML=`
+    <div class="map-header">
+      <span class="map-emoji">${m.field_emoji||'📄'}</span>
+      <div class="map-field orb">${m.field||''}</div>
+      <div class="map-title">${m.title_ja||m.title_en}</div>
+      <div class="map-authors">${(m.authors||[]).slice(0,3).join(', ')}${(m.authors||[]).length>3?' ほか':''} · ${m.year}</div>
+      <div class="map-badges">
+        <span class="map-badge">⏱ 約${m.estimated_minutes||8}分</span>
+        <span class="map-badge">🎮 難易度 ${'★'.repeat(m.difficulty||3)}${'☆'.repeat(5-(m.difficulty||3))}</span>
+        <span class="map-badge">📚 ${cards.length+2}カード</span>
+      </div>
+      <div class="map-oneliner">${m.one_line||''}</div>
+    </div>
+    <div class="map-chapters">
+      <div class="map-ch-label orb">── 冒険の地図 ──</div>
+      <div class="map-ch-list">
+        ${chList}
+        <div class="map-ch-item"><span class="map-ch-num orb">⚔</span><span>ボスバトル — 理解度クイズ</span></div>
+        <div class="map-ch-item"><span class="map-ch-num orb">🏆</span><span>クリア — お土産フレーズ</span></div>
+      </div>
+    </div>
+    <button class="play-btn" onclick="startCards()">⚡ 冒険スタート</button>
+  `;
+}
+
+// ══════════════════════════════════════════════
+//  CARDS SCREEN
+// ══════════════════════════════════════════════
+function startCards(){
+  sfxSection();
+  quizState={qIdx:0,answers:[]};
+  curIdx=0;
+  buildAllCards();
+
+  // Header info
+  document.getElementById('field-label').textContent=(content.meta.field_emoji||'')+'  '+(content.meta.field||'');
+
+  showScreen('s-cards');
+  renderCard('left');
+}
+
+function buildAllCards(){
+  allCards=[];
+  const cards=content.cards||[];
+  cards.forEach((c,i)=>{
+    allCards.push({type:'story', data:c, xp:Math.round((i+1)/(cards.length+3)*70)});
+  });
+  // Interactive diagram
+  if(content.interactive){
+    allCards.push({type:'interactive', data:content.interactive, xp:80});
+  }
+  // Quiz
+  if(content.quiz && content.quiz.length>0){
+    allCards.push({type:'quiz', data:content.quiz, xp:90});
+  }
+  // Reward
+  allCards.push({type:'reward', data:{}, xp:100});
+}
+
+function renderCard(dir){
+  const viewport=document.getElementById('card-viewport');
+  const old=viewport.querySelector('.card');
+  const entry=allCards[curIdx];
+
+  const el=document.createElement('div');
+  el.className='card';
+  el.innerHTML=buildCardHTML(entry);
+
+  // Animate in
+  el.classList.add(dir==='left'?'in-right':'in-left');
+  viewport.appendChild(el);
+
+  if(old){
+    old.classList.add(dir==='left'?'out-left':'out-right');
+    setTimeout(()=>old.remove(),400);
+  }
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.classList.remove('in-right','in-left');
+    el.classList.add('active');
+  }));
+
+  // Post-render hooks
+  setTimeout(()=>onCardEnter(entry),350);
+  updateFooter();
+}
+
+function buildCardHTML(entry){
+  if(entry.type==='story') return buildStoryHTML(entry.data);
+  if(entry.type==='interactive') return buildInteractiveHTML(entry.data);
+  if(entry.type==='quiz') return buildQuizHTML(content.quiz);
+  if(entry.type==='reward') return buildRewardHTML();
+  return '';
+}
+
+// ─── Story Card ───
+function buildStoryHTML(c){
+  const vis=c.visual_items&&c.visual_items.length
+    ? `<div class="visual-grid">${c.visual_items.map(v=>`<div class="visual-item"><span class="vi-emoji">${v.emoji}</span><div class="vi-text">${v.text}</div></div>`).join('')}</div>`
+    : '';
+  const terms=c.terms&&c.terms.length
+    ? `<div class="terms-wrap">${c.terms.map(t=>`<span class="term-chip" onclick="openTerm(${JSON.stringify(JSON.stringify(t))})">${t.word}</span>`).join('')}</div>`
+    : '';
+  const body=c.body?c.body.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>'):'';
+  return `
+    <div class="card-eyebrow">${c.chapter||''}</div>
+    <div class="card-title">${c.title||''}</div>
+    ${c.hook?`<div class="card-hook">${c.hook}</div>`:''}
+    <div class="card-body"><p>${body}</p></div>
+    ${vis}
+    ${c.highlight?`<div style="margin-top:12px;padding:10px 14px;background:rgba(0,220,255,0.07);border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;font-size:13px;font-weight:700;color:var(--cyan)">${c.highlight}</div>`:''}
+    ${terms}`;
+}
+
+// ─── Interactive Card ───
+function buildInteractiveHTML(d){
+  const params=d.params||[];
+  const outputs=d.outputs||[];
+
+  const slidersHTML=params.map(p=>`
+    <div class="slider-row">
+      <div class="slider-label">
+        <span>${p.label}${p.unit?` (${p.unit})`:''}</span>
+        <span class="sv orb" id="sv-${p.id}">${p.default}</span>
+      </div>
+      <input type="range" min="${p.min}" max="${p.max}" value="${p.default}" step="${p.step||1}"
+        id="sr-${p.id}" oninput="updateDiagram()" onchange="updateDiagram()">
+    </div>`).join('');
+
+  const outputsHTML=`<div class="outputs-grid">${outputs.map(o=>`
+    <div class="output-card ${o.color||'cyan'}">
+      <span class="output-val" id="ov-${o.id}">—</span>
+      <div class="output-lbl">${o.label}${o.unit?` (${o.unit})`:''}</div>
+    </div>`).join('')}</div>`;
+
+  return `
+    <div class="card-eyebrow">インタラクティブ</div>
+    <div class="card-title">${d.title||'体験して理解する'}</div>
+    ${d.concept?`<div class="card-hook">${d.concept}</div>`:''}
+    <div class="diagram-wrap">
+      <div class="diagram-eyebrow orb">⚡ LIVE DIAGRAM — スライダーを動かしてみよう</div>
+      ${slidersHTML}
+      ${outputsHTML}
+      <div class="narrative-box" id="narrative-box">—</div>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:8px;text-align:center">👆 スライダーを操作すると値がリアルタイムで変わります</div>`;
+}
+
+function updateDiagram(){
+  sfxSlide();
+  const d=content.interactive;
+  if(!d) return;
+  const params=d.params||[];
+  const outputs=d.outputs||[];
+
+  // Get param values
+  const vals={};
+  params.forEach(p=>{
+    const sl=document.getElementById('sr-'+p.id);
+    if(sl){
+      vals[p.id]=parseFloat(sl.value);
+      const sv=document.getElementById('sv-'+p.id);
+      if(sv) sv.textContent=sl.value;
+    }
+  });
+
+  // Evaluate outputs
+  const outVals={};
+  outputs.forEach(o=>{
+    try{
+      const fn=new Function(...Object.keys(vals), `return +(${o.formula_js}).toFixed(2)`);
+      const val=fn(...Object.values(vals));
+      outVals[o.id]=isFinite(val)?val:0;
+      const el=document.getElementById('ov-'+o.id);
+      if(el){ el.textContent=outVals[o.id]+(o.unit?'':'')+' '; el.style.animation='none'; void el.offsetWidth; el.style.animation=''; }
+    }catch(e){ console.warn(e); }
+  });
+
+  // Narrative
+  const nb=document.getElementById('narrative-box');
+  if(nb && d.narrative_template){
+    let tmpl=d.narrative_template;
+    Object.entries(vals).forEach(([k,v])=>{ tmpl=tmpl.replace(new RegExp(`{{${k}}}`,'g'),v); });
+    Object.entries(outVals).forEach(([k,v])=>{ tmpl=tmpl.replace(new RegExp(`{{${k}}}`,'g'),v); });
+    nb.textContent=tmpl;
+  }
+}
+
+// ─── Quiz Card ───
+let quizAnswered=false;
+function buildQuizHTML(quiz){
+  const q=quiz[quizState.qIdx];
+  if(!q) return '<div class="card-eyebrow">クイズ完了</div>';
+
+  const dots=quiz.map((_,i)=>{
+    const a=quizState.answers[i];
+    const cls=a===undefined?(i===quizState.qIdx?'qdot cur':'qdot'):(a?'qdot done-c':'qdot done-w');
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  quizAnswered=false;
+  return `
+    <div class="card-eyebrow">⚔ ボスバトル</div>
+    <div class="card-title">理解度チェック</div>
+    <div class="quiz-header">
+      <div class="quiz-dots">${dots}</div>
+      <div class="quiz-qnum orb">QUESTION ${quizState.qIdx+1} / ${quiz.length}</div>
+      <div class="quiz-q">${q.question}</div>
+    </div>
+    <div class="quiz-options">
+      ${q.options.map((opt,i)=>`
+        <button class="qbtn" id="qb-${i}" onclick="answerQ(${i})">
+          <span class="qi">0${i+1}</span>${opt}
+        </button>`).join('')}
+    </div>
+    <div class="quiz-feedback" id="qfb"></div>`;
+}
+
+window.answerQ=function(idx){
+  if(quizAnswered) return;
+  quizAnswered=true;
+  const quiz=content.quiz;
+  const q=quiz[quizState.qIdx];
+  const correct=idx===q.correct;
+  quizState.answers[quizState.qIdx]=correct;
+
+  // UI feedback
+  for(let i=0;i<q.options.length;i++){
+    const btn=document.getElementById('qb-'+i);
+    if(btn){ btn.disabled=true; if(i===q.correct) btn.classList.add('correct'); else if(i===idx && !correct) btn.classList.add('wrong'); }
+  }
+  const fb=document.getElementById('qfb');
+  if(fb){ fb.textContent=correct?'✓ '+q.feedback_correct:'✗ '+q.feedback_wrong; fb.className='quiz-feedback show '+(correct?'correct':'wrong'); }
+
+  correct?sfxCorrect():sfxWrong();
+  if(correct) burst(innerWidth/2, innerHeight*.5);
+
+  setTimeout(()=>{
+    quizState.qIdx++;
+    if(quizState.qIdx<quiz.length){
+      // Next question in same card slot
+      const viewport=document.getElementById('card-viewport');
+      const old=viewport.querySelector('.card');
+      const el=document.createElement('div');
+      el.className='card';
+      el.innerHTML=buildQuizHTML(quiz);
+      el.classList.add('in-right');
+      viewport.appendChild(el);
+      if(old){ old.classList.add('out-left'); setTimeout(()=>old.remove(),400); }
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.classList.remove('in-right'); el.classList.add('active'); }));
+    } else {
+      // All done → advance to next card
+      goNext();
+    }
+  }, 1800);
+};
+
+// ─── Reward Card ───
+function buildRewardHTML(){
+  const correct=quizState.answers.filter(Boolean).length;
+  const total=content.quiz?content.quiz.length:0;
+  const pct=total?Math.round(correct/total*100):0;
+  const emoji=pct===100?'🏆':pct>=66?'🌟':'🎖';
+  const msg=pct===100?'パーフェクト！論文を完全制覇！':pct>=66?'素晴らしい！よく理解できています':'よく頑張りました！何度でも挑戦できます';
+  return `
+    <div class="card-eyebrow">🏆 CLEAR！</div>
+    <span class="reward-trophy">${emoji}</span>
+    <div class="reward-title">論文クリア！</div>
+    <div class="reward-sub">${msg}</div>
+    ${total>0?`<div class="score-box"><span class="score-num">${correct}/${total}</span><div class="score-label">クイズ正解率 ${pct}%</div></div>`:''}
+    <div class="souvenir-card">
+      <div class="souvenir-lbl orb">📜 お土産フレーズ</div>
+      <div class="souvenir-text">${content.souvenir||''}</div>
+    </div>
+    ${content.related_questions&&content.related_questions.length?`
+    <div class="related-qs">
+      <div class="related-lbl orb">🔭 次の問い</div>
+      ${content.related_questions.map(q=>`<div class="related-q">• ${q}</div>`).join('')}
+    </div>`:''}
+    <div class="reward-btns">
+      <button class="reward-btn primary" onclick="goHome()">🚀 別の論文を冒険する</button>
+      <button class="reward-btn secondary" onclick="replayFromStart()">▶ もう一度プレイ</button>
+    </div>`;
+}
+
+function onCardEnter(entry){
+  if(entry.type==='story') sfxSection();
+  if(entry.type==='interactive'){ sfxDiagram(); setTimeout(updateDiagram,200); }
+  if(entry.type==='quiz') sfxSection();
+  if(entry.type==='reward') sfxFanfare();
+}
+
+function updateFooter(){
+  const total=allCards.length;
+  const entry=allCards[curIdx];
+  const xp=entry?entry.xp:0;
+
+  document.getElementById('xp-bar').style.width=xp+'%';
+  document.getElementById('xp-label').textContent=xp+' / 100 XP';
+  document.getElementById('card-counter').textContent=`${curIdx+1} / ${total}`;
+  document.getElementById('hdr-ch').textContent=entry?.data?.chapter||'';
+
+  const prev=document.getElementById('btn-prev');
+  const next=document.getElementById('btn-next');
+  prev.disabled=curIdx===0;
+
+  const isQuiz=entry?.type==='quiz';
+  const isReward=entry?.type==='reward';
+  next.style.display=isQuiz?'none':'';
+  next.disabled=isReward;
+  next.textContent=isReward?'終了':'次へ ▶';
+}
+
+function goNext(){
+  sfxClick();
+  if(curIdx<allCards.length-1){ curIdx++; renderCard('left'); }
+}
+function goPrev(){
+  sfxClick();
+  if(curIdx>0){ curIdx--; renderCard('right'); }
+}
+function goHome(){
+  showScreen('s-landing');
+  loadLanding();
+}
+function replayFromStart(){
+  quizState={qIdx:0,answers:[]};
+  curIdx=0;
+  renderCard('left');
+}
+
+// ══════════════════════════════════════════════
+//  TERM POPUP
+// ══════════════════════════════════════════════
+window.openTerm=function(jsonStr){
+  const t=JSON.parse(jsonStr);
+  document.getElementById('pop-emoji').textContent=t.emoji||'💡';
+  document.getElementById('pop-word').textContent=t.word||'';
+  document.getElementById('pop-sub').textContent=t.subtitle||'';
+  document.getElementById('pop-body').textContent=t.explanation||'';
+  document.getElementById('popup-bg').classList.add('open');
+  sfxTerm();
+};
+function closePopup(e){ document.getElementById('popup-bg').classList.remove('open'); }
+function closePopupOk(){
+  document.getElementById('popup-bg').classList.remove('open');
+  burst(innerWidth/2, innerHeight*.65);
+}
+
+// ══════════════════════════════════════════════
+//  SWIPE GESTURE
+// ══════════════════════════════════════════════
+let tx=0,ty=0,tt=0;
+const vp=document.getElementById('card-viewport');
+vp.addEventListener('touchstart',e=>{ tx=e.touches[0].clientX; ty=e.touches[0].clientY; tt=Date.now(); },{passive:true});
+vp.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  const dy=e.changedTouches[0].clientY-ty;
+  if(Date.now()-tt>500||Math.abs(dy)>Math.abs(dx)*1.5||Math.abs(dx)<40) return;
+  const entry=allCards[curIdx];
+  if(dx<0 && entry?.type!=='quiz') goNext();
+  else if(dx>0) goPrev();
+},{passive:true});
+
+// ══════════════════════════════════════════════
+//  KEYBOARD
+// ══════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){ e.preventDefault(); goNext(); }
+  if(e.key==='ArrowLeft'){ e.preventDefault(); goPrev(); }
+  if(e.key==='Escape') closePopup();
+});
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+loadLanding();
+</script>
+</body>
+</html>
