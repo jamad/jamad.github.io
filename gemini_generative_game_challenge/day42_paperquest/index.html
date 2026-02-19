@@ -1418,7 +1418,7 @@ color は "cyan", "gold", "pink", "green" のいずれか。
         }
         if(code===403){
           throw new Error(
-            'アクセスが拒否されました (403)。'
+            'アクセスが拒否されました (403)。\n' +
             '• APIキーに Gemini API の権限があるか確認してください'
           );
         }
