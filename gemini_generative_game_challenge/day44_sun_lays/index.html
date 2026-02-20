@@ -4,22 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>光の熱ラボ - シミュレーター</title>
-    <!-- CDN経由で必要なライブラリを読み込み -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- ネット経由でライブラリを読み込みます（接続が必要です） -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/lucide-react@latest"></script>
+    <style>
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
+    </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="bg-slate-900">
+    <!-- 読み込みに失敗したり時間がかかると、この「Loading」が表示されます -->
+    <div id="root">
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: sans-serif;">
+            <div>
+                <p style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">シミュレーターを準備中...</p>
+                <p style="font-size: 14px; opacity: 0.7;">（真っ白のまま動かない場合はインターネット接続を確認してください）</p>
+            </div>
+        </div>
+    </div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
         const { Sun, Waves, Triangle, Play, Volume2, Info, Search, ArrowDown } = LucideReact;
 
-        // --- Web Audio API ---
+        // --- 音声エンジンの初期化 ---
         let audioCtx = null;
         const initAudio = () => {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -60,8 +72,8 @@
                     const { width, height } = canvas;
 
                     // 1. 太陽
-                    const sunX = 60, sunY = 60;
-                    const sunRadius = 30 + intensity / 5;
+                    const sunX = 80, sunY = 80;
+                    const sunRadius = 40 + intensity / 4;
                     const gradient = ctx.createRadialGradient(sunX, sunY, 5, sunX, sunY, sunRadius);
                     gradient.addColorStop(0, '#fffbe6');
                     gradient.addColorStop(1, `rgba(255, 165, 0, ${intensity/100})`);
@@ -69,17 +81,18 @@
                     ctx.beginPath(); ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2); ctx.fill();
 
                     // 2. 服
-                    const clothX = width - 200, clothY = height - 100;
-                    const clothW = 160, clothH = 70;
+                    const clothX = width - 220, clothY = height - 120;
+                    const clothW = 180, clothH = 80;
                     const brightness = albedo * 2.55;
                     const heatRed = Math.min(60, sharedState.current.temp * 2);
                     ctx.fillStyle = `rgb(${brightness + heatRed}, ${brightness}, ${brightness})`;
                     ctx.fillRect(clothX, clothY, clothW, clothH);
                     ctx.strokeStyle = '#94a3b8';
+                    ctx.lineWidth = 2;
                     ctx.strokeRect(clothX, clothY, clothW, clothH);
 
-                    // 3. ミクロ視点
-                    const zoomX = width - 120, zoomY = height - 200, zoomR = 55;
+                    // 3. ミクロ視点 (虫眼鏡)
+                    const zoomX = width - 130, zoomY = height - 220, zoomR = 60;
                     ctx.save();
                     ctx.beginPath(); ctx.arc(zoomX, zoomY, zoomR, 0, Math.PI * 2); ctx.clip();
                     ctx.fillStyle = '#0f172a';
@@ -87,15 +100,22 @@
                     for(let i=0; i<3; i++) {
                         const jitter = (Math.random() - 0.5) * (sharedState.current.hitEnergy + 2);
                         ctx.fillStyle = `rgb(${100 + sharedState.current.hitEnergy * 8}, 150, 255)`;
-                        ctx.beginPath(); ctx.arc(zoomX - 25 + i * 25 + jitter, zoomY + jitter, 10, 0, Math.PI*2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(zoomX - 30 + i * 30 + jitter, zoomY + jitter, 12, 0, Math.PI*2); ctx.fill();
                     }
                     ctx.restore();
-                    ctx.strokeStyle = '#475569'; ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#475569'; ctx.lineWidth = 4;
                     ctx.beginPath(); ctx.arc(zoomX, zoomY, zoomR, 0, Math.PI*2); ctx.stroke();
+                    ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px sans-serif';
+                    ctx.fillText("表面の原子", zoomX - 25, zoomY + zoomR + 15);
 
-                    // 4. 光子
+                    // 4. 光子アニメーション
                     if (Math.random() < intensity / 150) {
-                        particles.push({ x: sunX, y: sunY, vx: (clothX + 60 - sunX) / 60, vy: (clothY - sunY) / 60, life: 100, reflected: false });
+                        particles.push({ 
+                            x: sunX, y: sunY, 
+                            vx: (clothX + 90 - sunX) / 70, 
+                            vy: (clothY - sunY) / 70, 
+                            life: 100, reflected: false 
+                        });
                     }
                     const hue = 280 - (frequency * 2.8);
                     ctx.lineWidth = 2;
@@ -103,11 +123,12 @@
                         let p = particles[i]; p.x += p.vx; p.y += p.vy;
                         ctx.strokeStyle = `hsla(${hue}, 100%, 60%, ${p.life/100})`;
                         ctx.beginPath();
-                        for(let j=0; j<8; j++) {
-                            const sine = Math.sin((p.x + p.y + j*2) * (frequency/20));
+                        for(let j=0; j<10; j++) {
+                            const sine = Math.sin((p.x + p.y + j*2) * (frequency/15));
                             ctx.lineTo(p.x - p.vx*j*2 + sine*4, p.y - p.vy*j*2);
                         }
                         ctx.stroke();
+                        
                         if (!p.reflected && p.y > clothY && p.x > clothX && p.x < clothX + clothW) {
                             if (Math.random() * 100 < albedo) {
                                 p.vy *= -1; p.vx *= 1.2; p.reflected = true;
@@ -132,61 +153,97 @@
             if (!started) {
                 return (
                     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-                        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
-                            <Sun className="w-20 h-20 text-orange-500 mx-auto mb-6" />
+                        <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 text-center">
+                            <div className="bg-orange-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Sun className="w-16 h-16 text-orange-500 animate-spin-slow" />
+                            </div>
                             <h1 className="text-3xl font-black text-slate-800 mb-4">光の熱ラボ</h1>
-                            <p className="text-slate-600 mb-8">なぜ光には重さがないのに温かいのか？<br/>シミュレーターで体験しましょう。</p>
-                            <button onClick={() => { initAudio(); setStarted(true); }} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform hover:scale-105">実験開始</button>
+                            <p className="text-slate-600 mb-10 leading-relaxed">
+                                なぜ光には質量（重さ）がないのに、<br/>
+                                太陽の光を浴びると温かいのでしょう？
+                            </p>
+                            <button onClick={() => { initAudio(); setStarted(true); }} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-5 rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 text-lg">
+                                実験をスタート
+                            </button>
                         </div>
                     </div>
                 );
             }
 
             return (
-                <div className="min-h-screen bg-slate-100 p-4">
-                    <div className="max-w-4xl mx-auto space-y-6">
-                        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden relative">
-                            <div className="p-4 bg-sky-50 border-b flex justify-between items-center">
-                                <h2 className="font-bold flex items-center gap-2"><Search size={18}/>統合ビュー (マクロ＆ミクロ)</h2>
-                                <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">吸収熱: {Math.floor(sharedState.current.temp * 10)} J</div>
+                <div className="min-h-screen bg-slate-100 p-4 sm:p-8 font-sans">
+                    <div className="max-w-5xl mx-auto space-y-6">
+                        {/* メインビュー */}
+                        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden relative">
+                            <div className="p-5 bg-sky-50 border-b flex justify-between items-center">
+                                <h2 className="font-bold text-slate-700 flex items-center gap-2"><Search className="text-sky-500" size={20}/>統合ビュー (日常とミクロ)</h2>
+                                <div className="bg-orange-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-sm">
+                                    吸収エネルギー: {Math.floor(sharedState.current.temp * 10)} J
+                                </div>
                             </div>
-                            <div className="relative bg-sky-100 h-[400px]">
-                                <canvas ref={canvasRef} width={800} height={400} className="w-full h-full" />
-                                <div className="absolute top-4 left-24 w-52 bg-white/90 p-4 rounded-xl shadow-sm space-y-4">
+                            
+                            <div className="relative bg-sky-100 h-[450px]">
+                                <canvas ref={canvasRef} width={1000} height={450} className="w-full h-full" />
+                                
+                                {/* 太陽コントローラー */}
+                                <div className="absolute top-6 left-28 w-56 bg-white/80 backdrop-blur p-4 rounded-2xl shadow-md space-y-4">
                                     <div>
-                                        <label className="text-[10px] font-bold block mb-1">太陽の強さ</label>
-                                        <input type="range" value={intensity} onChange={(e)=>setIntensity(Number(e.target.value))} className="w-full h-1 bg-orange-200 rounded-lg appearance-none cursor-pointer" />
+                                        <label className="text-[11px] font-black text-slate-500 uppercase block mb-1.5">太陽の強さ</label>
+                                        <input type="range" value={intensity} onChange={(e)=>setIntensity(Number(e.target.value))} className="w-full h-1.5 bg-orange-200 rounded-lg appearance-none cursor-pointer" />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-bold block mb-1">光の振動数 (エネルギー)</label>
-                                        <input type="range" value={frequency} onChange={(e)=>setFrequency(Number(e.target.value))} className="w-full h-1 bg-gradient-to-r from-red-500 via-green-500 to-purple-500 rounded-lg appearance-none cursor-pointer" />
+                                        <label className="text-[11px] font-black text-slate-500 uppercase block mb-1.5">光の振動数 (エネルギー)</label>
+                                        <input type="range" value={frequency} onChange={(e)=>setFrequency(Number(e.target.value))} className="w-full h-1.5 bg-gradient-to-r from-red-500 via-green-500 to-purple-500 rounded-lg appearance-none cursor-pointer" />
                                     </div>
                                 </div>
-                                <div className="absolute bottom-4 right-4 w-52 bg-white/90 p-4 rounded-xl shadow-sm">
-                                    <label className="text-[10px] font-bold block mb-1">服の明るさ (反射率)</label>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 bg-black rounded-full"/>
-                                        <input type="range" value={albedo} onChange={(e)=>setAlbedo(Number(e.target.value))} className="flex-1 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer" />
-                                        <div className="w-3 h-3 bg-white border rounded-full"/>
+
+                                {/* 服コントローラー */}
+                                <div className="absolute bottom-6 right-6 w-56 bg-white/80 backdrop-blur p-4 rounded-2xl shadow-md">
+                                    <label className="text-[11px] font-black text-slate-500 uppercase block mb-2">服の明るさ (反射率)</label>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-4 h-4 bg-black rounded-full shadow-inner"/>
+                                        <input type="range" value={albedo} onChange={(e)=>setAlbedo(Number(e.target.value))} className="flex-1 h-1.5 bg-gray-300 rounded-lg appearance-none cursor-pointer" />
+                                        <div className="w-4 h-4 bg-white border border-slate-300 rounded-full shadow-sm"/>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
+                        {/* 下段カード */}
                         <div className="grid md:grid-cols-2 gap-6">
-                            <div className="bg-white p-6 rounded-2xl border">
-                                <h3 className="font-bold mb-4 flex items-center gap-2 text-green-700"><Triangle />理論：なぜ熱くなる？</h3>
-                                <div className="bg-slate-900 p-3 rounded-lg text-white text-center font-serif mb-4">E² = (pc)² + (mc²)²</div>
-                                <p className="text-sm text-slate-600">光には質量(m)がないため、後ろの項はゼロになります。しかし、振動数に比例する「勢い(p)」があるため、ぶつかった時に原子を揺らすエネルギー(E)が生まれます。</p>
+                            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                                <h3 className="font-black text-xl mb-4 flex items-center gap-2 text-green-700"><Triangle />なぜ熱が生まれるのか？</h3>
+                                <div className="bg-slate-900 p-5 rounded-2xl text-white text-center font-serif text-2xl mb-6 shadow-inner">
+                                    <span className="text-sky-400">E</span>² = (<span className="text-orange-400">pc</span>)² + (<span className="text-green-400">mc²</span>)²
+                                </div>
+                                <p className="text-sm text-slate-600 leading-relaxed">
+                                    光（光子）には質量(<span className="text-green-600 font-bold text-base">m</span>)がないため、右端の項はゼロになります。
+                                    しかし、波の細かさ（振動数）に比例した「勢い＝運動量(<span className="text-orange-600 font-bold text-base">p</span>)」を運んでいます。
+                                    <br/><br/>
+                                    光が服に吸収されると、その「勢い」が服の表面にある原子を叩き、激しく震わせます。**このミクロの震えこそが、私たちが温かいと感じる「熱エネルギー」の正体なのです。**
+                                </p>
                             </div>
-                            <div className="bg-blue-600 text-white p-6 rounded-2xl shadow-lg">
-                                <h3 className="font-bold mb-3 flex items-center gap-2"><Info /> まとめ</h3>
-                                <ul className="text-sm space-y-2">
-                                    <li>・光は「波」として斜めに飛んできます。</li>
-                                    <li>・黒い服ほど光を「吸収」します。</li>
-                                    <li>・吸収された光の「勢い」が、服の原子を激しく震わせます。</li>
-                                    <li className="font-bold mt-2 pt-2 border-t border-blue-400">これが私たちの感じる「熱」の正体です。</li>
+
+                            <div className="bg-blue-600 text-white p-8 rounded-3xl shadow-xl flex flex-col justify-center">
+                                <h3 className="font-black text-2xl mb-5 flex items-center gap-3"><Info size={28}/> この実験のポイント</h3>
+                                <ul className="space-y-4 text-slate-100">
+                                    <li className="flex gap-3">
+                                        <div className="bg-blue-500 w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">1</div>
+                                        <p>光は「波」として太陽から飛んできます。振動数が高いほどパンチ力が強くなります。</p>
+                                    </li>
+                                    <li className="flex gap-3">
+                                        <div className="bg-blue-500 w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">2</div>
+                                        <p>白い服は光を「反射」させるので、原子はあまり叩かれません（温まりにくい）。</p>
+                                    </li>
+                                    <li className="flex gap-3">
+                                        <div className="bg-blue-500 w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">3</div>
+                                        <p>黒い服は光を「吸収」し、そのエネルギーをすべて原子の振動（熱）に変えます。</p>
+                                    </li>
                                 </ul>
+                                <div className="mt-8 pt-6 border-t border-blue-400/50 flex items-center justify-between">
+                                    <span className="text-xs opacity-70 italic font-serif">Light Energy Interactive Lab</span>
+                                    <Volume2 className="opacity-50" size={20} />
+                                </div>
                             </div>
                         </div>
                     </div>
