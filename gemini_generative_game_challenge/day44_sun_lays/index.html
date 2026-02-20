@@ -3,306 +3,595 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTON-KINETIC / ARCHIVE</title>
+    <title>MASSLESS ENERGY</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #000; color: #fff; overflow: hidden; }
-        .mono { font-family: 'Roboto Mono', monospace; }
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-spin-slow { animation: spin-slow 20s linear infinite; }
-        
+        :root {
+            --neon:  #00ff9d;
+            --cyan:  #00cfff;
+            --hot:   #ff4500;
+            --gold:  #ffb400;
+            --hud-bg: rgba(4, 10, 8, 0.82);
+            --border: rgba(0,255,157,0.15);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #000; color: #fff;
+            overflow: hidden; height: 100vh; width: 100vw;
+        }
+
+        /* grid bg */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(0,255,157,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,157,0.025) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+        }
+        /* scanlines */
+        body::after {
+            content: '';
+            position: fixed; inset: 0; z-index: 9999;
+            background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);
+            pointer-events: none;
+        }
+
+        /* HEADER */
+        #header {
+            position: fixed; top: 0; left: 0; right: 0; height: 40px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px;
+            background: rgba(0,0,0,0.9);
+            border-bottom: 1px solid rgba(0,255,157,0.08);
+            z-index: 200;
+        }
+        .h-logo {
+            font-family: 'Bebas Neue'; font-size: 18px; letter-spacing: .12em;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .h-dot { width:6px; height:6px; background:var(--neon); box-shadow:0 0 8px var(--neon); flex-shrink:0; }
+        .h-sub { font-size:9px; letter-spacing:.18em; color:#2a2a2a; font-weight:700; font-family:'JetBrains Mono'; }
+        .lang-row { display:flex; gap:2px; }
+        .lang-btn {
+            font-family:'JetBrains Mono'; font-size:9px; font-weight:700;
+            letter-spacing:.2em; padding:4px 8px; background:transparent;
+            border:none; cursor:pointer; color:#444; transition:.15s;
+        }
+        .lang-btn.active { color:var(--neon); text-shadow:0 0 6px var(--neon); border-bottom:1px solid var(--neon); }
+        .lang-btn:hover:not(.active) { color:#aaa; }
+
+        /* CANVAS STAGE */
+        #stage {
+            position: fixed; top: 40px; left: 0; right: 0; bottom: 28px;
+            z-index: 1;
+        }
+        #stage canvas { width:100%; height:100%; display:block; }
+
+        /* HUD PANELS */
+        .hud {
+            position: absolute;
+            background: var(--hud-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 18px 20px;
+        }
+        .hud::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:1px;
+            background: linear-gradient(90deg, transparent, var(--neon), transparent);
+            opacity:.4;
+        }
+        .hud::after {
+            content:''; position:absolute;
+            bottom:-1px; right:-1px; width:10px; height:10px;
+            border-bottom:1px solid var(--neon); border-right:1px solid var(--neon);
+        }
+
+        /* sliders */
         input[type="range"] {
-            -webkit-appearance: none; background: #444; height: 1px; outline: none;
+            -webkit-appearance:none; width:100%; height:1px;
+            background:rgba(255,255,255,0.1); outline:none; cursor:pointer;
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 14px; height: 14px; background: #fff; border-radius: 50%; cursor: pointer; transition: transform 0.1s;
+            -webkit-appearance:none; width:12px; height:12px;
+            background:var(--neon); border-radius:0;
+            box-shadow:0 0 8px var(--neon); transition:transform .1s;
         }
-        .freq-slider {
-            background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f) !important;
-            height: 2px !important;
+        input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.5); }
+        .freq-slider { background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f)!important; height:2px!important; }
+        .freq-slider::-webkit-slider-thumb { background:#fff!important; box-shadow:0 0 8px #fff!important; }
+        .albedo-sl::-webkit-slider-thumb { background:var(--hot)!important; box-shadow:0 0 8px var(--hot)!important; }
+        .mass-sl::-webkit-slider-thumb { background:var(--cyan)!important; box-shadow:0 0 8px var(--cyan)!important; }
+
+        /* TRIANGLE TOOLTIP */
+        #tri-tip {
+            position: absolute;
+            background: rgba(2,6,4,0.97);
+            border: 1px solid rgba(0,207,255,0.2);
+            padding: 16px 18px;
+            width: 220px;
+            pointer-events: none;
+            transition: opacity .3s ease, transform .3s ease;
+            z-index: 300;
         }
-        .text-neutral { color: #888; }
+        #tri-tip::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:1px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+        }
+        #tri-tip.hidden { opacity:0; transform:translateX(-8px); }
+        #tri-tip.visible { opacity:1; transform:translateX(0); pointer-events:auto; }
+
+        /* LANDING */
+        #landing {
+            position:fixed; inset:0; z-index:500;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            background:#000;
+        }
+        @keyframes scandown { 0%{top:0} 100%{top:100%} }
+        .scan-beam {
+            position:absolute; left:0; right:0; height:2px;
+            background:linear-gradient(90deg,transparent,rgba(0,255,157,.25),transparent);
+            animation:scandown 5s ease-in-out infinite; pointer-events:none;
+        }
+        @keyframes glitch {
+            0%,88%,100%{transform:none;opacity:1}
+            89%{transform:skewX(2deg) translateX(-3px);opacity:.8}
+            91%{transform:skewX(-1deg) translateX(2px)}
+            93%{transform:translateX(-1px);opacity:.75}
+        }
+        .glitch { animation: glitch 7s infinite; }
+        @keyframes fu { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+        .fu0 { animation:fu .7s .0s both; }
+        .fu1 { animation:fu .7s .18s both; }
+        .fu2 { animation:fu .7s .36s both; }
+        .fu3 { animation:fu .7s .56s both; }
+
+        .launch-btn {
+            position:relative; border:1px solid var(--neon);
+            padding:14px 56px;
+            font-family:'Bebas Neue'; font-size:20px; letter-spacing:.3em;
+            color:var(--neon); background:transparent; cursor:pointer;
+            text-shadow:0 0 8px var(--neon);
+            box-shadow:0 0 24px rgba(0,255,157,.07),inset 0 0 24px rgba(0,255,157,.03);
+            overflow:hidden; transition:color .25s,box-shadow .25s;
+        }
+        .launch-btn::before {
+            content:''; position:absolute; inset:0;
+            background:var(--neon); transform:translateX(-101%); transition:transform .28s ease;
+        }
+        .launch-btn:hover::before { transform:translateX(0); }
+        .launch-btn:hover { color:#000; text-shadow:none; box-shadow:0 0 40px rgba(0,255,157,.3); }
+        .launch-btn span { position:relative; z-index:1; }
+
+        /* FOOTER */
+        #footer {
+            position:fixed; bottom:0; left:0; right:0; height:28px;
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0 24px;
+            background:rgba(0,0,0,0.95);
+            border-top:1px solid rgba(255,255,255,.04);
+            z-index:200;
+        }
+        .f-text { font-size:8px; letter-spacing:.22em; color:#222; font-weight:700; }
+        .f-text a { color:inherit; text-decoration:underline; text-underline-offset:3px; }
+        .f-text a:hover { color:#888; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
+const T = {
+    EN: { title:"MASSLESS ENERGY", sub:"Heat = atomic vibration from massless photon momentum.",
+          intensity:"SOLAR VOLUME", frequency:"FREQUENCY", reflectivity:"REFLECTIVITY", mass:"MASS",
+          objLabel:"TARGET SURFACE", micro:"ATOMIC VIEW",
+          infrared:"IR", visible:"VIS", uv:"UV",
+          theoryTitle:"ENERGY EQUATION",
+          theoryDesc:"E equals momentum·c when mass is zero. Higher ν = harder impact.",
+          enter:"LAUNCH", formulaInfo:"Σ absorbed photon frequency (ν)" },
+    JP: { title:"MASSLESS ENERGY", sub:"熱の正体は、質量のない光子の「勢い」が原子を叩いて起こす振動。",
+          intensity:"太陽光の量", frequency:"振動数", reflectivity:"反射率", mass:"質量",
+          objLabel:"光を受ける表面", micro:"原子拡大図",
+          infrared:"赤外線", visible:"可視光", uv:"紫外線",
+          theoryTitle:"エネルギー式",
+          theoryDesc:"質量mがゼロのとき E = pc。振動数νが高いほど衝撃が強い。",
+          enter:"実験を開始", formulaInfo:"計算式：吸収した光子の振動数(ν)の合計" },
+    FI: { title:"MASSLESS ENERGY", sub:"Lämpö on atomien värähtelyä massattomien fotonien liikemäärästä.",
+          intensity:"INTENSITEETTI", frequency:"TAAJUUS", reflectivity:"HEIJASTUS", mass:"MASSA",
+          objLabel:"KOHDE — PINTA", micro:"ATOMITASO",
+          infrared:"IR", visible:"VIS", uv:"UV",
+          theoryTitle:"YHTÄLÖ",
+          theoryDesc:"E = pc kun massa on nolla. Korkeampi ν = kovempi isku.",
+          enter:"ALOITA", formulaInfo:"Kaava: Σ absorb. fotonien taajuudet (ν)" },
+    DA: { title:"MASSLESS ENERGY", sub:"Varme er atomvibrationer fra masseløse fotoners impuls.",
+          intensity:"INTENSITET", frequency:"FREKVENS", reflectivity:"REFLEKSION", mass:"MASSE",
+          objLabel:"OBJEKT — OVERFLADE", micro:"ATOMAR SKALA",
+          infrared:"IR", visible:"VIS", uv:"UV",
+          theoryTitle:"LIGNING",
+          theoryDesc:"E = pc når massen er nul. Højere ν = hårdere slag.",
+          enter:"START", formulaInfo:"Formel: Σ absorberede fotonfrekvenser (ν)" },
+};
 
-        const translations = {
-            EN: {
-                title: "PHOTON-KINETIC", conclusion: "Heat is atomic vibration caused by the momentum of massless photons.",
-                intensity: "INTENSITY", frequency: "FREQUENCY", reflectivity: "REFLECTIVITY", mass: "MASS", energy: "ENERGY",
-                objLabel: "TARGET OBJECT", micro: "ATOMIC SCALE", infrared: "IR", visible: "VISIBLE", uv: "UV",
-                theoryTitle: "E² = (pc)² + (mc²)²", theoryDesc: "Momentum (pc) is proportional to frequency.",
-                enter: "LAUNCH", footerInfo: "Physical visualization of light energy and momentum."
-            },
-            JP: {
-                title: "PHOTON-KINETIC", conclusion: "熱の正体は、質量のない光子が持つ「勢い」が原子を叩いて起こす振動です。",
-                intensity: "太陽光の量", frequency: "振動数", reflectivity: "反射率", mass: "質量", energy: "エネルギー",
-                objLabel: "光を受ける物体", micro: "表面の原子拡大図", infrared: "赤外線", visible: "可視光", uv: "紫外線",
-                theoryTitle: "理論: E² = (pc)² + (mc²)²", theoryDesc: "振動数が高いほどパンチ力(pc)が増します。",
-                enter: "実験を開始", footerInfo: "光のエネルギーと運動量の物理的可視化。"
-            },
-            FI: {
-                title: "PHOTON-KINETIC", conclusion: "Lämpö on atomien värähtelyä, jonka aiheuttaa massattomien fotonien liikemäärä.",
-                intensity: "VOIMAKKUUS", frequency: "TAAJUUS", reflectivity: "HEIJASTAVUUS", mass: "MASSA", energy: "ENERGIA",
-                objLabel: "KOHDE", micro: "ATOMITASO", infrared: "IR", visible: "NÄKYVÄ VALO", uv: "UV",
-                theoryTitle: "E² = (pc)² + (mc²)²", theoryDesc: "Liikemäärä (pc) on verrannollinen taajuuteen.",
-                enter: "ALOITA", footerInfo: "Valon energian ja liikemäärän visualisointi."
-            },
-            DA: {
-                title: "PHOTON-KINETIC", conclusion: "Varme er atomvibrationer forårsaget af impulsen fra masseløse fotoner.",
-                intensity: "INTENSITET", frequency: "FREKVENS", reflectivity: "REFLEKSION", mass: "MASSE", energy: "ENERGI",
-                objLabel: "OBJEKT", micro: "ATOMAR SKALA", infrared: "IR", visible: "SYNLIGT LYS", uv: "UV",
-                theoryTitle: "E² = (pc)² + (mc²)²", theoryDesc: "Impuls (pc) er proportional med frekvensen.",
-                enter: "START", footerInfo: "Fysisk visualisering af lysets energi og impuls."
-            }
+const App = () => {
+    const [lang, setLang]           = useState('JP');
+    const [started, setStarted]     = useState(false);
+    const [intensity, setIntensity] = useState(30);
+    const [frequency, setFrequency] = useState(50);
+    const [albedo, setAlbedo]       = useState(50);
+    const [mass, setMass]           = useState(0);
+    const [triVisible, setTriVisible] = useState(false);
+    const t = T[lang];
+
+    const canvasRef = useRef(null);
+    const stageRef  = useRef(null);
+    const shared    = useRef({ hitEnergy:0, temp:0 });
+    const triTimer  = useRef(null);
+
+    const lightColor = useMemo(()=>{
+        const hue = (frequency-10)*(280/90);
+        return `hsl(${hue},100%,60%)`;
+    },[frequency]);
+
+    const tri = useMemo(()=>{
+        const pc  = frequency*2.5;
+        const mc2 = mass*1.5;
+        return { pc, mc2, E: Math.sqrt(pc*pc+mc2*mc2).toFixed(1) };
+    },[frequency,mass]);
+
+    const showTri = useCallback(()=>{
+        setTriVisible(true);
+        clearTimeout(triTimer.current);
+        triTimer.current = setTimeout(()=>setTriVisible(false), 2800);
+    },[]);
+
+    // ── CANVAS ────────────────────────────────────────────────────
+    useEffect(()=>{
+        if (!started) return;
+        const canvas = canvasRef.current;
+        const stage  = stageRef.current;
+        let raf;
+        let particles = [];
+
+        const resize = ()=>{
+            canvas.width  = stage.clientWidth;
+            canvas.height = stage.clientHeight;
         };
+        resize();
+        const ro = new ResizeObserver(resize);
+        ro.observe(stage);
 
-        const App = () => {
-            const [lang, setLang] = useState('JP');
-            const t = translations[lang];
+        const render = ()=>{
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            ctx.clearRect(0,0,W,H);
 
-            const [started, setStarted] = useState(false);
-            const [intensity, setIntensity] = useState(30); 
-            const [frequency, setFrequency] = useState(50); 
-            const [albedo, setAlbedo] = useState(50);       
-            const [mass, setMass] = useState(0); 
+            const groundY = H*0.62;
 
-            const canvasRef = useRef(null);
-            const sharedState = useRef({ hitEnergy: 0, temp: 0 });
+            // ── surface ──
+            const b = albedo*2.55;
+            const heatR = Math.min(130, shared.current.temp/330);
+            ctx.fillStyle = `rgb(${Math.min(255,b+heatR)},${Math.floor(b)},${Math.floor(b)})`;
+            ctx.fillRect(0, groundY, W, H);
 
-            const lightColor = useMemo(() => {
-                const hue = (frequency - 10) * (280 / 90);
-                return `hsl(${hue}, 100%, 60%)`;
-            }, [frequency]);
+            // horizon glow
+            const hg = ctx.createLinearGradient(0, groundY-60, 0, groundY+80);
+            hg.addColorStop(0,'transparent');
+            hg.addColorStop(0.5,`rgba(${Math.min(255,b+heatR+40)},${Math.max(0,b*0.3)},0,0.18)`);
+            hg.addColorStop(1,'transparent');
+            ctx.fillStyle = hg;
+            ctx.fillRect(0, groundY-60, W, 140);
 
-            const frequencyLabel = useMemo(() => {
-                if (frequency < 35) return t.infrared;
-                if (frequency < 75) return t.visible;
-                return t.uv;
-            }, [frequency, t]);
+            // ── energy readout ──
+            const textCol = albedo>55 ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.82)';
+            const subCol  = albedo>55 ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.28)';
+            ctx.textAlign = 'center';
+            const bigFont = Math.floor(H*0.1);
+            ctx.font = `900 ${bigFont}px 'Bebas Neue'`;
+            ctx.fillStyle = textCol;
+            ctx.fillText(`${Math.floor(shared.current.temp)} J`, W/2, groundY + H*0.17);
+            ctx.font = `700 ${Math.floor(H*0.016)}px 'JetBrains Mono'`;
+            ctx.fillStyle = subCol;
+            ctx.fillText(t.formulaInfo, W/2, groundY + H*0.27);
+            ctx.font = `700 ${Math.floor(H*0.014)}px 'JetBrains Mono'`;
+            ctx.fillStyle = subCol;
+            ctx.fillText(t.objLabel.toUpperCase(), W/2, groundY + H*0.35);
 
-            useEffect(() => {
-                if (!started) return;
-                const canvas = canvasRef.current;
-                const ctx = canvas.getContext('2d');
-                let animationFrameId;
-                let particles = [];
+            // ── sun (top-left) ──
+            const sunX = W*0.09, sunY = H*0.2, sunR = Math.min(W,H)*0.07;
+            ctx.save();
+            // outer glow
+            const sg = ctx.createRadialGradient(sunX,sunY,0, sunX,sunY, sunR*2.2);
+            sg.addColorStop(0,'rgba(255,210,60,0.5)');
+            sg.addColorStop(0.45,'rgba(255,176,0,0.18)');
+            sg.addColorStop(1,'transparent');
+            ctx.fillStyle = sg;
+            ctx.beginPath(); ctx.arc(sunX,sunY,sunR*2.2,0,Math.PI*2); ctx.fill();
+            // disk
+            ctx.shadowBlur=80; ctx.shadowColor='#ffb000';
+            ctx.fillStyle='#ffb400';
+            ctx.beginPath(); ctx.arc(sunX,sunY,sunR,0,Math.PI*2); ctx.fill();
+            ctx.shadowBlur=0;
+            ctx.restore();
 
-                const render = () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    const { width, height } = canvas;
-
-                    // 1. 光を受ける物体 (全幅に拡張し、画面下端まで)
-                    const objY = height - 180;
-                    const b = albedo * 2.55;
-                    const heatRed = Math.min(100, sharedState.current.temp / 300);
-                    ctx.fillStyle = `rgb(${b + heatRed}, ${b}, ${b})`;
-                    ctx.fillRect(0, objY, width, height + 500);
-
-                    // 物体のラベル
-                    ctx.fillStyle = albedo > 50 ? "#000" : "#888";
-                    ctx.textAlign = "center";
-                    ctx.font = "900 11px 'Roboto Mono'";
-                    ctx.fillText(t.objLabel.toUpperCase(), width/2, objY + 120);
-
-                    // 2. 太陽 (UIの左側)
-                    const sunX = 100, sunY = 160, sunR = 50;
-                    ctx.fillStyle = "#ffb000";
-                    ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2); ctx.fill();
-                    ctx.shadowBlur = 40; ctx.shadowColor = "#ffb000";
-                    ctx.beginPath(); ctx.arc(sunX, sunY, sunR + 3, 0, Math.PI * 2); ctx.stroke();
-                    ctx.shadowBlur = 0;
-
-                    // 3. 吸収エネルギー表示
-                    ctx.fillStyle = albedo > 50 ? "#000" : "#fff";
-                    ctx.textAlign = "center";
-                    ctx.font = "900 40px 'Inter'";
-                    ctx.fillText(`${Math.floor(sharedState.current.temp)} J`, width/2, objY + 60);
-
-                    // 4. ミクロ・ワイプ (右下・物体の内部に統合)
-                    const wipeSize = 180;
-                    const wipeX = width - 240, wipeY = height - 190;
-                    ctx.save();
-                    ctx.beginPath(); ctx.rect(wipeX, wipeY, wipeSize, wipeSize); ctx.clip();
-                    ctx.fillStyle = "#000"; ctx.fillRect(wipeX, wipeY, wipeSize, wipeSize);
-                    const impact = sharedState.current.hitEnergy;
-                    for(let i=0; i<3; i++) {
-                        const jitter = (Math.random() - 0.5) * (impact * 1.5);
-                        ctx.fillStyle = "#ff00ff";
-                        ctx.beginPath(); ctx.arc(wipeX + 45 + i*45 + jitter, wipeY + wipeSize/2 + jitter, 15, 0, Math.PI*2); ctx.fill();
-                    }
-                    ctx.strokeStyle = lightColor; ctx.lineWidth = 4;
-                    ctx.beginPath();
-                    const waveFreq = frequency / 8;
-                    const waveAmp = intensity > 0 ? (15 + impact) : 2;
-                    for(let x=0; x < wipeSize; x++) {
-                        const y = wipeY + wipeSize/2 + Math.sin((x - Date.now()/10) * (waveFreq/15)) * waveAmp;
-                        if(x === 0) ctx.moveTo(wipeX + x, y); else ctx.lineTo(wipeX + x, y);
-                    }
-                    ctx.stroke();
-                    ctx.restore();
-                    ctx.strokeStyle = "#444"; ctx.lineWidth = 1; ctx.strokeRect(wipeX, wipeY, wipeSize, wipeSize);
-                    ctx.fillStyle = "#888"; ctx.font = "900 10px 'Roboto Mono'";
-                    ctx.textAlign = "left";
-                    ctx.fillText(t.micro, wipeX, wipeY - 10);
-
-                    // 5. 光子 (ベクトル計算による正確な波)
-                    if (intensity > 0 && Math.random() < intensity / 80) {
-                        const angle = Math.atan2(objY - sunY, (width / 2) - sunX);
-                        particles.push({ 
-                            x: sunX + Math.cos(angle) * sunR, y: sunY + Math.sin(angle) * sunR, 
-                            vx: Math.cos(angle) * (6 + frequency/15), vy: Math.sin(angle) * (6 + frequency/15), 
-                            reflected: false 
-                        });
-                    }
-
-                    for (let i = particles.length - 1; i >= 0; i--) {
-                        let p = particles[i]; p.x += p.vx; p.y += p.vy;
-                        const speed = Math.sqrt(p.vx*p.vx + p.vy*p.vy);
-                        const ux = p.vx / speed; const uy = p.vy / speed;
-                        const nx = -uy; const ny = ux;
-                        ctx.strokeStyle = lightColor; ctx.lineWidth = 3; ctx.beginPath();
-                        for(let d=0; d<10; d+=2.5) {
-                            const offset = Math.sin((p.x + p.y + d) * (frequency/10)) * 5; 
-                            const curX = p.x - d * ux + offset * nx; const curY = p.y - d * uy + offset * ny;
-                            if(d === 0) ctx.moveTo(curX, curY); else ctx.lineTo(curX, curY);
-                        }
-                        ctx.stroke();
-
-                        if (!p.reflected && p.y >= objY) {
-                            p.y = objY; 
-                            if (Math.random() * 100 < albedo) {
-                                p.vy = -Math.abs(p.vy); p.reflected = true;
-                            } else {
-                                // 0Jバグ対策: 確実に上昇するよう値を調整
-                                sharedState.current.hitEnergy += (frequency / 6);
-                                sharedState.current.temp += (frequency * 18); 
-                                particles.splice(i, 1); continue;
-                            }
-                        }
-                        if (p.y < -50 || p.y > height + 200) particles.splice(i, 1);
-                    }
-                    sharedState.current.hitEnergy *= 0.9; 
-                    sharedState.current.temp = sharedState.current.temp * 0.985 - 2;
-                    if(sharedState.current.temp < 0) sharedState.current.temp = 0;
-                    animationFrameId = window.requestAnimationFrame(render);
-                };
-                render();
-                return () => window.cancelAnimationFrame(animationFrameId);
-            }, [started, intensity, frequency, albedo, lightColor, t]);
-
-            const triangleView = useMemo(() => {
-                const pc = frequency * 2.5; 
-                const mc2 = mass * 1.5;     
-                const E = Math.sqrt(pc*pc + mc2*mc2);
-                return { pc, mc2, E };
-            }, [frequency, mass]);
-
-            if (!started) {
-                return (
-                    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-                        <h1 className="text-6xl font-black mb-12 tracking-tighter uppercase">{translations.EN.title}</h1>
-                        <button onClick={()=>setStarted(true)} className="border border-white/40 px-16 py-4 font-black tracking-widest hover:bg-white hover:text-black transition-all">
-                            {translations.JP.enter}
-                        </button>
-                    </div>
-                );
+            // ── atomic micro view (bottom-right corner) ──
+            const wS = Math.min(W,H)*0.21;
+            const wX = W - wS - W*0.02;
+            const wY = groundY - wS - H*0.015;
+            ctx.save();
+            ctx.beginPath(); ctx.rect(wX,wY,wS,wS); ctx.clip();
+            ctx.fillStyle='#000'; ctx.fillRect(wX,wY,wS,wS);
+            const imp = shared.current.hitEnergy;
+            const aR = wS*0.1;
+            for (let i=0;i<3;i++){
+                const jit=(Math.random()-.5)*imp*2;
+                ctx.beginPath();
+                ctx.arc(wX+wS*(0.2+i*0.3)+jit, wY+wS*.5+jit, aR,0,Math.PI*2);
+                ctx.fillStyle=`hsl(${290+i*25},100%,60%)`;
+                ctx.shadowBlur=14; ctx.shadowColor='#ff00ff';
+                ctx.fill(); ctx.shadowBlur=0;
             }
+            ctx.strokeStyle=lightColor; ctx.lineWidth=3; ctx.beginPath();
+            const wFreq=frequency/8, wAmp=intensity>0?(16+imp):2;
+            for (let x=0;x<wS;x++){
+                const y=wY+wS*.5+Math.sin((x-Date.now()/8)*(wFreq/12))*wAmp;
+                x===0?ctx.moveTo(wX+x,y):ctx.lineTo(wX+x,y);
+            }
+            ctx.stroke();
+            ctx.restore();
+            ctx.strokeStyle='rgba(0,255,157,0.2)'; ctx.lineWidth=1;
+            ctx.strokeRect(wX,wY,wS,wS);
+            ctx.fillStyle='rgba(0,255,157,0.6)';
+            ctx.font=`700 ${Math.floor(H*.013)}px 'JetBrains Mono'`;
+            ctx.textAlign='left';
+            ctx.fillText('// '+t.micro, wX, wY-8);
 
-            return (
-                <div className="min-h-screen flex flex-col pt-2 px-8">
-                    
-                    {/* Header: Conclusion & Nav */}
-                    <header className="flex flex-col sm:flex-row justify-between items-baseline py-4 border-b border-zinc-900 mb-2">
-                        <div className="flex flex-col">
-                            <h2 className="text-xl font-black uppercase mb-1">{t.title}</h2>
-                            <p className="text-[#888] text-[12px] font-bold max-w-3xl leading-tight uppercase tracking-tight">{t.conclusion}</p>
-                        </div>
-                        <div className="flex gap-4 mt-2 mono text-[11px] font-bold">
-                            {['JP', 'EN', 'FI', 'DA'].map(l => (
-                                <button key={l} onClick={()=>setLang(l)} className={`${lang === l ? 'text-white border-b border-white' : 'text-[#888]'} pb-1`}>{l}</button>
-                            ))}
-                        </div>
-                    </header>
+            // ── photons ──
+            if (intensity>0 && Math.random()<intensity/55){
+                const tX = W*0.15 + Math.random()*W*0.7;
+                const dx=tX-sunX, dy=groundY-sunY, len=Math.sqrt(dx*dx+dy*dy);
+                const spd=8+frequency/12;
+                particles.push({
+                    x:sunX+(dx/len)*sunR, y:sunY+(dy/len)*sunR,
+                    vx:(dx/len)*spd, vy:(dy/len)*spd, reflected:false
+                });
+            }
+            for (let i=particles.length-1;i>=0;i--){
+                const p=particles[i]; p.x+=p.vx; p.y+=p.vy;
+                const spd=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+                const ux=p.vx/spd, uy=p.vy/spd, nx=-uy, ny=ux;
+                ctx.strokeStyle=lightColor; ctx.lineWidth=3; ctx.beginPath();
+                for (let d=0;d<18;d+=3){
+                    const off=Math.sin((p.x+p.y+d)*(frequency/10))*5;
+                    const cx=p.x-d*ux+off*nx, cy=p.y-d*uy+off*ny;
+                    d===0?ctx.moveTo(cx,cy):ctx.lineTo(cx,cy);
+                }
+                ctx.stroke();
+                if (!p.reflected && p.y>=groundY){
+                    p.y=groundY;
+                    if (Math.random()*100<albedo){
+                        p.vy=-Math.abs(p.vy)*0.82; p.reflected=true;
+                    } else {
+                        shared.current.hitEnergy+=frequency/4;
+                        shared.current.temp+=frequency*28;
+                        particles.splice(i,1); continue;
+                    }
+                }
+                if (p.y<-80||p.y>H+100||p.x<-80||p.x>W+80) particles.splice(i,1);
+            }
+            if (particles.length>500) particles.splice(0,particles.length-500);
 
-                    {/* Simulation: High Contrast & Integrated Layout */}
-                    <div className="relative flex-1 bg-black border border-zinc-900 overflow-hidden">
-                        <canvas ref={canvasRef} width={1400} height={750} className="w-full h-full block" />
-                        
-                        {/* Sun Controls (太陽の右に配置) */}
-                        <div className="absolute top-8 left-[180px] w-[340px] space-y-8 bg-black/40 backdrop-blur-xl p-6 border border-zinc-800">
-                            <div className="grid grid-cols-[100px_1fr] items-center gap-6">
-                                <label className="text-[10px] font-black text-[#888] uppercase tracking-widest">{t.intensity}</label>
-                                <input type="range" value={intensity} onChange={(e)=>setIntensity(Number(e.target.value))} className="w-full" />
-                            </div>
-                            <div className="grid grid-cols-[100px_1fr] items-center gap-6">
-                                <label className="text-[10px] font-black text-[#888] uppercase tracking-widest">{t.frequency}</label>
-                                <div className="w-full">
-                                    <input type="range" min="10" max="100" value={frequency} onChange={(e)=>setFrequency(Number(e.target.value))} className="w-full freq-slider" />
-                                    <div className="flex justify-between text-[9px] mt-2 font-black text-[#888] uppercase">
-                                        <span>{t.infrared}</span><span>{t.visible}</span><span>{t.uv}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            shared.current.hitEnergy*=0.9;
+            shared.current.temp=shared.current.temp*0.985-1.5;
+            if(shared.current.temp<0) shared.current.temp=0;
 
-                        {/* Object Control (物体上に配置) */}
-                        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-80 text-center">
-                            <label className="text-[10px] font-black text-black uppercase tracking-[0.4em] mb-4 block">{t.reflectivity}</label>
-                            <input type="range" value={albedo} onChange={(e)=>setAlbedo(Number(e.target.value))} className="w-full" />
-                        </div>
-                    </div>
+            raf=requestAnimationFrame(render);
+        };
+        render();
+        return ()=>{ cancelAnimationFrame(raf); ro.disconnect(); };
+    },[started,intensity,frequency,albedo,lightColor,t]);
 
-                    {/* Theory: Massless Momentum Equation */}
-                    <div className="flex flex-col lg:flex-row gap-12 py-10 border-t border-zinc-900 bg-black">
-                        <div className="flex-1 flex justify-center items-center">
-                            <svg width="300" height="180" viewBox="0 0 300 200">
-                                <path d={`M 50 170 L ${50 + frequency*2.5} 170 L ${50 + frequency*2.5} ${170 - mass*1.5} Z`} fill="none" stroke="#fff" strokeWidth="2" />
-                                <text x={50 + frequency*1.25} y="195" textAnchor="middle" fontSize="10" font-weight="700" className="mono" fill="#ffb000">pc = hν</text>
-                                <text x={65 + frequency*2.5} y={170 - mass*0.75} fontSize="10" font-weight="700" className="mono" fill="#0f0" dominantBaseline="middle">mc²</text>
-                                <text x={30 + frequency*1.25} y={150 - mass*0.75} fontSize="14" font-weight="900" fill="#fff" transform={`rotate(${-Math.atan2(mass*1.5, frequency*2.5) * 180 / Math.PI}, ${50 + frequency*1.25}, ${170 - mass*0.75})`}>E</text>
-                            </svg>
-                        </div>
-                        <div className="w-full lg:w-[420px] space-y-6">
-                            <h3 className="text-lg font-black uppercase tracking-tight">{t.theoryTitle}</h3>
-                            <div className="flex flex-col gap-4">
-                                <label className="text-[10px] font-black text-[#888] uppercase tracking-widest">{t.mass} (m)</label>
-                                <input type="range" min="0" max="100" value={mass} onChange={(e)=>setMass(Number(e.target.value))} className="w-full" />
-                                <p className="text-[12px] text-[#888] leading-tight font-medium tracking-wide italic uppercase">
-                                    {t.theoryDesc}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+    // ── LANDING ────────────────────────────────────────────────────
+    if (!started) return (
+        <div id="landing">
+            <div className="scan-beam"/>
+            <div style={{position:'absolute',top:28,left:36,fontSize:8,letterSpacing:'.28em',color:'#1e1e1e',fontWeight:700}}>
+                SYS//INIT · PHYSICS_VISUALIZER
+            </div>
+            <div style={{position:'absolute',top:28,right:36,fontSize:8,letterSpacing:'.28em',color:'#1e1e1e',fontWeight:700,textAlign:'right'}}>
+                v20260220.final
+            </div>
 
-                    {/* Footer */}
-                    <footer className="py-8 border-t border-zinc-900 bg-black text-[#888]">
-                        <div className="flex flex-col sm:flex-row justify-between items-center gap-6 px-4">
-                            <div className="flex flex-col items-center sm:items-start">
-                                <span className="text-[10px] font-black tracking-widest text-white mb-2 uppercase">Junichi Yamada / PHOTON-KINETIC</span>
-                                <span className="text-[9px] mono uppercase">{t.footerInfo}</span>
-                            </div>
-                            <div className="flex gap-8 mono text-[10px] font-black">
-                                <a href="https://junichiyamada.gitlab.io/" target="_blank" className="hover:text-white transition-colors underline underline-offset-4 tracking-widest">PORTFOLIO</a>
-                                <a href="https://gitlab.com/junichiyamada" target="_blank" className="hover:text-white transition-colors underline underline-offset-4 tracking-widest">GITLAB</a>
-                            </div>
-                            <div className="text-[9px] mono tracking-widest uppercase">© 2024 JUNICHI YAMADA</div>
-                        </div>
-                    </footer>
+            <div className="glitch fu0" style={{textAlign:'center',lineHeight:.88,marginBottom:20}}>
+                <div style={{fontFamily:"'Bebas Neue'",fontSize:'clamp(64px,11vw,130px)',color:'#fff',letterSpacing:'.06em'}}>
+                    MASSLESS
                 </div>
-            );
-        }
+                <div style={{fontFamily:"'Bebas Neue'",fontSize:'clamp(64px,11vw,130px)',letterSpacing:'.06em',
+                    color:'var(--neon)',textShadow:'0 0 40px var(--neon),0 0 80px rgba(0,255,157,.2)'}}>
+                    ENERGY
+                </div>
+            </div>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+            <div className="fu1" style={{marginBottom:52,display:'flex',alignItems:'center',gap:20}}>
+                <div style={{width:48,height:1,background:'#181818'}}/>
+                <span style={{fontSize:11,letterSpacing:'.14em',color:'#2e2e2e',fontWeight:700}}>E² = (pc)² + (mc²)²</span>
+                <div style={{width:48,height:1,background:'#181818'}}/>
+            </div>
+
+            <div className="fu2">
+                <button className="launch-btn" onClick={()=>setStarted(true)}>
+                    <span>{T.JP.enter}</span>
+                </button>
+            </div>
+
+            <div className="fu3" style={{position:'absolute',bottom:28,fontSize:8,letterSpacing:'.28em',color:'#1a1a1a',fontWeight:700}}>
+                JUNICHI YAMADA — PHYSICS VISUALIZATION ENGINE
+            </div>
+        </div>
+    );
+
+    // ── MAIN UI ───────────────────────────────────────────────────
+    // Triangle tooltip SVG helper
+    const TriSVG = ()=>{
+        const maxPc=100, maxMc=60;
+        const px = Math.min(tri.pc,maxPc)*0.85+12;
+        const py = Math.min(tri.mc2,maxMc)*0.9;
+        return (
+            <svg width="140" height="95" viewBox="0 0 140 95" style={{display:'block',margin:'4px auto 10px'}}>
+                <defs>
+                    <pattern id="tg2" width="10" height="10" patternUnits="userSpaceOnUse">
+                        <path d="M10 0L0 0 0 10" fill="none" stroke="rgba(0,255,157,0.05)" strokeWidth=".5"/>
+                    </pattern>
+                </defs>
+                <rect width="140" height="95" fill="url(#tg2)"/>
+                <path d={`M 12 82 L ${px} 82 L ${px} ${82-py} Z`}
+                    fill="rgba(0,255,157,0.04)" stroke="rgba(0,255,157,0.5)" strokeWidth="1.5"/>
+                <text x={(12+px)/2} y="92" textAnchor="middle" fontSize="8"
+                    fontFamily="'JetBrains Mono'" fill="#ffb400" fontWeight="700">pc = hν</text>
+                <text x={px+4} y={82-py/2} fontSize="8"
+                    fontFamily="'JetBrains Mono'" fill="#00ff9d" fontWeight="700"
+                    dominantBaseline="middle">mc²</text>
+                {py > 5 || true ?
+                <text fontSize="15" fontFamily="'Bebas Neue'" fill="#fff"
+                    transform={`translate(${(12+px)/2-10},${82-py/2-4}) rotate(${-Math.atan2(py,px-12)*180/Math.PI})`}>E</text>
+                : null}
+            </svg>
+        );
+    };
+
+    return (
+        <>
+        {/* HEADER */}
+        <div id="header">
+            <div className="h-logo">
+                <div className="h-dot"/>
+                <span>{t.title}</span>
+                <span className="h-sub">— {t.sub}</span>
+            </div>
+            <div className="lang-row">
+                {['JP','EN','FI','DA'].map(l=>(
+                    <button key={l} className={`lang-btn${lang===l?' active':''}`} onClick={()=>setLang(l)}>{l}</button>
+                ))}
+            </div>
+        </div>
+
+        {/* STAGE */}
+        <div id="stage" ref={stageRef}>
+            <canvas ref={canvasRef}/>
+
+            {/* ── HUD: Solar controls — top-left (right of sun) ── */}
+            <div className="hud" style={{top:'6%', left:'18%', minWidth:270}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}>
+                    <div style={{width:4,height:4,background:'var(--neon)',boxShadow:'0 0 6px var(--neon)'}}/>
+                    <span style={{fontSize:8,letterSpacing:'.28em',color:'var(--neon)',fontWeight:700}}>SOLAR INPUT</span>
+                </div>
+
+                {/* Intensity */}
+                <div style={{marginBottom:20}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:8}}>
+                        <span style={{fontSize:8,letterSpacing:'.22em',color:'#3a3a3a',fontWeight:700}}>{t.intensity}</span>
+                        <span style={{fontFamily:"'Bebas Neue'",fontSize:26,color:'var(--neon)',textShadow:'0 0 6px var(--neon)'}}>{intensity}</span>
+                    </div>
+                    <input type="range" min="0" max="100" value={intensity}
+                        onChange={e=>{setIntensity(+e.target.value);showTri();}}/>
+                </div>
+
+                {/* Frequency */}
+                <div>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:8}}>
+                        <span style={{fontSize:8,letterSpacing:'.22em',color:'#3a3a3a',fontWeight:700}}>{t.frequency}</span>
+                        <span style={{fontFamily:"'Bebas Neue'",fontSize:26,color:lightColor,textShadow:`0 0 6px ${lightColor}`}}>{frequency}</span>
+                    </div>
+                    <input type="range" min="10" max="100" value={frequency} className="freq-slider"
+                        onChange={e=>{setFrequency(+e.target.value);showTri();}}/>
+                    <div style={{display:'flex',justifyContent:'space-between',marginTop:7,
+                        fontSize:8,color:'#282828',letterSpacing:'.18em',fontWeight:700}}>
+                        <span>{t.infrared}</span><span>{t.visible}</span><span>{t.uv}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── HUD: Reflectivity — bottom-left ── */}
+            <div className="hud" style={{bottom:'8%', left:'3%', minWidth:230}}
+                data-neon="hot">
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
+                    <div style={{width:4,height:4,background:'var(--hot)',boxShadow:'0 0 6px var(--hot)'}}/>
+                    <span style={{fontSize:8,letterSpacing:'.28em',color:'var(--hot)',fontWeight:700}}>{t.reflectivity}</span>
+                </div>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:8}}>
+                    <span style={{fontSize:8,letterSpacing:'.22em',color:'#3a3a3a',fontWeight:700}}>ALBEDO</span>
+                    <span style={{fontFamily:"'Bebas Neue'",fontSize:26,color:'var(--hot)',textShadow:'0 0 6px var(--hot)'}}>{albedo}<span style={{fontSize:14}}>%</span></span>
+                </div>
+                <input type="range" value={albedo} className="albedo-sl"
+                    style={{background:'rgba(255,69,0,0.12)'}}
+                    onChange={e=>{setAlbedo(+e.target.value);showTri();}}/>
+            </div>
+
+            {/* ── TRIANGLE TOOLTIP — appears right of solar HUD ── */}
+            <div id="tri-tip" className={triVisible?'visible':'hidden'}
+                style={{top:'6%', left:'calc(18% + 286px)'}}>
+                <div style={{fontSize:8,letterSpacing:'.28em',color:'var(--cyan)',fontWeight:700,marginBottom:8}}>
+                    // {t.theoryTitle}
+                </div>
+                <div style={{fontFamily:"'Bebas Neue'",fontSize:13,color:'#333',letterSpacing:'.05em',marginBottom:6}}>
+                    E² = (pc)² + (mc²)²
+                </div>
+
+                <TriSVG/>
+
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:3}}>
+                    <span style={{fontSize:8,color:'#3a3a3a',letterSpacing:'.15em',fontWeight:700}}>pc = hν</span>
+                    <span style={{fontFamily:"'Bebas Neue'",fontSize:18,color:'var(--gold)'}}>{tri.pc.toFixed(1)}</span>
+                </div>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:8}}>
+                    <span style={{fontSize:8,color:'#3a3a3a',letterSpacing:'.15em',fontWeight:700}}>mc²</span>
+                    <span style={{fontFamily:"'Bebas Neue'",fontSize:18,color:'var(--neon)'}}>{tri.mc2.toFixed(1)}</span>
+                </div>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',
+                    paddingTop:8,borderTop:'1px solid #111',marginBottom:14}}>
+                    <span style={{fontSize:9,color:'#444',letterSpacing:'.15em',fontWeight:700}}>E</span>
+                    <span style={{fontFamily:"'Bebas Neue'",fontSize:24,color:'var(--cyan)',textShadow:'0 0 6px var(--cyan)'}}>{tri.E}</span>
+                </div>
+
+                {/* Mass slider in tooltip */}
+                <div style={{borderTop:'1px solid #0e0e0e',paddingTop:12}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:8}}>
+                        <span style={{fontSize:8,letterSpacing:'.22em',color:'#3a3a3a',fontWeight:700}}>{t.mass} (m)</span>
+                        <span style={{fontFamily:"'Bebas Neue'",fontSize:20,color:'var(--cyan)',textShadow:'0 0 5px var(--cyan)'}}>{mass}</span>
+                    </div>
+                    <input type="range" min="0" max="100" value={mass} className="mass-sl"
+                        style={{pointerEvents:'auto'}}
+                        onChange={e=>{setMass(+e.target.value);showTri();}}/>
+                </div>
+
+                <p style={{marginTop:12,fontSize:8,color:'#2a2a2a',lineHeight:1.65,letterSpacing:'.06em',fontStyle:'italic'}}>
+                    {t.theoryDesc}
+                </p>
+            </div>
+        </div>
+
+        {/* FOOTER */}
+        <div id="footer">
+            <span className="f-text">
+                v20260220.final ·&nbsp;
+                <a href="https://junichiyamada.gitlab.io/" target="_blank">HOME</a>
+                &nbsp;·&nbsp;<a href="#">BUG REPORT</a>
+            </span>
+            <span className="f-text">© 2024 JUNICHI YAMADA</span>
+        </div>
+        </>
+    );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
 </body>
 </html>
