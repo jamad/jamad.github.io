@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>光のエネルギー・ラボ 究極版</title>
+    <title>光のエネルギー・ラボ - 究極の完成版</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-spin-slow { animation: spin-slow 15s linear infinite; }
+        .animate-spin-slow { animation: spin-slow 20s linear infinite; }
         .freq-slider {
-            background: linear-gradient(to right, #ff4444, #ffff44, #44ff44, #44ffff, #4444ff, #ff4444);
-            appearance: none; height: 8px; border-radius: 4px; outline: none;
+            background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
+            appearance: none; height: 10px; border-radius: 5px; outline: none;
         }
-        .freq-slider::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; background: white; border: 2px solid #333; border-radius: 50%; cursor: pointer; }
+        .freq-slider::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; background: white; border: 3px solid #333; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans">
+<body class="bg-slate-950 text-slate-100 font-sans">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
         const IconSun = () => (
-            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
         );
 
         function App() {
@@ -33,10 +33,21 @@
             const [intensity, setIntensity] = useState(30); 
             const [frequency, setFrequency] = useState(50); 
             const [albedo, setAlbedo] = useState(50);       
-            const [mass, setMass] = useState(60);          
+            const [mass, setMass] = useState(0); // デフォルト質量を0に設定
 
             const canvasRef = useRef(null);
-            const sharedState = useRef({ hitEnergy: 0, temp: 0, hitCount: 0 });
+            const sharedState = useRef({ hitEnergy: 0, temp: 0 });
+
+            const lightColor = useMemo(() => {
+                const hue = (frequency - 10) * (280 / 90); 
+                return `hsl(${hue}, 100%, 60%)`;
+            }, [frequency]);
+
+            const frequencyLabel = useMemo(() => {
+                if (frequency < 35) return "赤外線 (低エネルギー)";
+                if (frequency < 75) return "可視光";
+                return "紫外線 (高エネルギー)";
+            }, [frequency]);
 
             useEffect(() => {
                 if (!started) return;
@@ -49,62 +60,79 @@
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     const { width, height } = canvas;
 
-                    // 1. 太陽
-                    const sunX = 100, sunY = 100, sunR = 50;
+                    // 1. 光を受ける巨大な物体 (画面下部全体・枠外まで拡張)
+                    const objW = width + 400;
+                    const objH = height / 2;
+                    const objX = -200;
+                    const objY = height - 200;
+                    const b = albedo * 2.55;
+                    // 温度による赤み (sharedState.current.tempに合わせて変化)
+                    const heatRed = Math.min(100, sharedState.current.temp / 400);
+                    ctx.fillStyle = `rgb(${b + heatRed}, ${b}, ${b})`;
+                    ctx.fillRect(objX, objY, objW, objH + 200);
+                    ctx.strokeStyle = "rgba(255,255,255,0.15)"; ctx.lineWidth = 1;
+                    ctx.strokeRect(objX, objY, objW, objH + 200);
+
+                    // 物体のラベル
+                    ctx.fillStyle = albedo > 50 ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.4)";
+                    ctx.font = "bold 18px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText("光を受ける物体 (服の表面など)", width / 2, objY + 140);
+
+                    // 2. 太陽 (UIに被らない位置)
+                    const sunX = 100, sunY = 120, sunR = 50;
                     ctx.fillStyle = "#fbbf24";
                     ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2); ctx.fill();
-                    ctx.shadowBlur = 10; ctx.shadowColor = "#fbbf24";
+                    ctx.shadowBlur = 15; ctx.shadowColor = "#fbbf24";
                     ctx.strokeStyle = "rgba(251,191,36,0.2)";
-                    ctx.lineWidth = 15; ctx.beginPath(); ctx.arc(sunX, sunY, sunR+5, 0, Math.PI*2); ctx.stroke();
+                    ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(sunX, sunY, sunR+5, 0, Math.PI*2); ctx.stroke();
                     ctx.shadowBlur = 0;
 
-                    // 2. 服 (中央) - スライダーに邪魔されない位置
-                    const clothW = 240, clothH = 100;
-                    const clothX = width / 2 - clothW / 2;
-                    const clothY = height / 2 + 50;
-                    const b = albedo * 2.55;
-                    const heatRed = Math.min(80, sharedState.current.temp * 2);
-                    ctx.fillStyle = `rgb(${b + heatRed}, ${b}, ${b})`;
-                    ctx.fillRect(clothX, clothY, clothW, clothH);
-                    ctx.strokeStyle = "#64748b"; ctx.lineWidth = 2;
-                    ctx.strokeRect(clothX, clothY, clothW, clothH);
+                    // 3. 吸収エネルギー表示 (Over: 物体の上に重ねる)
+                    ctx.fillStyle = albedo > 50 ? "black" : "white";
+                    ctx.font = "bold 28px sans-serif";
+                    ctx.fillText(`${Math.floor(sharedState.current.temp)} J`, width/2, objY + 50);
+                    ctx.font = "12px sans-serif";
+                    ctx.fillText("(吸収エネルギー合計)", width/2, objY + 80);
 
-                    // 吸収エネルギー表示 (OVER: 服の上に直接表示)
-                    ctx.fillStyle = albedo > 50 ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.8)";
-                    ctx.font = "bold 14px sans-serif";
-                    ctx.textAlign = "center";
-                    ctx.fillText(`${Math.floor(sharedState.current.temp * 10)} J`, width/2, clothY + 45);
-                    ctx.font = "10px sans-serif";
-                    ctx.fillText("(吸収数 × 振動数ν)", width/2, clothY + 65);
-
-                    // 3. ミクロ・ワイプ (右下)
-                    const wipeX = width - 210, wipeY = height - 210, wipeSize = 180;
+                    // 4. ミクロ・ワイプ (物体の右下に内包)
+                    const wipeSize = 180;
+                    const wipeX = width - 230, wipeY = height - 190;
                     ctx.save();
                     ctx.beginPath(); ctx.rect(wipeX, wipeY, wipeSize, wipeSize); ctx.clip();
                     ctx.fillStyle = "#020617"; ctx.fillRect(wipeX, wipeY, wipeSize, wipeSize);
+                    
                     const impact = sharedState.current.hitEnergy;
+                    // 原子 (常に表示)
                     for(let i=0; i<3; i++) {
-                        const jitter = (Math.random() - 0.5) * (impact + 2);
+                        const jitter = (Math.random() - 0.5) * (impact * 2);
                         ctx.fillStyle = "#f472b6";
                         ctx.beginPath(); ctx.arc(wipeX + 45 + i*45 + jitter, wipeY + wipeSize/2 + jitter, 15, 0, Math.PI*2); ctx.fill();
                     }
-                    ctx.strokeStyle = `hsl(${280 - frequency * 2.8}, 100%, 70%)`;
+                    // 波 (常に流れる)
+                    ctx.strokeStyle = lightColor;
+                    ctx.globalAlpha = intensity > 0 ? 0.9 : 0.2;
                     ctx.lineWidth = 3;
                     ctx.beginPath();
                     const waveFreq = frequency / 8;
+                    const waveAmp = intensity > 0 ? (12 + impact) : 3;
                     for(let x=0; x < wipeSize; x++) {
-                        const y = wipeY + wipeSize/2 + Math.sin(x * (waveFreq/15) - Date.now()/80) * (12 + impact);
+                        const y = wipeY + wipeSize/2 + Math.sin((x - Date.now()/10) * (waveFreq/15)) * waveAmp;
                         if(x === 0) ctx.moveTo(wipeX + x, y); else ctx.lineTo(wipeX + x, y);
                     }
                     ctx.stroke();
+                    ctx.globalAlpha = 1.0;
                     ctx.restore();
-                    ctx.strokeStyle = "#475569"; ctx.strokeRect(wipeX, wipeY, wipeSize, wipeSize);
+                    ctx.strokeStyle = "#475569"; ctx.lineWidth = 3;
+                    ctx.strokeRect(wipeX, wipeY, wipeSize, wipeSize);
                     ctx.fillStyle = "#94a3b8"; ctx.font = "bold 11px sans-serif";
-                    ctx.fillText("表面の原子拡大図", wipeX + 5, wipeY - 10);
+                    ctx.textAlign = "left";
+                    ctx.fillText("表面のミクロ拡大図", wipeX, wipeY - 10);
 
-                    // 4. 光子 (8分の1の長さに短縮)
-                    if (Math.random() < intensity / 100) {
-                        const angle = Math.atan2(clothY - sunY, (clothX + clothW/2) - sunX);
+                    // 5. 光子 (ベクトル法線波、振幅0.5)
+                    if (intensity > 0 && Math.random() < intensity / 80) {
+                        const targetX = width / 2 + (Math.random() - 0.5) * 100;
+                        const angle = Math.atan2(objY - sunY, targetX - sunX);
                         particles.push({ 
                             x: sunX + Math.cos(angle) * sunR, y: sunY + Math.sin(angle) * sunR, 
                             vx: Math.cos(angle) * (6 + frequency/15), vy: Math.sin(angle) * (6 + frequency/15), 
@@ -112,39 +140,47 @@
                         });
                     }
 
-                    const hue = 280 - (frequency * 2.8);
-                    ctx.lineWidth = 3;
                     for (let i = particles.length - 1; i >= 0; i--) {
                         let p = particles[i]; p.x += p.vx; p.y += p.vy;
-                        ctx.strokeStyle = `hsla(${hue}, 100%, 60%, 0.9)`;
+                        const speed = Math.sqrt(p.vx*p.vx + p.vy*p.vy);
+                        const ux = p.vx / speed; const uy = p.vy / speed;
+                        const nx = -uy; const ny = ux;
+
+                        ctx.strokeStyle = lightColor;
+                        ctx.lineWidth = 3;
                         ctx.beginPath();
-                        // 長さを短く(jのループ回数を減らす)
-                        for(let j=0; j<3; j++) {
-                            const s = Math.sin((p.x + p.y + j*2) * (frequency/10));
-                            ctx.lineTo(p.x - p.vx*j + s*3, p.y - p.vy*j);
+                        for(let d=0; d<10; d+=2) {
+                            const offset = Math.sin((p.x + p.y + d) * (frequency/10)) * 5; 
+                            const curX = p.x - d * ux + offset * nx;
+                            const curY = p.y - d * uy + offset * ny;
+                            if(d === 0) ctx.moveTo(curX, curY); else ctx.lineTo(curX, curY);
                         }
                         ctx.stroke();
 
-                        // 衝突判定
-                        if (!p.reflected && p.y >= clothY && p.x > clothX && p.x < clothX + clothW) {
-                            p.y = clothY; 
+                        if (!p.reflected && p.y >= objY) {
+                            p.y = objY; 
                             if (Math.random() * 100 < albedo) {
                                 p.vy = -Math.abs(p.vy); p.reflected = true;
                             } else {
-                                sharedState.current.hitEnergy += (frequency / 8);
-                                sharedState.current.temp += (frequency / 35);
+                                // エネルギー蓄積ロジックの修正
+                                sharedState.current.hitEnergy += (frequency / 10);
+                                sharedState.current.temp += (frequency * 1.5); // 加算値を調整
                                 particles.splice(i, 1); continue;
                             }
                         }
-                        if (p.y < -50 || p.y > height + 50 || p.x > width + 50 || p.x < -50) particles.splice(i, 1);
+                        if (p.y < -50 || p.y > height + 100 || p.x > width + 100 || p.x < -100) particles.splice(i, 1);
                     }
-                    sharedState.current.hitEnergy *= 0.85;
-                    if(sharedState.current.temp > 0) sharedState.current.temp -= 0.05;
+
+                    // 冷却ロジック (5秒で減衰)
+                    sharedState.current.hitEnergy *= 0.9; 
+                    sharedState.current.temp = sharedState.current.temp * 0.985 - 2;
+                    if(sharedState.current.temp < 0) sharedState.current.temp = 0;
+
                     animationFrameId = window.requestAnimationFrame(render);
                 };
                 render();
                 return () => window.cancelAnimationFrame(animationFrameId);
-            }, [started, intensity, frequency, albedo]);
+            }, [started, intensity, frequency, albedo, lightColor]);
 
             const triangleView = useMemo(() => {
                 const pc = frequency * 2.5; 
@@ -158,91 +194,79 @@
                     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
                         <div className="text-center">
                             <div className="animate-spin-slow text-yellow-500 mb-8 flex justify-center"><IconSun /></div>
-                            <h1 className="text-4xl font-black mb-10 tracking-tight">光のエネルギー・ラボ</h1>
-                            <button onClick={()=>setStarted(true)} className="bg-orange-600 px-10 py-5 rounded-full font-bold text-xl hover:bg-orange-500 transition shadow-2xl">実験を開始する</button>
+                            <h1 className="text-5xl font-black mb-12 tracking-tight">光のエネルギー・ラボ</h1>
+                            <button onClick={()=>setStarted(true)} className="bg-orange-600 px-12 py-6 rounded-full font-bold text-2xl hover:bg-orange-500 transition shadow-2xl text-white">実験をはじめる</button>
                         </div>
                     </div>
                 );
             }
 
             return (
-                <div className="min-h-screen bg-slate-100 p-4 sm:p-8 text-slate-900">
-                    <div className="max-w-6xl mx-auto space-y-8">
+                <div className="min-h-screen bg-slate-900 p-2 sm:p-4 flex flex-col gap-4 overflow-hidden">
+                    
+                    {/* ヘッダー：結論を簡潔に */}
+                    <header className="bg-orange-600 p-4 rounded-3xl shadow-xl border-b-4 border-orange-800 text-center">
+                        <p className="text-lg sm:text-xl font-black text-white italic tracking-wide">
+                            太陽光が温かい理由：質量(m)のない光子が持つ「勢い(p)」が、物質の原子を叩いて激しく震わせるからです。
+                        </p>
+                    </header>
+
+                    {/* メインシミュレーター */}
+                    <div className="flex-1 bg-slate-900 rounded-[3rem] shadow-2xl overflow-hidden relative border-4 border-slate-800 min-h-[500px]">
+                        <canvas ref={canvasRef} width={1400} height={700} className="w-full h-full block" />
                         
-                        {/* メインビュー */}
-                        <div className="bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden relative h-[600px] border-4 border-slate-800">
-                            <canvas ref={canvasRef} width={1200} height={600} className="w-full h-full block" />
-                            
-                            {/* 太陽コントローラー (太陽の右) */}
-                            <div className="absolute top-16 left-[200px] w-64 space-y-6 bg-slate-800/40 backdrop-blur p-6 rounded-2xl text-white">
-                                <div>
-                                    <label className="text-[11px] font-bold text-slate-400 block mb-2 uppercase">太陽の強さ (粒子数)</label>
-                                    <input type="range" value={intensity} onChange={(e)=>setIntensity(Number(e.target.value))} className="w-full accent-orange-500" />
-                                </div>
-                                <div>
-                                    <label className="text-[11px] font-bold text-slate-400 block mb-2 uppercase">振動数 ν (エネルギー)</label>
-                                    <input type="range" value={frequency} onChange={(e)=>setFrequency(Number(e.target.value))} className="w-full freq-slider" />
+                        {/* 太陽パネル (上端付近) */}
+                        <div className="absolute top-4 left-20 w-[420px] space-y-4 bg-slate-800/80 backdrop-blur-xl p-5 rounded-3xl text-white border border-white/10 shadow-2xl">
+                            <div className="grid grid-cols-[140px_1fr] items-center gap-4">
+                                <label className="text-sm font-black text-orange-400">太陽光の量</label>
+                                <input type="range" value={intensity} onChange={(e)=>setIntensity(Number(e.target.value))} className="w-full accent-orange-500" />
+                            </div>
+                            <div className="grid grid-cols-[140px_1fr] items-center gap-4">
+                                <label className="text-sm font-black text-sky-400">振動数 ν (エネルギー)</label>
+                                <div className="relative">
+                                    <input type="range" min="10" max="100" value={frequency} onChange={(e)=>setFrequency(Number(e.target.value))} className="w-full freq-slider" />
+                                    <div className="flex justify-between text-[10px] mt-1 font-black text-slate-400">
+                                        <span>赤外線</span><span>可視光</span><span>紫外線</span>
+                                    </div>
                                 </div>
                             </div>
-
-                            {/* 服コントローラー (服の下・背景なしでスッキリ) */}
-                            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-72 text-center text-white">
-                                <label className="text-[11px] font-bold text-slate-400 block mb-3 uppercase tracking-widest">服の明るさ (反射率)</label>
-                                <div className="flex items-center gap-4">
-                                    <span className="text-[10px] opacity-40">黒</span>
-                                    <input type="range" value={albedo} onChange={(e)=>setAlbedo(Number(e.target.value))} className="flex-1 accent-slate-400" />
-                                    <span className="text-[10px] opacity-40">白</span>
-                                </div>
+                            <div className="text-center text-[10px] font-black text-sky-300 uppercase tracking-widest border-t border-white/5 pt-2">
+                                Region: {frequencyLabel}
                             </div>
                         </div>
 
-                        {/* 理論・まとめ */}
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="bg-white p-8 rounded-[2rem] border shadow-sm">
-                                <h3 className="font-black text-2xl mb-6 flex items-center gap-3 text-slate-800">
-                                    <span className="text-blue-600">E² = (pc)² + (mc²)²</span>
-                                </h3>
-                                <div className="bg-slate-50 p-6 rounded-3xl flex flex-col items-center">
-                                    <svg width="300" height="200" viewBox="0 0 300 200">
-                                        <path d={`M 40 160 L ${40 + triangleView.pc} 160 L ${40 + triangleView.pc} ${160 - triangleView.mc2} Z`} fill="rgba(37, 99, 235, 0.1)" stroke="#2563eb" strokeWidth="4" />
-                                        <text x={40 + triangleView.pc/2} y="185" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#f97316">pc = hν</text>
-                                        <text x={50 + triangleView.pc} y={160 - triangleView.mc2/2} fontSize="12" fontWeight="bold" fill="#16a34a" dominantBaseline="middle">mc²</text>
-                                        <text x={30 + triangleView.pc/2} y={150 - triangleView.mc2/2} fontSize="16" fontWeight="black" fill="#2563eb" transform={`rotate(${-Math.atan2(triangleView.mc2, triangleView.pc) * 180 / Math.PI}, ${40 + triangleView.pc/2}, ${160 - triangleView.mc2/2})`}>E</text>
-                                    </svg>
-                                    
-                                    <div className="w-full mt-6 space-y-4">
-                                        <label className="flex justify-between text-xs font-bold uppercase text-slate-500"><span>物体の質量 (m)</span> <span>{mass}</span></label>
-                                        <input type="range" min="0" max="100" value={mass} onChange={(e)=>setMass(Number(e.target.value))} className="w-full accent-green-600" />
-                                        
-                                        <div className="bg-white border p-4 rounded-xl text-xs space-y-2">
-                                            <p className="font-bold text-orange-600 underline">pc = hν とは？</p>
-                                            <p className="text-slate-600 leading-relaxed">
-                                                光子の運動量（勢い）は、振動数 $\nu$ に比例します。ここで $h$ は<strong>プランク定数</strong>といい、ミクロの世界の「エネルギーと振動数をつなぐ鍵」のような非常に小さな決まった値です。
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+                        {/* 反射率コントローラー (物体上に配置) */}
+                        <div className="absolute bottom-6 left-20 w-[300px] bg-white/10 backdrop-blur-sm p-4 rounded-3xl border border-white/10">
+                            <div className="flex items-center gap-6 text-white">
+                                <span className="text-xs font-black opacity-60 shrink-0">服の反射率</span>
+                                <span className="text-[10px] font-bold">BLACK</span>
+                                <input type="range" value={albedo} onChange={(e)=>setAlbedo(Number(e.target.value))} className="flex-1 accent-slate-300 h-2" />
+                                <span className="text-[10px] font-bold">WHITE</span>
                             </div>
+                        </div>
+                    </div>
 
-                            <div className="bg-slate-900 text-white p-10 rounded-[2rem] shadow-xl flex flex-col justify-center">
-                                <h3 className="font-black text-3xl mb-8 flex items-center gap-4 text-orange-400">
-                                    実験のまとめ
-                                </h3>
-                                <div className="space-y-6">
-                                    <div className="border-l-4 border-orange-500 pl-6 py-2">
-                                        <p className="font-bold text-lg mb-2 italic">「重さがないのに、なぜ叩ける？」</p>
-                                        <p className="text-sm opacity-80 leading-relaxed">
-                                            光は質量($m$)がゼロですが、波として震えることで「勢い($p$)」を持っています。この勢いは、振動数が高い（波が細かい）ほど強くなります。
-                                        </p>
-                                    </div>
-                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
-                                        <p className="text-sm leading-relaxed">
-                                            黒い服が光を「吸収」すると、その勢いはそのまま服の原子に伝えられ、原子を激しく揺らします。
-                                            <strong className="block mt-2 text-lg text-orange-300">
-                                                このミクロの震えこそが「熱」です。
-                                            </strong>
-                                        </p>
-                                    </div>
+                    {/* 理論セクション：数式復活 */}
+                    <div className="h-[280px] bg-white rounded-[2.5rem] shadow-xl flex items-center p-8 gap-12 border-t-8 border-blue-600">
+                        <div className="flex-1 flex justify-center">
+                            <svg width="280" height="180" viewBox="0 0 300 200">
+                                <path d={`M 40 160 L ${40 + triangleView.pc} 160 L ${40 + triangleView.pc} ${160 - triangleView.mc2} Z`} fill="rgba(37, 99, 235, 0.15)" stroke="#2563eb" strokeWidth="6" />
+                                <text x={40 + triangleView.pc/2} y="190" textAnchor="middle" fontSize="14" font-weight="900" fill="#f97316">pc = hν (勢い)</text>
+                                <text x={55 + triangleView.pc} y={160 - triangleView.mc2/2} fontSize="14" font-weight="900" fill="#16a34a" dominantBaseline="middle">mc² (質量)</text>
+                                <text x={20 + triangleView.pc/2} y={145 - triangleView.mc2/2} fontSize="18" font-weight="900" fill="#2563eb" transform={`rotate(${-Math.atan2(triangleView.mc2, triangleView.pc) * 180 / Math.PI}, ${40 + triangleView.pc/2}, ${160 - triangleView.mc2/2})`}>E (エネルギー)</text>
+                            </svg>
+                        </div>
+                        
+                        <div className="w-[450px] space-y-4">
+                            <div className="bg-slate-900 p-4 rounded-2xl text-center shadow-inner">
+                                <h3 className="text-xl font-black text-white italic">E² = (pc)² + (mc²)²</h3>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="flex justify-between text-xs font-black text-slate-500 uppercase">物体の質量 (m) : {mass === 0 ? "0 (光子)" : mass}</label>
+                                <input type="range" min="0" max="100" value={mass} onChange={(e)=>setMass(Number(e.target.value))} className="w-full accent-green-600" />
+                                <div className="bg-blue-50 p-4 rounded-xl text-[13px] text-blue-900 leading-relaxed font-medium">
+                                    質量 m がゼロのとき、エネルギー E は「pc (運動量)」と等しくなります。
+                                    光子は重さがない代わりに、振動数 ν に比例した「パンチ力」を持っていることがこの式からわかります。
                                 </div>
                             </div>
                         </div>
