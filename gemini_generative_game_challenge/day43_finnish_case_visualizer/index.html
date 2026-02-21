@@ -102,11 +102,15 @@
         .pos-partitive { top: calc(50% + 365px); left: 30%; transform: translateX(-50%); }
 
         .pos-akkusatiivi { top: 35%; right: 5%; border-color: #a5b4fc; }
-        .pos-genitive { top: calc(50% + 140px); left: calc(50% - 140px); transform: translateX(-50%); border: 1px solid rgba(129, 140, 248, 0.5); }
+        /* Genetiivi: SG=右下（弱変化側）、PL=左下（強変化側）で動的切替 */
+        .pos-genitive.num-sg { top: calc(50% + 140px); left: calc(50% + 140px); transform: translateX(-50%); border: 1px solid rgba(129, 140, 248, 0.5); transition: left 0.4s ease; }
+        .pos-genitive.num-pl { top: calc(50% + 140px); left: calc(50% - 140px); transform: translateX(-50%); border: 1px solid rgba(129, 140, 248, 0.5); transition: left 0.4s ease; }
 
         /* 周辺格 (四隅に分散) */
-        .pos-abessiivi { bottom: 5%; left: 5%; opacity: 0.3; }
-        .pos-komitatiivi { bottom: 5%; right: 5%; opacity: 0.3; }
+        /* Abessiivi: 弱変化(gi)なので右下へ */
+        .pos-abessiivi { bottom: 5%; right: 5%; opacity: 0.3; }
+        /* Komitatiivi: 強変化(nk)なので左下へ */
+        .pos-komitatiivi { bottom: 5%; left: 5%; opacity: 0.3; }
         .pos-instruktiivi { top: 15%; left: 5%; opacity: 0.3; }
 
         .emoji-container {
@@ -214,10 +218,6 @@
                         <div id="pause-btn-tab" class="toggle-btn flex-1 text-center" onclick="togglePlay(true)">Pause</div>
                     </div>
                 </div>
-                <div class="p-3 bg-slate-800/50 rounded-xl">
-                    <label class="block text-[10px] font-bold text-slate-400 mb-2 uppercase">Card Scale</label>
-                    <input type="range" id="font-slider" min="0.5" max="1.5" step="0.05" value="1.0">
-                </div>
             </div>
         </div>
     </div>
@@ -272,11 +272,11 @@
 
         function init() {
             renderWordList(); renderCases(); setupControls(); updateUI();
+            updateGenetiiviPosition();
             togglePlay(false);
         }
 
         function setupControls() {
-            document.getElementById('font-slider').oninput = (e) => document.documentElement.style.setProperty('--base-font-scale', e.target.value);
             document.getElementById('play-pause').onclick = () => togglePlay(!isPaused);
         }
 
@@ -295,7 +295,15 @@
             currentNum = n;
             document.getElementById('sg-btn').classList.toggle('active', n === 'sg');
             document.getElementById('pl-btn').classList.toggle('active', n === 'pl');
+            updateGenetiiviPosition();
             updateUI();
+        }
+
+        function updateGenetiiviPosition() {
+            const el = document.getElementById('node-Genetiivi');
+            if (!el) return;
+            el.classList.toggle('num-sg', currentNum === 'sg');
+            el.classList.toggle('num-pl', currentNum === 'pl');
         }
 
         function speak(t) {
