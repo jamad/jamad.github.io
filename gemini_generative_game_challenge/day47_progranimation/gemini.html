@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Active Physics Sandbox 3D</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Three.js OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Cannon.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+    <!-- Tone.js (Audio) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background-color: #f3f4f6; touch-action: none;
+            user-select: none; -webkit-user-select: none;
+        }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #ui-layer { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; }
+        .btn-interactive { pointer-events: auto; transition: transform 0.1s; }
+        .btn-interactive:active { transform: scale(0.95); }
+        .selected { box-shadow: 0 0 0 4px #3b82f6; border: 2px solid white; transform: translateY(-4px); }
+        #start-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); color: white; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer" class="w-full max-w-md px-4 flex justify-between items-center gap-2">
+        <div class="bg-white/90 backdrop-blur rounded-2xl p-2 shadow-lg flex gap-2 mx-auto">
+            <button id="btn-pogo" class="btn-interactive w-20 h-20 rounded-xl bg-blue-500 text-white flex flex-col items-center justify-center selected" onclick="selectChar('pogo')">
+                <div class="text-2xl font-bold">I</div>
+                <div class="text-xs font-semibold">Pogo</div>
+                <div class="text-[10px] opacity-80">ホッピング</div>
+            </button>
+            <button id="btn-uno" class="btn-interactive w-20 h-20 rounded-xl bg-red-500 text-white flex flex-col items-center justify-center" onclick="selectChar('uno')">
+                <div class="text-2xl font-bold">i</div>
+                <div class="text-xs font-semibold">Uno</div>
+                <div class="text-[10px] opacity-80">自立型一本足</div>
+            </button>
+            <button id="btn-deuce" class="btn-interactive w-20 h-20 rounded-xl bg-emerald-500 text-white flex flex-col items-center justify-center" onclick="selectChar('deuce')">
+                <div class="text-2xl font-bold">A</div>
+                <div class="text-xs font-semibold">Deuce</div>
+                <div class="text-[10px] opacity-80">高機能二足</div>
+            </button>
+        </div>
+        <button class="btn-interactive bg-gray-800 text-white rounded-full p-3 shadow-lg h-14 w-14 flex items-center justify-center" onclick="resetWorld()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+    </div>
+
+    <div id="start-overlay" onclick="startGame()">
+        <h1 class="text-4xl font-bold mb-4">3D Physics Sandbox</h1>
+        <p class="text-lg mb-8 text-center px-4">ドラッグ：視点移動　/　タップ：召喚</p>
+        <button class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-lg text-xl animate-pulse">
+            Tap to Start
+        </button>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let selectedCharacter = 'pogo';
+        let isStarted = false;
+
+        function selectChar(charName) {
+            selectedCharacter = charName;
+            document.querySelectorAll('#ui-layer button').forEach(b => b.classList.remove('selected'));
+            document.getElementById(`btn-${charName}`).classList.add('selected');
+        }
+
+        // --- Audio Setup (Tone.js) ---
+        let synth, bounceSynth, woodSynth;
+        let lastBounceTime = 0;
+
+        async function initAudio() {
+            await Tone.start();
+            synth = new Tone.Synth({ oscillator: { type: "square" }, envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
+            synth.volume.value = -10;
+
+            bounceSynth = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 2, oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 } }).toDestination();
+            bounceSynth.volume.value = -5;
+
+            woodSynth = new Tone.MetalSynth({ frequency: 200, envelope: { attack: 0.001, decay: 0.1, release: 0.01 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).toDestination();
+            woodSynth.volume.value = -15;
+        }
+
+        function playSpawnSound() { if(synth) synth.triggerAttackRelease("E5", "16n"); }
+        function playBounceSound(vel) {
+            if(!bounceSynth || Tone.now() - lastBounceTime < 0.1) return;
+            if(vel > 1) { bounceSynth.triggerAttackRelease("C2", "8n", undefined, Math.min(vel/10, 1)); lastBounceTime = Tone.now(); }
+        }
+        function playWoodSound(vel) {
+            if(!woodSynth || Tone.now() - lastBounceTime < 0.1) return;
+            if(vel > 0.5) { woodSynth.triggerAttackRelease("32n", undefined, Math.min(vel/5, 0.5)); lastBounceTime = Tone.now(); }
+        }
+
+        // --- 3D & Physics Setup ---
+        let scene, camera, renderer, controls;
+        let world;
+        let objectsToUpdate = []; 
+        let autonomousBodies = []; 
+
+        const defaultMaterial = new CANNON.Material('default');
+        const characterMaterial = new CANNON.Material('character');
+        const woodMaterial = new CANNON.Material('wood');
+        
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let clickObjects = []; 
+
+        function init3D() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB); 
+            scene.fog = new THREE.Fog(0x87CEEB, 20, 100);
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 15, 30);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.05;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(10, 20, 10);
+            dirLight.castShadow = true;
+            dirLight.shadow.camera.top = 20;
+            dirLight.shadow.camera.bottom = -20;
+            dirLight.shadow.camera.left = -20;
+            dirLight.shadow.camera.right = 20;
+            scene.add(dirLight);
+
+            world = new CANNON.World();
+            world.gravity.set(0, -9.82, 0);
+            world.broadphase = new CANNON.NaiveBroadphase();
+            world.solver.iterations = 20; // 安定性のために反復回数を増加
+            
+            // 摩擦係数を高めに設定して転倒を防ぐ
+            const charDefaultContact = new CANNON.ContactMaterial(defaultMaterial, characterMaterial, { friction: 0.9, restitution: 0.1 });
+            const charCharContact = new CANNON.ContactMaterial(characterMaterial, characterMaterial, { friction: 0.5, restitution: 0.5 });
+            world.addContactMaterial(charDefaultContact);
+            world.addContactMaterial(charCharContact);
+
+            world.addEventListener('beginContact', (event) => {
+                if (!isStarted) return;
+                const bodyA = event.bodyA;
+                const bodyB = event.bodyB;
+                const vel = Math.sqrt(
+                    Math.pow(bodyA.velocity.x - bodyB.velocity.x, 2) +
+                    Math.pow(bodyA.velocity.y - bodyB.velocity.y, 2) +
+                    Math.pow(bodyA.velocity.z - bodyB.velocity.z, 2)
+                );
+                
+                if (bodyA.material === woodMaterial || bodyB.material === woodMaterial) {
+                    playWoodSound(vel);
+                } else {
+                    playBounceSound(vel);
+                }
+            });
+
+            buildWorld();
+            setupInteractions();
+
+            window.addEventListener('resize', onWindowResize);
+            renderer.setAnimationLoop(animate);
+        }
+
+        function createBox(size, position, color, mass, material, castShadow = true) {
+            const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+            const mat = new THREE.MeshLambertMaterial({ color: color });
+            const mesh = new THREE.Mesh(geometry, mat);
+            mesh.castShadow = castShadow;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+
+            const shape = new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2));
+            const body = new CANNON.Body({ mass: mass, material: material });
+            body.addShape(shape);
+            body.position.set(position.x, position.y, position.z);
+            world.addBody(body);
+
+            objectsToUpdate.push({ mesh, body });
+            return { mesh, body };
+        }
+
+        function buildWorld() {
+            objectsToUpdate.forEach(obj => {
+                scene.remove(obj.mesh);
+                world.removeBody(obj.body);
+            });
+            objectsToUpdate = [];
+            autonomousBodies = [];
+            clickObjects = [];
+            
+            const groundMat = new THREE.MeshLambertMaterial({ color: 0x4B5563 });
+            const groundGeo = new THREE.PlaneGeometry(200, 200);
+            const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+            groundMesh.rotation.x = -Math.PI / 2;
+            groundMesh.receiveShadow = true;
+            scene.add(groundMesh);
+            clickObjects.push(groundMesh);
+
+            const groundShape = new CANNON.Plane();
+            const groundBody = new CANNON.Body({ mass: 0, material: defaultMaterial });
+            groundBody.addShape(groundShape);
+            groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+            world.addBody(groundBody);
+
+            const step1 = createBox({x: 15, y: 2, z: 15}, {x: -15, y: 1, z: -8}, 0x6B7280, 0, defaultMaterial);
+            const step2 = createBox({x: 8, y: 5, z: 8}, {x: -25, y: 2.5, z: -8}, 0x6B7280, 0, defaultMaterial);
+            clickObjects.push(step1.mesh, step2.mesh);
+
+            const fulcrum = createBox({x: 2, y: 2, z: 6}, {x: 0, y: 1, z: 8}, 0x9CA3AF, 0, defaultMaterial);
+            const plankSize = {x: 20, y: 0.5, z: 4};
+            const plankGeo = new THREE.BoxGeometry(plankSize.x, plankSize.y, plankSize.z);
+            const plankMat = new THREE.MeshLambertMaterial({ color: 0xFCD34D });
+            const plankMesh = new THREE.Mesh(plankGeo, plankMat);
+            plankMesh.castShadow = true;
+            plankMesh.receiveShadow = true;
+            scene.add(plankMesh);
+            clickObjects.push(plankMesh);
+
+            const plankShape = new CANNON.Box(new CANNON.Vec3(plankSize.x/2, plankSize.y/2, plankSize.z/2));
+            const plankBody = new CANNON.Body({ mass: 8, material: woodMaterial });
+            plankBody.addShape(plankShape);
+            plankBody.position.set(0, 3.5, 8);
+            world.addBody(plankBody);
+            objectsToUpdate.push({ mesh: plankMesh, body: plankBody });
+
+            const constraint = new CANNON.HingeConstraint(fulcrum.body, plankBody, {
+                pivotA: new CANNON.Vec3(0, 1.5, 0),
+                pivotB: new CANNON.Vec3(0, -0.25, 0),
+                axisA: new CANNON.Vec3(0, 0, 1),
+                axisB: new CANNON.Vec3(0, 0, 1)
+            });
+            world.addConstraint(constraint);
+        }
+
+        function resetWorld() {
+            buildWorld();
+        }
+
+        function spawnPogo(pos) {
+            const char = createBox({x: 1, y: 3, z: 1}, {x: pos.x, y: pos.y + 3, z: pos.z}, 0x3B82F6, 1.5, characterMaterial);
+            char.body.angularDamping = 0.9;
+            char.body.linearDamping = 0.1;
+            char.body.charType = 'pogo';
+            autonomousBodies.push(char.body);
+        }
+
+        function spawnUno(pos) {
+            const headGeo = new THREE.SphereGeometry(0.8, 16, 16);
+            const headMat = new THREE.MeshLambertMaterial({ color: 0xEF4444 });
+            const headMesh = new THREE.Mesh(headGeo, headMat);
+            headMesh.castShadow = true;
+            scene.add(headMesh);
+
+            const headBody = new CANNON.Body({ mass: 2.0, material: characterMaterial });
+            headBody.addShape(new CANNON.Sphere(0.8));
+            headBody.position.set(pos.x, pos.y + 4.5, pos.z);
+            headBody.angularDamping = 0.95; 
+            world.addBody(headBody);
+            objectsToUpdate.push({ mesh: headMesh, body: headBody });
+
+            const foot = createBox({x: 1.5, y: 0.5, z: 1.8}, {x: pos.x, y: pos.y + 0.3, z: pos.z}, 0xFCA5A5, 1.0, characterMaterial);
+            foot.body.angularDamping = 0.9;
+
+            headBody.charType = 'uno_head';
+            headBody.footBody = foot.body;
+            autonomousBodies.push(headBody);
+        }
+
+        function spawnDeuce(pos) {
+            const colorTorso = 0x10B981;
+            const colorLegUpper = 0x6EE7B7;
+            const colorLegLower = 0x34D399;
+            const colorFoot = 0x065F46;
+
+            // 胴体 (重心を少し下げるために形状の半分を下に)
+            const torso = createBox({x: 1.6, y: 1.8, z: 0.9}, {x: pos.x, y: pos.y + 5.0, z: pos.z}, colorTorso, 3.0, characterMaterial);
+            torso.body.angularDamping = 0.8; 
+            
+            const createLeg = (isRight) => {
+                const offsetX = isRight ? 0.6 : -0.6;
+                const upper = createBox({x: 0.5, y: 1.4, z: 0.5}, {x: pos.x + offsetX, y: pos.y + 3.5, z: pos.z}, colorLegUpper, 0.5, characterMaterial);
+                const lower = createBox({x: 0.4, y: 1.4, z: 0.4}, {x: pos.x + offsetX, y: pos.y + 2.0, z: pos.z}, colorLegLower, 0.4, characterMaterial);
+                const foot = createBox({x: 1.0, y: 0.5, z: 1.8}, {x: pos.x + offsetX, y: pos.y + 0.6, z: pos.z + 0.3}, colorFoot, 0.8, characterMaterial);
+
+                // 関節角度制限 (-45度 〜 45度程度)
+                const hipHinge = new CANNON.HingeConstraint(torso.body, upper.body, {
+                    pivotA: new CANNON.Vec3(offsetX, -0.9, 0), pivotB: new CANNON.Vec3(0, 0.7, 0),
+                    axisA: new CANNON.Vec3(1, 0, 0), axisB: new CANNON.Vec3(1, 0, 0)
+                });
+                hipHinge.enableMotor();
+                world.addConstraint(hipHinge);
+
+                const kneeHinge = new CANNON.HingeConstraint(upper.body, lower.body, {
+                    pivotA: new CANNON.Vec3(0, -0.7, 0), pivotB: new CANNON.Vec3(0, 0.7, 0),
+                    axisA: new CANNON.Vec3(1, 0, 0), axisB: new CANNON.Vec3(1, 0, 0)
+                });
+                kneeHinge.enableMotor();
+                world.addConstraint(kneeHinge);
+
+                const ankleHinge = new CANNON.HingeConstraint(lower.body, foot.body, {
+                    pivotA: new CANNON.Vec3(0, -0.7, 0), pivotB: new CANNON.Vec3(0, 0.25, -0.4),
+                    axisA: new CANNON.Vec3(1, 0, 0), axisB: new CANNON.Vec3(1, 0, 0)
+                });
+                ankleHinge.enableMotor();
+                world.addConstraint(ankleHinge);
+
+                return { hip: hipHinge, knee: kneeHinge, ankle: ankleHinge, upper: upper.body, foot: foot.body };
+            };
+
+            const leftLeg = createLeg(false);
+            const rightLeg = createLeg(true);
+
+            torso.body.charType = 'deuce_v2';
+            torso.body.legs = { left: leftLeg, right: rightLeg };
+            autonomousBodies.push(torso.body);
+        }
+
+        function setupInteractions() {
+            const container = document.getElementById('canvas-container');
+            let pointerDownTime = 0;
+            let pointerDownPos = { x: 0, y: 0 };
+
+            container.addEventListener('pointerdown', (e) => {
+                if (e.clientY > window.innerHeight - 80) return;
+                pointerDownTime = Date.now();
+                pointerDownPos = { x: e.clientX, y: e.clientY };
+            });
+
+            container.addEventListener('pointerup', (e) => {
+                const dx = Math.abs(e.clientX - pointerDownPos.x);
+                const dy = Math.abs(e.clientY - pointerDownPos.y);
+                const dt = Date.now() - pointerDownTime;
+
+                if (dx < 10 && dy < 10 && dt < 300) {
+                    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                    raycaster.setFromCamera(mouse, camera);
+                    const intersects = raycaster.intersectObjects(clickObjects);
+
+                    if (intersects.length > 0) {
+                        const pt = intersects[0].point;
+                        playSpawnSound();
+                        if (selectedCharacter === 'pogo') spawnPogo(pt);
+                        else if (selectedCharacter === 'uno') spawnUno(pt);
+                        else if (selectedCharacter === 'deuce') spawnDeuce(pt);
+                    }
+                }
+            });
+        }
+
+        const upAxis = new CANNON.Vec3(0, 1, 0);
+        function applyUprightTorque(body, strength) {
+            const currentUp = new CANNON.Vec3(0, 1, 0);
+            body.quaternion.vmult(currentUp, currentUp);
+            const torque = currentUp.cross(upAxis);
+            torque.scale(strength, torque);
+            body.torque.vadd(torque, body.torque);
+        }
+
+        function animate(time) {
+            world.step(timeStep);
+
+            autonomousBodies.forEach(body => {
+                const t = performance.now() / 1000;
+
+                if (body.charType === 'pogo') {
+                    applyUprightTorque(body, 100);
+                    if (Math.abs(body.velocity.y) < 0.2 && body.position.y < 6) {
+                        if (Math.random() < 0.05) {
+                            body.applyImpulse(new CANNON.Vec3((Math.random()-0.5)*2, 18, (Math.random()-0.5)*2), body.position);
+                        }
+                    }
+                } 
+                else if (body.charType === 'uno_head') {
+                    applyUprightTorque(body, 150);
+                    const diff = body.footBody.position.vsub(body.position);
+                    const dist = diff.norm();
+                    const springForce = diff.unit().scale((dist - 3.5) * 300);
+                    body.applyForce(springForce, body.position);
+                    body.footBody.applyForce(springForce.scale(-1), body.footBody.position);
+
+                    if (Math.abs(body.velocity.y) < 0.5 && Math.random() < 0.02) {
+                        body.applyImpulse(new CANNON.Vec3((Math.random()-0.5)*1, 12, (Math.random()-0.5)*1), body.position);
+                    }
+                }
+                else if (body.charType === 'deuce_v2') {
+                    // 1. 基本的な姿勢保持
+                    applyUprightTorque(body, 180);
+
+                    // 2. アクティブ・バランシング
+                    // 体が前に傾いたら前へ、後ろに傾いたら後ろへ脚を出すようにトルクを加える
+                    const worldUp = new CANNON.Vec3(0, 1, 0);
+                    const bodyUp = new CANNON.Vec3(0, 1, 0);
+                    body.quaternion.vmult(bodyUp, bodyUp);
+                    const tiltForward = bodyUp.z; // 正なら前傾、負なら後傾
+
+                    // 3. 歩行アニメーション
+                    const walkSpeed = 6;
+                    const walkAmp = 0.6;
+                    const cycle = Math.sin(t * walkSpeed);
+                    
+                    const leftPhase = cycle;
+                    const rightPhase = -cycle;
+
+                    // 股関節: 傾きに応じて中心位置をずらす（姿勢制御）
+                    const balanceFactor = tiltForward * 5.0; 
+                    
+                    const controlLeg = (leg, phase) => {
+                        // 股関節
+                        leg.hip.setMotorSpeed(phase * 8 + balanceFactor);
+                        leg.hip.setMotorMaxForce(15);
+
+                        // 膝: 地面を蹴るタイミングで伸ばし、上げるタイミングで曲げる
+                        const kneeSpeed = phase > 0 ? -12 : 5; 
+                        leg.knee.setMotorSpeed(kneeSpeed);
+                        leg.knee.setMotorMaxForce(12);
+
+                        // 足首: 接地時に水平を保つ
+                        leg.ankle.setMotorSpeed(-phase * 5);
+                        leg.ankle.setMotorMaxForce(10);
+                    };
+
+                    controlLeg(body.legs.left, leftPhase);
+                    controlLeg(body.legs.right, rightPhase);
+
+                    // 転倒防止の補助的な力
+                    if (body.position.y < 3.0) {
+                        body.applyForce(new CANNON.Vec3(0, 20, 0), body.position);
+                    }
+                }
+            });
+
+            objectsToUpdate.forEach(({ mesh, body }) => {
+                mesh.position.copy(body.position);
+                mesh.quaternion.copy(body.quaternion);
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        const timeStep = 1 / 60;
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        async function startGame() {
+            if (isStarted) return;
+            document.getElementById('start-overlay').style.display = 'none';
+            await initAudio();
+            init3D();
+            isStarted = true;
+        }
+    </script>
+</body>
+</html>
