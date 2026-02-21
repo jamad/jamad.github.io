@@ -97,19 +97,16 @@
         
         .pos-essive    { top: calc(50% + 290px); left: 25%; transform: translateX(-50%); border-left: 5px solid #fbbf24; }
         
-        /* Translatiivi: 弱変化(gi)なのでもっと右へ */
-        .pos-translative { top: calc(50% + 290px); left: 82%; transform: translateX(-50%); border-left: 5px solid #f59e0b; }
+        .pos-translative { top: calc(50% + 290px); left: 75%; transform: translateX(-50%); border-left: 5px solid #f59e0b; }
 
         .pos-partitive { top: calc(50% + 365px); left: 30%; transform: translateX(-50%); }
 
         .pos-akkusatiivi { top: 35%; right: 5%; border-color: #a5b4fc; }
-        .pos-genitive { top: calc(50% + 140px); left: calc(50% + 140px); border: 1px solid rgba(129, 140, 248, 0.5); }
+        .pos-genitive { top: calc(50% + 140px); left: calc(50% - 140px); transform: translateX(-50%); border: 1px solid rgba(129, 140, 248, 0.5); }
 
         /* 周辺格 (四隅に分散) */
-        /* Abessiivi: 弱変化(gi)なので右下へ */
-        .pos-abessiivi { bottom: 5%; right: 5%; opacity: 0.3; }
-        /* Komitatiivi: 強変化(nk)なので左下へ */
-        .pos-komitatiivi { bottom: 5%; left: 5%; opacity: 0.3; }
+        .pos-abessiivi { bottom: 5%; left: 5%; opacity: 0.3; }
+        .pos-komitatiivi { bottom: 5%; right: 5%; opacity: 0.3; }
         .pos-instruktiivi { top: 15%; left: 5%; opacity: 0.3; }
 
         .emoji-container {
@@ -343,9 +340,10 @@
             const suffixes = [
                     // 1. 特別に長い語尾（4文字以上）
                     'neen', 'tten', 'seen', 'den', 'ien', 'jen',
-                    // 2. 複数形のiを含む語尾（3文字以上）
-                    // これを入れることで leiv-illä のように「i」から分離されます
-                    'illa', 'illä', 'ilta', 'iltä', 'ille', 'issa', 'issä', 'ista', 'istä',
+                    // 2. 複数形のi+語尾（iを含めてグレーに）
+                    'illa', 'illä', 'ilta', 'iltä', 'ille',
+                    'issa', 'issä', 'ista', 'istä',
+                    'iksi', 'itta', 'ittä',  // ← 追加: taloiksi, taloitta など
                     // 3. 基本的な語尾
                     'ssa', 'ssä', 'sta', 'stä', 'lla', 'llä', 'lta', 'ltä', 'tta', 'ttä',
                     // 4. 入格（Vn）パターン
@@ -354,15 +352,16 @@
                     'lle','ksi','na','nä',
                     // 5b. 複数形主格・分格など
                     'it','at','ut','yt','ja','ia','jä','iä',
-                    // 6. 最も短い語尾（最後に判定）属格の基本
+                    // 6. 最も短い語尾（最後に判定）属格の基本、複数主格の-t
                     'n', 't'
                 ];
 
-
             let root = val, suf = '';
+            // Nominatiivi単数は接尾辞なし（母音終わり）なので除外しない。
+            // 単数形は語尾リストにマッチしないため問題なし。複数の -t は正常にグレーになる。
             for(let s of suffixes) {
-                if(val.endsWith(s) && configId !== 'Nominatiivi') {
-                    root = val.slice(0, -s.length); suf = '' + s; // ここ：'-' + s からハイフンを削除しました
+                if(val.endsWith(s)) {
+                    root = val.slice(0, -s.length); suf = '' + s;
                     break;
                 }
             }
