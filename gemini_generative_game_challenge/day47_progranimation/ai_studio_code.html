@@ -3,322 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Advanced Physics Sandbox 3D</title>
+    <title>Deuce Pro - Error Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #0f172a; font-family: sans-serif; }
-        canvas { display: block; }
-        .glass-ui { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .btn-active { transform: scale(0.95); box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
-        .kbd-guide { pointer-events: none; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        #loading-overlay { background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); }
+        body { margin: 0; overflow: hidden; background: #0f172a; touch-action: none; user-select: none; }
+        #start-screen { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; color: white; cursor: pointer; }
+        .ui-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; display: flex; gap: 10px; }
+        .btn { pointer-events: auto; background: rgba(30, 41, 59, 0.85); color: white; padding: 12px 24px; border-radius: 16px; border: 2px solid rgba(255,255,255,0.1); transition: 0.2s; font-weight: bold; backdrop-filter: blur(10px); }
+        .btn.selected { border-color: #3b82f6; background: #1d4ed8; box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
+        .btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center text-white cursor-pointer">
-        <div class="mb-8 text-center">
-            <h1 class="text-5xl font-black tracking-tighter mb-2 italic">PHYSICS AI LAB</h1>
-            <p class="text-blue-400 font-mono tracking-widest">AUTONOMOUS ENTITY SIMULATOR</p>
-        </div>
-        <button onclick="startApp()" class="px-10 py-4 bg-blue-600 hover:bg-blue-500 rounded-full font-bold text-xl transition-all hover:scale-110 active:scale-95 shadow-2xl">
-            INITIALIZE SYSTEM
-        </button>
-        <p class="mt-6 text-gray-500 text-sm">Tap to Spawn | Drag to Orbit | Scroll to Zoom</p>
+    <div id="start-screen" onclick="initApp()">
+        <h1 class="text-5xl font-black mb-2 italic">PHYSICS LAB</h1>
+        <p class="text-blue-400 tracking-widest mb-8 uppercase text-sm font-mono text-center">Deuce Pro: PD Controller Fixed</p>
+        <div class="px-10 py-4 bg-blue-600 rounded-full font-bold text-xl shadow-2xl animate-pulse">CLICK TO START</div>
     </div>
 
-    <div id="ui-container" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 w-full max-w-lg px-4 flex flex-col gap-4 pointer-events-none">
-        <!-- Character Selector -->
-        <div class="glass-ui p-3 rounded-3xl flex justify-between items-center gap-3 pointer-events-auto">
-            <button id="btn-pogo" onclick="selectChar('pogo')" class="char-btn flex-1 py-3 rounded-2xl flex flex-col items-center transition-all bg-blue-600/20 text-blue-400 border-2 border-transparent">
-                <span class="text-xl font-bold">Pogo</span>
-                <span class="text-[10px] uppercase tracking-tighter opacity-70">Jumper</span>
-            </button>
-            <button id="btn-uno" onclick="selectChar('uno')" class="char-btn flex-1 py-3 rounded-2xl flex flex-col items-center transition-all text-gray-400">
-                <span class="text-xl font-bold">Uno</span>
-                <span class="text-[10px] uppercase tracking-tighter opacity-70">Balancer</span>
-            </button>
-            <button id="btn-deuce" onclick="selectChar('deuce')" class="char-btn flex-1 py-3 rounded-2xl flex flex-col items-center transition-all text-gray-400">
-                <span class="text-xl font-bold">Deuce</span>
-                <span class="text-[10px] uppercase tracking-tighter opacity-70">Bipedal</span>
-            </button>
-            
-            <div class="w-px h-10 bg-white/10 mx-1"></div>
-            
-            <button onclick="resetWorld()" class="p-4 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded-2xl transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            </button>
-        </div>
+    <div class="ui-panel">
+        <button id="btn-pogo" class="btn" onclick="selectChar('pogo')">Pogo</button>
+        <button id="btn-uno" class="btn" onclick="selectChar('uno')">Uno</button>
+        <button id="btn-deuce" class="btn selected" onclick="selectChar('deuce')">Deuce Pro</button>
+        <button class="btn bg-red-600/50" onclick="resetWorld()">Reset</button>
     </div>
 
     <script>
-        // --- Configuration & State ---
         let scene, camera, renderer, world, controls;
         let objectsToUpdate = [];
         let characters = [];
-        let selectedCharacter = 'pogo';
-        const timeStep = 1 / 60;
-        let lastTime = 0;
+        let clickTargets = []; 
+        let selectedCharacter = 'deuce';
+        let isStarted = false;
 
-        // Audio
-        const sounds = {
-            spawn: null, bounce: null, synth: null
-        };
+        // --- Helper: Apply Local Torque in Cannon.js ---
+        // Cannon.jsに存在しないapplyLocalTorqueを再現する関数
+        function applyLocalTorque(body, localTorque) {
+            const worldTorque = new CANNON.Vec3();
+            body.quaternion.vmult(localTorque, worldTorque);
+            body.torque.vadd(worldTorque, body.torque);
+        }
 
-        // --- Core Functions ---
-        async function startApp() {
-            document.getElementById('loading-overlay').style.display = 'none';
-            await initAudio();
-            initPhysics();
-            initGraphics();
-            createEnvironment();
+        // --- Blenderロジック: PD制御 (角度誤差からトルクを算出) ---
+        function calculatePDTorque(currentAngle, currentVel, targetAngle, p, d) {
+            let error = targetAngle - currentAngle;
+            while (error >  Math.PI) error -= Math.PI * 2;
+            while (error < -Math.PI) error += Math.PI * 2;
+            return (p * error) - (d * currentVel);
+        }
+
+        function initApp() {
+            if(isStarted) return;
+            isStarted = true;
+            document.getElementById('start-screen').style.display = 'none';
+            setupPhysics();
+            setupGraphics();
+            buildWorld();
             animate();
-            selectChar('pogo');
         }
 
-        async function initAudio() {
-            await Tone.start();
-            sounds.spawn = new Tone.PolySynth(Tone.Synth).toDestination();
-            sounds.spawn.set({ envelope: { release: 0.1 }, volume: -15 });
-            sounds.bounce = new Tone.NoiseSynth({ noise: { type: 'pink' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0 } }).toDestination();
-            sounds.bounce.volume.value = -20;
-        }
-
-        function initPhysics() {
+        function setupPhysics() {
             world = new CANNON.World();
-            world.gravity.set(0, -15, 0); // 少し強めの重力でキビキビ動かす
-            world.broadphase = new CANNON.SAPBroadphase(world);
-            world.defaultContactMaterial.friction = 0.5;
-            
-            const wallMaterial = new CANNON.Material('wall');
-            const contactMaterial = new CANNON.ContactMaterial(wallMaterial, wallMaterial, {
-                friction: 0.5, restitution: 0.3
-            });
-            world.addContactMaterial(contactMaterial);
+            world.gravity.set(0, -15, 0);
+            world.solver.iterations = 25; 
+            world.defaultContactMaterial.friction = 0.8;
         }
 
-        function initGraphics() {
+        function setupGraphics() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x0f172a);
             scene.fog = new THREE.Fog(0x0f172a, 20, 100);
 
-            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(15, 12, 20);
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(12, 10, 18);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
 
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-            controls.target.set(0, 2, 0);
 
-            // Lights
-            const ambient = new THREE.AmbientLight(0xffffff, 0.4);
-            scene.add(ambient);
-
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
             const sun = new THREE.DirectionalLight(0xffffff, 0.8);
             sun.position.set(10, 20, 10);
             sun.castShadow = true;
-            sun.shadow.mapSize.set(1024, 1024);
             scene.add(sun);
 
             window.addEventListener('resize', onWindowResize);
-            renderer.domElement.addEventListener('pointerdown', handleInteraction);
+            renderer.domElement.addEventListener('pointerdown', handlePointerDown);
         }
 
-        function createEnvironment() {
-            // Grid Floor
-            const grid = new THREE.GridHelper(100, 50, 0x334155, 0x1e293b);
-            scene.add(grid);
-
-            const floorGeo = new THREE.PlaneGeometry(100, 100);
-            const floorMat = new THREE.MeshPhongMaterial({ color: 0x0f172a });
-            const floor = new THREE.Mesh(floorGeo, floorMat);
-            floor.rotation.x = -Math.PI / 2;
-            floor.receiveShadow = true;
-            scene.add(floor);
-
-            const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
-            floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-            world.addBody(floorBody);
-
-            // Central Obstacle (Steps)
-            createBox({w:4, h:0.5, d:4}, {x:-5, y:0.25, z:-5}, 0x334155);
-            createBox({w:4, h:1.0, d:4}, {x:-9, y:0.5, z:-5}, 0x334155);
-            
-            // Seesaw
-            const pivot = createBox({w:1, h:1, d:3}, {x:5, y:0.5, z:0}, 0x475569, 0);
-            const plank = createBox({w:8, h:0.2, d:3}, {x:5, y:1.2, z:0}, 0x3b82f6, 5);
-            const hinge = new CANNON.HingeConstraint(pivot.body, plank.body, {
-                pivotA: new CANNON.Vec3(0, 0.5, 0),
-                pivotB: new CANNON.Vec3(0, 0, 0),
-                axisA: new CANNON.Vec3(0, 0, 1),
-                axisB: new CANNON.Vec3(0, 0, 1)
-            });
-            world.addConstraint(hinge);
-        }
-
-        // --- Helper: Create Physics Box ---
-        function createBox(size, pos, color, mass = 0) {
-            const mesh = new THREE.Mesh(
-                new THREE.BoxGeometry(size.w, size.h, size.d),
-                new THREE.MeshPhongMaterial({ color })
-            );
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            scene.add(mesh);
-
-            const body = new CANNON.Body({
-                mass,
-                shape: new CANNON.Box(new CANNON.Vec3(size.w/2, size.h/2, size.d/2))
-            });
-            body.position.set(pos.x, pos.y, pos.z);
-            world.addBody(body);
-
-            const obj = { mesh, body };
-            objectsToUpdate.push(obj);
-            return obj;
-        }
-
-        // --- Interaction ---
-        function handleInteraction(e) {
-            if (e.target !== renderer.domElement) return;
-
+        function handlePointerDown(e) {
+            if (!isStarted || e.clientY > window.innerHeight - 100) return;
             const rect = renderer.domElement.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-            const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
+            const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
             const raycaster = new THREE.Raycaster();
-            raycaster.setFromCamera({x, y}, camera);
-            const intersects = raycaster.intersectObjects(scene.children);
-
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(clickTargets);
             if (intersects.length > 0) {
-                const p = intersects[0].point;
-                spawnCharacter(selectedCharacter, {x: p.x, y: p.y + 3, z: p.z});
+                spawnCharacter(selectedCharacter, intersects[0].point);
             }
         }
 
-        function selectChar(type) {
-            selectedCharacter = type;
-            document.querySelectorAll('.char-btn').forEach(btn => {
-                btn.classList.remove('bg-blue-600/20', 'text-blue-400', 'border-blue-500/50');
-                btn.classList.add('text-gray-400');
-            });
-            const active = document.getElementById(`btn-${type}`);
-            active.classList.add('bg-blue-600/20', 'text-blue-400', 'border-blue-500/50');
-            active.classList.remove('text-gray-400');
+        function createBox(w, h, d, pos, mass, color, canClick = true) {
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshPhongMaterial({ color }));
+            mesh.castShadow = true; mesh.receiveShadow = true;
+            scene.add(mesh);
+            const body = new CANNON.Body({ mass, shape: new CANNON.Box(new CANNON.Vec3(w/2, h/2, d/2)) });
+            body.position.set(pos.x, pos.y, pos.z);
+            world.addBody(body);
+            objectsToUpdate.push({ mesh, body });
+            if (canClick) clickTargets.push(mesh);
+            return { mesh, body };
         }
 
-        // --- Autonomous Characters Logic ---
+        function buildWorld() {
+            // Ground
+            const ground = createBox(100, 0.1, 100, {x:0, y:-0.05, z:0}, 0, 0x1e293b, true);
+            scene.add(new THREE.GridHelper(100, 50, 0x334155, 0x1e293b));
+            
+            // Seesaw
+            const pivot = createBox(1, 1, 1, {x: 5, y: 0.5, z: 0}, 0, 0x475569);
+            const plank = createBox(10, 0.25, 3, {x: 5, y: 1.2, z: 0}, 5, 0x3b82f6);
+            world.addConstraint(new CANNON.HingeConstraint(pivot.body, plank.body, {
+                pivotA: new CANNON.Vec3(0, 0.5, 0), pivotB: new CANNON.Vec3(0, 0, 0),
+                axisA: new CANNON.Vec3(0, 0, 1), axisB: new CANNON.Vec3(0, 0, 1)
+            }));
+
+            // Blocks
+            createBox(4, 1, 4, {x: -8, y: 0.5, z: -5}, 0, 0x334155);
+            createBox(4, 2, 4, {x: -12, y: 1.0, z: -5}, 0, 0x334155);
+        }
 
         function spawnCharacter(type, pos) {
-            sounds.spawn.triggerAttackRelease(type === 'pogo' ? "C4" : type === 'uno' ? "E4" : "G4", "8n");
-            
+            const y = pos.y + 3.5;
             if (type === 'pogo') {
-                const char = createBox({w:0.8, h:2, d:0.8}, pos, 0x3b82f6, 2);
-                char.type = 'pogo';
-                characters.push(char);
+                const p = createBox(0.8, 2.5, 0.8, {x: pos.x, y: y, z: pos.z}, 2, 0x3b82f6, false);
+                p.charType = 'pogo'; characters.push(p);
             } else if (type === 'uno') {
-                const head = new THREE.Mesh(new THREE.SphereGeometry(0.6), new THREE.MeshPhongMaterial({color: 0xef4444}));
-                head.castShadow = true;
-                scene.add(head);
-                const headBody = new CANNON.Body({ mass: 1, shape: new CANNON.Sphere(0.6) });
-                headBody.position.set(pos.x, pos.y, pos.z);
-                world.addBody(headBody);
-
-                const foot = createBox({w:1, h:0.3, d:1}, {x:pos.x, y:pos.y-1.5, z:pos.z}, 0x991b1b, 0.5);
-                
-                // Spring link
-                const spring = new CANNON.DistanceConstraint(headBody, foot.body, 1.8);
-                world.addConstraint(spring);
-
-                characters.push({ type: 'uno', head: {mesh: head, body: headBody}, foot: foot });
+                const foot = createBox(1.2, 0.4, 1.2, {x: pos.x, y: y - 1.5, z: pos.z}, 1, 0xef4444, false);
+                const head = createBox(1, 1, 1, {x: pos.x, y: y + 1, z: pos.z}, 2, 0xef4444, false);
+                world.addConstraint(new CANNON.DistanceConstraint(foot.body, head.body, 2.5));
+                characters.push({ type: 'uno', head, foot });
             } else if (type === 'deuce') {
-                const torso = createBox({w:1.2, h:1.5, d:0.6}, pos, 0x10b981, 2);
-                
+                const torso = createBox(1.4, 1.6, 0.9, {x:pos.x, y:y+1.5, z:pos.z}, 3.0, 0x9ca3af, false);
                 const createLeg = (side) => {
-                    const leg = createBox({w:0.4, h:1.8, d:0.4}, {x:pos.x + side*0.5, y:pos.y-1.5, z:pos.z}, 0x059669, 0.5);
-                    const hinge = new CANNON.HingeConstraint(torso.body, leg.body, {
-                        pivotA: new CANNON.Vec3(side*0.5, -0.75, 0),
-                        pivotB: new CANNON.Vec3(0, 0.9, 0),
-                        axisA: new CANNON.Vec3(1, 0, 0),
-                        axisB: new CANNON.Vec3(1, 0, 0)
-                    });
-                    hinge.enableMotor();
-                    world.addConstraint(hinge);
-                    return { leg, hinge };
+                    const thigh = createBox(0.5, 1.4, 0.5, {x:pos.x + side*0.6, y:y, z:pos.z}, 0.8, 0x6b7280, false);
+                    const shin = createBox(0.4, 1.4, 0.4, {x:pos.x + side*0.6, y:y-1, z:pos.z}, 0.6, 0x4b5563, false);
+                    const foot = createBox(0.8, 0.4, 1.4, {x:pos.x + side*0.6, y:y-2, z:pos.z+0.3}, 0.8, 0x1e2937, false);
+                    world.addConstraint(new CANNON.HingeConstraint(torso.body, thigh.body, { pivotA: new CANNON.Vec3(side*0.6, -0.8, 0), pivotB: new CANNON.Vec3(0, 0.7, 0), axisA: new CANNON.Vec3(1, 0, 0), axisB: new CANNON.Vec3(1, 0, 0) }));
+                    world.addConstraint(new CANNON.HingeConstraint(thigh.body, shin.body, { pivotA: new CANNON.Vec3(0, -0.7, 0), pivotB: new CANNON.Vec3(0, 0.7, 0), axisA: new CANNON.Vec3(1, 0, 0), axisB: new CANNON.Vec3(1, 0, 0) }));
+                    world.addConstraint(new CANNON.HingeConstraint(shin.body, foot.body, { pivotA: new CANNON.Vec3(0, -0.7, 0), pivotB: new CANNON.Vec3(0, 0.2, -0.4), axisA: new CANNON.Vec3(1, 0, 0), axisB: new CANNON.Vec3(1, 0, 0) }));
+                    return { thigh, shin, foot };
                 };
-
-                const left = createLeg(-1);
-                const right = createLeg(1);
-                characters.push({ type: 'deuce', torso, left, right, phase: 0 });
+                characters.push({ type: 'deuce_pro', torso, leftLeg: createLeg(-1), rightLeg: createLeg(1), state: 0, timer: 0 });
             }
         }
 
         function updateAI() {
-            const now = performance.now() * 0.001;
-            
             characters.forEach(c => {
-                if (c.type === 'pogo') {
-                    // 直立維持トルク
-                    const up = new CANNON.Vec3(0, 1, 0);
-                    const currentUp = c.body.quaternion.vmult(new CANNON.Vec3(0, 1, 0));
-                    const torque = currentUp.cross(up).scale(20);
-                    c.body.torque.vadd(torque, c.body.torque);
-
-                    // 接地判定とジャンプ
-                    if (c.body.position.y < 1.2 && Math.abs(c.body.velocity.y) < 0.5) {
-                        c.body.applyImpulse(new CANNON.Vec3(0, 15, 0), c.body.position);
-                        // 倒れそうな方向に少し跳ぶ
-                        c.body.applyImpulse(new CANNON.Vec3(torque.z*0.1, 0, -torque.x*0.1), c.body.position);
-                    }
+                if (c.charType === 'pogo') {
+                    const tq = calculatePDTorque(c.body.quaternion.x, c.body.angularVelocity.x, 0, 150, 15);
+                    applyLocalTorque(c.body, new CANNON.Vec3(tq, 0, 0));
+                    if(c.body.position.y < 1.6 && Math.abs(c.body.velocity.y) < 1) c.body.applyImpulse(new CANNON.Vec3(0, 18, 0), c.body.position);
                 } 
                 else if (c.type === 'uno') {
-                    // 反転振り子のような制御
-                    const head = c.head.body;
-                    const foot = c.foot.body;
-                    
-                    const diff = head.position.vsub(foot.position);
-                    const tilt = new CANNON.Vec3(diff.x, 0, diff.z);
-                    foot.applyForce(tilt.scale(100), foot.position); // 足を頭の下に滑り込ませる
-                    
-                    // 姿勢維持
-                    const upForce = new CANNON.Vec3(0, 25, 0);
-                    head.applyForce(upForce, head.position);
+                    const diff = c.head.body.position.vsub(c.foot.body.position);
+                    c.foot.body.applyForce(new CANNON.Vec3(diff.x * 60, 0, diff.z * 60), c.foot.body.position);
+                    const tq = calculatePDTorque(c.foot.body.quaternion.x, c.foot.body.angularVelocity.x, 0, 80, 10);
+                    applyLocalTorque(c.foot.body, new CANNON.Vec3(tq, 0, 0));
                 }
-                else if (c.type === 'deuce') {
-                    c.phase += 0.1;
-                    const speed = 5;
-                    const amp = 1.0;
-                    
-                    // 簡易的な歩行アニメーション
-                    c.left.hinge.setMotorSpeed(Math.sin(c.phase) * speed);
-                    c.right.hinge.setMotorSpeed(Math.sin(c.phase + Math.PI) * speed);
-                    
-                    // 上半身のバランス
-                    const up = new CANNON.Vec3(0, 1, 0);
-                    const currentUp = c.torso.body.quaternion.vmult(new CANNON.Vec3(0, 1, 0));
-                    c.torso.body.torque.vadd(currentUp.cross(up).scale(40), c.torso.body.torque);
+                else if (c.type === 'deuce_pro') {
+                    c.timer += 0.016;
+                    if (c.timer > 0.7) { c.state = 1 - c.state; c.timer = 0; }
+                    const torso = c.torso.body;
+                    const tilt = torso.quaternion.x;
+                    const isLeft = c.state === 0;
+                    const sta = isLeft ? c.leftLeg : c.rightLeg;
+                    const swi = isLeft ? c.rightLeg : c.leftLeg;
+
+                    const pdLeg = (leg, hTar, kTar, aTar) => {
+                        const ht = calculatePDTorque(leg.thigh.body.quaternion.x, leg.thigh.body.angularVelocity.x, hTar + tilt, 250, 25);
+                        applyLocalTorque(leg.thigh.body, new CANNON.Vec3(ht, 0, 0));
+                        const kt = calculatePDTorque(leg.shin.body.quaternion.x, leg.shin.body.angularVelocity.x, kTar, 200, 20);
+                        applyLocalTorque(leg.shin.body, new CANNON.Vec3(kt, 0, 0));
+                        const at = calculatePDTorque(leg.foot.body.quaternion.x, leg.foot.body.angularVelocity.x, aTar - tilt, 100, 10);
+                        applyLocalTorque(leg.foot.body, new CANNON.Vec3(at, 0, 0));
+                    };
+
+                    const swing = Math.sin(c.timer * Math.PI * 1.4) * 0.7;
+                    pdLeg(sta, -0.15, 0.2, 0); 
+                    pdLeg(swi, swing + 0.3, -0.5, 0.3);
+
+                    applyLocalTorque(torso, new CANNON.Vec3(calculatePDTorque(torso.quaternion.x, torso.angularVelocity.x, 0, 400, 40), 0, 0));
+                    applyLocalTorque(torso, new CANNON.Vec3(0, 0, calculatePDTorque(torso.quaternion.z, torso.angularVelocity.z, 0, 300, 30)));
                 }
             });
         }
 
+        function animate() {
+            requestAnimationFrame(animate);
+            if (isStarted) {
+                world.step(1/60);
+                updateAI();
+                objectsToUpdate.forEach(obj => {
+                    obj.mesh.position.copy(obj.body.position);
+                    obj.mesh.quaternion.copy(obj.body.quaternion);
+                });
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function selectChar(type) {
+            selectedCharacter = type;
+            document.querySelectorAll('.btn').forEach(b => b.classList.remove('selected'));
+            document.getElementById(`btn-${type}`).classList.add('selected');
+        }
+
         function resetWorld() {
-            characters = [];
-            objectsToUpdate.forEach(obj => {
-                scene.remove(obj.mesh);
-                world.removeBody(obj.body);
-            });
-            objectsToUpdate = [];
-            createEnvironment();
+            objectsToUpdate.forEach(obj => { scene.remove(obj.mesh); world.removeBody(obj.body); });
+            objectsToUpdate = []; characters = []; clickTargets = []; buildWorld();
         }
 
         function onWindowResize() {
@@ -326,36 +238,6 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
-
-        function animate(time) {
-            requestAnimationFrame(animate);
-            
-            const dt = lastTime ? (time - lastTime) / 1000 : 0;
-            lastTime = time;
-
-            // Physics Step (Fixed Substepping)
-            world.step(timeStep, dt, 3);
-            
-            updateAI();
-
-            // Sync Visuals
-            objectsToUpdate.forEach(obj => {
-                obj.mesh.position.copy(obj.body.position);
-                obj.mesh.quaternion.copy(obj.body.quaternion);
-            });
-            
-            // Special Sync for Uno (Head is separate)
-            characters.forEach(c => {
-                if(c.type === 'uno') {
-                    c.head.mesh.position.copy(c.head.body.position);
-                    c.head.mesh.quaternion.copy(c.head.body.quaternion);
-                }
-            });
-
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
     </script>
 </body>
 </html>
