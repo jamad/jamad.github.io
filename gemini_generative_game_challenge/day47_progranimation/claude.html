@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Progranimation Sandbox</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  background:#0d1b2a;overflow:hidden;
+  font-family:'SF Pro Display','Helvetica Neue',system-ui,sans-serif;
+  user-select:none;-webkit-user-select:none;
+}
+canvas{display:block;touch-action:none;cursor:crosshair}
+
+#ui-top{
+  position:fixed;top:0;left:0;right:0;height:56px;
+  background:linear-gradient(180deg,rgba(5,10,20,.95) 0%,rgba(5,10,20,.8) 100%);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(255,180,50,.3);
+  display:flex;align-items:center;padding:0 14px;gap:10px;z-index:100;
+}
+#logo{
+  font-size:15px;font-weight:800;color:#ffb432;letter-spacing:.5px;flex:1;
+  text-shadow:0 0 20px rgba(255,180,50,.5);
+}
+#logo span{color:rgba(255,255,255,.4);font-weight:400}
+.badge{
+  background:rgba(255,180,50,.12);border:1px solid rgba(255,180,50,.4);
+  color:#ffb432;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;
+  min-width:52px;text-align:center;
+}
+.btn{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.8);padding:7px 13px;border-radius:10px;
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;
+  white-space:nowrap;
+}
+.btn:active{transform:scale(.95)}
+.btn.on{background:rgba(255,180,50,.2);border-color:rgba(255,180,50,.5);color:#ffb432}
+
+#hint{
+  position:fixed;top:66px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.55);color:rgba(255,255,255,.85);
+  padding:7px 18px;border-radius:20px;font-size:13px;
+  pointer-events:none;z-index:90;transition:opacity .6s;
+  border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);
+}
+
+#ui-bottom{
+  position:fixed;bottom:0;left:0;right:0;
+  background:linear-gradient(0deg,rgba(5,10,20,.97) 0%,rgba(5,10,20,.8) 100%);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid rgba(255,180,50,.3);
+  padding:10px 12px;
+  padding-bottom:max(10px,env(safe-area-inset-bottom));
+  z-index:100;
+}
+#chars{display:flex;gap:8px;justify-content:center}
+.cc{
+  flex:1;max-width:200px;
+  background:rgba(255,255,255,.05);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:16px;padding:10px 8px 8px;
+  cursor:pointer;text-align:center;transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.cc::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.08) 0%,transparent 70%);
+  opacity:0;transition:opacity .2s;
+}
+.cc:hover::before,.cc.sel::before{opacity:1}
+.cc.sel{
+  border-color:#ffb432;
+  background:rgba(255,180,50,.1);
+  transform:translateY(-4px);
+  box-shadow:0 8px 24px rgba(255,180,50,.2),0 0 0 1px rgba(255,180,50,.3);
+}
+.cc-icon{font-size:26px;display:block;margin-bottom:3px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.cc-name{font-size:13px;font-weight:800;color:#fff;display:block;letter-spacing:.3px}
+.cc-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px;display:block}
+.cc-tag{
+  display:inline-block;margin-top:4px;
+  padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.5px;
+}
+#fx{
+  position:fixed;pointer-events:none;z-index:200;
+  font-size:22px;opacity:0;transition:all .45s ease-out;
+  transform:translate(-50%,-50%);
+}
+#loading{
+  position:fixed;inset:0;background:#0d1b2a;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:999;transition:opacity .5s;
+}
+#loading h2{color:#ffb432;font-size:22px;font-weight:800;margin-bottom:16px}
+.spinner{width:40px;height:40px;border:3px solid rgba(255,180,50,.2);border-top-color:#ffb432;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <h2>🤖 Loading Sandbox...</h2>
+  <div class="spinner"></div>
+</div>
+
+<canvas id="c"></canvas>
+
+<div id="ui-top">
+  <div id="logo">PROGRANIMATION <span>SANDBOX</span></div>
+  <span class="badge" id="cnt">× 0</span>
+  <button class="btn" id="bslow">🐌 Slow</button>
+  <button class="btn" id="bpause">⏸ Pause</button>
+  <button class="btn" id="bclear">🗑 Clear</button>
+</div>
+
+<div id="hint">キャラを選んで地面をタップ！ / Select & tap to spawn</div>
+
+<div id="fx">✨</div>
+
+<div id="ui-bottom">
+  <div id="chars">
+    <div class="cc sel" data-t="uno">
+      <span class="cc-icon">🦿</span>
+      <span class="cc-name">Uno</span>
+      <span class="cc-sub">一本足ホッパー</span>
+      <span class="cc-tag" style="background:rgba(30,100,220,.3);color:#6af">FSM HOPPER</span>
+    </div>
+    <div class="cc" data-t="deuce">
+      <span class="cc-icon">🤸</span>
+      <span class="cc-name">Deuce</span>
+      <span class="cc-sub">二足歩行ロボット</span>
+      <span class="cc-tag" style="background:rgba(80,80,80,.4);color:#ccc">BIPED WALKER</span>
+    </div>
+    <div class="cc" data-t="pogo">
+      <span class="cc-icon">⚡</span>
+      <span class="cc-name">Pogo</span>
+      <span class="cc-sub">スプリングホッパー</span>
+      <span class="cc-tag" style="background:rgba(220,160,0,.25);color:#ffd">SPRING CHAOS</span>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
+
+// ── RENDERER ──────────────────────────────────────────
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x4a9ece);
+scene.fog = new THREE.FogExp2(0x6ab4d8, 0.008);
+
+const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 600);
+camera.position.set(0, 28, 55);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 2, 0);
+controls.maxPolarAngle = Math.PI * 0.47;
+controls.minDistance = 6;
+controls.maxDistance = 140;
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ── LIGHTING ──────────────────────────────────────────
+const ambient = new THREE.AmbientLight(0xb8d8f8, 0.7);
+scene.add(ambient);
+
+const sun = new THREE.DirectionalLight(0xfff5d0, 1.5);
+sun.position.set(40, 70, 30);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 0.5;
+sun.shadow.camera.far = 250;
+sun.shadow.camera.left = sun.shadow.camera.bottom = -80;
+sun.shadow.camera.right = sun.shadow.camera.top = 80;
+sun.shadow.bias = -0.001;
+scene.add(sun);
+
+const fill = new THREE.DirectionalLight(0x8ac8ff, 0.4);
+fill.position.set(-30, 20, -40);
+scene.add(fill);
+
+// ── PHYSICS ──────────────────────────────────────────
+const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) });
+world.broadphase = new CANNON.SAPBroadphase(world);
+world.allowSleep = true;
+world.defaultContactMaterial.friction = 0.5;
+world.defaultContactMaterial.restitution = 0.25;
+
+const gMat = new CANNON.Material('ground');
+const cMat = new CANNON.Material('char');
+const bMat = new CANNON.Material('box');
+world.addContactMaterial(new CANNON.ContactMaterial(gMat, cMat, { friction:0.7, restitution:0.2 }));
+world.addContactMaterial(new CANNON.ContactMaterial(gMat, bMat, { friction:0.6, restitution:0.3 }));
+world.addContactMaterial(new CANNON.ContactMaterial(cMat, bMat, { friction:0.4, restitution:0.4 }));
+world.addContactMaterial(new CANNON.ContactMaterial(bMat, bMat, { friction:0.5, restitution:0.4 }));
+
+// ── SOUND ──────────────────────────────────────────
+let actx;
+function getACtx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+function snd(type, vol=0.5, pitch=1) {
+  try {
+    const a = getACtx(), t = a.currentTime;
+    const g = a.createGain(); g.gain.value = vol; g.connect(a.destination);
+    const ramp = (node) => { g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.35); };
+
+    if (type === 'spawn') {
+      const o = a.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(380*pitch, t);
+      o.frequency.exponentialRampToValueAtTime(780*pitch, t+0.12);
+      o.connect(g); ramp(); o.start(t); o.stop(t+0.2);
+    } else if (type === 'hop') {
+      const o = a.createOscillator(); o.type = 'square';
+      o.frequency.setValueAtTime(220*pitch, t);
+      o.frequency.exponentialRampToValueAtTime(90*pitch, t+0.12);
+      const g2 = a.createGain(); g2.gain.setValueAtTime(vol*0.35, t);
+      g2.gain.exponentialRampToValueAtTime(0.0001, t+0.14);
+      o.connect(g2); g2.connect(a.destination); o.start(t); o.stop(t+0.15);
+    } else if (type === 'land') {
+      const buf = a.createBuffer(1, a.sampleRate*0.08, a.sampleRate);
+      const d = buf.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/800);
+      const s = a.createBufferSource(); s.buffer = buf;
+      const f = a.createBiquadFilter(); f.type='lowpass'; f.frequency.value=300*pitch;
+      s.connect(f); f.connect(g);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.1);
+      s.start(t);
+    } else if (type === 'bounce') {
+      const o = a.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(280*pitch, t);
+      o.frequency.exponentialRampToValueAtTime(560*pitch, t+0.04);
+      o.frequency.exponentialRampToValueAtTime(180*pitch, t+0.22);
+      o.connect(g); ramp(); o.start(t); o.stop(t+0.25);
+    } else if (type === 'ko') {
+      const o = a.createOscillator(); o.type = 'sawtooth';
+      o.frequency.setValueAtTime(180*pitch, t);
+      o.frequency.exponentialRampToValueAtTime(35*pitch, t+0.5);
+      o.connect(g); g.gain.setValueAtTime(vol*0.7, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+0.5);
+      o.start(t); o.stop(t+0.5);
+    } else if (type === 'recover') {
+      const o = a.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(220*pitch, t);
+      o.frequency.linearRampToValueAtTime(660*pitch, t+0.28);
+      o.connect(g); g.gain.setValueAtTime(vol*0.4, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+0.3);
+      o.start(t); o.stop(t+0.3);
+    } else if (type === 'creak') {
+      const o = a.createOscillator(); o.type = 'sine';
+      const lfo = a.createOscillator(); lfo.frequency.value = 12;
+      const lg = a.createGain(); lg.gain.value = 18;
+      lfo.connect(lg); lg.connect(o.frequency);
+      o.frequency.value = 80; o.connect(g);
+      g.gain.setValueAtTime(vol*0.25, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.25);
+      lfo.start(t); o.start(t); lfo.stop(t+0.25); o.stop(t+0.25);
+    } else if (type === 'thud') {
+      const buf = a.createBuffer(1, a.sampleRate*0.05, a.sampleRate);
+      const d = buf.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/300);
+      const s = a.createBufferSource(); s.buffer=buf;
+      const f = a.createBiquadFilter(); f.type='lowpass'; f.frequency.value=200;
+      s.connect(f); f.connect(g);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.06);
+      s.start(t);
+    } else if (type === 'select') {
+      const o = a.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(420*pitch, t);
+      o.frequency.linearRampToValueAtTime(520*pitch, t+0.06);
+      o.connect(g); g.gain.setValueAtTime(vol*0.35, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+0.1);
+      o.start(t); o.stop(t+0.1);
+    }
+  } catch(e) {}
+}
+
+// ── TERRAIN BUILDER ──────────────────────────────────
+const meshBodies = []; // for raycasting
+function staticBox(sx,sy,sz, px,py,pz, rx,ry,rz, color, receiveShadow=true) {
+  const body = new CANNON.Body({ mass:0, material:gMat });
+  body.addShape(new CANNON.Box(new CANNON.Vec3(sx/2,sy/2,sz/2)));
+  body.position.set(px,py,pz);
+  if(rx||ry||rz) body.quaternion.setFromEuler(rx,ry,rz);
+  world.addBody(body);
+  const m = new THREE.Mesh(
+    new THREE.BoxGeometry(sx,sy,sz),
+    new THREE.MeshLambertMaterial({color})
+  );
+  m.position.set(px,py,pz);
+  if(rx||ry||rz) m.rotation.set(rx,ry,rz);
+  m.castShadow = true; m.receiveShadow = receiveShadow;
+  scene.add(m); meshBodies.push(m);
+  return {body,mesh:m};
+}
+
+function staticSphere(r, px,py,pz, color) {
+  const body = new CANNON.Body({ mass:0, material:gMat });
+  body.addShape(new CANNON.Sphere(r));
+  body.position.set(px,py,pz);
+  world.addBody(body);
+  const m = new THREE.Mesh(
+    new THREE.SphereGeometry(r,20,16),
+    new THREE.MeshLambertMaterial({color})
+  );
+  m.position.set(px,py,pz);
+  m.castShadow = true; m.receiveShadow = true;
+  scene.add(m); meshBodies.push(m);
+  return {body,mesh:m};
+}
+
+// ── GROUND ──────────────────────────────────────────
+const groundBody = new CANNON.Body({ mass:0, material:gMat });
+groundBody.addShape(new CANNON.Plane());
+groundBody.quaternion.setFromEuler(-Math.PI/2,0,0);
+world.addBody(groundBody);
+
+// Terrain mesh with subtle grid
+const groundGeo = new THREE.PlaneGeometry(300,300,60,60);
+// Gentle waves for visual interest only
+const gPos = groundGeo.attributes.position;
+for(let i=0;i<gPos.count;i++){
+  const x=gPos.getX(i), z=gPos.getZ(i);
+  const v = Math.sin(x*0.04)*0.4 + Math.cos(z*0.05)*0.3;
+  gPos.setZ(i, v); // Note: PlaneGeometry is in XY before rotation
+}
+groundGeo.computeVertexNormals();
+groundGeo.rotateX(-Math.PI/2);
+
+const groundMesh = new THREE.Mesh(groundGeo, new THREE.MeshLambertMaterial({
+  color:0x5a9e6a, side:THREE.DoubleSide
+}));
+groundMesh.receiveShadow = true;
+scene.add(groundMesh);
+meshBodies.push(groundMesh);
+
+// Hills (visible above ground, physics sphere partially buried)
+staticSphere(8,   28, -5,  10, 0x4a9060);
+staticSphere(11, -32, -7, -18, 0x3d8050);
+staticSphere(6,   12, -4, -28, 0x55a070);
+staticSphere(5,  -15, -3,  25, 0x4a8f5f);
+
+// Ramp A (gentle slope, players can walk up)
+staticBox(22, 1.2, 10,  -12, 2.2, 22, -0.35, 0.25, 0, 0x8b6914);
+// Ramp B (steeper)
+staticBox(16, 1.2, 8,   20, 3.5, -22, -0.5, -0.3, 0, 0x7a5c10);
+
+// Elevated platform with pillars
+staticBox(1.2, 7, 1.2,  -7, 3.5, -16, 0,0,0, 0x7d6a4a);
+staticBox(1.2, 7, 1.2,   7, 3.5, -16, 0,0,0, 0x7d6a4a);
+staticBox(1.2, 7, 1.2,  -7, 3.5, -26, 0,0,0, 0x7d6a4a);
+staticBox(1.2, 7, 1.2,   7, 3.5, -26, 0,0,0, 0x7d6a4a);
+staticBox(16, 0.6, 12,   0, 7.3, -21, 0,0,0, 0xa07030);
+
+// Low wall (obstacle)
+staticBox(20, 2.5, 0.8,  0, 1.25, -8, 0,0,0, 0x8a7060);
+
+// Steps
+staticBox(6, 0.5, 4, -30,  0.25, 5, 0,0,0, 0x7a6050);
+staticBox(6, 1.0, 4, -30,  0.75, 1, 0,0,0, 0x7a6050);
+staticBox(6, 1.5, 4, -30,  1.25,-3, 0,0,0, 0x7a6050);
+
+// ── SEESAW ──────────────────────────────────────────
+// Fulcrum
+const fulcrum = staticBox(0.8, 2.4, 3.5, 0, 1.2, 10, 0,0,0, 0x999988);
+
+// Plank (dynamic)
+const plankBody = new CANNON.Body({ mass:12, linearDamping:0.3, angularDamping:0.5 });
+plankBody.addShape(new CANNON.Box(new CANNON.Vec3(7, 0.18, 1.2)));
+plankBody.position.set(0, 2.58, 10);
+world.addBody(plankBody);
+const plankMesh = new THREE.Mesh(
+  new THREE.BoxGeometry(14, 0.36, 2.4),
+  new THREE.MeshLambertMaterial({color:0xd4a030})
+);
+plankMesh.castShadow = true; plankMesh.receiveShadow = true;
+scene.add(plankMesh);
+
+// End markers (colorful tips)
+const tipGeo = new THREE.BoxGeometry(1.2, 0.4, 2.5);
+const tipL = new THREE.Mesh(tipGeo, new THREE.MeshLambertMaterial({color:0xe04040}));
+tipL.position.set(-6.5, 0, 0); plankMesh.add(tipL);
+const tipR = new THREE.Mesh(tipGeo, new THREE.MeshLambertMaterial({color:0x4080e0}));
+tipR.position.set(6.5, 0, 0); plankMesh.add(tipR);
+
+const hinge = new CANNON.HingeConstraint(plankBody, fulcrum.body, {
+  pivotA: new CANNON.Vec3(0,0,0),
+  pivotB: new CANNON.Vec3(0,1.38,0),
+  axisA: new CANNON.Vec3(0,0,1),
+  axisB: new CANNON.Vec3(0,0,1),
+});
+world.addConstraint(hinge);
+
+// Small trampoline (high restitution zone)
+const trampolineMat = new CANNON.Material('tramp');
+const trampolineBody = new CANNON.Body({ mass:0, material:trampolineMat });
+trampolineBody.addShape(new CANNON.Box(new CANNON.Vec3(2.5, 0.15, 2.5)));
+trampolineBody.position.set(-25, 0.15, -5);
+world.addBody(trampolineBody);
+world.addContactMaterial(new CANNON.ContactMaterial(trampolineMat, cMat, { friction:0.1, restitution:0.95 }));
+const trampMesh = new THREE.Mesh(
+  new THREE.BoxGeometry(5, 0.3, 5),
+  new THREE.MeshLambertMaterial({color:0x22ccaa})
+);
+trampMesh.position.set(-25, 0.15, -5);
+trampMesh.castShadow = true; trampMesh.receiveShadow = true;
+scene.add(trampMesh); meshBodies.push(trampMesh);
+
+// Frame around trampoline
+staticBox(5.4, 0.6, 0.3, -25, 0.5, -2.35, 0,0,0, 0x555566);
+staticBox(5.4, 0.6, 0.3, -25, 0.5, -7.65, 0,0,0, 0x555566);
+staticBox(0.3, 0.6, 5.4, -22.35, 0.5, -5, 0,0,0, 0x555566);
+staticBox(0.3, 0.6, 5.4, -27.65, 0.5, -5, 0,0,0, 0x555566);
+
+// ── BOX TOWER ──────────────────────────────────────
+const dynBodies = [];
+const palette = [0xe74c3c,0x3498db,0x2ecc71,0xf39c12,0x9b59b6,0x1abc9c,0xe67e22,0xe91e63];
+function spawnBox(x,y,z,color){
+  const b = new CANNON.Body({ mass:2.5, material:bMat, linearDamping:0.2, angularDamping:0.4 });
+  b.addShape(new CANNON.Box(new CANNON.Vec3(0.8,0.8,0.8)));
+  b.position.set(x,y,z);
+  world.addBody(b);
+  const m = new THREE.Mesh(
+    new THREE.BoxGeometry(1.6,1.6,1.6),
+    new THREE.MeshLambertMaterial({color})
+  );
+  m.castShadow = true; m.receiveShadow = true;
+  scene.add(m);
+  dynBodies.push({body:b,mesh:m});
+  b.addEventListener('collide',(e)=>{
+    const v=e.contact.getImpactVelocityAlongNormal();
+    if(Math.abs(v)>3) snd('thud', Math.min(0.5,Math.abs(v)*0.04));
+  });
+}
+// Tower 1: at (18, y, -8)
+for(let i=0;i<4;i++) for(let j=0;j<2;j++)
+  spawnBox(17+j*1.8, 0.8+i*1.62, -8, palette[(i*2+j)%8]);
+// Tower 2: at (-18, y, 15)
+for(let i=0;i<3;i++) for(let j=0;j<3;j++)
+  spawnBox(-17+j*1.8, 0.8+i*1.62, 14, palette[(i*3+j+2)%8]);
+// Scattered rocks (smaller spheres)
+for(let i=0;i<8;i++){
+  const b2=new CANNON.Body({mass:4,material:bMat,linearDamping:0.3,angularDamping:0.4});
+  b2.addShape(new CANNON.Sphere(0.6+Math.random()*0.4));
+  b2.position.set((Math.random()-0.5)*50, 1.5+Math.random()*2, (Math.random()-0.5)*50);
+  world.addBody(b2);
+  const rm=new THREE.Mesh(
+    new THREE.SphereGeometry(0.6+Math.random()*0.4,10,8),
+    new THREE.MeshLambertMaterial({color:0x888877+(Math.random()*0x222222|0)})
+  );
+  rm.castShadow=true; rm.receiveShadow=true; scene.add(rm);
+  dynBodies.push({body:b2,mesh:rm});
+}
+
+// ── SKYBOX / DISTANT MOUNTAINS ───────────────────────
+const mountainMat = new THREE.MeshLambertMaterial({color:0x3a7a5a, fog:true});
+for(let i=0;i<12;i++){
+  const ang = (i/12)*Math.PI*2;
+  const dist = 120+Math.random()*30;
+  const h = 15+Math.random()*30;
+  const mGeo = new THREE.ConeGeometry(8+Math.random()*12, h, 7);
+  const mm = new THREE.Mesh(mGeo, mountainMat);
+  mm.position.set(Math.cos(ang)*dist, h/2-2, Math.sin(ang)*dist);
+  mm.rotation.y = Math.random()*Math.PI;
+  scene.add(mm);
+}
+
+// Sun disk (visual)
+const sunGeo = new THREE.CircleGeometry(6, 32);
+const sunMesh = new THREE.Mesh(sunGeo, new THREE.MeshBasicMaterial({color:0xfffde0, side:THREE.DoubleSide}));
+sunMesh.position.set(60,80,-100);
+sunMesh.lookAt(0,0,0);
+scene.add(sunMesh);
+
+// ── CHARACTERS ──────────────────────────────────────
+const chars = [];
+let selType = 'uno';
+let paused = false, slow = false;
+
+// Ground detection raycast
+const rayFrom = new CANNON.Vec3();
+const rayTo = new CANNON.Vec3();
+const rayResult = new CANNON.RaycastResult();
+
+class Char {
+  constructor(pos) {
+    this.pos = pos.clone();
+    this.heading = new THREE.Vector3(Math.random()>.5?1:-1,0,(Math.random()-.5)*.5).normalize();
+    this.onGround = false;
+    this.ko = false; this.koTimer = 0;
+    this.defAngDamp = 0.92; this.defLinDamp = 0.08;
+    this.group = new THREE.Group();
+    scene.add(this.group);
+  }
+  raycastGround(offset=1.5) {
+    const p = this.body.position;
+    rayFrom.set(p.x, p.y, p.z);
+    rayTo.set(p.x, p.y - (offset + 0.5), p.z);
+    rayResult.reset();
+    world.raycastClosest(rayFrom, rayTo, { collisionFilterMask:1 }, rayResult);
+    return rayResult.hasHit;
+  }
+  triggerKO(vol=0.6) {
+    if(this.ko) return;
+    this.ko=true; this.koTimer=3+Math.random()*2;
+    this.body.angularDamping=0.05;
+    this.body.linearDamping=0.15;
+    snd('ko',vol);
+  }
+  recover() {
+    this.ko=false;
+    this.body.angularDamping=this.defAngDamp;
+    this.body.linearDamping=this.defLinDamp;
+    this.body.angularVelocity.set(0,0,0);
+    snd('recover',0.4);
+  }
+  baseUpdate(dt) {
+    if(this.ko) {
+      this.koTimer-=dt;
+      if(this.koTimer<=0) this.recover();
+    }
+    this.group.position.copy(this.body.position);
+    this.group.quaternion.copy(this.body.quaternion);
+  }
+  destroy() {
+    world.removeBody(this.body);
+    scene.remove(this.group);
+  }
+}
+
+// ── UNO (one-legged hopper) ───────────────────────────
+class Uno extends Char {
+  constructor(pos) {
+    super(pos);
+    this.defAngDamp = 0.97; this.defLinDamp = 0.05;
+    this.hopCD = 0; this.walkT = 0; this.state='AIR'; this.changeDir=0;
+
+    this.body = new CANNON.Body({
+      mass:4, material:cMat,
+      linearDamping:this.defLinDamp, angularDamping:this.defAngDamp
+    });
+    this.body.addShape(new CANNON.Box(new CANNON.Vec3(0.42,1.05,0.35)));
+    this.body.position.set(pos.x, pos.y+3, pos.z);
+    world.addBody(this.body);
+
+    this.body.addEventListener('collide',(e)=>{
+      const v=Math.abs(e.contact.getImpactVelocityAlongNormal());
+      if(v>3 && !this.ko) snd('land', Math.min(0.45,v*.035));
+      if(v>11 && !this.ko) this.triggerKO();
+    });
+
+    // Torso
+    const torso = new THREE.Mesh(
+      new THREE.BoxGeometry(0.82,1.85,0.62),
+      new THREE.MeshLambertMaterial({color:0x1a3a8c})
+    );
+    torso.castShadow=true; this.group.add(torso);
+    // Chest panel
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(0.55,0.9,0.04),
+      new THREE.MeshLambertMaterial({color:0x2a5ac0}));
+    panel.position.set(0,0.1,0.32); torso.add(panel);
+    // Head
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.6,0.6,0.58),
+      new THREE.MeshLambertMaterial({color:0x2a5ab0}));
+    head.position.y=1.28; head.castShadow=true; this.group.add(head);
+    // Visor
+    const visor=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.14,0.04),
+      new THREE.MeshBasicMaterial({color:0x00c8ff}));
+    visor.position.set(0,0.04,0.31); head.add(visor);
+    // Antenna
+    const ant=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.35,6),
+      new THREE.MeshLambertMaterial({color:0xffbb00}));
+    ant.position.set(0.18,0.46,0); head.add(ant);
+    const antTip=new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8),
+      new THREE.MeshBasicMaterial({color:0xffee00}));
+    antTip.position.y=0.2; ant.add(antTip);
+    // Leg
+    this.legMesh=new THREE.Mesh(
+      new THREE.CylinderGeometry(0.14,0.11,1.1,10),
+      new THREE.MeshLambertMaterial({color:0xff8800})
+    );
+    this.legMesh.position.y=-1.5; this.legMesh.castShadow=true; this.group.add(this.legMesh);
+    // Foot
+    this.footMesh=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.18,0.85),
+      new THREE.MeshLambertMaterial({color:0xff6600}));
+    this.footMesh.position.y=-2.15; this.footMesh.castShadow=true; this.group.add(this.footMesh);
+    // Cape
+    const cape=new THREE.Mesh(new THREE.PlaneGeometry(0.75,1.1),
+      new THREE.MeshLambertMaterial({color:0xcc1111,side:THREE.DoubleSide}));
+    cape.position.set(0,0.3,-0.38); cape.rotation.x=0.25; this.group.add(cape);
+    this.capeRef=cape;
+  }
+  update(dt) {
+    if(this.ko){ this.baseUpdate(dt); return; }
+    this.hopCD-=dt; this.walkT+=dt; this.changeDir-=dt;
+    const onG = this.raycastGround(1.1);
+    this.onGround=onG;
+
+    // Always push forward
+    this.body.applyForce(new CANNON.Vec3(this.heading.x*6,0,this.heading.z*6));
+
+    if(onG && this.hopCD<=0) {
+      const vy=this.body.velocity.y;
+      if(vy<2) {
+        this.body.velocity.y=0;
+        this.body.applyImpulse(new CANNON.Vec3(
+          this.heading.x*3+(Math.random()-.5)*.6,
+          9.5+Math.random()*1.5,
+          this.heading.z*3+(Math.random()-.5)*.6
+        ));
+        this.hopCD=0.65+Math.random()*.25;
+        snd('hop',0.28,0.85+Math.random()*.3);
+        if(this.changeDir<=0){
+          this.heading.set(Math.random()-.5,0,Math.random()-.5).normalize();
+          this.changeDir=2+Math.random()*3;
+        }
+      }
+    }
+    // Leg animation
+    this.legMesh.rotation.x=Math.sin(this.walkT*9)*.22;
+    this.footMesh.rotation.x=Math.sin(this.walkT*9+0.5)*.15;
+    this.capeRef.rotation.x=0.2+Math.sin(this.walkT*2)*.15;
+    this.baseUpdate(dt);
+  }
+}
+
+// ── DEUCE (biped walker) ──────────────────────────────
+class Deuce extends Char {
+  constructor(pos) {
+    super(pos);
+    this.defAngDamp = 0.98; this.defLinDamp = 0.12;
+    this.walkT=0; this.stepCD=0; this.changeDir=0;
+
+    this.body = new CANNON.Body({
+      mass:6, material:cMat,
+      linearDamping:this.defLinDamp, angularDamping:this.defAngDamp
+    });
+    this.body.addShape(new CANNON.Box(new CANNON.Vec3(0.55,0.95,0.38)));
+    this.body.position.set(pos.x, pos.y+3, pos.z);
+    world.addBody(this.body);
+
+    this.body.addEventListener('collide',(e)=>{
+      const v=Math.abs(e.contact.getImpactVelocityAlongNormal());
+      if(v>2.5 && !this.ko) snd('land', Math.min(0.4,v*.03));
+      if(v>12 && !this.ko) this.triggerKO();
+    });
+
+    // Torso
+    const torso=new THREE.Mesh(new THREE.BoxGeometry(1.0,1.5,0.68),
+      new THREE.MeshLambertMaterial({color:0x778899}));
+    torso.castShadow=true; this.group.add(torso);
+    // Shoulder details
+    const shL=new THREE.Mesh(new THREE.BoxGeometry(0.28,0.28,0.72),
+      new THREE.MeshLambertMaterial({color:0x99aabb}));
+    shL.position.set(-0.6,0.62,0); torso.add(shL);
+    const shR=shL.clone(); shR.position.x=0.6; torso.add(shR);
+    // Head
+    const head=new THREE.Mesh(new THREE.BoxGeometry(0.65,0.65,0.62),
+      new THREE.MeshLambertMaterial({color:0xaabbcc}));
+    head.position.y=1.1; head.castShadow=true; this.group.add(head);
+    const visor=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.18,0.04),
+      new THREE.MeshBasicMaterial({color:0x00ff88}));
+    visor.position.set(0,0.05,0.32); head.add(visor);
+    // Arms
+    const armGeo=new THREE.BoxGeometry(0.22,0.78,0.22);
+    const armMat=new THREE.MeshLambertMaterial({color:0x667788});
+    this.lArm=new THREE.Mesh(armGeo,armMat);
+    this.lArm.position.set(-0.65,0.08,0); this.group.add(this.lArm);
+    this.rArm=new THREE.Mesh(armGeo,armMat);
+    this.rArm.position.set(0.65,0.08,0); this.group.add(this.rArm);
+    // Legs
+    const legGeo=new THREE.BoxGeometry(0.28,0.92,0.28);
+    const legMat=new THREE.MeshLambertMaterial({color:0x445566});
+    this.lLeg=new THREE.Mesh(legGeo,legMat);
+    this.lLeg.position.set(-0.3,-1.2,0); this.lLeg.castShadow=true; this.group.add(this.lLeg);
+    this.rLeg=new THREE.Mesh(legGeo,legMat);
+    this.rLeg.position.set(0.3,-1.2,0); this.rLeg.castShadow=true; this.group.add(this.rLeg);
+    // Feet
+    const fGeo=new THREE.BoxGeometry(0.32,0.18,0.55);
+    const fMat=new THREE.MeshLambertMaterial({color:0x334455});
+    [this.lLeg,this.rLeg].forEach(l=>{
+      const f=new THREE.Mesh(fGeo,fMat); f.position.set(0,-0.56,0.1); l.add(f);
+    });
+    // Knee joints
+    const kneeGeo=new THREE.SphereGeometry(0.15,8,8);
+    const kneeMat=new THREE.MeshLambertMaterial({color:0x889aaa});
+    [this.lLeg,this.rLeg].forEach(l=>{
+      const k=new THREE.Mesh(kneeGeo,kneeMat); k.position.y=0.28; l.add(k);
+    });
+  }
+  update(dt) {
+    if(this.ko){ this.baseUpdate(dt); return; }
+    this.walkT+=dt; this.stepCD-=dt; this.changeDir-=dt;
+    const onG=this.raycastGround(1.0);
+    this.onGround=onG;
+
+    if(onG) {
+      this.body.applyForce(new CANNON.Vec3(this.heading.x*30,0,this.heading.z*30));
+      // Step bounce (walk cycle)
+      const step=Math.max(0,Math.sin(this.walkT*3.8*Math.PI*2))*22;
+      this.body.applyForce(new CANNON.Vec3(0,step,0));
+      if(this.stepCD<=0){
+        this.stepCD=0.26+Math.random()*.08;
+        snd('land',0.12,1.15+Math.random()*.2);
+      }
+      if(this.changeDir<=0){
+        this.heading.set(Math.random()-.5,0,Math.random()-.5).normalize();
+        this.changeDir=3+Math.random()*4;
+      }
+    }
+    // Leg/arm animation
+    const swing=Math.sin(this.walkT*7.6);
+    this.lLeg.rotation.x= swing*.55;
+    this.rLeg.rotation.x=-swing*.55;
+    this.lArm.rotation.x=-swing*.45;
+    this.rArm.rotation.x= swing*.45;
+    // Face heading direction
+    const speed2D=Math.sqrt(this.body.velocity.x**2+this.body.velocity.z**2);
+    if(speed2D>0.5){
+      const ang=Math.atan2(this.body.velocity.x,this.body.velocity.z);
+      this.group.rotation.y=ang;
+    }
+    this.baseUpdate(dt);
+    this.group.position.copy(this.body.position);
+    this.group.quaternion.set(0,this.group.quaternion.y,0,this.group.quaternion.w);
+  }
+}
+
+// ── POGO (spring chaos) ──────────────────────────────
+class Pogo extends Char {
+  constructor(pos) {
+    super(pos);
+    this.defAngDamp = 0.25; this.defLinDamp = 0.02;
+    this.bounceT=0; this.changeDir=0;
+    this.squash=1;
+
+    this.body = new CANNON.Body({
+      mass:3, material:cMat,
+      linearDamping:this.defLinDamp, angularDamping:this.defAngDamp
+    });
+    this.body.addShape(new CANNON.Sphere(0.58));
+    this.body.position.set(pos.x, pos.y+4, pos.z);
+    world.addBody(this.body);
+
+    this.body.addEventListener('collide',(e)=>{
+      if(this.ko) return;
+      const ni=e.contact.ni;
+      const v=Math.abs(e.contact.getImpactVelocityAlongNormal());
+      if(v>1.5 && Math.abs(ni.y)>0.3){
+        const force=Math.min(22,v*1.8);
+        this.body.applyImpulse(new CANNON.Vec3(
+          this.heading.x*2.5+(Math.random()-.5)*3,
+          force,
+          this.heading.z*2.5+(Math.random()-.5)*3
+        ));
+        snd('bounce',Math.min(0.8,v*.06),0.85+v*.04);
+        this.squash=0.55; // squash on impact
+        if(v>13) this.triggerKO();
+        if(Math.random()<0.45){
+          this.heading.set(Math.random()-.5,0,Math.random()-.5).normalize();
+          this.changeDir=1.5+Math.random()*2;
+        }
+      }
+    });
+
+    // Body sphere
+    const body2=new THREE.Mesh(new THREE.SphereGeometry(0.58,16,12),
+      new THREE.MeshLambertMaterial({color:0xffd700}));
+    body2.castShadow=true; this.group.add(body2);
+    // Face
+    const eyeGeo=new THREE.SphereGeometry(0.09,8,8);
+    const eyeMat=new THREE.MeshBasicMaterial({color:0x222211});
+    const eL=new THREE.Mesh(eyeGeo,eyeMat); eL.position.set(-.2,.18,.5); this.group.add(eL);
+    const eR=new THREE.Mesh(eyeGeo,eyeMat); eR.position.set(.2,.18,.5); this.group.add(eR);
+    // Mouth
+    const mth=new THREE.Mesh(new THREE.BoxGeometry(.25,.06,.04),
+      new THREE.MeshBasicMaterial({color:0x883300}));
+    mth.position.set(0,-.1,.56); this.group.add(mth);
+    // Pogo stick
+    this.stick=new THREE.Group(); this.group.add(this.stick);
+    const stickMesh=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,1.6,8),
+      new THREE.MeshLambertMaterial({color:0xcc2200}));
+    stickMesh.position.y=-1.1; this.stick.add(stickMesh);
+    // Spring coils
+    for(let i=0;i<5;i++){
+      const coil=new THREE.Mesh(new THREE.TorusGeometry(.16,.04,6,10),
+        new THREE.MeshLambertMaterial({color:0xbbbbaa}));
+      coil.position.y=-.45-i*.2; coil.rotation.x=Math.PI/2; this.stick.add(coil);
+    }
+    // Foot plate
+    const plate=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.1,8),
+      new THREE.MeshLambertMaterial({color:0x777766}));
+    plate.position.y=-2.05; this.stick.add(plate);
+  }
+  update(dt) {
+    if(this.ko){ this.baseUpdate(dt); return; }
+    this.bounceT+=dt; this.changeDir-=dt;
+    // Small constant forward push
+    this.body.applyForce(new CANNON.Vec3(this.heading.x*2.5,0,this.heading.z*2.5));
+    // Squash/stretch
+    this.squash+=(1-this.squash)*8*dt;
+    const sy=Math.max(0.5,Math.min(1.5,this.squash));
+    this.group.scale.set(1/Math.sqrt(sy),sy,1/Math.sqrt(sy));
+    // Stick leans toward velocity
+    const vx=this.body.velocity.x, vz=this.body.velocity.z;
+    this.stick.rotation.z=-vx*.06;
+    this.stick.rotation.x= vz*.06;
+    this.baseUpdate(dt);
+  }
+}
+
+// ── SPAWN ────────────────────────────────────────────
+const MAX_CHARS=20;
+function spawnChar(type, pos) {
+  if(chars.length>=MAX_CHARS){ const old=chars.shift(); old.destroy(); }
+  let c;
+  const pitches={uno:1,deuce:0.78,pogo:1.35};
+  if(type==='uno') c=new Uno(pos);
+  else if(type==='deuce') c=new Deuce(pos);
+  else c=new Pogo(pos);
+  chars.push(c);
+  snd('spawn',0.5,pitches[type]||1);
+  document.getElementById('cnt').textContent=`× ${chars.length}`;
+  // FX
+  const v=pos.clone().project(camera);
+  const fx=document.getElementById('fx');
+  fx.style.left=`${(v.x+1)/2*window.innerWidth}px`;
+  fx.style.top=`${(-v.y+1)/2*window.innerHeight}px`;
+  fx.style.opacity='1'; fx.style.transform='translate(-50%,-50%) scale(1.5)';
+  setTimeout(()=>{fx.style.opacity='0';fx.style.transform='translate(-50%,-120%) scale(2.5)';},60);
+  document.getElementById('hint').style.opacity='0';
+}
+
+// ── INPUT ────────────────────────────────────────────
+const raycaster=new THREE.Raycaster();
+let ptDown={x:0,y:0}, didDrag=false;
+
+canvas.addEventListener('pointerdown',(e)=>{
+  if(e.isPrimary===false) return;
+  ptDown={x:e.clientX,y:e.clientY}; didDrag=false;
+});
+canvas.addEventListener('pointermove',(e)=>{
+  if(!e.isPrimary) return;
+  const dx=e.clientX-ptDown.x, dy=e.clientY-ptDown.y;
+  if(dx*dx+dy*dy>64) didDrag=true;
+});
+canvas.addEventListener('pointerup',(e)=>{
+  if(!e.isPrimary || didDrag) return;
+  getACtx();
+  const rect=canvas.getBoundingClientRect();
+  const nx=((e.clientX-rect.left)/rect.width)*2-1;
+  const ny=-((e.clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera({x:nx,y:ny},camera);
+  const hits=raycaster.intersectObjects(meshBodies,false);
+  if(hits.length>0) spawnChar(selType, hits[0].point);
+  else {
+    // hit nothing visible → cast to ground plane y=0
+    const t=-camera.position.y/raycaster.ray.direction.y;
+    if(t>0){
+      const pt=new THREE.Vector3().copy(camera.position).addScaledVector(raycaster.ray.direction,t);
+      spawnChar(selType, pt);
+    }
+  }
+});
+
+// Character cards
+document.querySelectorAll('.cc').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.cc').forEach(x=>x.classList.remove('sel'));
+    el.classList.add('sel');
+    selType=el.dataset.t;
+    getACtx();
+    snd('select',0.3,selType==='uno'?1:selType==='deuce'?0.75:1.4);
+    el.style.transform='translateY(-6px) scale(1.04)';
+    setTimeout(()=>el.style.transform='',200);
+  });
+});
+
+// Buttons
+document.getElementById('bpause').addEventListener('click',function(){
+  paused=!paused;
+  this.classList.toggle('on',paused);
+  this.textContent=paused?'▶ Play':'⏸ Pause';
+});
+document.getElementById('bslow').addEventListener('click',function(){
+  slow=!slow;
+  this.classList.toggle('on',slow);
+});
+document.getElementById('bclear').addEventListener('click',()=>{
+  chars.forEach(c=>c.destroy()); chars.length=0;
+  document.getElementById('cnt').textContent='× 0';
+  document.getElementById('hint').style.opacity='1';
+});
+
+// ── SYNC HELPER ──────────────────────────────────────
+function syncBodies(){
+  dynBodies.forEach(({body,mesh})=>{
+    mesh.position.copy(body.position);
+    mesh.quaternion.copy(body.quaternion);
+  });
+  plankMesh.position.copy(plankBody.position);
+  plankMesh.quaternion.copy(plankBody.quaternion);
+}
+
+// Seesaw creak sound throttle
+let seesawSndCD=0;
+
+// ── GAME LOOP ────────────────────────────────────────
+let lastT=performance.now();
+
+(function loop(){
+  requestAnimationFrame(loop);
+  const now=performance.now();
+  let dt=Math.min((now-lastT)/1000, 0.05);
+  lastT=now;
+
+  if(!paused){
+    const simDt=slow?dt*0.28:dt;
+    world.step(1/60, simDt, 4);
+    chars.forEach(c=>c.update(simDt));
+    syncBodies();
+
+    // Seesaw sound
+    seesawSndCD-=dt;
+    const angV=plankBody.angularVelocity.length();
+    if(angV>1.2 && seesawSndCD<=0){ snd('creak',0.12); seesawSndCD=0.25; }
+  }
+
+  controls.update();
+  renderer.render(scene,camera);
+})();
+
+// Hide loading screen once everything is ready
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    const l=document.getElementById('loading');
+    l.style.opacity='0';
+    setTimeout(()=>l.style.display='none',500);
+  },400);
+});
+document.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(()=>{
+    const l=document.getElementById('loading');
+    if(l){ l.style.opacity='0'; setTimeout(()=>l.style.display='none',500); }
+  },800);
+});
+</script>
+</body>
+</html>
