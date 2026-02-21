@@ -97,7 +97,8 @@
         
         .pos-essive    { top: calc(50% + 290px); left: 25%; transform: translateX(-50%); border-left: 5px solid #fbbf24; }
         
-        .pos-translative { top: calc(50% + 290px); left: 75%; transform: translateX(-50%); border-left: 5px solid #f59e0b; }
+        /* Translatiivi: 弱変化(gi)なのでもっと右へ */
+        .pos-translative { top: calc(50% + 290px); left: 82%; transform: translateX(-50%); border-left: 5px solid #f59e0b; }
 
         .pos-partitive { top: calc(50% + 365px); left: 30%; transform: translateX(-50%); }
 
@@ -105,8 +106,10 @@
         .pos-genitive { top: calc(50% + 140px); left: calc(50% + 140px); border: 1px solid rgba(129, 140, 248, 0.5); }
 
         /* 周辺格 (四隅に分散) */
-        .pos-abessiivi { bottom: 5%; left: 5%; opacity: 0.3; }
-        .pos-komitatiivi { bottom: 5%; right: 5%; opacity: 0.3; }
+        /* Abessiivi: 弱変化(gi)なので右下へ */
+        .pos-abessiivi { bottom: 5%; right: 5%; opacity: 0.3; }
+        /* Komitatiivi: 強変化(nk)なので左下へ */
+        .pos-komitatiivi { bottom: 5%; left: 5%; opacity: 0.3; }
         .pos-instruktiivi { top: 15%; left: 5%; opacity: 0.3; }
 
         .emoji-container {
