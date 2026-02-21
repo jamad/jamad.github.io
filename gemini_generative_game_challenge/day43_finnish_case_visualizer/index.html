@@ -38,16 +38,21 @@
             position: absolute;
             width: var(--card-width);
             padding: calc(10px * var(--base-font-scale));
-            background-color: #0f172a !important; /* 濃い紺色で塗りつぶし */
-            opacity: 1 !important;               /* 透明度を完全に排除 */
+            background-color: #0f172a !important;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.4); /* 全カード統一: indigo */
             text-align: center;
             z-index: 20; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.7);
             animation-play-state: var(--ani-play-state) !important;
             animation-delay: var(--ani-delay) !important;
             animation-fill-mode: both !important;
+        }
+
+        /* SG=PLで形が変わらないカード: 薄く表示 */
+        .case-card.sg-pl-same {
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            opacity: 0.35;
         }
 
 
@@ -64,10 +69,8 @@
         .tts-icon { opacity: 0.4; font-size: 0.9em; cursor: pointer; transition: opacity 0.2s; }
         .tts-icon:hover { opacity: 1; color: #6366f1; }
 
-        /* --- 座標とアニメーションの再設計 --- */
-        
         /* 1. 内格系 (箱の中) */
-        .pos-inessive { top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid #f43f5e; z-index: 21; }
+        .pos-inessive { top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 21; }
         .pos-illative { animation: ill-move 6s infinite linear; }
         @keyframes ill-move {
             0%, 40% { left: 5%; top: 50%; transform: translateY(-50%); opacity: 0.5; }
@@ -80,7 +83,7 @@
         }
 
         /* 2. 接格系 (箱の上) */
-        .pos-adessive { top: calc(50% - 225px); left: 50%; transform: translate(-50%, -110%); border: 2px solid #10b981; }
+        .pos-adessive { top: calc(50% - 225px); left: 50%; transform: translate(-50%, -110%); }
         .pos-allative { animation: all-move 6s infinite linear; }
         @keyframes all-move {
             0%, 40% { top: 15%; left: 25%; transform: translate(-50%, -110%); opacity: 0.5; }
@@ -92,26 +95,19 @@
             70%, 100% { top: 15%; left: 75%; transform: translate(-50%, -110%); opacity: 0.5; }
         }
         
-        /* 固定位置 (被らないように微調整) */
-        .pos-nominative { top: calc(50% + 290px); left: 50%; transform: translateX(-50%); border-color: #6366f1; background: rgba(99, 102, 241, 0.2); }
-        
-        .pos-essive    { top: calc(50% + 290px); left: 25%; transform: translateX(-50%); border-left: 5px solid #fbbf24; }
-        
-        .pos-translative { top: calc(50% + 290px); left: 75%; transform: translateX(-50%); border-left: 5px solid #f59e0b; }
-
-        .pos-partitive { top: calc(50% + 365px); left: 30%; transform: translateX(-50%); }
-
-        .pos-akkusatiivi { top: 35%; right: 5%; border-color: #a5b4fc; }
-        /* Genetiivi: SG=右下（弱変化側）、PL=左下（強変化側）で動的切替 */
-        .pos-genitive.num-sg { top: calc(50% + 140px); left: calc(50% + 140px); transform: translateX(-50%); border: 1px solid rgba(129, 140, 248, 0.5); transition: left 0.4s ease; }
-        .pos-genitive.num-pl { top: calc(50% + 140px); left: calc(50% - 140px); transform: translateX(-50%); border: 1px solid rgba(129, 140, 248, 0.5); transition: left 0.4s ease; }
+        /* 固定位置 */
+        .pos-nominative { top: calc(50% + 290px); left: 50%; transform: translateX(-50%); background: rgba(99, 102, 241, 0.15) !important; }
+        .pos-essive      { top: calc(50% + 290px); left: 25%; transform: translateX(-50%); }
+        .pos-translative { top: calc(50% + 290px); left: 75%; transform: translateX(-50%); }
+        .pos-partitive   { top: calc(50% + 365px); left: 30%; transform: translateX(-50%); }
+        .pos-akkusatiivi { top: 35%; right: 5%; }
+        .pos-genitive.num-sg { top: calc(50% + 140px); left: calc(50% + 140px); transform: translateX(-50%); transition: left 0.4s ease; }
+        .pos-genitive.num-pl { top: calc(50% + 140px); left: calc(50% - 140px); transform: translateX(-50%); transition: left 0.4s ease; }
 
         /* 周辺格 (四隅に分散) */
-        /* Abessiivi: 弱変化(gi)なので右下へ */
-        .pos-abessiivi { bottom: 5%; right: 5%; opacity: 0.3; }
-        /* Komitatiivi: 強変化(nk)なので左下へ */
-        .pos-komitatiivi { bottom: 5%; left: 5%; opacity: 0.3; }
-        .pos-instruktiivi { top: 15%; left: 5%; opacity: 0.3; }
+        .pos-abessiivi   { bottom: 5%; left: 5%; }
+        .pos-komitatiivi { bottom: 5%; right: 5%; }
+        .pos-instruktiivi { top: 15%; left: 5%; }
 
         .emoji-container {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -218,6 +214,10 @@
                         <div id="pause-btn-tab" class="toggle-btn flex-1 text-center" onclick="togglePlay(true)">Pause</div>
                     </div>
                 </div>
+                <div class="p-3 bg-slate-800/50 rounded-xl">
+                    <label class="block text-[10px] font-bold text-slate-400 mb-2 uppercase">Card Scale</label>
+                    <input type="range" id="font-slider" min="0.5" max="1.5" step="0.05" value="1.0">
+                </div>
             </div>
         </div>
     </div>
@@ -277,6 +277,7 @@
         }
 
         function setupControls() {
+            document.getElementById('font-slider').oninput = (e) => document.documentElement.style.setProperty('--base-font-scale', e.target.value);
             document.getElementById('play-pause').onclick = () => togglePlay(!isPaused);
         }
 
@@ -324,19 +325,20 @@
             });
         }
 
-        // --- renderCases を以下のように変更 ---
+        // SG=PLで形が変わらない格
+        const SG_PL_SAME = new Set(['Komitatiivi', 'Instruktiivi']);
+
         function renderCases() {
             const container = document.getElementById('case-layer'); 
             container.innerHTML = '';
             CASE_CONFIGS.forEach(c => {
                 const card = document.createElement('div');
-                card.className = `case-card ${c.class}`; 
+                const extra = SG_PL_SAME.has(c.id) ? ' sg-pl-same' : '';
+                card.className = `case-card ${c.class}${extra}`; 
                 card.id = `node-${c.id}`;
-                // 中身の枠だけ先に作る
                 card.innerHTML = `<div class="case-name" style="color: ${c.color}">${c.name}</div><div class="case-word"></div><div class="case-desc">${c.desc}</div>`;
                 container.appendChild(card);
             });
-            // 全カード作成直後にデータを注入する
             updateUI(); 
         }
 
@@ -348,10 +350,9 @@
             const suffixes = [
                     // 1. 特別に長い語尾（4文字以上）
                     'neen', 'tten', 'seen', 'den', 'ien', 'jen',
-                    // 2. 複数形のi+語尾（iを含めてグレーに）
-                    'illa', 'illä', 'ilta', 'iltä', 'ille',
-                    'issa', 'issä', 'ista', 'istä',
-                    'iksi', 'itta', 'ittä',  // ← 追加: taloiksi, taloitta など
+                    // 2. 複数形のiを含む語尾（3文字以上）
+                    // これを入れることで leiv-illä のように「i」から分離されます
+                    'illa', 'illä', 'ilta', 'iltä', 'ille', 'issa', 'issä', 'ista', 'istä',
                     // 3. 基本的な語尾
                     'ssa', 'ssä', 'sta', 'stä', 'lla', 'llä', 'lta', 'ltä', 'tta', 'ttä',
                     // 4. 入格（Vn）パターン
@@ -360,16 +361,15 @@
                     'lle','ksi','na','nä',
                     // 5b. 複数形主格・分格など
                     'it','at','ut','yt','ja','ia','jä','iä',
-                    // 6. 最も短い語尾（最後に判定）属格の基本、複数主格の-t
+                    // 6. 最も短い語尾（最後に判定）属格の基本
                     'n', 't'
                 ];
 
+
             let root = val, suf = '';
-            // Nominatiivi単数は接尾辞なし（母音終わり）なので除外しない。
-            // 単数形は語尾リストにマッチしないため問題なし。複数の -t は正常にグレーになる。
             for(let s of suffixes) {
-                if(val.endsWith(s)) {
-                    root = val.slice(0, -s.length); suf = '' + s;
+                if(val.endsWith(s) && configId !== 'Nominatiivi') {
+                    root = val.slice(0, -s.length); suf = '' + s; // ここ：'-' + s からハイフンを削除しました
                     break;
                 }
             }
