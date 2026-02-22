@@ -333,11 +333,11 @@ function dot(p,col,r,gl=0){
 function drawBg(){
   const W=cv.width,H=cv.height;
   gx.fillStyle='#050d1a';gx.fillRect(0,0,W,H);
-  const gs=36,ox=(((worldX%gs)+gs)%gs);
+  const gs=36,ox=(((-worldX%gs)+gs)%gs);
   gx.strokeStyle='rgba(10,35,100,0.13)';gx.lineWidth=1;
   for(let x=-gs+ox;x<W+gs;x+=gs){gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,H);gx.stroke();}
   for(let y=0;y<H+gs;y+=gs){gx.beginPath();gx.moveTo(0,y);gx.lineTo(W,y);gx.stroke();}
-  const cs=180,ox2=(((worldX%cs)+cs)%cs);
+  const cs=180,ox2=(((-worldX%cs)+cs)%cs);
   gx.strokeStyle='rgba(15,50,120,0.2)';gx.lineWidth=1;
   for(let x=-cs+ox2;x<W+cs;x+=cs){gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,H);gx.stroke();}
 }
@@ -354,19 +354,27 @@ function drawGround(gy){
   gx.fillText('GROUND',5,gy-3);
 }
 
-function drawBody(cx,cy,Z){
-  const bw=200*Z,bh=14*Z,x=cx-bw/2,y=cy-bh/2;
+function drawBody(legXs,cy,Z){
+  // Body spans from first leg O to last leg P (with padding)
+  const pad=18*Z;
+  const x0=legXs[0]-pad;
+  const x1=legXs[legXs.length-1]+Px*Z+pad;
+  const bw=x1-x0, bh=14*Z;
+  const y=cy-bh/2;
   if(vis.showGlow){gx.shadowColor='rgba(0,80,200,0.55)';gx.shadowBlur=12;}
-  rr(x,y,bw,bh,2);
+  rr(x0,y,bw,bh,2);
   gx.fillStyle='rgba(0,38,96,0.88)';gx.fill();
   gx.strokeStyle='rgba(0,155,225,0.65)';gx.lineWidth=1.5;gx.stroke();
   gx.shadowBlur=0;
-  gx.fillStyle='rgba(0,155,215,0.35)';
-  [-0.4,-0.13,0.13,0.4].forEach(t=>{
-    gx.beginPath();gx.arc(cx+t*bw,cy,2*Z,0,Math.PI*2);gx.fill();
+  // Draw O and P mounting points for each leg on the body
+  legXs.forEach(lx=>{
+    // O mount (crank axis)
+    gx.fillStyle='rgba(255,130,30,0.5)';
+    gx.beginPath();gx.arc(lx,cy,2.5*Z,0,Math.PI*2);gx.fill();
+    // P mount (second fixed pivot) - slightly offset
+    gx.fillStyle='rgba(255,130,30,0.3)';
+    gx.beginPath();gx.arc(lx+Px*Z,cy+Py*Z,2*Z,0,Math.PI*2);gx.fill();
   });
-  gx.fillStyle='rgba(0,185,235,0.2)';gx.font=`${6*Z}px Courier New`;
-  gx.textAlign='center';gx.fillText('THEO JANSEN WALKER  Mk.II  |  11 MAGIC LINKS',cx,cy+2.5*Z);
 }
 
 function drawGaitBar(contacts){
@@ -382,12 +390,22 @@ function drawGaitBar(contacts){
   gx.textAlign='center';gx.fillText('GAIT',bx-18,by+bh/2+3);
 }
 
-function drawFootTrace(lx,ly,Z){
+function drawFootTrace(lx,ly,Z,legPhase){
   if(!vis.showPath||footPath.length<2) return;
-  gx.strokeStyle='rgba(0,200,255,0.08)';gx.lineWidth=1;gx.setLineDash([2,6]);
-  gx.beginPath();gx.moveTo(lx+footPath[0][0]*Z,ly+footPath[0][1]*Z);
+  // Draw filled path with gradient for stance (bottom flat) vs swing
+  gx.beginPath();
+  gx.moveTo(lx+footPath[0][0]*Z,ly+footPath[0][1]*Z);
+  for(let i=1;i<footPath.length;i++) gx.lineTo(lx+footPath[i][0]*Z,ly+footPath[i][1]*Z);
+  gx.closePath();
+  gx.fillStyle='rgba(0,180,255,0.07)';
+  gx.fill();
+  // Dashed outline
+  gx.strokeStyle='rgba(0,200,255,0.45)';gx.lineWidth=1;gx.setLineDash([3,5]);
+  gx.beginPath();
+  gx.moveTo(lx+footPath[0][0]*Z,ly+footPath[0][1]*Z);
   for(let i=1;i<footPath.length;i++) gx.lineTo(lx+footPath[i][0]*Z,ly+footPath[i][1]*Z);
   gx.closePath();gx.stroke();gx.setLineDash([]);
+
 }
 
 function drawLeg(j,lx,ly,Z){
@@ -461,7 +479,7 @@ function frame(t){
     const phase=crankAngle+(i%2===0?0:Math.PI);
     const lx=legStart+i*legSpacing;
     const ly=bodyY;
-    drawFootTrace(lx,ly,Z);
+    drawFootTrace(lx,ly,Z,phase);
     const j=solveJansen(phase);
     const fw=drawLeg(j,lx,ly,Z);
     const isDown=fw?fw[1]>=groundY-1.5:false;
@@ -477,7 +495,9 @@ function frame(t){
     }
   }
 
-  drawBody(W/2,bodyY,Z);
+  // collect leg X positions for body drawing
+  const legXs=Array.from({length:numLegs},(_,i)=>legStart+i*legSpacing);
+  drawBody(legXs,bodyY,Z);
   drawGaitBar(contacts);
 
   const ct=contacts.filter(Boolean).length;
