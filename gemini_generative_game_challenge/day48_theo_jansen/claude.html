@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>STRANDBEEST SIMULATOR — Theo Jansen Walker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#050d1a;--cyan:#00d4f0;--orange:#ff8020;--green:#00e880;
+  --yellow:#ffcc00;--dim:#1a3560;--light:#7aaad0;--panel:rgba(3,10,26,0.95);
+}
+html,body{height:100%;overflow:hidden;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--light);font-family:'Courier New',Courier,monospace;
+  display:flex;flex-direction:column;-webkit-user-select:none;user-select:none;touch-action:none;}
+#hdr{display:flex;align-items:center;justify-content:space-between;padding:5px 14px;
+  background:rgba(2,6,18,0.99);border-bottom:1px solid rgba(0,150,210,0.18);flex-shrink:0;z-index:20;}
+#hdr-l h1{font-size:12px;letter-spacing:4px;color:var(--cyan);font-weight:normal;}
+#hdr-l p{font-size:8px;color:var(--dim);letter-spacing:2px;margin-top:1px;}
+#hud{font-size:9px;color:var(--dim);text-align:right;letter-spacing:1px;line-height:1.7;}
+#hud em{color:var(--cyan);font-style:normal;}
+#layout{display:flex;flex:1;overflow:hidden;min-height:0;}
+#cv-wrap{flex:1;position:relative;overflow:hidden;}
+canvas{display:block;width:100%;height:100%;}
+#side{width:202px;min-width:202px;background:var(--panel);
+  border-left:1px solid rgba(0,130,190,0.15);display:flex;flex-direction:column;
+  padding:7px;gap:6px;overflow-y:auto;flex-shrink:0;}
+.card{background:rgba(0,12,38,0.8);border:1px solid rgba(0,120,180,0.22);border-radius:3px;padding:8px;}
+.ct{font-size:8px;letter-spacing:2.5px;color:var(--cyan);opacity:.65;text-transform:uppercase;
+  padding-bottom:5px;border-bottom:1px solid rgba(0,120,180,0.14);margin-bottom:7px;}
+.row{display:flex;align-items:center;gap:5px;margin-bottom:5px;}
+.lbl{font-size:8px;color:var(--dim);width:34px;flex-shrink:0;}
+input[type=range]{flex:1;-webkit-appearance:none;height:2px;background:rgba(0,120,190,0.3);
+  border-radius:1px;cursor:pointer;outline:none;min-width:0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;
+  border-radius:50%;background:var(--cyan);box-shadow:0 0 5px var(--cyan);cursor:pointer;}
+input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;
+  background:var(--cyan);border:none;cursor:pointer;}
+.val{font-size:9px;color:var(--cyan);width:30px;text-align:right;flex-shrink:0;}
+.brow{display:flex;gap:4px;margin-bottom:4px;}
+button{flex:1;background:rgba(0,70,150,0.22);border:1px solid rgba(0,120,190,0.32);
+  color:var(--cyan);font-family:'Courier New',monospace;font-size:8px;letter-spacing:1px;
+  text-transform:uppercase;padding:7px 2px;border-radius:2px;cursor:pointer;
+  transition:background .15s;-webkit-appearance:none;}
+button:hover{background:rgba(0,110,210,0.32);}
+button.on{background:rgba(0,130,220,0.38);color:#e0f8ff;border-color:rgba(0,200,240,0.6);}
+.stat{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-bottom:3px;}
+.stat em{color:var(--green);font-style:normal;}
+#mbar{display:none;padding:7px 10px;background:var(--panel);
+  border-top:1px solid rgba(0,140,200,0.15);gap:5px;flex-wrap:wrap;align-items:center;flex-shrink:0;}
+#mbar button{flex:none;padding:11px 11px;font-size:11px;}
+.mslide{display:flex;flex:1;min-width:75px;align-items:center;gap:5px;}
+.mslide span{font-size:8px;color:var(--dim);flex-shrink:0;}
+#legend{position:absolute;bottom:8px;left:8px;font-size:7px;
+  color:rgba(80,150,200,0.4);letter-spacing:.5px;line-height:1.9;pointer-events:none;}
+@media(max-width:700px){#side{display:none;}#mbar{display:flex;}}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <div id="hdr-l">
+    <h1>STRANDBEEST SIMULATOR</h1>
+    <p>Theo Jansen 11-Bar Linkage · Correct Topology v2</p>
+  </div>
+  <div id="hud">
+    <div>CRANK&nbsp;<em id="h-deg">0°</em>&nbsp;|&nbsp;<em id="h-rpm">0 RPM</em></div>
+    <div>CONTACTS&nbsp;<em id="h-ct">—</em></div>
+  </div>
+</div>
+
+<div id="layout">
+  <div id="cv-wrap">
+    <canvas id="c"></canvas>
+    <div id="legend">
+      ■ <span style="color:#ff8020">CRANK (OA)</span> &nbsp;
+      ■ <span style="color:#00d4f0">UPPER (AB BP AC PC BD PD)</span> &nbsp;
+      ■ <span style="color:#00ff90">FOOT (CE DE CF EF)</span>
+    </div>
+  </div>
+
+  <div id="side">
+    <div class="card">
+      <div class="ct">Control</div>
+      <div class="brow">
+        <button id="bp" class="on" onclick="togglePlay()">⏸ Pause</button>
+        <button onclick="doReset()">↺ Reset</button>
+      </div>
+      <div class="brow" style="margin-top:2px">
+        <button id="bfwd" class="on" onclick="setDir(1)">→ Fwd</button>
+        <button id="brev" onclick="setDir(-1)">← Rev</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">Motion</div>
+      <div class="row"><span class="lbl">Speed</span>
+        <input type="range" id="sl-spd" min="0.2" max="5" step="0.1" value="1.5"
+          oninput="params.speed=+this.value;$v('v-spd',this.value)">
+        <span class="val" id="v-spd">1.5</span></div>
+      <div class="row"><span class="lbl">Legs</span>
+        <input type="range" min="2" max="8" step="2" value="6"
+          oninput="setLegs(+this.value)">
+        <span class="val" id="v-legs">6</span></div>
+      <div class="row"><span class="lbl">Zoom</span>
+        <input type="range" id="sl-zoom" min="0.4" max="3" step="0.05" value="1.0"
+          oninput="params.zoom=+this.value;$v('v-zoom',this.value)">
+        <span class="val" id="v-zoom">1.0</span></div>
+    </div>
+
+    <div class="card">
+      <div class="ct">11 Holy Numbers</div>
+      <div class="row"><span class="lbl" style="color:#ff8020">OA</span>
+        <input type="range" id="r-OA" min="5" max="30" step="0.5" value="15"
+          oninput="setL('OA',+this.value,'v-OA')"><span class="val" id="v-OA">15</span></div>
+      <div class="row"><span class="lbl" style="color:#00d4f0">AB</span>
+        <input type="range" id="r-AB" min="20" max="90" step="0.5" value="50"
+          oninput="setL('AB',+this.value,'v-AB')"><span class="val" id="v-AB">50</span></div>
+      <div class="row"><span class="lbl" style="color:#00d4f0">BP</span>
+        <input type="range" id="r-BP" min="20" max="90" step="0.5" value="41.5"
+          oninput="setL('BP',+this.value,'v-BP')"><span class="val" id="v-BP">41.5</span></div>
+      <div class="row"><span class="lbl" style="color:#00d4f0">AC</span>
+        <input type="range" id="r-AC" min="20" max="90" step="0.5" value="61.9"
+          oninput="setL('AC',+this.value,'v-AC')"><span class="val" id="v-AC">61.9</span></div>
+      <div class="row"><span class="lbl" style="color:#00d4f0">PC</span>
+        <input type="range" id="r-PC" min="15" max="80" step="0.5" value="39.3"
+          oninput="setL('PC',+this.value,'v-PC')"><span class="val" id="v-PC">39.3</span></div>
+      <div class="row"><span class="lbl" style="color:#00d4f0">BD</span>
+        <input type="range" id="r-BD" min="20" max="100" step="0.5" value="55.8"
+          oninput="setL('BD',+this.value,'v-BD')"><span class="val" id="v-BD">55.8</span></div>
+      <div class="row"><span class="lbl" style="color:#00d4f0">PD</span>
+        <input type="range" id="r-PD" min="15" max="80" step="0.5" value="40.1"
+          oninput="setL('PD',+this.value,'v-PD')"><span class="val" id="v-PD">40.1</span></div>
+      <div class="row"><span class="lbl" style="color:#00ff90">CE</span>
+        <input type="range" id="r-CE" min="15" max="80" step="0.5" value="36.7"
+          oninput="setL('CE',+this.value,'v-CE')"><span class="val" id="v-CE">36.7</span></div>
+      <div class="row"><span class="lbl" style="color:#00ff90">DE</span>
+        <input type="range" id="r-DE" min="15" max="80" step="0.5" value="39.4"
+          oninput="setL('DE',+this.value,'v-DE')"><span class="val" id="v-DE">39.4</span></div>
+      <div class="row"><span class="lbl" style="color:#00ff90">CF</span>
+        <input type="range" id="r-CF" min="20" max="90" step="0.5" value="49"
+          oninput="setL('CF',+this.value,'v-CF')"><span class="val" id="v-CF">49</span></div>
+      <div class="row"><span class="lbl" style="color:#00ff90">EF</span>
+        <input type="range" id="r-EF" min="30" max="100" step="0.5" value="65.7"
+          oninput="setL('EF',+this.value,'v-EF')"><span class="val" id="v-EF">65.7</span></div>
+      <div class="brow" style="margin-top:5px">
+        <button onclick="jansenDefaults()">✦ Jansen Defaults</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">Display</div>
+      <div class="brow">
+        <button id="bpath" class="on" onclick="toggleVis('showPath','bpath')">Path</button>
+        <button id="bjoin" class="on" onclick="toggleVis('showJoints','bjoin')">Joints</button>
+      </div>
+      <div class="brow" style="margin-top:3px">
+        <button id="bglow" class="on" onclick="toggleVis('showGlow','bglow')">Glow</button>
+        <button id="bsnd" class="on" onclick="toggleSnd()">Sound</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">Stats</div>
+      <div class="stat">RPM <em id="st-rpm">—</em></div>
+      <div class="stat">Contacts <em id="st-ct">—</em></div>
+      <div class="stat">Direction <em id="st-mode">FWD</em></div>
+      <div class="stat">Status <em id="st-stat">RUNNING</em></div>
+      <div style="margin-top:6px;font-size:7px;color:rgba(0,120,160,0.38);letter-spacing:.5px">
+        Space=Play  ←→=Dir  +/-=Speed<br>R=Reset  D=Defaults
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="mbar">
+  <button id="mbp" class="on" onclick="togglePlay()">⏸</button>
+  <button onclick="setDir(dir*-1)" style="padding:11px 10px">⇄</button>
+  <div class="mslide"><span>SPD</span>
+    <input type="range" min="0.2" max="5" step="0.1" value="1.5" style="flex:1"
+      oninput="params.speed=+this.value"></div>
+  <div class="mslide"><span>ZM</span>
+    <input type="range" min="0.4" max="3" step="0.1" value="1.0" style="flex:1"
+      oninput="params.zoom=+this.value"></div>
+  <div class="mslide"><span>LEG</span>
+    <input type="range" min="2" max="8" step="2" value="6" style="flex:1"
+      oninput="setLegs(+this.value)"></div>
+  <button onclick="toggleSnd()" style="padding:11px 8px">SND</button>
+  <button onclick="jansenDefaults()" style="padding:11px 8px">DEF</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  STRANDBEEST SIMULATOR v2.0  –  Correct Jansen Linkage
+//
+//  Topology (from fridoverweij.com reference):
+//    Fixed : O=(0,0)  P=(38,7.8)
+//    A  = crank tip,  OA=15
+//    B  = ci(A,AB=50,  P,BP=41.5)  sign=+1
+//    C  = ci(A,AC=61.9, P,PC=39.3) sign=−1
+//    D  = ci(B,BD=55.8, P,PD=40.1) sign=+1
+//    E  = ci(C,CE=36.7, D,DE=39.4) sign=−1
+//    F  = ci(C,CF=49,   E,EF=65.7) sign=−1   ← FOOT
+// ═══════════════════════════════════════════════════════════════════
+
+const cv = document.getElementById('c');
+const gx = cv.getContext('2d');
+
+const vis = { showPath:true, showJoints:true, showGlow:true };
+let playing=true, dir=1, crankAngle=0, worldX=0, lastT=0;
+let numLegs=6, footWasDown=new Array(6).fill(false);
+const params = { speed:1.5, zoom:1.0 };
+
+let L = { OA:15, AB:50, BP:41.5, AC:61.9, PC:39.3,
+          BD:55.8, PD:40.1, CE:36.7, DE:39.4, CF:49, EF:65.7 };
+
+// Fixed second pivot
+const Px=38, Py=7.8;
+
+// ── Audio ──────────────────────────────────────────────────────────
+let actx=null, motorOsc=null, motorGain=null, sndOn=true;
+
+function initAudio(){
+  if(actx) return;
+  try{
+    actx=new(window.AudioContext||window.webkitAudioContext)();
+    motorOsc=actx.createOscillator(); motorOsc.type='sawtooth'; motorOsc.frequency.value=60;
+    const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=260; lp.Q.value=0.6;
+    motorGain=actx.createGain(); motorGain.gain.value=0;
+    motorOsc.connect(lp); lp.connect(motorGain); motorGain.connect(actx.destination);
+    motorOsc.start();
+    setTimeout(playStartup,80);
+  }catch(e){}
+}
+
+function updateMotor(){
+  if(!motorGain||!sndOn) return;
+  const t=actx.currentTime;
+  motorGain.gain.setTargetAtTime(playing?params.speed*0.017:0,t,0.2);
+  motorOsc.frequency.setTargetAtTime(48+params.speed*22,t,0.3);
+}
+
+function playStep(){
+  if(!actx||!sndOn) return;
+  const t=actx.currentTime, sr=actx.sampleRate, n=Math.floor(sr*0.06);
+  const buf=actx.createBuffer(1,n,sr), d=buf.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(sr*0.009));
+  const src=actx.createBufferSource(); src.buffer=buf;
+  const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=80; bp.Q.value=1;
+  const g=actx.createGain(); g.gain.value=0.16;
+  src.connect(bp); bp.connect(g); g.connect(actx.destination); src.start(t);
+}
+
+function playClick(){
+  if(!actx||!sndOn) return;
+  const t=actx.currentTime, o=actx.createOscillator();
+  o.frequency.value=460; o.frequency.exponentialRampToValueAtTime(65,t+0.06);
+  const g=actx.createGain(); g.gain.value=0.025; g.gain.setTargetAtTime(0,t+0.01,0.016);
+  o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+0.08);
+}
+
+function playStartup(){
+  if(!actx||!sndOn) return;
+  const t=actx.currentTime;
+  [180,270,360,540].forEach((f,i)=>{
+    const o=actx.createOscillator(); o.type='triangle'; o.frequency.value=f;
+    const g=actx.createGain(); g.gain.value=0;
+    g.gain.setTargetAtTime(0.032,t+i*0.07,0.014);
+    g.gain.setTargetAtTime(0,t+i*0.07+0.09,0.022);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t+i*0.07); o.stop(t+i*0.07+0.22);
+  });
+}
+
+// ── Kinematics ────────────────────────────────────────────────────
+function ci(x1,y1,r1,x2,y2,r2,sgn){
+  const dx=x2-x1,dy=y2-y1,d2=dx*dx+dy*dy,dd=Math.sqrt(d2);
+  if(dd<1e-8||dd>r1+r2+0.5||dd<Math.abs(r1-r2)-0.5) return null;
+  const a=(r1*r1-r2*r2+d2)/(2*dd);
+  const h2=r1*r1-a*a; if(h2<0) return null;
+  const hh=Math.sqrt(h2), mx=x1+a*dx/dd, my=y1+a*dy/dd;
+  return [mx+sgn*hh*dy/dd, my-sgn*hh*dx/dd];
+}
+
+function solveJansen(theta){
+  const A=[L.OA*Math.cos(theta), L.OA*Math.sin(theta)];
+  const B=ci(A[0],A[1],L.AB, Px,Py,L.BP, +1); if(!B) return null;
+  const C=ci(A[0],A[1],L.AC, Px,Py,L.PC, -1); if(!C) return null;
+  const D=ci(B[0],B[1],L.BD, Px,Py,L.PD, +1); if(!D) return null;
+  const E=ci(C[0],C[1],L.CE, D[0],D[1],L.DE, -1); if(!E) return null;
+  const F=ci(C[0],C[1],L.CF, E[0],E[1],L.EF, -1); if(!F) return null;
+  return {A,B,C,D,E,F};
+}
+
+let footPath=[], footMaxY=92;
+function buildFootPath(){
+  footPath=[];
+  let my=-Infinity;
+  for(let i=0;i<=360;i+=2){
+    const s=solveJansen(i*Math.PI/180);
+    if(s){footPath.push([...s.F]); if(s.F[1]>my) my=s.F[1];}
+  }
+  footMaxY=footPath.length?my:92;
+}
+buildFootPath();
+
+// ── Canvas ────────────────────────────────────────────────────────
+function resize(){
+  const wr=document.getElementById('cv-wrap');
+  cv.width=wr.clientWidth; cv.height=wr.clientHeight;
+}
+resize(); window.addEventListener('resize',resize);
+
+// ── Draw helpers ──────────────────────────────────────────────────
+function rr(x,y,w,h,r){
+  gx.beginPath();
+  gx.moveTo(x+r,y);gx.lineTo(x+w-r,y);gx.quadraticCurveTo(x+w,y,x+w,y+r);
+  gx.lineTo(x+w,y+h-r);gx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  gx.lineTo(x+r,y+h);gx.quadraticCurveTo(x,y+h,x,y+h-r);
+  gx.lineTo(x,y+r);gx.quadraticCurveTo(x,y,x+r,y);gx.closePath();
+}
+function seg(p1,p2,col,lw,gl=0){
+  if(gl){gx.shadowColor=col;gx.shadowBlur=gl;}
+  gx.strokeStyle=col;gx.lineWidth=lw;
+  gx.beginPath();gx.moveTo(p1[0],p1[1]);gx.lineTo(p2[0],p2[1]);gx.stroke();
+  if(gl) gx.shadowBlur=0;
+}
+function dot(p,col,r,gl=0){
+  if(gl){gx.shadowColor=col;gx.shadowBlur=gl;}
+  gx.fillStyle=col; gx.beginPath();gx.arc(p[0],p[1],r,0,Math.PI*2);gx.fill();
+  if(gl) gx.shadowBlur=0;
+}
+
+function drawBg(){
+  const W=cv.width,H=cv.height;
+  gx.fillStyle='#050d1a';gx.fillRect(0,0,W,H);
+  const gs=36,ox=(((worldX%gs)+gs)%gs);
+  gx.strokeStyle='rgba(10,35,100,0.13)';gx.lineWidth=1;
+  for(let x=-gs+ox;x<W+gs;x+=gs){gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,H);gx.stroke();}
+  for(let y=0;y<H+gs;y+=gs){gx.beginPath();gx.moveTo(0,y);gx.lineTo(W,y);gx.stroke();}
+  const cs=180,ox2=(((worldX%cs)+cs)%cs);
+  gx.strokeStyle='rgba(15,50,120,0.2)';gx.lineWidth=1;
+  for(let x=-cs+ox2;x<W+cs;x+=cs){gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,H);gx.stroke();}
+}
+
+function drawGround(gy){
+  const W=cv.width;
+  gx.save();gx.strokeStyle='rgba(0,200,80,0.5)';gx.lineWidth=1;gx.setLineDash([12,7]);
+  gx.beginPath();gx.moveTo(0,gy);gx.lineTo(W,gy);gx.stroke();
+  gx.setLineDash([]);gx.restore();
+  const gr=gx.createLinearGradient(0,gy,0,gy+60);
+  gr.addColorStop(0,'rgba(0,180,50,0.08)');gr.addColorStop(1,'rgba(0,180,50,0)');
+  gx.fillStyle=gr;gx.fillRect(0,gy,W,60);
+  gx.fillStyle='rgba(0,200,80,0.22)';gx.font='7px Courier New';gx.textAlign='left';
+  gx.fillText('GROUND',5,gy-3);
+}
+
+function drawBody(cx,cy,Z){
+  const bw=200*Z,bh=14*Z,x=cx-bw/2,y=cy-bh/2;
+  if(vis.showGlow){gx.shadowColor='rgba(0,80,200,0.55)';gx.shadowBlur=12;}
+  rr(x,y,bw,bh,2);
+  gx.fillStyle='rgba(0,38,96,0.88)';gx.fill();
+  gx.strokeStyle='rgba(0,155,225,0.65)';gx.lineWidth=1.5;gx.stroke();
+  gx.shadowBlur=0;
+  gx.fillStyle='rgba(0,155,215,0.35)';
+  [-0.4,-0.13,0.13,0.4].forEach(t=>{
+    gx.beginPath();gx.arc(cx+t*bw,cy,2*Z,0,Math.PI*2);gx.fill();
+  });
+  gx.fillStyle='rgba(0,185,235,0.2)';gx.font=`${6*Z}px Courier New`;
+  gx.textAlign='center';gx.fillText('THEO JANSEN WALKER  Mk.II  |  11 MAGIC LINKS',cx,cy+2.5*Z);
+}
+
+function drawGaitBar(contacts){
+  const n=contacts.length,W=cv.width;
+  const bw=Math.min(W*0.42,260),bx=W/2-bw/2,by=10,bh=8;
+  gx.fillStyle='rgba(0,10,34,0.7)';rr(bx-4,by-2,bw+8,bh+4,2);gx.fill();
+  const sw=bw/n;
+  contacts.forEach((on,i)=>{
+    gx.fillStyle=on?'rgba(0,255,100,0.75)':'rgba(0,80,150,0.28)';
+    gx.fillRect(bx+i*sw+0.5,by,sw-1,bh);
+  });
+  gx.fillStyle='rgba(0,140,180,0.3)';gx.font='7px Courier New';
+  gx.textAlign='center';gx.fillText('GAIT',bx-18,by+bh/2+3);
+}
+
+function drawFootTrace(lx,ly,Z){
+  if(!vis.showPath||footPath.length<2) return;
+  gx.strokeStyle='rgba(0,200,255,0.08)';gx.lineWidth=1;gx.setLineDash([2,6]);
+  gx.beginPath();gx.moveTo(lx+footPath[0][0]*Z,ly+footPath[0][1]*Z);
+  for(let i=1;i<footPath.length;i++) gx.lineTo(lx+footPath[i][0]*Z,ly+footPath[i][1]*Z);
+  gx.closePath();gx.stroke();gx.setLineDash([]);
+}
+
+function drawLeg(j,lx,ly,Z){
+  if(!j) return null;
+  const O=[lx,ly];
+  const P=[lx+Px*Z, ly+Py*Z];
+  const w=(p)=>[lx+p[0]*Z, ly+p[1]*Z];
+  const Aw=w(j.A),Bw=w(j.B),Cw=w(j.C),Dw=w(j.D),Ew=w(j.E),Fw=w(j.F);
+  const gl=vis.showGlow?5:0, lw=1.7;
+  gx.lineCap='round';gx.lineJoin='round';
+
+  // Ground link O→P (very dim)
+  seg(O,P,'rgba(30,80,150,0.35)',1);
+
+  // Crank O→A (orange glow)
+  seg(O,Aw,'#ff8020',lw+0.5,gl+3);
+
+  // Upper group (cyan): AB, BP, AC, PC, BD, PD
+  seg(Aw,Bw,'#00d4f0',lw,gl);
+  seg(Bw,P,'rgba(0,195,225,0.8)',lw,gl);
+  seg(Aw,Cw,'rgba(0,185,215,0.8)',lw,gl);
+  seg(Cw,P,'rgba(0,185,215,0.8)',lw,gl);
+  seg(Bw,Dw,'#00d4f0',lw,gl);
+  seg(P,Dw,'rgba(0,195,225,0.6)',lw,gl);
+
+  // Lower + foot group (green): CE, DE, CF, EF
+  seg(Cw,Ew,'#00e880',lw,gl);
+  seg(Dw,Ew,'#00e880',lw,gl);
+  seg(Cw,Fw,'#00ff90',lw+0.5,gl+2);
+  seg(Ew,Fw,'#00ff90',lw+0.5,gl+2);
+
+  // Joints
+  if(vis.showJoints){
+    dot(O,'#ff8020',4.5*Z,gl+4);
+    dot(P,'#ff8020',3.5*Z,gl+3);
+    dot(Aw,'#ffcc00',3.2*Z,gl+2);
+    dot(Bw,'#00d4f0',2.5*Z,gl);
+    dot(Cw,'#00d4f0',2.5*Z,gl);
+    dot(Dw,'#00d4f0',2.5*Z,gl);
+    dot(Ew,'#00e880',2.8*Z,gl+2);
+    dot(Fw,'#00ff88',4.2*Z,gl+6); // foot — prominent
+  }
+  return Fw;
+}
+
+// ── Main frame ────────────────────────────────────────────────────
+function frame(t){
+  const dt=Math.min((t-lastT)/1000,0.05); lastT=t;
+  if(playing){
+    crankAngle=(crankAngle+dir*params.speed*dt*Math.PI)%(Math.PI*2);
+    if(crankAngle<0) crankAngle+=Math.PI*2;
+    worldX+=dir*params.speed*28*dt;
+  }
+  if(actx) updateMotor();
+
+  const W=cv.width,H=cv.height;
+  drawBg();
+
+  const Z=params.zoom;
+  const bodyY=H*0.33;
+  const groundY=bodyY+footMaxY*Z+4;
+  drawGround(groundY);
+
+  // Leg positions centered on canvas
+  const bodyW=200*Z;
+  const legSpacing=numLegs>1?bodyW*0.84/(numLegs-1):0;
+  const legStart=W/2-bodyW*0.42;
+  const contacts=[];
+
+  for(let i=0;i<numLegs;i++){
+    const phase=crankAngle+(i%2===0?0:Math.PI);
+    const lx=legStart+i*legSpacing;
+    const ly=bodyY;
+    drawFootTrace(lx,ly,Z);
+    const j=solveJansen(phase);
+    const fw=drawLeg(j,lx,ly,Z);
+    const isDown=fw?fw[1]>=groundY-1.5:false;
+    contacts.push(isDown);
+    if(isDown&&footWasDown[i]===false) playStep();
+    footWasDown[i]=isDown;
+    if(isDown&&fw){
+      const gl=vis.showGlow?16:0;
+      if(gl){gx.shadowColor='#00ff88';gx.shadowBlur=gl;}
+      gx.strokeStyle='rgba(0,255,120,0.65)';gx.lineWidth=2;
+      gx.beginPath();gx.arc(fw[0],fw[1],6*Z,0,Math.PI*2);gx.stroke();
+      gx.shadowBlur=0;
+    }
+  }
+
+  drawBody(W/2,bodyY,Z);
+  drawGaitBar(contacts);
+
+  const ct=contacts.filter(Boolean).length;
+  const rpm=(params.speed*30).toFixed(1);
+  const deg=((crankAngle*180/Math.PI)%360).toFixed(0);
+  $v('h-deg',deg+'°');
+  $v('h-rpm',rpm+' RPM');
+  $v('h-ct',ct+'/'+numLegs);
+  $v('st-rpm',rpm);
+  $v('st-ct',ct+'/'+numLegs);
+  $v('st-mode',dir>0?'FWD':'REV');
+  $v('st-stat',playing?'RUNNING':'PAUSED');
+
+  requestAnimationFrame(frame);
+}
+
+// ── Controls ──────────────────────────────────────────────────────
+function togglePlay(){
+  initAudio(); playing=!playing;
+  $v('bp', playing?'⏸ Pause':'▶ Run');
+  $v('mbp', playing?'⏸':'▶');
+  document.getElementById('bp').classList.toggle('on',playing);
+  document.getElementById('mbp').classList.toggle('on',playing);
+}
+function setDir(d){initAudio();dir=d;
+  document.getElementById('bfwd').classList.toggle('on',d>0);
+  document.getElementById('brev').classList.toggle('on',d<0);}
+function doReset(){crankAngle=0;worldX=0;}
+function setLegs(n){numLegs=n;footWasDown=new Array(n).fill(false);$v('v-legs',n);}
+function setL(key,val,vid){initAudio();L[key]=val;$v(vid,val);buildFootPath();playClick();}
+function toggleVis(f,bid){vis[f]=!vis[f];document.getElementById(bid).classList.toggle('on',vis[f]);}
+function toggleSnd(){initAudio();sndOn=!sndOn;
+  document.getElementById('bsnd').classList.toggle('on',sndOn);
+  if(!sndOn&&motorGain) motorGain.gain.setTargetAtTime(0,actx.currentTime,0.2);}
+function jansenDefaults(){
+  initAudio();
+  L={OA:15,AB:50,BP:41.5,AC:61.9,PC:39.3,BD:55.8,PD:40.1,CE:36.7,DE:39.4,CF:49,EF:65.7};
+  for(const[k,v] of Object.entries(L)){
+    const r=document.getElementById('r-'+k); if(r) r.value=v;
+    $v('v-'+k,v);
+  }
+  buildFootPath();playClick();
+}
+function $v(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function $(id){return document.getElementById(id);}
+
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  switch(e.key){
+    case ' ':e.preventDefault();togglePlay();break;
+    case 'r':case 'R':doReset();break;
+    case 'd':case 'D':jansenDefaults();break;
+    case 'ArrowRight':setDir(1);break;
+    case 'ArrowLeft':setDir(-1);break;
+    case '+':case '=':
+      params.speed=Math.min(5,params.speed+0.3);
+      document.getElementById('sl-spd').value=params.speed;
+      $v('v-spd',params.speed.toFixed(1));break;
+    case '-':
+      params.speed=Math.max(0.2,params.speed-0.3);
+      document.getElementById('sl-spd').value=params.speed;
+      $v('v-spd',params.speed.toFixed(1));break;
+  }
+});
+
+['touchstart','pointerdown','click'].forEach(ev=>{
+  document.addEventListener(ev,initAudio,{once:true,passive:true});
+});
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
