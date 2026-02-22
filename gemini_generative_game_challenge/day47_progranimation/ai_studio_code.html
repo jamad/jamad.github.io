@@ -3,26 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Deuce Pro - Final Ground Fix</title>
+    <title>Deuce Pro - Full Hip Range & Debug Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+    <!-- 共有デバッグスクリプト -->
+    <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #0f172a; touch-action: none; user-select: none; }
         #canvas-container { position: absolute; inset: 0; z-index: 1; }
         #param-panel {
             position: absolute; top: 15px; right: 15px; z-index: 20;
-            width: 250px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px);
+            width: 250px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px;
             color: white; pointer-events: auto; font-family: monospace;
         }
-        .slider-group { margin-bottom: 12px; }
+        .slider-group { margin-bottom: 10px; }
         .slider-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #94a3b8; }
         input[type=range] { width: 100%; cursor: pointer; accent-color: #3b82f6; }
         #ui-layer { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; }
         .btn-interactive { pointer-events: auto; transition: 0.2s; background: rgba(30, 41, 59, 0.9); border: 2px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; }
-        .selected { border-color: #3b82f6; background: #1d4ed8; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        .selected { border-color: #3b82f6; background: #1d4ed8; }
     </style>
 </head>
 <body>
@@ -30,38 +32,28 @@
     <div id="canvas-container"></div>
 
     <div id="param-panel">
-        <div class="text-xs font-bold mb-3 border-b border-white/20 pb-2 text-blue-400 uppercase tracking-tighter">Physics Controller</div>
-        <div class="slider-group"><div class="slider-label"><span>Gravity</span><span id="val-gravity">-15.0</span></div><input type="range" id="sld-gravity" min="-25" max="-5" step="0.5" value="-15.0"></div>
-        <div class="slider-group"><div class="slider-label"><span>Upright Power</span><span id="val-upright">1500</span></div><input type="range" id="sld-upright" min="0" max="3000" step="50" value="1500"></div>
-        <div class="slider-group"><div class="slider-label"><span>Walk Speed</span><span id="val-speed">0.0</span></div><input type="range" id="sld-speed" min="0" max="15" step="0.5" value="0.0"></div>
-        <div class="slider-group"><div class="slider-label"><span>Walk Range</span><span id="val-amp">0.7</span></div><input type="range" id="sld-amp" min="0" max="1.5" step="0.1" value="0.7"></div>
-        <div class="slider-group"><div class="slider-label"><span>Joint Power</span><span id="val-power">300</span></div><input type="range" id="sld-power" min="50" max="1000" step="10" value="300"></div>
-        <div class="text-[9px] text-emerald-400 font-bold uppercase">Ground Contact: Solid-Lock Active</div>
+        <div class="text-xs font-bold mb-3 border-b border-white/20 pb-2 text-blue-400 uppercase text-center font-sans">Final Stability Tuner v10</div>
+        <div class="slider-group"><div class="slider-label"><span>Gravity</span><span id="val-gravity">-6.9</span></div><input type="range" id="sld-gravity" min="-20" max="-2" step="0.1" value="-6.9"></div>
+        <div class="slider-group"><div class="slider-label"><span>Upright Power</span><span id="val-upright">3800</span></div><input type="range" id="sld-upright" min="0" max="6000" step="50" value="3800"></div>
+        <div class="slider-group"><div class="slider-label"><span>Walk Speed</span><span id="val-speed">4.2</span></div><input type="range" id="sld-speed" min="0" max="10" step="0.1" value="4.2"></div>
+        <div class="slider-group"><div class="slider-label"><span>Walk Range</span><span id="val-amp">0.5</span></div><input type="range" id="sld-amp" min="0" max="1.0" step="0.05" value="0.5"></div>
+        <div class="slider-group"><div class="slider-label"><span>Joint Torque</span><span id="val-power">1860</span></div><input type="range" id="sld-power" min="50" max="3000" step="10" value="1860"></div>
+        <div class="text-[9px] text-emerald-400 font-bold text-center uppercase tracking-tighter italic">Alt+D: Toggle Debug (Fixed) | Hip: Forward Fix</div>
     </div>
 
     <div id="ui-layer">
-        <div class="flex gap-3">
-            <button id="btn-pogo" class="btn-interactive w-16 h-16 flex flex-col items-center justify-center" onclick="selectChar('pogo')"><span class="text-xl font-bold">I</span></button>
-            <button id="btn-uno" class="btn-interactive w-16 h-16 flex flex-col items-center justify-center" onclick="selectChar('uno')"><span class="text-xl font-bold">i</span></button>
-            <button id="btn-deuce" class="btn-interactive w-16 h-16 flex flex-col items-center justify-center selected" onclick="selectChar('deuce')"><span class="text-xl font-bold">A</span></button>
-            <button class="btn-interactive bg-red-600/50 w-16 h-16 flex items-center justify-center" onclick="resetWorld()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
-        </div>
+        <button id="btn-deuce" class="btn-interactive w-24 h-16 flex items-center justify-center selected font-bold uppercase">Deuce</button>
+        <button class="btn-interactive bg-red-600/50 w-16 h-16 ml-2 inline-flex items-center justify-center" onclick="resetWorld()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
     </div>
 
     <script>
-        const CONFIG = { gravity: -15.0, upright: 1500, walkSpeed: 0.0, walkAmp: 0.7, jointPower: 300 };
-        
-        // 衝突フィルター（1: 地面, 2: キャラクター）
-        const GROUP_GROUND = 1;
-        const GROUP_CHAR = 2;
+        const CONFIG = { gravity: -6.9, upright: 3800, walkSpeed: 4.2, walkAmp: 0.5, jointPower: 1860 };
+        const GROUP_GROUND = 1, GROUP_CHAR = 2;
 
-        let scene, camera, renderer, world, controls, objectsToUpdate = [], autonomousBodies = [], lastTime = 0, selectedCharacter = 'deuce';
+        let scene, camera, renderer, world, controls, objectsToUpdate = [], autonomousBodies = [], lastTime = 0;
 
         function init() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0f172a);
-            scene.fog = new THREE.Fog(0x0f172a, 20, 100);
-
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x0f172a);
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(15, 12, 20);
 
@@ -71,49 +63,41 @@
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
             controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-
             scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-            const sun = new THREE.DirectionalLight(0xffffff, 0.9);
-            sun.position.set(10, 25, 10);
-            sun.castShadow = true;
-            scene.add(sun);
+            const sun = new THREE.DirectionalLight(0xffffff, 0.9); sun.position.set(10, 25, 10); sun.castShadow = true; scene.add(sun);
 
-            world = new CANNON.World();
-            world.gravity.set(0, CONFIG.gravity, 0);
-            world.solver.iterations = 50; // さらに精度アップ
+            world = new CANNON.World(); world.gravity.set(0, CONFIG.gravity, 0);
+            world.solver.iterations = 100;
             
-            // 地面とキャラの摩擦設定
-            const physicsMat = new CANNON.Material("physicsMat");
-            world.addContactMaterial(new CANNON.ContactMaterial(physicsMat, physicsMat, {
-                friction: 0.9, restitution: 0.0
-            }));
-            world.defaultMaterial = physicsMat;
-
             buildWorld();
             setupInteractions();
             setupSliders();
+
+            // Alt+D 対策: ブラウザのショートカットを阻止して共有デバッグ画面を表示
+            window.addEventListener('keydown', (e) => {
+                if (e.altKey && e.key.toLowerCase() === 'd') {
+                    e.preventDefault(); // アドレスバーへのフォーカスを防止
+                    if (window.toggleDebugOverlay) window.toggleDebugOverlay();
+                }
+            });
+
+            if (window.initDebugOverlay) window.initDebugOverlay();
+
             renderer.setAnimationLoop(animate);
         }
 
         function createPart(vDim, pDim, pos, mass, color, isChar = false, canClick = false) {
             const mesh = new THREE.Mesh(new THREE.BoxGeometry(vDim.x, vDim.y, vDim.z), new THREE.MeshPhongMaterial({ color }));
-            mesh.castShadow = true; mesh.receiveShadow = true;
-            scene.add(mesh);
-
+            mesh.castShadow = true; mesh.receiveShadow = true; scene.add(mesh);
             const body = new CANNON.Body({
-                mass,
-                shape: new CANNON.Box(new CANNON.Vec3(pDim.x/2, pDim.y/2, pDim.z/2)),
-                // 衝突フィルターの修正
+                mass, shape: new CANNON.Box(new CANNON.Vec3(pDim.x/2, pDim.y/2, pDim.z/2)),
                 collisionFilterGroup: isChar ? GROUP_CHAR : GROUP_GROUND,
-                collisionFilterMask: isChar ? GROUP_GROUND : (GROUP_GROUND | GROUP_CHAR)
+                collisionFilterMask: GROUP_GROUND
             });
             body.position.set(pos.x, pos.y, pos.z);
-            body.angularDamping = 0.5;
+            body.angularDamping = 0.4;
             world.addBody(body);
-
-            const obj = { mesh, body };
-            objectsToUpdate.push(obj);
+            objectsToUpdate.push({ mesh, body });
             if (canClick) clickObjects.push(mesh);
             return body;
         }
@@ -123,98 +107,106 @@
             objectsToUpdate.forEach(obj => { scene.remove(obj.mesh); world.removeBody(obj.body); });
             objectsToUpdate = []; autonomousBodies = []; clickObjects = [];
 
-            // 地面 (突き抜け防止のため厚み2m)
-            createPart({x:100, y:0.1, z:100}, {x:100, y:2.0, z:100}, {x:0, y:-1.0, z:0}, 0, 0x1e293b, false, true);
+            // 無限床 (CANNON.Plane) - 突き抜けを完全に防止
+            const groundShape = new CANNON.Plane();
+            const groundBody = new CANNON.Body({ mass: 0, collisionFilterGroup: GROUP_GROUND, collisionFilterMask: GROUP_CHAR | GROUP_GROUND });
+            groundBody.addShape(groundShape);
+            groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+            world.addBody(groundBody);
+            
+            const visualFloor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshPhongMaterial({color: 0x1e293b}));
+            visualFloor.rotation.x = -Math.PI/2; visualFloor.receiveShadow = true; scene.add(visualFloor);
             scene.add(new THREE.GridHelper(100, 50, 0x334155, 0x1e293b));
+            clickObjects.push(visualFloor);
 
-            // シーソー
             const pivot = createPart({x:1, y:1, z:1}, {x:1, y:1, z:1}, {x:5, y:0.5, z:0}, 0, 0x475569);
             const plank = createPart({x:10, y:0.2, z:3}, {x:10, y:0.2, z:3}, {x:5, y:1.2, z:0}, 5, 0x3b82f6, false, true);
-            world.addConstraint(new CANNON.HingeConstraint(pivot, plank, {
-                pivotA: new CANNON.Vec3(0, 0.5, 0), pivotB: new CANNON.Vec3(0, 0, 0),
-                axisA: new CANNON.Vec3(0, 0, 1), axisB: new CANNON.Vec3(0, 0, 1)
-            }));
+            world.addConstraint(new CANNON.HingeConstraint(pivot, plank, { axisA: new CANNON.Vec3(0,0,1), axisB: new CANNON.Vec3(0,0,1) }));
         }
 
-        function spawnCharacter(type, pos) {
-            const y = pos.y + 3.5;
-            if (type === 'deuce') {
-                const torso = createPart({x: 1.4, y: 1.6, z: 0.8}, {x: 1.0, y: 1.6, z: 0.7}, {x: pos.x, y: y + 1.5, z: pos.z}, 3.0, 0x10b981, true);
-                const createLeg = (side) => {
-                    const thigh = createPart({x: 0.5, y: 1.4, z: 0.5}, {x: 0.15, y: 1.4, z: 0.15}, {x: pos.x + side*0.6, y: y + 0.5, z: pos.z}, 1.0, 0x059669, true);
-                    const shin = createPart({x: 0.4, y: 1.4, z: 0.4}, {x: 0.15, y: 1.4, z: 0.15}, {x: pos.x + side*0.6, y: y - 0.5, z: pos.z}, 0.8, 0x047857, true);
-                    const foot = createPart({x: 0.8, y: 0.4, z: 1.4}, {x: 0.7, y: 0.4, z: 1.2}, {x: pos.x + side*0.6, y: y - 1.2, z: pos.z + 0.2}, 1.0, 0x064e3b, true);
-                    
-                    const hip = new CANNON.HingeConstraint(torso, thigh, { pivotA: new CANNON.Vec3(side*0.6, -0.8, 0), pivotB: new CANNON.Vec3(0, 0.7, 0), axisA: new CANNON.Vec3(1, 0, 0), axisB: new CANNON.Vec3(1, 0, 0) });
-                    const knee = new CANNON.HingeConstraint(thigh, shin, { pivotA: new CANNON.Vec3(0, -0.7, 0), pivotB: new CANNON.Vec3(0, 0.7, 0), axisA: new CANNON.Vec3(1, 0, 0), axisB: new CANNON.Vec3(1, 0, 0) });
-                    const ankle = new CANNON.HingeConstraint(shin, foot, { pivotA: new CANNON.Vec3(0, -0.7, 0), pivotB: new CANNON.Vec3(0, 0.2, -0.3), axisA: new CANNON.Vec3(1, 0, 0), axisB: new CANNON.Vec3(1, 0, 0) });
-                    
-                    [hip, knee, ankle].forEach(j => { j.enableMotor(); world.addConstraint(j); });
-                    return { hip, knee, ankle, foot };
-                };
-                torso.charType = 'deuce'; torso.legs = { left: createLeg(-1), right: createLeg(1) };
-                autonomousBodies.push(torso);
-            } else if (type === 'pogo') {
-                const b = createPart({x:1, y:2.5, z:1}, {x:1, y:2.5, z:1}, {x:pos.x, y:y, z:pos.z}, 2, 0x3b82f6, true); b.charType = 'pogo'; autonomousBodies.push(b);
-            } else if (type === 'uno') {
-                const foot = createPart({x:1.5, y:0.4, z:1.5}, {x:1.5, y:0.4, z:1.5}, {x:pos.x, y:pos.y+0.2, z:pos.z}, 1, 0xef4444, true);
-                const head = createPart({x:1.2, y:1.2, z:1.2}, {x:1.2, y:1.2, z:1.2}, {x:pos.x, y:pos.y+3, z:pos.z}, 2, 0xef4444, true);
-                world.addConstraint(new CANNON.DistanceConstraint(foot, head, 2.5)); head.charType = 'uno'; head.footBody = foot; autonomousBodies.push(head);
-            }
+        function spawnCharacter(pos) {
+            const y = pos.y + 4.0;
+            const torso = createPart({x: 1.4, y: 1.6, z: 0.8}, {x: 1.0, y: 1.6, z: 0.7}, {x: pos.x, y: y + 1.5, z: pos.z}, 3.0, 0x10b981, true);
+            const createLeg = (side) => {
+                const thigh = createPart({x: 0.5, y: 1.4, z: 0.5}, {x: 0.15, y: 1.4, z: 0.15}, {x: pos.x + side*0.6, y: y + 0.5, z: pos.z}, 1.0, 0x059669, true);
+                const shin = createPart({x: 0.4, y: 1.4, z: 0.4}, {x: 0.15, y: 1.4, z: 0.15}, {x: pos.x + side*0.6, y: y - 0.5, z: pos.z}, 0.8, 0x047857, true);
+                const foot = createPart({x: 0.8, y: 0.4, z: 1.4}, {x: 0.7, y: 0.4, z: 1.2}, {x: pos.x + side*0.6, y: y - 1.2, z: pos.z + 0.2}, 1.0, 0x064e3b, true);
+                
+                thigh.quaternion.copy(torso.quaternion);
+                shin.quaternion.copy(torso.quaternion);
+                foot.quaternion.copy(torso.quaternion);
+
+                const hj = new CANNON.HingeConstraint(torso, thigh, { pivotA: new CANNON.Vec3(side*0.6, -0.8, 0), pivotB: new CANNON.Vec3(0, 0.7, 0), axisA: new CANNON.Vec3(1,0,0), axisB: new CANNON.Vec3(1,0,0), collideConnected: false });
+                const kj = new CANNON.HingeConstraint(thigh, shin, { pivotA: new CANNON.Vec3(0, -0.7, 0), pivotB: new CANNON.Vec3(0, 0.7, 0), axisA: new CANNON.Vec3(1,0,0), axisB: new CANNON.Vec3(1,0,0), collideConnected: false });
+                const aj = new CANNON.HingeConstraint(shin, foot, { pivotA: new CANNON.Vec3(0, -0.7, 0), pivotB: new CANNON.Vec3(0, 0.2, -0.3), axisA: new CANNON.Vec3(1,0,0), axisB: new CANNON.Vec3(1,0,0), collideConnected: false });
+                
+                [hj, kj, aj].forEach(j => { j.enableMotor(); world.addConstraint(j); });
+                return { hj, kj, aj, thigh, shin, foot };
+            };
+            torso.charType = 'deuce'; torso.legs = { left: createLeg(-1), right: createLeg(1) };
+            autonomousBodies.push(torso);
+        }
+
+        function getSafeAngle(parent, child) {
+            const down = new CANNON.Vec3(0, -1, 0);
+            const childDownInWorld = child.quaternion.vmult(down);
+            const parentInvQ = parent.quaternion.inverse();
+            const relDown = parentInvQ.vmult(childDownInWorld);
+            return Math.atan2(relDown.z, -relDown.y);
         }
 
         function animate(time) {
             const dt = lastTime ? (time - lastTime) / 1000 : 1/60; lastTime = time;
-            // サブステップ10で非常に高い剛性を維持
-            world.step(1/60, dt, 10); 
+            world.step(1/60, dt, 15); 
 
             autonomousBodies.forEach(body => {
-                const up = new CANNON.Vec3(0,1,0); 
-                const cur = body.quaternion.vmult(up);
-                // 体幹の直立維持
+                const up = new CANNON.Vec3(0,1,0); const cur = body.quaternion.vmult(up);
                 body.torque.vadd(cur.cross(up).scale(CONFIG.upright), body.torque);
 
                 if (body.charType === 'deuce') {
                     const cycle = Math.sin(performance.now() / 1000 * CONFIG.walkSpeed);
-                    const controlLeg = (leg, phase) => {
-                        leg.hip.setMotorSpeed(phase * CONFIG.walkSpeed * CONFIG.walkAmp); leg.hip.setMotorMaxForce(CONFIG.jointPower);
-                        leg.knee.setMotorSpeed(phase > 0 ? -CONFIG.walkSpeed * 2.5 : CONFIG.walkSpeed * 1.0); leg.knee.setMotorMaxForce(CONFIG.jointPower);
+                    const ctrl = (leg, ph) => {
+                        // 1. 股関節（Hip）: 前側にもしっかり振れるように調整
+                        const ha = getSafeAngle(body, leg.thigh);
+                        let hs = ph * CONFIG.walkSpeed * CONFIG.walkAmp;
+                        // 股関節リミット: 前後45度（±0.8rad）
+                        if (ha > 0.8 && hs > 0) hs = -2.0; 
+                        if (ha < -0.8 && hs < 0) hs = 2.0;
+                        leg.hj.setMotorSpeed(hs); leg.hj.setMotorMaxForce(CONFIG.jointPower);
                         
-                        // 足首の30度ソフトロック
-                        const ankleEuler = new THREE.Euler().setFromQuaternion(leg.foot.quaternion);
-                        let ankleTarget = -phase * 5.0;
-                        if (Math.abs(ankleEuler.x) > 0.52) { // 30度オーバー
-                            ankleTarget = -ankleEuler.x * 25.0; // 強烈な引き戻し
-                        }
-                        leg.ankle.setMotorSpeed(ankleTarget); leg.ankle.setMotorMaxForce(CONFIG.jointPower);
+                        // 2. 膝制限（0度〜-160度）
+                        const ka = getSafeAngle(leg.thigh, leg.shin);
+                        let ks = ph > 0 ? -CONFIG.walkSpeed * 2.5 : CONFIG.walkSpeed * 1.0;
+                        if (ka > 0 && ks > 0) ks = -5.0; 
+                        if (ka < -2.8 && ks < 0) ks = 5.0; 
+                        leg.kj.setMotorSpeed(ks); leg.kj.setMotorMaxForce(CONFIG.jointPower);
+
+                        // 3. 足首制限（前後30度 = ±0.52rad）
+                        const aa = getSafeAngle(leg.shin, leg.foot);
+                        let as = -ph * 5.0;
+                        if (aa > 0.52 && as > 0) as = -15.0; 
+                        if (aa < -0.52 && as < 0) as = 15.0; 
+                        leg.aj.setMotorSpeed(as); leg.aj.setMotorMaxForce(CONFIG.jointPower * 2);
                     };
-                    controlLeg(body.legs.left, cycle); controlLeg(body.legs.right, -cycle);
-                } else if (body.charType === 'pogo' && body.position.y < 1.6) {
-                    body.applyImpulse(new CANNON.Vec3(0,18,0), body.position);
-                } else if (body.charType === 'uno') {
-                    const diff = body.footBody.position.vsub(body.position);
-                    body.footBody.applyForce(new CANNON.Vec3(diff.x*70, 0, diff.z*70), body.footBody.position);
+                    ctrl(body.legs.left, cycle); ctrl(body.legs.right, -cycle);
                 }
             });
 
-            objectsToUpdate.forEach(obj => {
-                obj.mesh.position.copy(obj.body.position);
-                obj.mesh.quaternion.copy(obj.body.quaternion);
-            });
-            controls.update();
-            renderer.render(scene, camera);
+            objectsToUpdate.forEach(obj => { obj.mesh.position.copy(obj.body.position); obj.mesh.quaternion.copy(obj.body.quaternion); });
+            controls.update(); renderer.render(scene, camera);
         }
 
         function setupSliders() {
             const bind = (id, key) => {
                 const sld = document.getElementById(`sld-${id}`); const val = document.getElementById(`val-${id}`);
                 sld.addEventListener('input', (e) => { 
-                    let v = parseFloat(e.target.value); CONFIG[key] = v; val.innerText = (key === 'upright' || key === 'jointPower') ? v.toFixed(0) : v.toFixed(1);
+                    let v = parseFloat(e.target.value); CONFIG[key] = v; val.innerText = v.toFixed(1);
                     if(key === 'gravity') world.gravity.set(0, v, 0);
                 });
             };
             [['gravity','gravity'],['upright','upright'],['speed','walkSpeed'],['amp','walkAmp'],['power','jointPower']].forEach(a => bind(a[0], a[1]));
         }
+
         function setupInteractions() {
             const raycaster = new THREE.Raycaster();
             renderer.domElement.addEventListener('pointerdown', (e) => {
@@ -222,13 +214,10 @@
                 const mouse = new THREE.Vector2((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1);
                 raycaster.setFromCamera(mouse, camera);
                 const intersects = raycaster.intersectObjects(clickObjects);
-                if (intersects.length > 0) spawnCharacter(selectedCharacter, intersects[0].point);
+                if (intersects.length > 0) spawnCharacter(intersects[0].point);
             });
         }
-        function selectChar(type) { selectedCharacter = type; document.querySelectorAll('.btn-interactive').forEach(b => b.classList.remove('selected')); document.getElementById(`btn-${type}`).classList.add('selected'); }
         function resetWorld() { buildWorld(); }
-        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
-        
         init();
     </script>
 </body>
