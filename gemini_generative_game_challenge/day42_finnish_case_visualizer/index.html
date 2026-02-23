@@ -1,17 +1,15 @@
---- START OF FILE index.html ---
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suomi Case Map v14 - Final Fix</title>
+    <title>Suomi Case Map</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --base-font-scale: 1.0; 
-            --card-width: calc(190px * var(--base-font-scale));
+            --card-width: 190px;
             --box-size: 450px;
-            --ani-play-state: running; 
+            --ani-play-state: running;
             --ani-delay: 0s;
         }
 
@@ -34,167 +32,131 @@
             background: rgba(30, 41, 59, 0.1); z-index: 1;
         }
 
+        /* 全カード統一スタイル */
         .case-card {
             position: absolute;
             width: var(--card-width);
-            padding: calc(10px * var(--base-font-scale));
-            background-color: #0f172a !important;
+            padding: 10px;
+            background-color: #0f172a;
             border-radius: 16px;
-            border: 1px solid rgba(99, 102, 241, 0.4); /* 全カード統一: indigo */
+            border: 1px solid rgba(99, 102, 241, 0.4);
             text-align: center;
-            z-index: 20; 
+            z-index: 20;
             box-shadow: 0 10px 30px rgba(0,0,0,0.7);
             animation-play-state: var(--ani-play-state) !important;
             animation-delay: var(--ani-delay) !important;
             animation-fill-mode: both !important;
         }
 
-        /* SG=PLで形が変わらないカード: 薄く表示 */
+        /* SG=PLで形が変わらないカード */
         .case-card.sg-pl-same {
             border: 1px solid rgba(99, 102, 241, 0.15);
             opacity: 0.35;
         }
 
-
-        .case-name { font-size: calc(9px * var(--base-font-scale)); font-weight: 900; text-transform: uppercase; margin-bottom: 2px; }
-        .case-word { 
-            font-size: calc(16px * var(--base-font-scale)); font-weight: 800; color: white; line-height: 1.2;
+        .case-name { font-size: 9px; font-weight: 900; text-transform: uppercase; margin-bottom: 2px; }
+        .case-word {
+            font-size: 16px; font-weight: 800; color: white; line-height: 1.2;
             display: flex; align-items: center; justify-content: center; gap: 6px;
         }
-        .case-desc { font-size: calc(10px * var(--base-font-scale)); color: #94a3b8; margin-top: 2px; }
+        .case-desc { font-size: 10px; color: #94a3b8; margin-top: 2px; }
 
         .strong-grade { color: #7dd3fc; }
-        .weak-grade { color: #fdba74; }
-        .suffix { color: #64748b; font-weight: 400; font-size: 0.9em; }
-        .tts-icon { opacity: 0.4; font-size: 0.9em; cursor: pointer; transition: opacity 0.2s; }
+        .weak-grade   { color: #fdba74; }
+        .suffix       { color: #64748b; font-weight: 400; font-size: 0.9em; }
+        .tts-icon     { opacity: 0.4; font-size: 0.9em; cursor: pointer; transition: opacity 0.2s; }
         .tts-icon:hover { opacity: 1; color: #6366f1; }
 
-        /* 1. 内格系 (箱の中) */
+        /* 1. 内格系 */
         .pos-inessive { top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 21; }
         .pos-illative { animation: ill-move 6s infinite linear; }
         @keyframes ill-move {
-            0%, 40% { left: 5%; top: 50%; transform: translateY(-50%); opacity: 0.5; }
-            70%, 100% { left: 40%; top: 50%; transform: translate(-50%, -50%); opacity: 1; }
+            0%, 40%   { left: 5%;  top: 50%; transform: translateY(-50%);     opacity: 0.5; }
+            70%, 100% { left: 40%; top: 50%; transform: translate(-50%, -50%); opacity: 1;   }
         }
         .pos-elative { animation: ela-move 6s infinite linear; }
         @keyframes ela-move {
-            0%, 40% { left: 60%; top: 50%; transform: translate(-50%, -50%); opacity: 1; }
+            0%, 40%   { left: 60%; top: 50%; transform: translate(-50%, -50%); opacity: 1;   }
             70%, 100% { left: 95%; top: 50%; transform: translate(-50%, -50%); opacity: 0.5; }
         }
 
-        /* 2. 接格系 (箱の上) */
+        /* 2. 接格系 */
         .pos-adessive { top: calc(50% - 225px); left: 50%; transform: translate(-50%, -110%); }
         .pos-allative { animation: all-move 6s infinite linear; }
         @keyframes all-move {
-            0%, 40% { top: 15%; left: 25%; transform: translate(-50%, -110%); opacity: 0.5; }
+            0%, 40%   { top: 15%; left: 25%; transform: translate(-50%, -110%); opacity: 0.5; }
             70%, 100% { top: calc(50% - 225px); left: calc(50% - 195px); transform: translate(-50%, -110%); opacity: 1; }
         }
         .pos-ablative { animation: abl-move 6s infinite linear; }
         @keyframes abl-move {
-            0%, 40% { top: calc(50% - 225px); left: calc(50% + 195px); transform: translate(-50%, -110%); opacity: 1; }
+            0%, 40%   { top: calc(50% - 225px); left: calc(50% + 195px); transform: translate(-50%, -110%); opacity: 1; }
             70%, 100% { top: 15%; left: 75%; transform: translate(-50%, -110%); opacity: 0.5; }
         }
-        
+
         /* 固定位置 */
-        .pos-nominative { top: calc(50% + 290px); left: 50%; transform: translateX(-50%); background: rgba(99, 102, 241, 0.15) !important; }
-        .pos-essive      { top: calc(50% + 290px); left: 25%; transform: translateX(-50%); }
-        .pos-translative { top: calc(50% + 290px); left: 75%; transform: translateX(-50%); }
-        .pos-partitive   { top: calc(50% + 365px); left: 30%; transform: translateX(-50%); }
+        .pos-nominative  { top: calc(50% + 290px); left: 50%;  transform: translateX(-50%); background: rgba(99, 102, 241, 0.15) !important; }
+        .pos-essive      { top: calc(50% + 290px); left: 25%;  transform: translateX(-50%); }
+        .pos-translative { top: calc(50% + 290px); left: 82%;  transform: translateX(-50%); }
+        .pos-partitive   { top: calc(50% + 365px); left: 30%;  transform: translateX(-50%); }
         .pos-akkusatiivi { top: 35%; right: 5%; }
+
+        /* Genetiivi: SG=右下(弱変化側) / PL=左下(強変化側) */
         .pos-genitive.num-sg { top: calc(50% + 140px); left: calc(50% + 140px); transform: translateX(-50%); transition: left 0.4s ease; }
         .pos-genitive.num-pl { top: calc(50% + 140px); left: calc(50% - 140px); transform: translateX(-50%); transition: left 0.4s ease; }
 
-        /* 周辺格 (四隅に分散) */
-        .pos-abessiivi   { bottom: 5%; left: 5%; }
-        .pos-komitatiivi { bottom: 5%; right: 5%; }
-        .pos-instruktiivi { top: 15%; left: 5%; }
+        /* 周辺格: Abessiivi=右下(弱変化gi) / Komitatiivi=左下(強変化nk) */
+        .pos-abessiivi    { bottom: 5%; right: 5%; }
+        .pos-komitatiivi  { bottom: 5%; left: 5%;  }
+        .pos-instruktiivi { top: 15%;  left: 5%;  }
+
+        /* ガイドライン */
+        .guide-path {
+            position: absolute;
+            border-top: 2px dotted rgba(255, 255, 255, 0.1);
+            pointer-events: none; z-index: 5;
+        }
+        .path-illative { top: 50%; left: 5%;  width: 35%; }
+        .path-elative  { top: 50%; left: 60%; width: 35%; }
+        .path-allative { top: calc(15% - 25px); left: 25%; width: 15vw; transform: rotate(18deg);  transform-origin: left center; }
+        .path-ablative { top: calc(15% - 25px); left: 75%; width: 15vw; transform: rotate(162deg); transform-origin: left center; }
 
         .emoji-container {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             display: grid; gap: 20px; z-index: 5; opacity: 0.08; pointer-events: none;
         }
-        .emoji-container.sg { grid-template-columns: 1fr; font-size: 20rem; }
+        .emoji-container.sg { grid-template-columns: 1fr;     font-size: 20rem; }
         .emoji-container.pl { grid-template-columns: 1fr 1fr; font-size: 10rem; }
 
         .stage-toggle {
             position: absolute; top: calc(50% + 375px); left: 50%; transform: translateX(-50%);
             display: flex; background: #1e293b; padding: 3px; border-radius: 10px; z-index: 100; border: 1px solid #334155;
         }
-        .toggle-btn {
-            padding: 5px 15px; font-size: 11px; font-weight: 800; border-radius: 7px; cursor: pointer; color: #94a3b8;
-        }
+        .toggle-btn { padding: 5px 15px; font-size: 11px; font-weight: 800; border-radius: 7px; cursor: pointer; color: #94a3b8; }
         .toggle-btn.active { background: #6366f1; color: white; }
 
         .sidebar { background: #0f172a; border-left: 1px solid #1e293b; padding: 20px; overflow-y: auto; }
         .word-btn {
-            width: 100%; padding: 10px; margin-bottom: 8px; background: #1e293b; border: 2px solid transparent; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer;
+            width: 100%; padding: 10px; margin-bottom: 8px; background: #1e293b;
+            border: 2px solid transparent; border-radius: 12px;
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
         }
         .word-btn.active { border-color: #6366f1; background: #1e1b4b; }
-        input[type="range"] { width: 100%; height: 4px; background: #334155; border-radius: 2px; appearance: none; cursor: pointer; }
-        input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: #6366f1; border-radius: 50%; border: 2px solid #fff; }
-
-        /* --- 追加部分: ガイドラインのスタイル --- */
-        .guide-path {
-            position: absolute;
-            border-top: 2px dotted rgba(255, 255, 255, 0.1); /* 薄いドット線 */
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        /* --- アニメーションの調整に合わせたガイドラインの修正 --- */
-        /* --- アニメーションの調整に合わせたガイドラインの修正 --- */
-        /* --- 修正箇所: カードを不透明にして点線を隠す --- */
-                /* --- 修正箇所: ガイドラインの座標をアニメーションと同期 --- */
-                .guide-path {
-                    position: absolute;
-                    border-top: 2px dotted rgba(255, 255, 255, 0.1);
-                    pointer-events: none;
-                    z-index: 5; /* カード(20)より背面、背景より前面 */
-                }
-
-                /* 内格系: 50%のラインで固定 */
-                .path-illative { top: 50%; left: 5%; width: 35%; } 
-                .path-elative { top: 50%; left: 60%; width: 35%; } 
-
-                /* 向格系: 始点(15%/25%)から着地点(接格の横)を結ぶ */
-                .path-allative { 
-                    top: calc(15% - 25px); /* カードの見た目の中央に補正 */
-                    left: 25%; 
-                    width: 15vw; 
-                    transform: rotate(18deg); 
-                    transform-origin: left center; 
-                } 
-
-                /* 奪格系: 始点(接格の右)から着地点(15%/75%)を結ぶ */
-                .path-ablative { 
-                    top: calc(15% - 25px); /* カードの見た目の中央に補正 */
-                    left: 75%; 
-                    width: 15vw; 
-                    transform: rotate(162deg); /* 角度を反転させて右端へ向かせる */
-                    transform-origin: left center; 
-                }
-
-
     </style>
 </head>
 <body>
     <div class="main-container">
         <div class="stage">
             <div class="target-box"></div>
-
-            <!-- ここから追加 -->
-            <div class="guide-layer w-full h-full absolute pointer-events-none">
+            <div class="w-full h-full absolute pointer-events-none">
                 <div class="guide-path path-illative"></div>
                 <div class="guide-path path-elative"></div>
                 <div class="guide-path path-allative"></div>
                 <div class="guide-path path-ablative"></div>
             </div>
-            <!-- ここまで追加 -->
-
             <div id="emoji-container" class="emoji-container sg"></div>
             <div class="stage-toggle">
                 <div id="sg-btn" class="toggle-btn active" onclick="setNumber('sg')">Yksikkö (SG)</div>
-                <div id="pl-btn" class="toggle-btn" onclick="setNumber('pl')">Monikko (PL)</div>
+                <div id="pl-btn" class="toggle-btn"        onclick="setNumber('pl')">Monikko (PL)</div>
             </div>
             <div id="case-layer" class="w-full h-full relative"></div>
         </div>
@@ -202,21 +164,14 @@
         <div class="sidebar">
             <div class="mb-6">
                 <h1 class="text-xl font-black text-white leading-tight">Suomi Case Map</h1>
-                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em]">v14 Layout Fixed</span>
+                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em]">v16 Fixed</span>
             </div>
-            <div id="word-list" class="max-h-[45vh] overflow-y-auto mb-6 pr-1 custom-scrollbar"></div>
-            <div class="space-y-4">
-                <!-- --- 修正：スライダーを削除し、トグルスイッチのみに変更 --- -->
-                <div class="p-3 bg-slate-800/50 rounded-xl">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Animation Control</label>
-                    <div class="stage-toggle !static !transform-none w-full">
-                        <div id="play-btn-tab" class="toggle-btn flex-1 text-center active" onclick="togglePlay(false)">Play</div>
-                        <div id="pause-btn-tab" class="toggle-btn flex-1 text-center" onclick="togglePlay(true)">Pause</div>
-                    </div>
-                </div>
-                <div class="p-3 bg-slate-800/50 rounded-xl">
-                    <label class="block text-[10px] font-bold text-slate-400 mb-2 uppercase">Card Scale</label>
-                    <input type="range" id="font-slider" min="0.5" max="1.5" step="0.05" value="1.0">
+            <div id="word-list" class="max-h-[55vh] overflow-y-auto mb-6 pr-1"></div>
+            <div class="p-3 bg-slate-800/50 rounded-xl">
+                <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Animation Control</label>
+                <div class="flex bg-slate-900 p-1 rounded-lg gap-1">
+                    <div id="play-btn-tab"  class="toggle-btn flex-1 text-center active" onclick="togglePlay(false)">Play</div>
+                    <div id="pause-btn-tab" class="toggle-btn flex-1 text-center"        onclick="togglePlay(true)">Pause</div>
                 </div>
             </div>
         </div>
@@ -224,80 +179,77 @@
 
     <script>
         const CASE_CONFIGS = [
-            { id: 'Nominatiivi', name: '主格 (Nominatiivi)', desc: '〜は', class: 'pos-nominative', color: '#6366f1' },
-            { id: 'Genetiivi', name: '属格 (Genetiivi)', desc: '〜の', class: 'pos-genitive', color: '#818cf8' },
-            { id: 'Akkusatiivi', name: '対格 (Akkusatiivi)', desc: '〜を', class: 'pos-akkusatiivi', color: '#a5b4fc' },
-            { id: 'Partitiivi', name: '分格 (Partitiivi)', desc: '〜を(一部)', class: 'pos-partitive', color: '#94a3b8' },
-            { id: 'Inessiivi', name: '内格 (Inessiivi)', desc: '中で', class: 'pos-inessive', color: '#f43f5e' },
-            { id: 'Illatiivi', name: '入格 (Illatiivi)', desc: '中へ', class: 'pos-illative', color: '#fb7185' },
-            { id: 'Elatiivi', name: '出格 (Elatiivi)', desc: '中から', class: 'pos-elative', color: '#fb7185' },
-            { id: 'Adessiivi', name: '接格 (Adessiivi)', desc: '上で/で', class: 'pos-adessive', color: '#10b981' },
-            { id: 'Allatiivi', name: '向格 (Allatiivi)', desc: '上へ/に', class: 'pos-allative', color: '#34d399' },
-            { id: 'Ablatiivi', name: '奪格 (Ablatiivi)', desc: '上から', class: 'pos-ablative', color: '#34d399' },
-            { id: 'Essiivi', name: '具格 (Essiivi)', desc: 'として', class: 'pos-essive', color: '#fbbf24' },
-            { id: 'Translatiivi', name: '変格 (Translatiivi)', desc: 'になる', class: 'pos-translative', color: '#f59e0b' },
-            { id: 'Abessiivi', name: '処格 (Abessiivi)', desc: 'なしで', class: 'pos-abessiivi', color: '#94a3b8' },
-            { id: 'Komitatiivi', name: '共格 (Komitatiivi)', desc: 'と共に', class: 'pos-komitatiivi', color: '#94a3b8' },
-            { id: 'Instruktiivi', name: '様格 (Instruktiivi)', desc: 'により', class: 'pos-instruktiivi', color: '#94a3b8' }
+            { id: 'Nominatiivi',  name: '主格 (Nominatiivi)',  desc: '〜は',       class: 'pos-nominative',  color: '#6366f1' },
+            { id: 'Genetiivi',    name: '属格 (Genetiivi)',    desc: '〜の',       class: 'pos-genitive',    color: '#818cf8' },
+            { id: 'Akkusatiivi',  name: '対格 (Akkusatiivi)',  desc: '〜を',       class: 'pos-akkusatiivi', color: '#a5b4fc' },
+            { id: 'Partitiivi',   name: '分格 (Partitiivi)',   desc: '〜を(一部)', class: 'pos-partitive',   color: '#94a3b8' },
+            { id: 'Inessiivi',    name: '内格 (Inessiivi)',    desc: '中で',       class: 'pos-inessive',    color: '#f43f5e' },
+            { id: 'Illatiivi',    name: '入格 (Illatiivi)',    desc: '中へ',       class: 'pos-illative',    color: '#fb7185' },
+            { id: 'Elatiivi',     name: '出格 (Elatiivi)',     desc: '中から',     class: 'pos-elative',     color: '#fb7185' },
+            { id: 'Adessiivi',    name: '接格 (Adessiivi)',    desc: '上で/で',    class: 'pos-adessive',    color: '#10b981' },
+            { id: 'Allatiivi',    name: '向格 (Allatiivi)',    desc: '上へ/に',    class: 'pos-allative',    color: '#34d399' },
+            { id: 'Ablatiivi',    name: '奪格 (Ablatiivi)',    desc: '上から',     class: 'pos-ablative',    color: '#34d399' },
+            { id: 'Essiivi',      name: '具格 (Essiivi)',      desc: 'として',     class: 'pos-essive',      color: '#fbbf24' },
+            { id: 'Translatiivi', name: '変格 (Translatiivi)', desc: 'になる',     class: 'pos-translative', color: '#f59e0b' },
+            { id: 'Abessiivi',    name: '処格 (Abessiivi)',    desc: 'なしで',     class: 'pos-abessiivi',   color: '#94a3b8' },
+            { id: 'Komitatiivi',  name: '共格 (Komitatiivi)',  desc: 'と共に',     class: 'pos-komitatiivi', color: '#94a3b8' },
+            { id: 'Instruktiivi', name: '様格 (Instruktiivi)', desc: 'により',     class: 'pos-instruktiivi',color: '#94a3b8' }
         ];
 
         const WORDS = [
-            { id: 'leipa', base: 'leipä', meaning: 'パン (p→v)', emoji: '🍞', kpt: { s: 'p', w: 'v' }, 
-              sg: { Nominatiivi: 'leipä', Genetiivi: 'leivän', Akkusatiivi: 'leivän / leipä', Partitiivi: 'leipää', Inessiivi: 'leivässä', Elatiivi: 'leivästä', Illatiivi: 'leipään', Adessiivi: 'leivällä', Ablatiivi: 'leivältä', Allatiivi: 'leivälle', Essiivi: 'leipänä', Translatiivi: 'leiväksi', Abessiivi: 'leivättä', Komitatiivi: 'leipineen', Instruktiivi: 'leivin' },
+            { id: 'leipa', base: 'leipä', meaning: 'パン (p→v)', emoji: '🍞', kpt: { s: 'p', w: 'v' },
+              sg: { Nominatiivi: 'leipä', Genetiivi: 'leivän', Akkusatiivi: 'leivän', Partitiivi: 'leipää', Inessiivi: 'leivässä', Elatiivi: 'leivästä', Illatiivi: 'leipään', Adessiivi: 'leivällä', Ablatiivi: 'leivältä', Allatiivi: 'leivälle', Essiivi: 'leipänä', Translatiivi: 'leiväksi', Abessiivi: 'leivättä', Komitatiivi: 'leipineen', Instruktiivi: 'leivin' },
               pl: { Nominatiivi: 'leivät', Genetiivi: 'leipien', Akkusatiivi: 'leivät', Partitiivi: 'leipiä', Inessiivi: 'leivissä', Elatiivi: 'leivistä', Illatiivi: 'leipiin', Adessiivi: 'leivillä', Ablatiivi: 'leiviltä', Allatiivi: 'leiville', Essiivi: 'leipinä', Translatiivi: 'leiviksi', Abessiivi: 'leivittä', Komitatiivi: 'leipineen', Instruktiivi: 'leivin' }
             },
-            { id: 'hattu', base: 'hattu', meaning: '帽子 (tt→t)', emoji: '👒', kpt: { s: 'tt', w: 't' }, 
-              sg: { Nominatiivi: 'hattu', Genetiivi: 'hatun', Akkusatiivi: 'hatun / hattu', Partitiivi: 'hattua', Inessiivi: 'hatussa', Elatiivi: 'hatusta', Illatiivi: 'hattuun', Adessiivi: 'hatulla', Ablatiivi: 'hatulta', Allatiivi: 'hatulle', Essiivi: 'hattuna', Translatiivi: 'hatuksi', Abessiivi: 'hatutta', Komitatiivi: 'hattuineen', Instruktiivi: 'hatuin' },
+            { id: 'hattu', base: 'hattu', meaning: '帽子 (tt→t)', emoji: '👒', kpt: { s: 'tt', w: 't' },
+              sg: { Nominatiivi: 'hattu', Genetiivi: 'hatun', Akkusatiivi: 'hatun', Partitiivi: 'hattua', Inessiivi: 'hatussa', Elatiivi: 'hatusta', Illatiivi: 'hattuun', Adessiivi: 'hatulla', Ablatiivi: 'hatulta', Allatiivi: 'hatulle', Essiivi: 'hattuna', Translatiivi: 'hatuksi', Abessiivi: 'hatutta', Komitatiivi: 'hattuineen', Instruktiivi: 'hatuin' },
               pl: { Nominatiivi: 'hatut', Genetiivi: 'hattujen', Akkusatiivi: 'hatut', Partitiivi: 'hattuja', Inessiivi: 'hatuissa', Elatiivi: 'hatuista', Illatiivi: 'hattuihin', Adessiivi: 'hatuilla', Ablatiivi: 'hatuilta', Allatiivi: 'hatuille', Essiivi: 'hattuina', Translatiivi: 'hatuiksi', Abessiivi: 'hatuitta', Komitatiivi: 'hattuineen', Instruktiivi: 'hatuin' }
             },
-            { id: 'kukka', base: 'kukka', meaning: '花 (kk→k)', emoji: '🌸', kpt: { s: 'kk', w: 'k' }, 
-              sg: { Nominatiivi: 'kukka', Genetiivi: 'kukan', Akkusatiivi: 'kukan / kukka', Partitiivi: 'kukkaa', Inessiivi: 'kukassa', Elatiivi: 'kukasta', Illatiivi: 'kukkaan', Adessiivi: 'kukalla', Ablatiivi: 'kukalta', Allatiivi: 'kukalle', Essiivi: 'kukkana', Translatiivi: 'kukaksi', Abessiivi: 'kukatta', Komitatiivi: 'kukkineen', Instruktiivi: 'kukkia' },
+            { id: 'kukka', base: 'kukka', meaning: '花 (kk→k)', emoji: '🌸', kpt: { s: 'kk', w: 'k' },
+              sg: { Nominatiivi: 'kukka', Genetiivi: 'kukan', Akkusatiivi: 'kukan', Partitiivi: 'kukkaa', Inessiivi: 'kukassa', Elatiivi: 'kukasta', Illatiivi: 'kukkaan', Adessiivi: 'kukalla', Ablatiivi: 'kukalta', Allatiivi: 'kukalle', Essiivi: 'kukkana', Translatiivi: 'kukaksi', Abessiivi: 'kukatta', Komitatiivi: 'kukkineen', Instruktiivi: 'kukkia' },
               pl: { Nominatiivi: 'kukat', Genetiivi: 'kukkien', Akkusatiivi: 'kukat', Partitiivi: 'kukkia', Inessiivi: 'kukissa', Elatiivi: 'kukista', Illatiivi: 'kukkiin', Adessiivi: 'kukilla', Ablatiivi: 'kukilta', Allatiivi: 'kukille', Essiivi: 'kukkina', Translatiivi: 'kukiksi', Abessiivi: 'kukitta', Komitatiivi: 'kukkineen', Instruktiivi: 'kukkia' }
             },
-            { id: 'kaupunki', base: 'kaupunki', meaning: '町 (nk→ng)', emoji: '🏙️', kpt: { s: 'nk', w: 'ng' }, 
-              sg: { Nominatiivi: 'kaupunki', Genetiivi: 'kaupungin', Akkusatiivi: 'kaupungin / kaupunki', Partitiivi: 'kaupunkia', Inessiivi: 'kaupungissa', Elatiivi: 'kaupungista', Illatiivi: 'kaupunkiin', Adessiivi: 'kaupungilla', Ablatiivi: 'kaupungilta', Allatiivi: 'kaupungille', Essiivi: 'kaupunkina', Translatiivi: 'kaupungiksi', Abessiivi: 'kaupungitta', Komitatiivi: 'kaupunkeineen', Instruktiivi: 'kaupungein' },
+            { id: 'kaupunki', base: 'kaupunki', meaning: '町 (nk→ng)', emoji: '🏙️', kpt: { s: 'nk', w: 'ng' },
+              sg: { Nominatiivi: 'kaupunki', Genetiivi: 'kaupungin', Akkusatiivi: 'kaupungin', Partitiivi: 'kaupunkia', Inessiivi: 'kaupungissa', Elatiivi: 'kaupungista', Illatiivi: 'kaupunkiin', Adessiivi: 'kaupungilla', Ablatiivi: 'kaupungilta', Allatiivi: 'kaupungille', Essiivi: 'kaupunkina', Translatiivi: 'kaupungiksi', Abessiivi: 'kaupungitta', Komitatiivi: 'kaupunkeineen', Instruktiivi: 'kaupungein' },
               pl: { Nominatiivi: 'kaupungit', Genetiivi: 'kaupunkien', Akkusatiivi: 'kaupungit', Partitiivi: 'kaupunkeja', Inessiivi: 'kaupungeissa', Elatiivi: 'kaupungeista', Illatiivi: 'kaupunkeihin', Adessiivi: 'kaupungeilla', Ablatiivi: 'kaupungeilta', Allatiivi: 'kaupungeille', Essiivi: 'kaupunkeina', Translatiivi: 'kaupungeiksi', Abessiivi: 'kaupungeitta', Komitatiivi: 'kaupunkeineen', Instruktiivi: 'kaupungein' }
             },
-            { id: 'talo', base: 'talo', meaning: '家', emoji: '🏠', 
-              sg: { Nominatiivi: 'talo', Genetiivi: 'talon', Akkusatiivi: 'talon / talo', Partitiivi: 'taloa', Inessiivi: 'talossa', Elatiivi: 'talosta', Illatiivi: 'taloon', Adessiivi: 'talolla', Ablatiivi: 'talolta', Allatiivi: 'talolle', Essiivi: 'talona', Translatiivi: 'taloksi', Abessiivi: 'talotta', Komitatiivi: 'taloineen', Instruktiivi: 'taloin' },
+            { id: 'talo', base: 'talo', meaning: '家', emoji: '🏠',
+              sg: { Nominatiivi: 'talo', Genetiivi: 'talon', Akkusatiivi: 'talon', Partitiivi: 'taloa', Inessiivi: 'talossa', Elatiivi: 'talosta', Illatiivi: 'taloon', Adessiivi: 'talolla', Ablatiivi: 'talolta', Allatiivi: 'talolle', Essiivi: 'talona', Translatiivi: 'taloksi', Abessiivi: 'talotta', Komitatiivi: 'taloineen', Instruktiivi: 'taloin' },
               pl: { Nominatiivi: 'talot', Genetiivi: 'talojen', Akkusatiivi: 'talot', Partitiivi: 'taloja', Inessiivi: 'taloissa', Elatiivi: 'taloista', Illatiivi: 'taloihin', Adessiivi: 'taloilla', Ablatiivi: 'taloilta', Allatiivi: 'taloille', Essiivi: 'taloina', Translatiivi: 'taloiksi', Abessiivi: 'taloitta', Komitatiivi: 'taloineen', Instruktiivi: 'taloin' }
             },
-            { id: 'koti', base: 'koti', meaning: '自宅 (t→d)', emoji: '🏡', kpt: { s: 't', w: 'd' }, 
-              sg: { Nominatiivi: 'koti', Genetiivi: 'kodin', Akkusatiivi: 'kodin / koti', Partitiivi: 'kotia', Inessiivi: 'kodissa', Elatiivi: 'kodista', Illatiivi: 'kotiin', Adessiivi: 'kodilla', Ablatiivi: 'kodilta', Allatiivi: 'kodille', Essiivi: 'kotona', Translatiivi: 'kodiksi', Abessiivi: 'koditta', Komitatiivi: 'koteineen', Instruktiivi: 'kodein' },
+            { id: 'koti', base: 'koti', meaning: '自宅 (t→d)', emoji: '🏡', kpt: { s: 't', w: 'd' },
+              sg: { Nominatiivi: 'koti', Genetiivi: 'kodin', Akkusatiivi: 'kodin', Partitiivi: 'kotia', Inessiivi: 'kodissa', Elatiivi: 'kodista', Illatiivi: 'kotiin', Adessiivi: 'kodilla', Ablatiivi: 'kodilta', Allatiivi: 'kodille', Essiivi: 'kotona', Translatiivi: 'kodiksi', Abessiivi: 'koditta', Komitatiivi: 'koteineen', Instruktiivi: 'kodein' },
               pl: { Nominatiivi: 'kodit', Genetiivi: 'kotien', Akkusatiivi: 'kodit', Partitiivi: 'koteja', Inessiivi: 'kodeissa', Elatiivi: 'kodeista', Illatiivi: 'koteihin', Adessiivi: 'kodeilla', Ablatiivi: 'kodeilta', Allatiivi: 'kodeille', Essiivi: 'koteina', Translatiivi: 'kodeiksi', Abessiivi: 'kodeitta', Komitatiivi: 'koteineen', Instruktiivi: 'kodein' }
             }
         ];
 
+        const SG_PL_SAME = new Set(['Komitatiivi', 'Instruktiivi']);
+
         let currentWord = WORDS[0], currentNum = 'sg', isPaused = false;
 
         function init() {
-            renderWordList(); renderCases(); setupControls(); updateUI();
+            renderWordList();
+            renderCases();
+            updateCaseContent();
+            updateEmoji();
             updateGenetiiviPosition();
             togglePlay(false);
         }
 
-        function setupControls() {
-            document.getElementById('font-slider').oninput = (e) => document.documentElement.style.setProperty('--base-font-scale', e.target.value);
-            document.getElementById('play-pause').onclick = () => togglePlay(!isPaused);
-        }
-
-        // --- 修正：スライダーロジックを削除し、トグルのみに ---
         function togglePlay(p) {
             isPaused = p;
             document.documentElement.style.setProperty('--ani-play-state', isPaused ? 'paused' : 'running');
-            
-            // ボタンの見た目を更新
             document.getElementById('play-btn-tab').classList.toggle('active', !isPaused);
             document.getElementById('pause-btn-tab').classList.toggle('active', isPaused);
         }
-
 
         function setNumber(n) {
             currentNum = n;
             document.getElementById('sg-btn').classList.toggle('active', n === 'sg');
             document.getElementById('pl-btn').classList.toggle('active', n === 'pl');
             updateGenetiiviPosition();
-            updateUI();
+            updateCaseContent();
+            updateEmoji();
         }
 
         function updateGenetiiviPosition() {
@@ -308,91 +260,107 @@
         }
 
         function speak(t) {
-            if(!t) return;
+            if (!t) return;
             window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(t.split(' / ')[0]);
-            utter.lang = 'fi-FI'; window.speechSynthesis.speak(utter);
+            const u = new SpeechSynthesisUtterance(t);
+            u.lang = 'fi-FI';
+            window.speechSynthesis.speak(u);
         }
 
         function renderWordList() {
-            const list = document.getElementById('word-list'); list.innerHTML = '';
+            const list = document.getElementById('word-list');
+            list.innerHTML = '';
             WORDS.forEach(w => {
                 const btn = document.createElement('button');
                 btn.className = `word-btn ${currentWord.id === w.id ? 'active' : ''}`;
                 btn.innerHTML = `<span class="text-xl">${w.emoji}</span><div class="text-left"><div class="text-sm font-black text-white">${w.base}</div><div class="text-[9px] text-slate-500 font-bold">${w.meaning}</div></div>`;
-                btn.onclick = () => { currentWord = w; updateUI(); };
+                btn.onclick = () => { currentWord = w; renderWordList(); updateCaseContent(); updateEmoji(); };
                 list.appendChild(btn);
             });
         }
 
-        // SG=PLで形が変わらない格
-        const SG_PL_SAME = new Set(['Komitatiivi', 'Instruktiivi']);
-
         function renderCases() {
-            const container = document.getElementById('case-layer'); 
+            const container = document.getElementById('case-layer');
             container.innerHTML = '';
             CASE_CONFIGS.forEach(c => {
                 const card = document.createElement('div');
                 const extra = SG_PL_SAME.has(c.id) ? ' sg-pl-same' : '';
-                card.className = `case-card ${c.class}${extra}`; 
+                card.className = `case-card ${c.class}${extra}`;
                 card.id = `node-${c.id}`;
-                card.innerHTML = `<div class="case-name" style="color: ${c.color}">${c.name}</div><div class="case-word"></div><div class="case-desc">${c.desc}</div>`;
+                card.innerHTML = `<div class="case-name" style="color:${c.color}">${c.name}</div><div class="case-word"></div><div class="case-desc">${c.desc}</div>`;
                 container.appendChild(card);
             });
-            updateUI(); 
+            updateGenetiiviPosition();
         }
 
         function formatWord(text, configId) {
-            if(!text) return '';
-            let val = text.split(' / ')[0];
+            if (!text) return '';
+            const val = text;
 
+            // Genetiivi/Akkusatiivi は語尾が必ず -n のみ
+            if (configId === 'Genetiivi' || configId === 'Akkusatiivi') {
+                return renderSpan(val.slice(0, -1), 'n', val);
+            }
+
+            // Nominatiivi は接尾辞なし
+            if (configId === 'Nominatiivi') {
+                return renderSpan(val, '', val);
+            }
 
             const suffixes = [
-                    // 1. 特別に長い語尾（4文字以上）
-                    'neen', 'tten', 'seen', 'den', 'ien', 'jen',
-                    // 2. 複数形のiを含む語尾（3文字以上）
-                    // これを入れることで leiv-illä のように「i」から分離されます
-                    'illa', 'illä', 'ilta', 'iltä', 'ille', 'issa', 'issä', 'ista', 'istä',
-                    // 3. 基本的な語尾
-                    'ssa', 'ssä', 'sta', 'stä', 'lla', 'llä', 'lta', 'ltä', 'tta', 'ttä',
-                    // 4. 入格（Vn）パターン
-                    'an', 'en', 'in', 'on', 'un', 'än', 'ön', 'yn',
-                    // 5a. 向格・変格・具格・分格
-                    'lle','ksi','na','nä',
-                    // 5b. 複数形主格・分格など
-                    'it','at','ut','yt','ja','ia','jä','iä',
-                    // 6. 最も短い語尾（最後に判定）属格の基本
-                    'n', 't'
-                ];
-
+                'neen', 'tten', 'seen',
+                'ien', 'jen', 'den',
+                'illa', 'illä', 'ilta', 'iltä', 'ille',
+                'issa', 'issä', 'ista', 'istä',
+                'iksi', 'itta', 'ittä',
+                'ssa', 'ssä', 'sta', 'stä',
+                'lla', 'llä', 'lta', 'ltä',
+                'tta', 'ttä',
+                // 入格: 長母音+n を先に（taloon → talo+on、talon とは別）
+                'oon', 'aan', 'een', 'iin', 'uun', 'ään', 'öön', 'yyn',
+                'lle', 'ksi', 'na', 'nä',
+                'ja', 'ia', 'jä', 'iä',
+                'it', 'at', 'ut', 'yt',
+                'n', 't'
+            ];
 
             let root = val, suf = '';
-            for(let s of suffixes) {
-                if(val.endsWith(s) && configId !== 'Nominatiivi') {
-                    root = val.slice(0, -s.length); suf = '' + s; // ここ：'-' + s からハイフンを削除しました
+            for (const s of suffixes) {
+                if (val.endsWith(s)) {
+                    root = val.slice(0, -s.length);
+                    suf  = s;
                     break;
                 }
             }
-            if (currentWord.kpt) {
-                const { s, w } = currentWord.kpt;
-                root = root.replace(s, `<span class="strong-grade">${s}</span>`);
-                if(!root.includes('span')) root = root.replace(w, `<span class="weak-grade">${w}</span>`);
-            }
-            return `<span>${root}<span class="suffix">${suf}</span></span> <span class="tts-icon" onclick="event.stopPropagation(); speak('${val}')">🔊</span>`;
+            return renderSpan(root, suf, val);
         }
 
-        function updateUI() {
-            renderWordList();
-            const eContainer = document.getElementById('emoji-container');
-            eContainer.className = `emoji-container ${currentNum}`;
-            eContainer.innerHTML = (currentNum === 'sg' ? [1] : [1,2,3,4]).map(() => `<span>${currentWord.emoji}</span>`).join('');
+        function renderSpan(root, suf, val) {
+            let r = root;
+            if (currentWord.kpt) {
+                const { s, w } = currentWord.kpt;
+                if (r.includes(s)) {
+                    r = r.replace(s, `<span class="strong-grade">${s}</span>`);
+                } else if (r.includes(w)) {
+                    r = r.replace(w, `<span class="weak-grade">${w}</span>`);
+                }
+            }
+            return `<span>${r}<span class="suffix">${suf}</span></span> <span class="tts-icon" onclick="event.stopPropagation();speak('${val}')">🔊</span>`;
+        }
 
+        function updateCaseContent() {
             CASE_CONFIGS.forEach(c => {
-                const el = document.getElementById(`node-${c.id}`);
-                const val = currentWord[currentNum] && currentWord[currentNum][c.id] ? currentWord[currentNum][c.id] : '';
+                const el  = document.getElementById(`node-${c.id}`);
+                const val = (currentWord[currentNum] && currentWord[currentNum][c.id]) || '';
                 el.onclick = () => speak(val);
                 el.querySelector('.case-word').innerHTML = formatWord(val, c.id);
             });
+        }
+
+        function updateEmoji() {
+            const ec = document.getElementById('emoji-container');
+            ec.className = `emoji-container ${currentNum}`;
+            ec.innerHTML  = (currentNum === 'sg' ? [1] : [1,2,3,4]).map(() => `<span>${currentWord.emoji}</span>`).join('');
         }
 
         window.onload = init;
