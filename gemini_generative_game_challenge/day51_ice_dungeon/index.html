@@ -6,16 +6,11 @@
     <title>わんわん足跡迷路 (Paw Print Dungeon)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --col-panel:  rgba(10, 25, 60, 0.60);
-            --col-border: rgba(100, 170, 255, 0.30);
-            --col-accent: #7dd4fc;
-            --col-text:   #deeeff;
-            --col-yellow: #fde68a;
-            --radius: 14px;
-            --font: 'M PLUS Rounded 1c', 'Segoe UI', sans-serif;
+            --font: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
         }
 
         body, html {
@@ -29,7 +24,7 @@
         }
 
         #game-container { position: relative; width: 100%; height: 100%; }
-        #main-canvas { width: 100%; height: 100%; display: block; }
+        #main-canvas    { width: 100%; height: 100%; display: block; }
 
         /* ミニマップ */
         #minimap-container {
@@ -37,13 +32,12 @@
             bottom: 20px; right: 20px;
             width: min(270px, 32vw);
             height: min(270px, 32vw);
-            background: var(--col-panel);
-            border: 1.5px solid var(--col-border);
-            border-radius: var(--radius);
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.6);
             z-index: 10;
-            backdrop-filter: blur(8px);
         }
 
         #minimap-canvas { width: 100%; height: 100%; display: block; }
@@ -51,8 +45,8 @@
         .minimap-hint {
             position: absolute; bottom: 5px; width: 100%;
             text-align: center;
-            color: rgba(180, 220, 255, 0.50);
-            font-size: 10px; font-weight: 400; letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 10px; letter-spacing: 0.05em;
             pointer-events: none;
         }
 
@@ -65,8 +59,8 @@
         .legend-item {
             display: flex; align-items: center; gap: 5px;
             font-size: 11px; font-weight: 700;
-            color: var(--col-text);
-            text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
             letter-spacing: 0.04em;
         }
 
@@ -86,23 +80,18 @@
         }
 
         .btn {
-            background: var(--col-panel);
-            border: 1.5px solid var(--col-border);
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.28);
             border-radius: 10px;
-            color: var(--col-accent);
+            color: rgba(255, 255, 255, 0.85);
             font-family: var(--font);
-            font-size: 22px; font-weight: 900;
+            font-size: 22px; font-weight: 700;
             display: flex; justify-content: center; align-items: center;
             cursor: pointer;
-            backdrop-filter: blur(6px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
-            transition: background 0.1s, box-shadow 0.1s;
+            transition: background 0.1s;
         }
 
-        .btn:active {
-            background: rgba(80, 140, 255, 0.4);
-            box-shadow: 0 0 14px rgba(80, 160, 255, 0.5);
-        }
+        .btn:active { background: rgba(255, 255, 255, 0.2); }
 
         #btn-w { grid-column: 2; grid-row: 1; }
         #btn-a { grid-column: 1; grid-row: 2; }
@@ -115,48 +104,46 @@
             width: 100%; height: 100%;
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            background: radial-gradient(ellipse at 50% 40%, rgba(0,25,70,0.85) 0%, rgba(0,5,20,0.94) 100%);
+            background: rgba(0, 10, 30, 0.92);
             z-index: 20;
             transition: opacity 0.3s;
         }
 
         h1 {
             font-family: var(--font);
-            font-weight: 900;
-            color: var(--col-yellow);
-            font-size: 44px;
-            letter-spacing: 0.07em;
-            text-shadow: 0 0 24px rgba(253,230,138,0.55), 0 2px 0 rgba(0,0,0,0.7);
-            margin-bottom: 16px; text-align: center;
+            font-weight: 700;
+            color: #fff;
+            font-size: 42px;
+            letter-spacing: 0.08em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 18px; text-align: center;
         }
 
         p {
             font-family: var(--font);
-            color: rgba(200, 228, 255, 0.82);
-            font-size: 16px; font-weight: 400;
-            line-height: 1.85; letter-spacing: 0.04em;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 15px; font-weight: 700;
+            line-height: 1.85; letter-spacing: 0.05em;
             text-align: center;
             margin-bottom: 32px; max-width: 80%;
             white-space: pre-line;
         }
 
         .action-btn {
-            padding: 13px 44px;
+            padding: 12px 50px;
             font-family: var(--font);
-            font-size: 19px; font-weight: 900;
+            font-size: 18px; font-weight: 700;
             letter-spacing: 0.10em;
-            color: #0d2040;
-            background: linear-gradient(135deg, #93d8f8 0%, #38bdf8 50%, #0ea5e9 100%);
-            border: none; border-radius: 50px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
             cursor: pointer;
-            box-shadow: 0 4px 22px rgba(56,189,248,0.45), inset 0 1px 0 rgba(255,255,255,0.28);
-            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            transition: background 0.15s, transform 0.1s;
         }
 
-        .action-btn:hover {
-            box-shadow: 0 6px 30px rgba(56,189,248,0.65), inset 0 1px 0 rgba(255,255,255,0.28);
-        }
-
+        .action-btn:hover { background: rgba(255, 255, 255, 0.12); }
         .action-btn:active { transform: scale(0.96); }
 
         .hidden { display: none !important; }
@@ -166,18 +153,16 @@
             position: absolute;
             bottom: 22px; left: 50%;
             transform: translateX(-50%);
-            color: var(--col-text);
+            color: rgba(255, 255, 255, 0.9);
             font-family: var(--font);
-            font-size: 17px; font-weight: 700;
-            letter-spacing: 0.09em;
-            text-shadow: 0 1px 5px rgba(0,0,0,0.9);
-            background: var(--col-panel);
-            border: 1.5px solid var(--col-border);
-            padding: 5px 22px; border-radius: 50px;
+            font-size: 16px; font-weight: 700;
+            letter-spacing: 0.10em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 24px; border-radius: 30px;
             z-index: 10; white-space: nowrap;
             pointer-events: none;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 2px 14px rgba(0,0,0,0.45);
         }
 
         /* 言語ボタン */
@@ -191,25 +176,23 @@
             font-family: var(--font);
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.05em;
-            color: rgba(170, 210, 255, 0.70);
-            background: rgba(5, 15, 40, 0.65);
-            border: 1.5px solid var(--col-border);
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             border-radius: 6px;
             cursor: pointer;
-            backdrop-filter: blur(4px);
             transition: all 0.15s;
         }
 
         .lang-btn.active {
-            background: rgba(40, 110, 220, 0.35);
+            background: rgba(255, 255, 255, 0.15);
             color: #fff;
-            border-color: rgba(100, 180, 255, 0.65);
-            box-shadow: 0 0 10px rgba(60,150,255,0.35);
+            border-color: rgba(255, 255, 255, 0.6);
         }
 
         .lang-btn:hover:not(.active) {
-            background: rgba(20, 50, 110, 0.65);
-            color: rgba(210, 235, 255, 0.9);
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.85);
         }
 
         @media (hover: hover) and (pointer: fine) {
@@ -694,7 +677,7 @@ class Game {
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xeef4ff);
-        this.scene.fog = new THREE.Fog(0xeef4ff, 1, this.cellSize * 4);
+        this.scene.fog = new THREE.Fog(0xeef4ff, 1, this.cellSize * 8);
 
         this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -822,7 +805,7 @@ class Game {
                     // ---- 壁（厚みあり boxGeometry）----
                     const wallThick  = this.wallHeight * 0.1;
                     // 隣接する壁との角を埋めるため幅を厚み分だけ延長。Zファイト回避のため微小に短くする
-                    const wallExtLen = this.cellSize + wallThick - 0.2;
+                    const wallExtLen = this.cellSize + wallThick - 0.3;
                     const miniLineMat = new THREE.LineBasicMaterial({color: 0x888888});
 
                     const addWall = (wx, wy, wz, ry, p1, p2) => {
@@ -914,7 +897,7 @@ class Game {
         const miniOffset = (MAZE_SIZE - 1) / 2;
         this.miniPlayer.position.set(
             this.player.x - miniOffset,
-            (1 - this.player.z) * 3 + 0.55,   // フロア面 + 球の半径(0.4) + 余白
+            (1 - this.player.z) * 3,   // フロア面と同一Y
             this.player.y - miniOffset
         );
     }
