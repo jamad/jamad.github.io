@@ -1,9 +1,11 @@
+--- START OF FILE index.html ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>わんわん足跡迷路 (Paw Print Dungeon)</title>
+    <title>SNOW TRACE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -238,7 +240,7 @@
     </div>
 
     <div id="ui-layer">
-        <h1 id="ui-title">わんわん足跡迷路</h1>
+        <h1 id="ui-title">SNOW TRACE</h1>
         <p id="ui-desc">3階建ての迷路です。\n自分の足跡をたどって、1階のゴールを目指そう！\nPC: WASDキー / スマホ: 画面ボタン</p>
         <button class="action-btn" id="start-btn">ゲームスタート</button>
     </div>
@@ -250,7 +252,7 @@
 // =============================================
 const TRANSLATIONS = {
     EN: {
-        title: 'Paw Print Maze',
+        title: 'SNOW TRACE',
         desc: '3-floor maze.\nFollow your paw prints to the 1st floor goal!\nPC: WASD keys / Mobile: Buttons',
         start: 'GAME START',
         complete_title: 'COMPLETE!',
@@ -262,7 +264,7 @@ const TRANSLATIONS = {
         minimap_hint: 'Drag to rotate',
     },
     JA: {
-        title: 'わんわん足跡迷路',
+        title: 'SNOW TRACE',
         desc: '3階建ての迷路です。\n自分の足跡をたどって、1階のゴールを目指そう！\nPC: WASDキー / スマホ: 画面ボタン',
         start: 'ゲームスタート',
         complete_title: 'クリア！',
@@ -274,7 +276,7 @@ const TRANSLATIONS = {
         minimap_hint: 'ドラッグで回転',
     },
     FI: {
-        title: 'Tassujen Jäljillä',
+        title: 'SNOW TRACE',
         desc: '3-kerroksinen labyrintti.\nSeuraa tassujäljkiä 1. kerroksen maaliin!\nPC: WASD-näppäimet / Mobiili: Napit',
         start: 'ALOITA PELI',
         complete_title: 'VALMIS!',
@@ -286,7 +288,7 @@ const TRANSLATIONS = {
         minimap_hint: 'Vedä kiertääksesi',
     },
     DA: {
-        title: 'Potelabyrinth',
+        title: 'SNOW TRACE',
         desc: '3-etagers labyrint.\nFølg dine poter til 1. etages mål!\nPC: WASD-taster / Mobil: Knapper',
         start: 'START SPIL',
         complete_title: 'FULDFØRT!',
@@ -461,7 +463,7 @@ class Maze {
             if (!cell.n) neighbors.push({x: curr.x, y: curr.y-1, z: curr.z});
             if (!cell.s) neighbors.push({x: curr.x, y: curr.y+1, z: curr.z});
             if (!cell.w) neighbors.push({x: curr.x-1, y: curr.y, z: curr.z});
-            if (!cell.e) neighbors.push({x: curr.x+1, y: curr.y, z: curr.z});
+            if (!cell.e) neighbors.push({x: curr.x+1, y: curr.z, z: curr.z});
             if (cell.stairDown) neighbors.push({x: curr.x, y: curr.y, z: curr.z-1});
             if (cell.stairUp)   neighbors.push({x: curr.x, y: curr.y, z: curr.z+1});
 
