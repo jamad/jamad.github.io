@@ -30,13 +30,13 @@
             display: block;
         }
 
-        /* ミニマップ 2倍サイズ */
+        /* ミニマップ */
         #minimap-container {
             position: absolute;
             bottom: 20px;
             right: 20px;
-            width: min(360px, 42vw);
-            height: min(360px, 42vw);
+            width: min(270px, 32vw);
+            height: min(270px, 32vw);
             background-color: rgba(0, 0, 0, 0.6);
             border: 2px solid #fff;
             border-radius: 10px;
@@ -174,13 +174,19 @@
 
         #hud {
             position: absolute;
-            top: 10px;
-            left: 20px;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%);
             color: white;
             font-size: 20px;
             font-weight: bold;
-            text-shadow: 1px 1px 2px black;
+            text-shadow: 1px 1px 3px black, 0 0 8px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.35);
+            padding: 4px 16px;
+            border-radius: 20px;
             z-index: 10;
+            white-space: nowrap;
+            pointer-events: none;
         }
 
         /* 言語切り替えボタン */
@@ -518,19 +524,68 @@ function createWallTexture() {
 
 function createFloorTexture() {
     const canvas = document.createElement('canvas');
-    canvas.width = 128; canvas.height = 128;
+    canvas.width = 256; canvas.height = 256;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#f0f8ff';
-    ctx.fillRect(0, 0, 128, 128);
-    ctx.fillStyle = '#e6f2ff';
-    for (let i = 0; i < 50; i++) {
+
+    // ベース: 柔らかい雪白
+    ctx.fillStyle = '#eef5ff';
+    ctx.fillRect(0, 0, 256, 256);
+
+    // 積雪の重なりを表すグラデーション層
+    const grad = ctx.createRadialGradient(128, 128, 10, 128, 128, 160);
+    grad.addColorStop(0,   'rgba(255,255,255,0.55)');
+    grad.addColorStop(0.6, 'rgba(220,235,255,0.2)');
+    grad.addColorStop(1,   'rgba(180,210,240,0.0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 256);
+
+    // 雪の小さな凹み・でこぼこ (大)
+    for (let i = 0; i < 18; i++) {
+        const bx = Math.random() * 256;
+        const by = Math.random() * 256;
+        const br = Math.random() * 18 + 8;
+        const bg = ctx.createRadialGradient(bx, by, 0, bx, by, br);
+        bg.addColorStop(0,   'rgba(160,195,230,0.22)');
+        bg.addColorStop(0.5, 'rgba(180,215,245,0.10)');
+        bg.addColorStop(1,   'rgba(200,230,255,0.0)');
         ctx.beginPath();
-        ctx.arc(Math.random()*128, Math.random()*128, Math.random()*5+1, 0, Math.PI*2);
+        ctx.ellipse(bx, by, br, br * 0.55, Math.random()*Math.PI, 0, Math.PI*2);
+        ctx.fillStyle = bg;
         ctx.fill();
     }
-    ctx.strokeStyle = '#e0f0ff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(0, 0, 128, 128);
+
+    // 細かい雪粒 (小)
+    for (let i = 0; i < 70; i++) {
+        const sx = Math.random() * 256;
+        const sy = Math.random() * 256;
+        const sr = Math.random() * 3.5 + 0.5;
+        const alpha = Math.random() * 0.18 + 0.04;
+        ctx.beginPath();
+        ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(200, 225, 255, ${alpha})`;
+        ctx.fill();
+    }
+
+    // 雪の表面のきらめき（ハイライト点）
+    for (let i = 0; i < 30; i++) {
+        const gx = Math.random() * 256;
+        const gy = Math.random() * 256;
+        const gr = Math.random() * 2 + 0.5;
+        ctx.beginPath();
+        ctx.arc(gx, gy, gr, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.3})`;
+        ctx.fill();
+    }
+
+    // 端のほんのり影（セルの境界感）
+    const edge = ctx.createLinearGradient(0, 0, 0, 256);
+    edge.addColorStop(0,    'rgba(150,180,220,0.12)');
+    edge.addColorStop(0.08, 'rgba(150,180,220,0.0)');
+    edge.addColorStop(0.92, 'rgba(150,180,220,0.0)');
+    edge.addColorStop(1,    'rgba(150,180,220,0.12)');
+    ctx.fillStyle = edge;
+    ctx.fillRect(0, 0, 256, 256);
+
     return new THREE.CanvasTexture(canvas);
 }
 
@@ -642,13 +697,13 @@ class Game {
         this.renderer.setPixelRatio(window.devicePixelRatio);
 
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x000000);
-        this.scene.fog = new THREE.Fog(0x000000, 1, this.cellSize * 4);
+        this.scene.background = new THREE.Color(0xeef4ff);
+        this.scene.fog = new THREE.Fog(0xeef4ff, 1, this.cellSize * 4);
 
         this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-        this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-        this.pointLight = new THREE.PointLight(0xddeeff, 1, this.cellSize * 3);
+        this.scene.add(new THREE.AmbientLight(0xddeeff, 1.0));
+        this.pointLight = new THREE.PointLight(0xffffff, 1.2, this.cellSize * 4);
         this.scene.add(this.pointLight);
 
         this.wallMat      = new THREE.MeshLambertMaterial({map: createWallTexture()});
@@ -668,9 +723,9 @@ class Game {
 
     initMinimap() {
         const canvas = document.getElementById('minimap-canvas');
-        // 360x360 内部解像度
+        // 270x270 内部解像度
         this.miniRenderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: true});
-        this.miniRenderer.setSize(360, 360);
+        this.miniRenderer.setSize(270, 270);
 
         this.miniScene = new THREE.Scene();
         const d = MAZE_SIZE * 1.5;
@@ -740,10 +795,10 @@ class Game {
                     const mpz = y - miniOffset;
 
                     // ---- 床 ----
-                    // stairDown セルの床は抜く（スロープに置き換え）
-                    if (!cell.stairDown) {
+                    {
                         let fMat = this.floorMat;
-                        if (cell.stairUp) fMat = this.stairUpMat;
+                        if (cell.stairDown) fMat = this.stairDownMat;
+                        else if (cell.stairUp) fMat = this.stairUpMat;
                         else if (z === this.maze.goal.z && x === this.maze.goal.x && y === this.maze.goal.y) fMat = this.goalMat;
                         const floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(this.cellSize, this.cellSize), fMat);
                         floorMesh.rotation.x = -Math.PI / 2;
@@ -752,58 +807,21 @@ class Game {
                     }
 
                     // ---- 天井 ----
-                    // stairUp セルの天井は抜く（シャフトを開ける）
-                    if (!cell.stairUp) {
+                    {
                         const ceilMesh = new THREE.Mesh(new THREE.PlaneGeometry(this.cellSize, this.cellSize), this.floorMat);
                         ceilMesh.rotation.x = Math.PI / 2;
                         ceilMesh.position.set(px, zPos + this.wallHeight, pz);
                         this.levelGroup.add(ceilMesh);
                     }
 
-                    // ---- スロープ（stairDown セルに設置） ----
-                    if (cell.stairDown) {
-                        // 斜面: 下フロア y=zPos-wallHeight ~ 上フロア y=zPos
-                        const rampLen = Math.sqrt(this.wallHeight**2 + this.cellSize**2);
-                        const rampAngle = Math.atan2(this.cellSize, this.wallHeight);
-                        const rampMesh = new THREE.Mesh(
-                            new THREE.PlaneGeometry(this.cellSize, rampLen),
-                            this.slopeMat
-                        );
-                        // rotation.x = rampAngle → 下端(南)が低い、上端(北)が高い
-                        rampMesh.rotation.x = rampAngle;
-                        rampMesh.position.set(px, zPos - this.wallHeight/2, pz);
-                        this.levelGroup.add(rampMesh);
-
-                        // シャフト内側の壁（見切れ防止）
-                        const shaftGeo = new THREE.PlaneGeometry(this.cellSize, this.wallHeight);
-                        const shaftMat = new THREE.MeshLambertMaterial({color: 0x88aacc, side: THREE.DoubleSide});
-
-                        const shaftN = new THREE.Mesh(shaftGeo, shaftMat);
-                        shaftN.position.set(px, zPos - this.wallHeight/2, pz - this.cellSize/2);
-                        this.levelGroup.add(shaftN);
-
-                        const shaftS = new THREE.Mesh(shaftGeo, shaftMat);
-                        shaftS.rotation.y = Math.PI;
-                        shaftS.position.set(px, zPos - this.wallHeight/2, pz + this.cellSize/2);
-                        this.levelGroup.add(shaftS);
-
-                        const shaftE = new THREE.Mesh(shaftGeo, shaftMat);
-                        shaftE.rotation.y = -Math.PI/2;
-                        shaftE.position.set(px + this.cellSize/2, zPos - this.wallHeight/2, pz);
-                        this.levelGroup.add(shaftE);
-
-                        const shaftW = new THREE.Mesh(shaftGeo, shaftMat);
-                        shaftW.rotation.y = Math.PI/2;
-                        shaftW.position.set(px - this.cellSize/2, zPos - this.wallHeight/2, pz);
-                        this.levelGroup.add(shaftW);
-                    }
-
-                    // ---- 壁 ----
-                    const wallGeo = new THREE.PlaneGeometry(this.cellSize, this.wallHeight);
+                    // ---- 壁（厚みあり boxGeometry）----
+                    const wallThick = this.wallHeight * 0.1; // 厚み = wallHeight の10%
                     const miniLineMat = new THREE.LineBasicMaterial({color: 0x888888});
 
                     const addWall = (wx, wy, wz, ry, p1, p2) => {
-                        const w = new THREE.Mesh(wallGeo, this.wallMat);
+                        // N/S壁: BoxGeometry(cellSize, wallHeight, wallThick), rotate ry
+                        const wallBox = new THREE.BoxGeometry(this.cellSize, this.wallHeight, wallThick);
+                        const w = new THREE.Mesh(wallBox, this.wallMat);
                         w.rotation.y = ry;
                         w.position.set(wx, wy, wz);
                         this.levelGroup.add(w);
@@ -1040,11 +1058,11 @@ class Game {
         if (cell.stairDown) {
             AudioSys.playStairs();
             this.player.z--;
-            this.animateFloorChange(true);
+            this.animateFloorChange();
         } else if (cell.stairUp) {
             AudioSys.playStairs();
             this.player.z++;
-            this.animateFloorChange(false);
+            this.animateFloorChange();
         }
 
         if (this.player.x === this.maze.goal.x &&
@@ -1054,29 +1072,22 @@ class Game {
         }
     }
 
-    // スロープ演出: Y移動 + カメラのピッチ（上下の傾き）
-    animateFloorChange(goingDown) {
+    // エレベータ演出（オリジナル）
+    animateFloorChange() {
         this.isAnimating = true;
         const targetY = this.player.z * this.wallHeight + this.wallHeight * 0.5;
         const startY  = this.camera.position.y;
-        const duration  = 650; // 長めにしてスロープ感
+        const duration  = 400;
         const startTime = performance.now();
-        const tiltMax = goingDown ? 0.28 : -0.28; // 下り→カメラが下を向く、上り→上を向く
 
         const anim = (time) => {
             let t = Math.min((time - startTime) / duration, 1);
             const eInOut = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2;
-
             this.camera.position.y  = startY + (targetY - startY) * eInOut;
             this.pointLight.position.y = this.camera.position.y;
-
-            // 頂上で最大傾き → sin カーブで自然に戻る
-            this.camera.rotation.x = tiltMax * Math.sin(t * Math.PI);
-
             if (t < 1) {
                 requestAnimationFrame(anim);
             } else {
-                this.camera.rotation.x = 0;
                 this.isAnimating = false;
                 document.getElementById('floor-display').innerText = this.player.z + 1;
                 this.updateMinimapPlayer();
