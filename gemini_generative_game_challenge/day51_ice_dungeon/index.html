@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>わんわん足跡迷路 (Paw Print Dungeon)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none; /* スマホでのスワイプスクロール防止 */
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #main-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* ミニマップ */
+        #minimap-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            height: 180px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        #minimap-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .minimap-hint {
+            position: absolute;
+            bottom: 5px;
+            width: 100%;
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 10px;
+            pointer-events: none;
+        }
+
+        /* モバイル用コントロール (D-Pad) */
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 160px;
+            height: 160px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            z-index: 10;
+        }
+
+        .btn {
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 10px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+        }
+        
+        .btn:active {
+            background-color: rgba(255, 255, 255, 0.6);
+        }
+
+        #btn-w { grid-column: 2; grid-row: 1; }
+        #btn-a { grid-column: 1; grid-row: 2; }
+        #btn-s { grid-column: 2; grid-row: 3; }
+        #btn-d { grid-column: 3; grid-row: 2; }
+
+        /* UIオーバーレイ */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 20;
+            transition: opacity 0.3s;
+        }
+
+        h1 {
+            color: #ffdd00;
+            font-size: 48px;
+            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        p {
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 30px;
+            max-width: 80%;
+        }
+
+        .action-btn {
+            padding: 15px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            background-color: #ffdd00;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+            z-index: 10;
+        }
+
+        /* PC環境ではボタンを隠す（メディアクエリで簡易判定） */
+        @media (hover: hover) and (pointer: fine) {
+            #controls {
+                opacity: 0.5; /* PCでもマウスで押せるように半透明で残す */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="main-canvas"></canvas>
+    <div id="hud">Floor: <span id="floor-display">3</span></div>
+    
+    <div id="minimap-container">
+        <canvas id="minimap-canvas"></canvas>
+        <div class="minimap-hint">Drag/Swipe to rotate</div>
+    </div>
+
+    <div id="controls">
+        <div class="btn" id="btn-w">▲</div>
+        <div class="btn" id="btn-a">↶</div>
+        <div class="btn" id="btn-s">▼</div>
+        <div class="btn" id="btn-d">↷</div>
+    </div>
+
+    <div id="ui-layer">
+        <h1 id="ui-title">わんわん足跡迷路</h1>
+        <p id="ui-desc">3階建ての迷路です。<br>自分の足跡をたどって、1階のゴールを目指そう！<br>PC: WASDキー / スマホ: 画面ボタン</p>
+        <button class="action-btn" id="start-btn">GAME START</button>
+    </div>
+</div>
+
+<script>
+/**
+ * 効果音生成 (Web Audio API)
+ */
+const AudioSys = {
+    ctx: null,
+    init() {
+        if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    },
+    playTone(freq, type, duration, vol=0.1) {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    },
+    playWalk() {
+        this.playTone(150, 'triangle', 0.1, 0.05);
+    },
+    playTurn() {
+        this.playTone(400, 'sine', 0.05, 0.02);
+    },
+    playBump() {
+        this.playTone(100, 'square', 0.15, 0.1);
+    },
+    playStairs() {
+        // アルペジオ風
+        setTimeout(() => this.playTone(300, 'square', 0.1, 0.05), 0);
+        setTimeout(() => this.playTone(400, 'square', 0.1, 0.05), 100);
+        setTimeout(() => this.playTone(500, 'square', 0.1, 0.05), 200);
+    },
+    playPaw() {
+        this.playTone(800, 'sine', 0.05, 0.03);
+    },
+    playGoal() {
+        // ファンファーレ
+        setTimeout(() => this.playTone(440, 'square', 0.2, 0.1), 0);
+        setTimeout(() => this.playTone(440, 'square', 0.2, 0.1), 200);
+        setTimeout(() => this.playTone(440, 'square', 0.2, 0.1), 400);
+        setTimeout(() => this.playTone(587.33, 'square', 0.4, 0.1), 600);
+    }
+};
+
+/**
+ * 迷路生成とロジック
+ */
+const MAZE_SIZE = 8;
+const FLOORS = 3;
+
+class Maze {
+    constructor() {
+        this.grid = [];
+        this.start = {x: 0, y: 0, z: 2};
+        this.goal = {x: 7, y: 7, z: 0};
+        this.stairs = []; // {z, x, y} z階からz-1階への階段
+        this.generate();
+    }
+
+    generate() {
+        this.grid = [];
+        // 3階層分のグリッド初期化
+        for (let z = 0; z < FLOORS; z++) {
+            let floor = [];
+            for (let y = 0; y < MAZE_SIZE; y++) {
+                let row = [];
+                for (let x = 0; x < MAZE_SIZE; x++) {
+                    row.push({
+                        x, y, z,
+                        n: true, e: true, s: true, w: true, // 壁があるか
+                        visited: false,
+                        stairDown: false, stairUp: false
+                    });
+                }
+                floor.push(row);
+            }
+            this.grid.push(floor);
+        }
+
+        // 各階の迷路を穴掘り法(DFS)で生成
+        for (let z = 0; z < FLOORS; z++) {
+            this.carvePassagesFrom(0, 0, z);
+        }
+
+        // 階段の配置 (3階->2階、2階->1階)
+        this.stairs = [];
+        for (let z = 2; z >= 1; z--) {
+            let sx, sy;
+            do {
+                sx = Math.floor(Math.random() * MAZE_SIZE);
+                sy = Math.floor(Math.random() * MAZE_SIZE);
+            } while ( (sx === this.goal.x && sy === this.goal.y && z-1 === this.goal.z) ); // ゴールに直接降りる階段は避ける
+            
+            this.grid[z][sy][sx].stairDown = true;
+            this.grid[z-1][sy][sx].stairUp = true;
+            this.stairs.push({z: z, x: sx, y: sy});
+        }
+
+        // 最長経路(スタート地点)の算出
+        this.calculateStartPoint();
+    }
+
+    carvePassagesFrom(cx, cy, cz) {
+        let directions = [
+            {nx: 0, ny: -1, wall: 'n', opp: 's'},
+            {nx: 1, ny: 0, wall: 'e', opp: 'w'},
+            {nx: 0, ny: 1, wall: 's', opp: 'n'},
+            {nx: -1, ny: 0, wall: 'w', opp: 'e'}
+        ];
+        // シャッフル
+        directions.sort(() => Math.random() - 0.5);
+
+        this.grid[cz][cy][cx].visited = true;
+
+        for (let dir of directions) {
+            let nx = cx + dir.nx;
+            let ny = cy + dir.ny;
+
+            if (nx >= 0 && nx < MAZE_SIZE && ny >= 0 && ny < MAZE_SIZE && !this.grid[cz][ny][nx].visited) {
+                this.grid[cz][cy][cx][dir.wall] = false;
+                this.grid[cz][ny][nx][dir.opp] = false;
+                this.carvePassagesFrom(nx, ny, cz);
+            }
+        }
+    }
+
+    calculateStartPoint() {
+        // BFSでゴールからの距離を測る
+        let queue = [{x: this.goal.x, y: this.goal.y, z: this.goal.z, dist: 0}];
+        let visited = new Set([`${this.goal.x},${this.goal.y},${this.goal.z}`]);
+        let maxDistNode = queue[0];
+
+        while(queue.length > 0) {
+            let curr = queue.shift();
+            
+            // 最長更新 (最上階(z=2)の中で一番遠い場所をスタートにしたい)
+            if (curr.z === 2 && curr.dist > maxDistNode.dist) {
+                maxDistNode = curr;
+            } else if (maxDistNode.z !== 2 && curr.z === 2) {
+                 maxDistNode = curr; // 初めて3階に到達したノード
+            }
+
+            let cell = this.grid[curr.z][curr.y][curr.x];
+            let neighbors = [];
+
+            if (!cell.n) neighbors.push({x: curr.x, y: curr.y - 1, z: curr.z});
+            if (!cell.s) neighbors.push({x: curr.x, y: curr.y + 1, z: curr.z});
+            if (!cell.w) neighbors.push({x: curr.x - 1, y: curr.y, z: curr.z});
+            if (!cell.e) neighbors.push({x: curr.x + 1, y: curr.y, z: curr.z});
+            
+            if (cell.stairDown) neighbors.push({x: curr.x, y: curr.y, z: curr.z - 1});
+            if (cell.stairUp) neighbors.push({x: curr.x, y: curr.y, z: curr.z + 1});
+
+            for (let n of neighbors) {
+                let key = `${n.x},${n.y},${n.z}`;
+                if (!visited.has(key)) {
+                    visited.add(key);
+                    queue.push({x: n.x, y: n.y, z: n.z, dist: curr.dist + 1});
+                }
+            }
+        }
+
+        this.start = {x: maxDistNode.x, y: maxDistNode.y, z: 2};
+    }
+}
+
+/**
+ * テクスチャ生成ヘルパー
+ */
+function createWallTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    
+    // 氷の背景
+    ctx.fillStyle = '#99ccff';
+    ctx.fillRect(0, 0, 256, 256);
+    
+    // 氷のブロック模様
+    ctx.fillStyle = '#bbedff';
+    ctx.strokeStyle = '#55aaff';
+    ctx.lineWidth = 2;
+    for(let i=0; i<4; i++) {
+        for(let j=0; j<4; j++) {
+            let offset = i % 2 === 0 ? 0 : 32;
+            ctx.fillRect(j*64 + offset, i*64, 64, 64);
+            ctx.strokeRect(j*64 + offset, i*64, 64, 64);
+            // 氷のハイライト
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.fillRect(j*64 + offset + 2, i*64 + 2, 60, 10);
+            ctx.fillStyle = '#bbedff'; // 戻す
+        }
+    }
+    return new THREE.CanvasTexture(canvas);
+}
+
+function createFloorTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128; canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    
+    // 雪の床
+    ctx.fillStyle = '#f0f8ff';
+    ctx.fillRect(0, 0, 128, 128);
+    
+    // うっすら雪の凹凸やノイズ
+    ctx.fillStyle = '#e6f2ff';
+    for(let i=0; i<50; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random()*128, Math.random()*128, Math.random()*5 + 1, 0, Math.PI*2);
+        ctx.fill();
+    }
+    
+    ctx.strokeStyle = '#e0f0ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(canvas);
+}
+
+function drawPaw(ctx, x, y, size, angle, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.fillStyle = color;
+
+    // メインの肉球
+    ctx.beginPath();
+    ctx.ellipse(0, size * 0.2, size * 0.4, size * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 指4つ
+    const drawToe = (tx, ty) => {
+        ctx.beginPath();
+        ctx.ellipse(tx, ty, size * 0.15, size * 0.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+    };
+    drawToe(-size * 0.35, -size * 0.1);
+    drawToe(-size * 0.15, -size * 0.3);
+    drawToe( size * 0.15, -size * 0.3);
+    drawToe( size * 0.35, -size * 0.1);
+
+    ctx.restore();
+}
+
+function createPawTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 256, 256);
+    
+    // 雪のくぼみのような色 (半透明の青みがかったグレー)
+    const pawColor = 'rgba(120, 150, 180, 0.6)'; 
+
+    // 進行方向は下から上 (Yが大きい方から小さい方へ)
+    // セル同士が繋がるように、端から端へ均等に配置
+    drawPaw(ctx,  96, 224, 40, -0.1, pawColor); // 右足
+    drawPaw(ctx, 160, 160, 40,  0.1, pawColor); // 左足
+    drawPaw(ctx,  96,  96, 40, -0.1, pawColor); // 右足
+    drawPaw(ctx, 160,  32, 40,  0.1, pawColor); // 左足
+
+    return new THREE.CanvasTexture(canvas);
+}
+
+/**
+ * ゲームメインクラス
+ */
+class Game {
+    constructor() {
+        this.cellSize = 10;
+        this.wallHeight = 10;
+        
+        this.maze = new Maze();
+        
+        // Player state
+        // dir: 0=N, 1=E, 2=S, 3=W
+        this.player = {x: 0, y: 0, z: 2, dir: 0}; 
+        this.isAnimating = false;
+        this.visitedTiles = new Set();
+        this.pawMeshes = [];
+        this.gameState = 'TITLE'; // TITLE, PLAYING, COMPLETE
+
+        this.initThree();
+        this.initMinimap();
+        this.buildLevel();
+        this.setupInputs();
+        
+        this.animate = this.animate.bind(this);
+        requestAnimationFrame(this.animate);
+    }
+
+    initThree() {
+        // Main View
+        const canvas = document.getElementById('main-canvas');
+        this.renderer = new THREE.WebGLRenderer({canvas, antialias: true});
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x000000);
+        this.scene.fog = new THREE.Fog(0x000000, 1, this.cellSize * 4);
+
+        this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // 氷に合わせて少し明るく
+        this.scene.add(ambientLight);
+        
+        this.pointLight = new THREE.PointLight(0xddeeff, 1, this.cellSize * 3); // 寒色系のライト
+        this.scene.add(this.pointLight);
+
+        // Materials
+        this.wallMat = new THREE.MeshLambertMaterial({map: createWallTexture()});
+        this.floorMat = new THREE.MeshLambertMaterial({map: createFloorTexture()});
+        this.pawMat = new THREE.MeshBasicMaterial({map: createPawTexture(), transparent: true});
+        
+        // 階段用マテリアル
+        this.stairDownMat = new THREE.MeshLambertMaterial({color: 0x5588ff});
+        this.stairUpMat = new THREE.MeshLambertMaterial({color: 0xaaddff});
+        this.goalMat = new THREE.MeshLambertMaterial({color: 0xff0000, emissive: 0x550000});
+
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+    initMinimap() {
+        const canvas = document.getElementById('minimap-canvas');
+        this.miniRenderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: true});
+        this.miniRenderer.setSize(180, 180);
+        
+        this.miniScene = new THREE.Scene();
+        
+        // 正投影カメラで俯瞰
+        const aspect = 1;
+        const d = MAZE_SIZE * 1.5;
+        this.miniCamera = new THREE.OrthographicCamera(-d, d, d, -d, 1, 1000);
+        this.miniCamera.position.set(0, 50, 0);
+        this.miniCamera.lookAt(0, 0, 0);
+
+        this.minimapGroup = new THREE.Group();
+        this.miniScene.add(this.minimapGroup);
+        this.minimapGroup.rotation.x = Math.PI / 6; // 少し斜めから
+        this.minimapGroup.rotation.y = -Math.PI / 4;
+
+        // Minimap drag rotation
+        let isDragging = false;
+        let prevX = 0, prevY = 0;
+        const mc = document.getElementById('minimap-container');
+        mc.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            prevX = e.clientX;
+            prevY = e.clientY;
+            e.stopPropagation();
+        });
+        window.addEventListener('pointermove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - prevX;
+                const deltaY = e.clientY - prevY;
+                this.minimapGroup.rotation.y += deltaX * 0.01;
+                this.minimapGroup.rotation.x += deltaY * 0.01;
+                // x回転制限
+                this.minimapGroup.rotation.x = Math.max(0, Math.min(Math.PI/2, this.minimapGroup.rotation.x));
+                prevX = e.clientX;
+                prevY = e.clientY;
+            }
+        });
+        window.addEventListener('pointerup', () => { isDragging = false; });
+    }
+
+    buildLevel() {
+        // Clear old scene
+        while(this.scene.children.length > 0){ 
+            this.scene.remove(this.scene.children[0]); 
+        }
+        this.scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        this.scene.add(this.pointLight);
+        this.pawMeshes = [];
+        this.visitedTiles.clear();
+
+        // Build Minimap
+        while(this.minimapGroup.children.length > 0) {
+            this.minimapGroup.remove(this.minimapGroup.children[0]);
+        }
+        
+        const floorHeight = this.wallHeight;
+        this.levelGroup = new THREE.Group();
+        this.scene.add(this.levelGroup);
+
+        const miniOffset = (MAZE_SIZE - 1) / 2;
+
+        // 床と壁のメッシュ構築
+        for (let z = 0; z < FLOORS; z++) {
+            const zPos = z * floorHeight;
+            const miniZPos = (z - 1) * 3; // ミニマップ用の高さ間隔
+
+            // ミニマップ用階層ベース
+            const miniFloorGeo = new THREE.PlaneGeometry(MAZE_SIZE, MAZE_SIZE);
+            const miniFloorMat = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.1, side: THREE.DoubleSide});
+            const miniFloor = new THREE.Mesh(miniFloorGeo, miniFloorMat);
+            miniFloor.rotation.x = -Math.PI / 2;
+            miniFloor.position.y = miniZPos;
+            this.minimapGroup.add(miniFloor);
+
+            for (let y = 0; y < MAZE_SIZE; y++) {
+                for (let x = 0; x < MAZE_SIZE; x++) {
+                    const cell = this.maze.grid[z][y][x];
+                    const px = (x - MAZE_SIZE/2 + 0.5) * this.cellSize;
+                    const pz = (y - MAZE_SIZE/2 + 0.5) * this.cellSize;
+
+                    const mpx = x - miniOffset;
+                    const mpz = y - miniOffset;
+
+                    // メインビューの床
+                    const floorGeo = new THREE.PlaneGeometry(this.cellSize, this.cellSize);
+                    
+                    let fMat = this.floorMat;
+                    if (cell.stairDown) fMat = this.stairDownMat;
+                    else if (cell.stairUp) fMat = this.stairUpMat;
+                    else if (z === this.maze.goal.z && x === this.maze.goal.x && y === this.maze.goal.y) fMat = this.goalMat;
+
+                    const floorMesh = new THREE.Mesh(floorGeo, fMat);
+                    floorMesh.rotation.x = -Math.PI / 2;
+                    floorMesh.position.set(px, zPos, pz);
+                    this.levelGroup.add(floorMesh);
+
+                    // 天井
+                    const ceilMesh = new THREE.Mesh(floorGeo, this.floorMat);
+                    ceilMesh.rotation.x = Math.PI / 2;
+                    ceilMesh.position.set(px, zPos + this.wallHeight, pz);
+                    this.levelGroup.add(ceilMesh);
+
+                    // 壁
+                    const wallGeo = new THREE.PlaneGeometry(this.cellSize, this.wallHeight);
+                    const miniLineMat = new THREE.LineBasicMaterial({ color: 0x888888 });
+
+                    if (cell.n) {
+                        const w = new THREE.Mesh(wallGeo, this.wallMat);
+                        w.position.set(px, zPos + this.wallHeight/2, pz - this.cellSize/2);
+                        this.levelGroup.add(w);
+                        
+                        // ミニマップ壁
+                        const points = [new THREE.Vector3(mpx-0.5, miniZPos, mpz-0.5), new THREE.Vector3(mpx+0.5, miniZPos, mpz-0.5)];
+                        const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), miniLineMat);
+                        this.minimapGroup.add(line);
+                    }
+                    if (cell.s) {
+                        const w = new THREE.Mesh(wallGeo, this.wallMat);
+                        w.rotation.y = Math.PI;
+                        w.position.set(px, zPos + this.wallHeight/2, pz + this.cellSize/2);
+                        this.levelGroup.add(w);
+                        
+                        const points = [new THREE.Vector3(mpx-0.5, miniZPos, mpz+0.5), new THREE.Vector3(mpx+0.5, miniZPos, mpz+0.5)];
+                        const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), miniLineMat);
+                        this.minimapGroup.add(line);
+                    }
+                    if (cell.e) {
+                        const w = new THREE.Mesh(wallGeo, this.wallMat);
+                        w.rotation.y = -Math.PI/2;
+                        w.position.set(px + this.cellSize/2, zPos + this.wallHeight/2, pz);
+                        this.levelGroup.add(w);
+                        
+                        const points = [new THREE.Vector3(mpx+0.5, miniZPos, mpz-0.5), new THREE.Vector3(mpx+0.5, miniZPos, mpz+0.5)];
+                        const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), miniLineMat);
+                        this.minimapGroup.add(line);
+                    }
+                    if (cell.w) {
+                        const w = new THREE.Mesh(wallGeo, this.wallMat);
+                        w.rotation.y = Math.PI/2;
+                        w.position.set(px - this.cellSize/2, zPos + this.wallHeight/2, pz);
+                        this.levelGroup.add(w);
+                        
+                        const points = [new THREE.Vector3(mpx-0.5, miniZPos, mpz-0.5), new THREE.Vector3(mpx-0.5, miniZPos, mpz+0.5)];
+                        const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), miniLineMat);
+                        this.minimapGroup.add(line);
+                    }
+                }
+            }
+        }
+
+        // ミニマップのStart, Goal
+        const startGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        const startMat = new THREE.MeshBasicMaterial({color: 0x00aaff});
+        this.miniStart = new THREE.Mesh(startGeo, startMat);
+        this.miniStart.position.set(this.maze.start.x - miniOffset, (this.maze.start.z - 1) * 3, this.maze.start.y - miniOffset);
+        this.minimapGroup.add(this.miniStart);
+
+        const goalGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        const miniGoalMat = new THREE.MeshBasicMaterial({color: 0xff0000});
+        this.miniGoal = new THREE.Mesh(goalGeo, miniGoalMat);
+        this.miniGoal.position.set(this.maze.goal.x - miniOffset, (this.maze.goal.z - 1) * 3, this.maze.goal.y - miniOffset);
+        this.minimapGroup.add(this.miniGoal);
+
+        // ミニマップの現在地（プレイヤー）
+        const pGeo = new THREE.SphereGeometry(0.4, 8, 8);
+        const pMat = new THREE.MeshBasicMaterial({color: 0xffff00});
+        this.miniPlayer = new THREE.Mesh(pGeo, pMat);
+        this.minimapGroup.add(this.miniPlayer);
+
+        this.resetPlayer();
+    }
+
+    resetPlayer() {
+        this.player.x = this.maze.start.x;
+        this.player.y = this.maze.start.y;
+        this.player.z = this.maze.start.z;
+        this.player.dir = 0; // N
+        
+        this.leavePawPrint();
+        this.updateCameraInstant();
+    }
+
+    updateCameraInstant() {
+        const px = (this.player.x - MAZE_SIZE/2 + 0.5) * this.cellSize;
+        const pz = (this.player.y - MAZE_SIZE/2 + 0.5) * this.cellSize;
+        const py = this.player.z * this.wallHeight + this.wallHeight * 0.5;
+
+        this.camera.position.set(px, py, pz);
+        this.pointLight.position.set(px, py, pz);
+        
+        let rotY = 0;
+        if(this.player.dir === 0) rotY = 0;
+        else if(this.player.dir === 1) rotY = -Math.PI / 2;
+        else if(this.player.dir === 2) rotY = Math.PI;
+        else if(this.player.dir === 3) rotY = Math.PI / 2;
+
+        this.camera.rotation.set(0, rotY, 0, 'YXZ');
+        this.updateMinimapPlayer();
+        
+        document.getElementById('floor-display').innerText = this.player.z + 1;
+    }
+
+    updateMinimapPlayer() {
+        const miniOffset = (MAZE_SIZE - 1) / 2;
+        this.miniPlayer.position.set(
+            this.player.x - miniOffset,
+            (this.player.z - 1) * 3 + 0.5,
+            this.player.y - miniOffset
+        );
+    }
+
+    leavePawPrint() {
+        const key = `${this.player.x},${this.player.y},${this.player.z}`;
+        if (!this.visitedTiles.has(key)) {
+            this.visitedTiles.add(key);
+            
+            // 床に足跡を配置
+            const px = (this.player.x - MAZE_SIZE/2 + 0.5) * this.cellSize;
+            const pz = (this.player.y - MAZE_SIZE/2 + 0.5) * this.cellSize;
+            const py = this.player.z * this.wallHeight + 0.05; // 床よりわずかに上
+
+            // セル全体に広げて前後の足跡と綺麗に繋げる
+            const pawMesh = new THREE.Mesh(new THREE.PlaneGeometry(this.cellSize, this.cellSize), this.pawMat);
+            pawMesh.rotation.x = -Math.PI / 2;
+            
+            // プレイヤーの向きに合わせて足跡を回転
+            let rotZ = 0;
+            if(this.player.dir === 0) rotZ = 0;
+            else if(this.player.dir === 1) rotZ = -Math.PI / 2;
+            else if(this.player.dir === 2) rotZ = Math.PI;
+            else if(this.player.dir === 3) rotZ = Math.PI / 2;
+            pawMesh.rotation.z = rotZ;
+
+            pawMesh.position.set(px, py, pz);
+            this.levelGroup.add(pawMesh);
+            
+            // スタンプ音（最初以外）
+            if(this.visitedTiles.size > 1) {
+                AudioSys.playPaw();
+            }
+        }
+    }
+
+    setupInputs() {
+        window.addEventListener('keydown', (e) => {
+            if (this.gameState !== 'PLAYING') return;
+            switch(e.key.toLowerCase()) {
+                case 'w': case 'arrowup': this.moveForward(); break;
+                case 's': case 'arrowdown': this.moveBackward(); break;
+                case 'a': case 'arrowleft': this.turnLeft(); break;
+                case 'd': case 'arrowright': this.turnRight(); break;
+            }
+        });
+
+        // Touch buttons
+        const btnEvent = ('ontouchstart' in window) ? 'touchstart' : 'mousedown';
+        
+        const bindBtn = (id, fn) => {
+            document.getElementById(id).addEventListener(btnEvent, (e) => {
+                e.preventDefault();
+                if (this.gameState === 'PLAYING') fn.call(this);
+            });
+        };
+
+        bindBtn('btn-w', this.moveForward);
+        bindBtn('btn-s', this.moveBackward);
+        bindBtn('btn-a', this.turnLeft);
+        bindBtn('btn-d', this.turnRight);
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            AudioSys.init();
+            if (this.gameState === 'TITLE' || this.gameState === 'COMPLETE') {
+                this.startGame();
+            }
+        });
+    }
+
+    startGame() {
+        document.getElementById('ui-layer').classList.add('hidden');
+        if (this.gameState === 'COMPLETE') {
+            this.maze.generate();
+            this.buildLevel();
+        }
+        this.gameState = 'PLAYING';
+    }
+
+    winGame() {
+        this.gameState = 'COMPLETE';
+        AudioSys.playGoal();
+        
+        const ui = document.getElementById('ui-layer');
+        document.getElementById('ui-title').innerText = "COMPLETE!";
+        document.getElementById('ui-desc').innerText = "迷路を制覇しました！\nおめでとうございます。";
+        document.getElementById('start-btn').innerText = "RESTART";
+        ui.classList.remove('hidden');
+    }
+
+    getDirVector(dir) {
+        if (dir === 0) return {x: 0, y: -1, wall: 'n'}; // N
+        if (dir === 1) return {x: 1, y: 0, wall: 'e'};  // E
+        if (dir === 2) return {x: 0, y: 1, wall: 's'};  // S
+        if (dir === 3) return {x: -1, y: 0, wall: 'w'}; // W
+    }
+
+    moveForward() {
+        if (this.isAnimating) return;
+        const v = this.getDirVector(this.player.dir);
+        this.tryMove(v.x, v.y, v.wall);
+    }
+
+    moveBackward() {
+        if (this.isAnimating) return;
+        const v = this.getDirVector((this.player.dir + 2) % 4);
+        this.tryMove(v.x, v.y, v.wall);
+    }
+
+    tryMove(dx, dy, wallDir) {
+        const cell = this.maze.grid[this.player.z][this.player.y][this.player.x];
+        if (!cell[wallDir]) {
+            // 移動可能
+            this.player.x += dx;
+            this.player.y += dy;
+            AudioSys.playWalk();
+            this.animateMove();
+        } else {
+            // 壁
+            AudioSys.playBump();
+        }
+    }
+
+    turnLeft() {
+        if (this.isAnimating) return;
+        this.player.dir = (this.player.dir + 3) % 4;
+        AudioSys.playTurn();
+        this.animateTurn(Math.PI / 2);
+    }
+
+    turnRight() {
+        if (this.isAnimating) return;
+        this.player.dir = (this.player.dir + 1) % 4;
+        AudioSys.playTurn();
+        this.animateTurn(-Math.PI / 2);
+    }
+
+    animateMove() {
+        this.isAnimating = true;
+        const targetX = (this.player.x - MAZE_SIZE/2 + 0.5) * this.cellSize;
+        const targetZ = (this.player.y - MAZE_SIZE/2 + 0.5) * this.cellSize;
+        
+        const startX = this.camera.position.x;
+        const startZ = this.camera.position.z;
+        
+        const duration = 250; // ms
+        const startTime = performance.now();
+
+        const anim = (time) => {
+            let t = (time - startTime) / duration;
+            if (t >= 1) t = 1;
+            
+            // イージング
+            const easeOut = 1 - Math.pow(1 - t, 3);
+            
+            this.camera.position.x = startX + (targetX - startX) * easeOut;
+            this.camera.position.z = startZ + (targetZ - startZ) * easeOut;
+            this.pointLight.position.x = this.camera.position.x;
+            this.pointLight.position.z = this.camera.position.z;
+
+            if (t < 1) {
+                requestAnimationFrame(anim);
+            } else {
+                this.isAnimating = false;
+                this.onMoveComplete();
+            }
+        };
+        requestAnimationFrame(anim);
+    }
+
+    animateTurn(angleDelta) {
+        this.isAnimating = true;
+        
+        let startRot = this.camera.rotation.y;
+        let targetRot = startRot + angleDelta;
+        
+        const duration = 200;
+        const startTime = performance.now();
+
+        const anim = (time) => {
+            let t = (time - startTime) / duration;
+            if (t >= 1) t = 1;
+            
+            const easeOut = 1 - Math.pow(1 - t, 3);
+            this.camera.rotation.y = startRot + (targetRot - startRot) * easeOut;
+
+            if (t < 1) {
+                requestAnimationFrame(anim);
+            } else {
+                // 回転を正規化
+                let rotY = 0;
+                if(this.player.dir === 0) rotY = 0;
+                else if(this.player.dir === 1) rotY = -Math.PI / 2;
+                else if(this.player.dir === 2) rotY = Math.PI;
+                else if(this.player.dir === 3) rotY = Math.PI / 2;
+                this.camera.rotation.y = rotY;
+                
+                this.isAnimating = false;
+            }
+        };
+        requestAnimationFrame(anim);
+    }
+
+    onMoveComplete() {
+        this.leavePawPrint();
+        this.updateMinimapPlayer();
+
+        const cell = this.maze.grid[this.player.z][this.player.y][this.player.x];
+        
+        // 階段チェック
+        if (cell.stairDown) {
+            AudioSys.playStairs();
+            this.player.z--;
+            this.animateFloorChange();
+        } else if (cell.stairUp) {
+            AudioSys.playStairs();
+            this.player.z++;
+            this.animateFloorChange();
+        }
+
+        // ゴール判定
+        if (this.player.x === this.maze.goal.x && 
+            this.player.y === this.maze.goal.y && 
+            this.player.z === this.maze.goal.z) {
+            setTimeout(() => this.winGame(), 200);
+        }
+    }
+
+    animateFloorChange() {
+        this.isAnimating = true;
+        const targetY = this.player.z * this.wallHeight + this.wallHeight * 0.5;
+        const startY = this.camera.position.y;
+        
+        const duration = 400;
+        const startTime = performance.now();
+
+        const anim = (time) => {
+            let t = (time - startTime) / duration;
+            if (t >= 1) t = 1;
+            
+            const easeInOut = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            this.camera.position.y = startY + (targetY - startY) * easeInOut;
+            this.pointLight.position.y = this.camera.position.y;
+
+            if (t < 1) {
+                requestAnimationFrame(anim);
+            } else {
+                this.isAnimating = false;
+                document.getElementById('floor-display').innerText = this.player.z + 1;
+                this.updateMinimapPlayer();
+                this.leavePawPrint();
+            }
+        };
+        requestAnimationFrame(anim);
+    }
+
+    animate() {
+        // メイン描画
+        this.renderer.render(this.scene, this.camera);
+        // ミニマップ描画
+        this.miniRenderer.render(this.miniScene, this.miniCamera);
+        
+        requestAnimationFrame(this.animate);
+    }
+}
+
+// ページ読み込み完了時にゲーム初期化
+window.onload = () => {
+    new Game();
+};
+</script>
+
+</body>
+</html>
