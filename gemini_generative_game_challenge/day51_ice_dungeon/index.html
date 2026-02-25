@@ -706,7 +706,16 @@ class Game {
         this.pointLight = new THREE.PointLight(0xffffff, 1.2, this.cellSize * 4);
         this.scene.add(this.pointLight);
 
-        this.wallMat      = new THREE.MeshLambertMaterial({map: createWallTexture()});
+        const wallTex  = createWallTexture();
+        this.wallFaceMat = new THREE.MeshLambertMaterial({map: wallTex, side: THREE.FrontSide});
+        this.wallSideMat = new THREE.MeshLambertMaterial({color: 0x7ab0dd}); // 側端面：アイス無地
+        // BoxGeometry面順: +X, -X, +Y, -Y, +Z(前), -Z(後)
+        this.wallBoxMats = [
+            this.wallSideMat, this.wallSideMat,   // 左右端
+            this.wallSideMat, this.wallSideMat,   // 上下
+            this.wallFaceMat, this.wallFaceMat,   // 前・後（プレイヤーから見える面）
+        ];
+        this.wallMat      = this.wallFaceMat; // 後方互換
         this.floorMat     = new THREE.MeshLambertMaterial({map: createFloorTexture()});
         this.slopeMat     = new THREE.MeshLambertMaterial({map: createSlopeTexture(), side: THREE.DoubleSide});
         this.pawMat       = new THREE.MeshBasicMaterial({map: createPawTexture(), transparent: true, depthWrite: false});
@@ -775,7 +784,7 @@ class Game {
 
         for (let z = 0; z < FLOORS; z++) {
             const zPos = z * floorHeight;
-            const miniZPos = (z - 1) * 3;
+            const miniZPos = (1 - z) * 3;  // z=0(1F)が上、z=2(3F)が下に見えていたため反転
 
             // ミニマップ用フロア半透明板
             const miniFloorMesh = new THREE.Mesh(
@@ -815,13 +824,14 @@ class Game {
                     }
 
                     // ---- 壁（厚みあり boxGeometry）----
-                    const wallThick = this.wallHeight * 0.1; // 厚み = wallHeight の10%
+                    const wallThick  = this.wallHeight * 0.1;
+                    // 隣接する壁との角を埋めるため幅を延長。Zファイト回避のため微小に短くする
+                    const wallExtLen = this.cellSize + wallThick * 2 - 0.02;
                     const miniLineMat = new THREE.LineBasicMaterial({color: 0x888888});
 
                     const addWall = (wx, wy, wz, ry, p1, p2) => {
-                        // N/S壁: BoxGeometry(cellSize, wallHeight, wallThick), rotate ry
-                        const wallBox = new THREE.BoxGeometry(this.cellSize, this.wallHeight, wallThick);
-                        const w = new THREE.Mesh(wallBox, this.wallMat);
+                        const wallBox = new THREE.BoxGeometry(wallExtLen, this.wallHeight, wallThick);
+                        const w = new THREE.Mesh(wallBox, this.wallBoxMats);
                         w.rotation.y = ry;
                         w.position.set(wx, wy, wz);
                         this.levelGroup.add(w);
@@ -851,7 +861,7 @@ class Game {
         this.miniStart = mkBox(0x2299ff);
         this.miniStart.position.set(
             this.maze.start.x - miniOffset,
-            (this.maze.start.z - 1) * 3,
+            (1 - this.maze.start.z) * 3,
             this.maze.start.y - miniOffset
         );
         this.minimapGroup.add(this.miniStart);
@@ -859,7 +869,7 @@ class Game {
         this.miniGoal = mkBox(0xff2222);
         this.miniGoal.position.set(
             this.maze.goal.x - miniOffset,
-            (this.maze.goal.z - 1) * 3,
+            (1 - this.maze.goal.z) * 3,
             this.maze.goal.y - miniOffset
         );
         this.minimapGroup.add(this.miniGoal);
@@ -908,7 +918,7 @@ class Game {
         const miniOffset = (MAZE_SIZE - 1) / 2;
         this.miniPlayer.position.set(
             this.player.x - miniOffset,
-            (this.player.z - 1) * 3 + 0.5,
+            (1 - this.player.z) * 3 + 0.5,
             this.player.y - miniOffset
         );
     }
