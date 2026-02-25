@@ -5,119 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>わんわん足跡迷路 (Paw Print Dungeon)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --col-panel:  rgba(10, 25, 60, 0.60);
+            --col-border: rgba(100, 170, 255, 0.30);
+            --col-accent: #7dd4fc;
+            --col-text:   #deeeff;
+            --col-yellow: #fde68a;
+            --radius: 14px;
+            --font: 'M PLUS Rounded 1c', 'Segoe UI', sans-serif;
+        }
+
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
             overflow: hidden;
             background-color: #000;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font);
             touch-action: none;
             user-select: none;
         }
 
-        #game-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
-        #main-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
+        #game-container { position: relative; width: 100%; height: 100%; }
+        #main-canvas { width: 100%; height: 100%; display: block; }
 
         /* ミニマップ */
         #minimap-container {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
+            bottom: 20px; right: 20px;
             width: min(270px, 32vw);
             height: min(270px, 32vw);
-            background-color: rgba(0, 0, 0, 0.6);
-            border: 2px solid #fff;
-            border-radius: 10px;
+            background: var(--col-panel);
+            border: 1.5px solid var(--col-border);
+            border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
             z-index: 10;
+            backdrop-filter: blur(8px);
         }
 
-        #minimap-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
+        #minimap-canvas { width: 100%; height: 100%; display: block; }
 
         .minimap-hint {
-            position: absolute;
-            bottom: 4px;
-            width: 100%;
+            position: absolute; bottom: 5px; width: 100%;
             text-align: center;
-            color: rgba(255,255,255,0.6);
-            font-size: 10px;
+            color: rgba(180, 220, 255, 0.50);
+            font-size: 10px; font-weight: 400; letter-spacing: 0.05em;
             pointer-events: none;
         }
 
-        /* Legend */
         #minimap-legend {
-            position: absolute;
-            top: 6px;
-            left: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
+            position: absolute; top: 7px; left: 8px;
+            display: flex; flex-direction: column; gap: 3px;
             pointer-events: none;
         }
 
         .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11px;
-            color: white;
-            text-shadow: 1px 1px 2px black;
+            display: flex; align-items: center; gap: 5px;
+            font-size: 11px; font-weight: 700;
+            color: var(--col-text);
+            text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+            letter-spacing: 0.04em;
         }
 
         .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 2px;
-            display: inline-block;
-            flex-shrink: 0;
+            width: 10px; height: 10px; border-radius: 3px;
+            display: inline-block; flex-shrink: 0;
         }
 
         /* D-Pad */
         #controls {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 160px;
-            height: 160px;
+            position: absolute; bottom: 20px; left: 20px;
+            width: 160px; height: 160px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 5px;
-            z-index: 10;
+            gap: 5px; z-index: 10;
         }
 
         .btn {
-            background-color: rgba(255, 255, 255, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.6);
+            background: var(--col-panel);
+            border: 1.5px solid var(--col-border);
             border-radius: 10px;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            color: var(--col-accent);
+            font-family: var(--font);
+            font-size: 22px; font-weight: 900;
+            display: flex; justify-content: center; align-items: center;
             cursor: pointer;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
+            transition: background 0.1s, box-shadow 0.1s;
         }
-        
-        .btn:active { background-color: rgba(255, 255, 255, 0.6); }
+
+        .btn:active {
+            background: rgba(80, 140, 255, 0.4);
+            box-shadow: 0 0 14px rgba(80, 160, 255, 0.5);
+        }
 
         #btn-w { grid-column: 2; grid-row: 1; }
         #btn-a { grid-column: 1; grid-row: 2; }
@@ -126,99 +111,110 @@
 
         /* UIオーバーレイ */
         #ui-layer {
-            position: absolute;
-            top: 0; left: 0;
+            position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: rgba(0, 0, 0, 0.7);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            background: radial-gradient(ellipse at 50% 40%, rgba(0,25,70,0.85) 0%, rgba(0,5,20,0.94) 100%);
             z-index: 20;
             transition: opacity 0.3s;
         }
 
         h1 {
-            color: #ffdd00;
-            font-size: 48px;
-            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
-            margin-bottom: 20px;
-            text-align: center;
+            font-family: var(--font);
+            font-weight: 900;
+            color: var(--col-yellow);
+            font-size: 44px;
+            letter-spacing: 0.07em;
+            text-shadow: 0 0 24px rgba(253,230,138,0.55), 0 2px 0 rgba(0,0,0,0.7);
+            margin-bottom: 16px; text-align: center;
         }
 
         p {
-            color: white;
-            font-size: 18px;
+            font-family: var(--font);
+            color: rgba(200, 228, 255, 0.82);
+            font-size: 16px; font-weight: 400;
+            line-height: 1.85; letter-spacing: 0.04em;
             text-align: center;
-            margin-bottom: 30px;
-            max-width: 80%;
+            margin-bottom: 32px; max-width: 80%;
             white-space: pre-line;
         }
 
         .action-btn {
-            padding: 15px 40px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            background-color: #ffdd00;
-            border: none;
-            border-radius: 30px;
+            padding: 13px 44px;
+            font-family: var(--font);
+            font-size: 19px; font-weight: 900;
+            letter-spacing: 0.10em;
+            color: #0d2040;
+            background: linear-gradient(135deg, #93d8f8 0%, #38bdf8 50%, #0ea5e9 100%);
+            border: none; border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: transform 0.1s;
+            box-shadow: 0 4px 22px rgba(56,189,248,0.45), inset 0 1px 0 rgba(255,255,255,0.28);
+            transition: transform 0.1s, box-shadow 0.1s;
         }
 
-        .action-btn:active { transform: scale(0.95); }
+        .action-btn:hover {
+            box-shadow: 0 6px 30px rgba(56,189,248,0.65), inset 0 1px 0 rgba(255,255,255,0.28);
+        }
+
+        .action-btn:active { transform: scale(0.96); }
 
         .hidden { display: none !important; }
 
+        /* HUD 中央下部 */
         #hud {
             position: absolute;
-            bottom: 22px;
-            left: 50%;
+            bottom: 22px; left: 50%;
             transform: translateX(-50%);
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            text-shadow: 1px 1px 3px black, 0 0 8px rgba(0,0,0,0.8);
-            background: rgba(0,0,0,0.35);
-            padding: 4px 16px;
-            border-radius: 20px;
-            z-index: 10;
-            white-space: nowrap;
+            color: var(--col-text);
+            font-family: var(--font);
+            font-size: 17px; font-weight: 700;
+            letter-spacing: 0.09em;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.9);
+            background: var(--col-panel);
+            border: 1.5px solid var(--col-border);
+            padding: 5px 22px; border-radius: 50px;
+            z-index: 10; white-space: nowrap;
             pointer-events: none;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 2px 14px rgba(0,0,0,0.45);
         }
 
-        /* 言語切り替えボタン */
+        /* 言語ボタン */
         #lang-buttons {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 4px;
-            z-index: 30;
+            position: absolute; top: 10px; right: 10px;
+            display: flex; gap: 4px; z-index: 30;
         }
 
         .lang-btn {
-            padding: 5px 9px;
-            font-size: 12px;
-            font-weight: bold;
-            color: rgba(255,255,255,0.7);
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.35);
-            border-radius: 5px;
+            padding: 5px 10px;
+            font-family: var(--font);
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.05em;
+            color: rgba(170, 210, 255, 0.70);
+            background: rgba(5, 15, 40, 0.65);
+            border: 1.5px solid var(--col-border);
+            border-radius: 6px;
             cursor: pointer;
-            transition: background 0.15s, color 0.15s;
+            backdrop-filter: blur(4px);
+            transition: all 0.15s;
         }
 
         .lang-btn.active {
-            background: rgba(255,255,255,0.25);
+            background: rgba(40, 110, 220, 0.35);
             color: #fff;
-            border-color: rgba(255,255,255,0.8);
+            border-color: rgba(100, 180, 255, 0.65);
+            box-shadow: 0 0 10px rgba(60,150,255,0.35);
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: rgba(20, 50, 110, 0.65);
+            color: rgba(210, 235, 255, 0.9);
         }
 
         @media (hover: hover) and (pointer: fine) {
-            #controls { opacity: 0.5; }
+            #controls { opacity: 0.55; }
+            #controls:hover { opacity: 1; }
         }
     </style>
 </head>
@@ -227,7 +223,7 @@
 <div id="game-container">
     <canvas id="main-canvas"></canvas>
 
-    <div id="hud"><span id="floor-label">階: </span><span id="floor-display">3</span></div>
+    <div id="hud"><span id="floor-label">フロア: </span><span id="floor-display">3</span></div>
 
     <div id="lang-buttons">
         <button class="lang-btn" data-lang="EN">EN</button>
@@ -289,7 +285,7 @@ const TRANSLATIONS = {
         complete_title: 'クリア！',
         complete_desc: '迷路を制覇しました！\nおめでとうございます。',
         restart: 'もう一度',
-        floor_label: '階: ',
+        floor_label: 'フロア: ',
         legend_start: 'スタート',
         legend_goal: 'ゴール',
         minimap_hint: 'ドラッグで回転',
@@ -737,7 +733,7 @@ class Game {
         this.miniRenderer.setSize(270, 270);
 
         this.miniScene = new THREE.Scene();
-        const d = MAZE_SIZE * 1.5;
+        const d = MAZE_SIZE * 1.5 / 1.25;  // 1.25倍ズーム（パネルサイズは変えずモデルだけ拡大）
         this.miniCamera = new THREE.OrthographicCamera(-d, d, d, -d, 1, 1000);
         this.miniCamera.position.set(0, 50, 0);
         this.miniCamera.lookAt(0, 0, 0);
@@ -825,12 +821,12 @@ class Game {
 
                     // ---- 壁（厚みあり boxGeometry）----
                     const wallThick  = this.wallHeight * 0.1;
-                    // 隣接する壁との角を埋めるため幅を延長。Zファイト回避のため微小に短くする
-                    const wallExtLen = this.cellSize + wallThick * 2 - 0.02;
+                    // 隣接する壁との角を埋めるため幅を厚み分だけ延長。Zファイト回避のため微小に短くする
+                    const wallExtLen = this.cellSize + wallThick - 0.2;
                     const miniLineMat = new THREE.LineBasicMaterial({color: 0x888888});
 
                     const addWall = (wx, wy, wz, ry, p1, p2) => {
-                        const wallBox = new THREE.BoxGeometry(wallExtLen, this.wallHeight, wallThick);
+                        const wallBox = new THREE.BoxGeometry(wallExtLen, this.wallHeight - 0.1, wallThick);
                         const w = new THREE.Mesh(wallBox, this.wallBoxMats);
                         w.rotation.y = ry;
                         w.position.set(wx, wy, wz);
@@ -903,7 +899,7 @@ class Game {
     updateCameraInstant() {
         const px = (this.player.x - MAZE_SIZE/2 + 0.5) * this.cellSize;
         const pz = (this.player.y - MAZE_SIZE/2 + 0.5) * this.cellSize;
-        const py = this.player.z * this.wallHeight + this.wallHeight * 0.5;
+        const py = this.player.z * this.wallHeight + this.wallHeight * 0.3;
 
         this.camera.position.set(px, py, pz);
         this.pointLight.position.set(px, py, pz);
@@ -918,7 +914,7 @@ class Game {
         const miniOffset = (MAZE_SIZE - 1) / 2;
         this.miniPlayer.position.set(
             this.player.x - miniOffset,
-            (1 - this.player.z) * 3 + 0.5,
+            (1 - this.player.z) * 3 + 0.55,   // フロア面 + 球の半径(0.4) + 余白
             this.player.y - miniOffset
         );
     }
@@ -1085,7 +1081,7 @@ class Game {
     // エレベータ演出（オリジナル）
     animateFloorChange() {
         this.isAnimating = true;
-        const targetY = this.player.z * this.wallHeight + this.wallHeight * 0.5;
+        const targetY = this.player.z * this.wallHeight + this.wallHeight * 0.3;
         const startY  = this.camera.position.y;
         const duration  = 400;
         const startTime = performance.now();
