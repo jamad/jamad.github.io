@@ -686,8 +686,8 @@ class Game {
         this.scene.add(this.pointLight);
 
         const wallTex  = createWallTexture();
-        this.wallFaceMat = new THREE.MeshLambertMaterial({map: wallTex, side: THREE.FrontSide});
-        this.wallSideMat = new THREE.MeshLambertMaterial({color: 0x7ab0dd}); // 側端面：アイス無地
+        this.wallFaceMat = new THREE.MeshLambertMaterial({map: wallTex, side: THREE.FrontSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1});
+        this.wallSideMat = new THREE.MeshLambertMaterial({color: 0x7ab0dd, transparent: true, opacity: 0, depthWrite: false}); // 側端面は透明（垂直壁の後ろに隠れるべき面） // 側端面：アイス無地
         // BoxGeometry面順: +X, -X, +Y, -Y, +Z(前), -Z(後)
         this.wallBoxMats = [
             this.wallSideMat, this.wallSideMat,   // 左右端
@@ -805,7 +805,7 @@ class Game {
                     // ---- 壁（厚みあり boxGeometry）----
                     const wallThick  = this.wallHeight * 0.1;
                     // 隣接する壁との角を埋めるため幅を厚み分だけ延長。Zファイト回避のため微小に短くする
-                    const wallExtLen = this.cellSize + wallThick - 0.3;
+                    const wallExtLen = this.cellSize + wallThick - 0.1;
                     const miniLineMat = new THREE.LineBasicMaterial({color: 0x888888});
 
                     const addWall = (wx, wy, wz, ry, p1, p2) => {
