@@ -296,7 +296,7 @@
         // --- 状態管理 ---
         let currentTool = 'pen';
         let brushSize = 1;
-        let colorIndex = 8; // デフォルトは暗い青
+        let colorIndex = 8; // デフォルトは暗い青 (PALETTE[8])
         let symXEnabled = false;
         let symYEnabled = false;
         let symXPos = 32;
@@ -459,50 +459,22 @@
         }
 
         function drawLine(x0, y0, x1, y1, colorIdx, isPreview = false) {
-            if (brushSize > 1) {
-                let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-                let dy = Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-                let err = dx - dy;
-                while (true) {
-                    drawBrush(x0, y0, colorIdx, isPreview);
-                    if (x0 === x1 && y0 === y1) break;
-                    let e2 = 2 * err;
-                    if (e2 > -dy) { err -= dy; x0 += sx; }
-                    if (e2 < dx) { err += dx; y0 += sy; }
-                }
-                return;
-            }
-
-            let pts = [];
-            let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-            let dy = Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+            // Bresenham's line algorithm
+            let dx = Math.abs(x1 - x0);
+            let dy = Math.abs(y1 - y0);
+            let sx = (x0 < x1) ? 1 : -1;
+            let sy = (y0 < y1) ? 1 : -1;
             let err = dx - dy;
 
             while (true) {
-                pts.push({x: x0, y: y0});
+                drawBrush(x0, y0, colorIdx, isPreview);
+
                 if (x0 === x1 && y0 === y1) break;
+
                 let e2 = 2 * err;
                 if (e2 > -dy) { err -= dy; x0 += sx; }
                 if (e2 < dx) { err += dx; y0 += sy; }
             }
-            
-            // ピクセルの重複を避けるためのフィルタリング（React版から移植）
-            let filtered = [];
-            for (let i = 0; i < pts.length; i++) {
-                if (i > 0 && i < pts.length - 1) {
-                    let prev = pts[i - 1];
-                    let curr = pts[i];
-                    let next = pts[i + 1];
-                    // 直前の点と同じ座標、または直後の点とX/Yが同じで間の点を除外
-                    if ((prev.x === curr.x && curr.y === next.y) || 
-                        (prev.y === curr.y && curr.x === next.x)) {
-                        continue;
-                    }
-                }
-                filtered.push(pts[i]);
-            }
-
-            filtered.forEach(p => drawBrush(p.x, p.y, colorIdx, isPreview, 1));
         }
 
         function getSnappedEndPoint(x0, y0, x1, y1) {
@@ -614,9 +586,10 @@
         // --- キャンバスイベントハンドラ ---
         function getCanvasPos(e) {
             const rect = pixelCanvas.getBoundingClientRect();
-            const scale = pixelCanvas.width / rect.width; // スケールを正しく計算
-            const x = Math.floor((e.clientX - rect.left) * scale);
-            const y = Math.floor((e.clientY - rect.top) * scale);
+            const scaleX = pixelCanvas.width / rect.width;
+            const scaleY = pixelCanvas.height / rect.height;
+            const x = Math.floor((e.clientX - rect.left) * scaleX);
+            const y = Math.floor((e.clientY - rect.top) * scaleY);
             return { x, y };
         }
 
@@ -632,6 +605,7 @@
             saveHistory();
 
             if (currentTool === 'pen') {
+                // ペンツールでもスナップラインの開始点を記録
                 drawBrush(pos.x, pos.y, colorIndex);
                 playSound('draw');
             } else if (currentTool === 'text') {
@@ -652,6 +626,8 @@
 
             if (currentTool === 'pen') {
                 if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
+                    // ペンツールでもスナップラインのアルゴリズムを適用
+                    // 以前の lastPos から現在の pos までを直線で描画
                     drawLine(lastPos.x, lastPos.y, pos.x, pos.y, colorIndex);
                     lastPos = pos;
                     playSound('draw');
@@ -677,7 +653,10 @@
             e.preventDefault();
             const pos = getCanvasPos(e);
 
-            if (currentTool === 'line') {
+            if (currentTool === 'pen') {
+                // ペンツールでは PointerDown で描画が開始され、Move で連続描画されるため、
+                // Up 時には特別な確定処理は不要だが、履歴とプレビュークリアは必要。
+            } else if (currentTool === 'line') {
                 const endPos = getSnappedEndPoint(startPos.x, startPos.y, pos.x, pos.y);
                 drawLine(startPos.x, startPos.y, endPos.x, endPos.y, colorIndex);
                 playSound('click');
@@ -792,15 +771,17 @@
                 }
                  // 透明色ボタンの斜線表示を更新
                 if (PALETTE[idx] === 'transparent') {
-                    if (colorIndex !== idx && btn.querySelector('.w-8.h-px')) {
+                    if (colorIndex !== idx && btn.querySelector('.w-8.h-px') === null) {
                         // 選択されていない透明色に斜線がない場合に追加
                          btn.innerHTML = `<div class="absolute inset-0 flex items-center justify-center"><div class="w-8 h-px bg-red-500/50 rotate-45"></div></div>`;
                     } else if (colorIndex === idx && btn.querySelector('.w-8.h-px')) {
                         // 選択された透明色から斜線を削除
                         btn.innerHTML = '';
-                    } else if (colorIndex !== idx && !btn.querySelector('.w-8.h-px')) {
-                        // 選択されていない透明色に斜線がない場合に追加（再レンダリング時など）
-                        btn.innerHTML = `<div class="absolute inset-0 flex items-center justify-center"><div class="w-8 h-px bg-red-500/50 rotate-45"></div></div>`;
+                    }
+                } else {
+                    // 透明色以外の場合は斜線を削除
+                    if (btn.querySelector('.w-8.h-px')) {
+                        btn.innerHTML = '';
                     }
                 }
             });
@@ -924,11 +905,9 @@
             downloadBtn.addEventListener('click', () => {
                 const link = document.createElement('a');
                 link.download = 'pixel_art.png';
-                pixelCanvas.toBlob((blob) => {
-                    link.href = URL.createObjectURL(blob);
-                    link.click();
-                    URL.revokeObjectURL(link.href);
-                }, 'image/png');
+                // toDataURL を使って画像をダウンロード
+                link.href = pixelCanvas.toDataURL('image/png');
+                link.click();
                 showToast('Image downloaded as pixel_art.png!');
                 playSound('snap');
             });
