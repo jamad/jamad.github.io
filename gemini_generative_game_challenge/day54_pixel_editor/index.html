@@ -459,7 +459,7 @@
         }
 
         function drawLine(x0, y0, x1, y1, colorIdx, isPreview = false) {
-            // Bresenham's line algorithm
+            // Bresenham's line algorithm for pixel-perfect lines
             let dx = Math.abs(x1 - x0);
             let dy = Math.abs(y1 - y0);
             let sx = (x0 < x1) ? 1 : -1;
@@ -605,7 +605,6 @@
             saveHistory();
 
             if (currentTool === 'pen') {
-                // ペンツールでもスナップラインの開始点を記録
                 drawBrush(pos.x, pos.y, colorIndex);
                 playSound('draw');
             } else if (currentTool === 'text') {
@@ -626,14 +625,14 @@
 
             if (currentTool === 'pen') {
                 if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
-                    // ペンツールでもスナップラインのアルゴリズムを適用
-                    // 以前の lastPos から現在の pos までを直線で描画
+                    // ペンツールではドラッグの生の座標に基づいてブレゼンハム線を引く
                     drawLine(lastPos.x, lastPos.y, pos.x, pos.y, colorIndex);
                     lastPos = pos;
                     playSound('draw');
                 }
             } else if (currentTool === 'line') {
                 clearPreview();
+                // スナップされた終点を使ってプレビュー線を描画
                 const endPos = getSnappedEndPoint(startPos.x, startPos.y, pos.x, pos.y);
                 drawLine(startPos.x, startPos.y, endPos.x, endPos.y, colorIndex, true);
                 const previewKey = `${endPos.x},${endPos.y}`;
@@ -654,9 +653,9 @@
             const pos = getCanvasPos(e);
 
             if (currentTool === 'pen') {
-                // ペンツールでは PointerDown で描画が開始され、Move で連続描画されるため、
-                // Up 時には特別な確定処理は不要だが、履歴とプレビュークリアは必要。
+                // ペンツールは Down と Move で描画が完了
             } else if (currentTool === 'line') {
+                // スナップされた終点を使って確定線を引く
                 const endPos = getSnappedEndPoint(startPos.x, startPos.y, pos.x, pos.y);
                 drawLine(startPos.x, startPos.y, endPos.x, endPos.y, colorIndex);
                 playSound('click');
