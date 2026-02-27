@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-BIT PRECISION</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            /* スクロールバーを隠す */
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        body::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera*/
+        }
+        .pixelated {
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+        .slider-thumb-red::-webkit-slider-thumb {
+            background-color: #ef4444; /* red-500 */
+        }
+        .slider-thumb-green::-webkit-slider-thumb {
+            background-color: #22c55e; /* green-500 */
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+            transition: background-color 0.15s ease-in-out;
+        }
+        input[type="range"]:disabled::-webkit-slider-thumb {
+            cursor: not-allowed;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ef4444; /* Default for Firefox, overridden by specific classes */
+            cursor: pointer;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+            border: none;
+        }
+        input[type="range"]:disabled::-moz-range-thumb {
+            cursor: not-allowed;
+        }
+        .toast {
+            animation: fade-in-slide-down 0.3s ease-out forwards, fade-out-slide-up 0.3s ease-in 2.2s forwards;
+        }
+
+        @keyframes fade-in-slide-down {
+            from { opacity: 0; transform: translate(-50%, -10px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        @keyframes fade-out-slide-up {
+            from { opacity: 1; transform: translate(-50%, 0); }
+            to { opacity: 0; transform: translate(-50%, -10px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-900 text-slate-200 flex flex-col font-mono selection:bg-blue-500/30">
+
+    <!-- Toast Message -->
+    <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg z-50 flex items-center gap-2 toast hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M4 12.6V16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2"></path><path d="m9 12 2 2 4-4"></path></svg>
+        <span id="toast-msg"></span>
+    </div>
+
+    <header class="bg-slate-800 p-4 border-b border-slate-700 flex justify-between items-center shadow-md">
+        <h1 class="text-xl font-bold tracking-wider text-blue-300">8-BIT PRECISION</h1>
+        <div class="flex gap-2">
+            <button id="downloadBtn" class="p-2 bg-slate-700 rounded hover:bg-slate-600 text-blue-300 transition-colors" title="Download Image">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+            </button>
+            <div class="w-px bg-slate-600 mx-1"></div>
+            <button id="undoBtn" class="p-2 bg-slate-700 rounded hover:bg-slate-600 disabled:opacity-50 transition-colors" title="Undo (Ctrl+Z)" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-undo"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
+            </button>
+            <button id="redoBtn" class="p-2 bg-slate-700 rounded hover:bg-slate-600 disabled:opacity-50 transition-colors" title="Redo (Ctrl+Y)" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-redo"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 0 9 9 9 9 0 0 0 6-2.3l3-4.7"></path></svg>
+            </button>
+            <div class="w-px bg-slate-600 mx-1"></div>
+            <button id="clearBtn" class="p-2 bg-red-900/50 text-red-300 rounded hover:bg-red-800/50 transition-colors" title="Clear Canvas">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col md:flex-row p-4 gap-6 overflow-hidden">
+        
+        <aside class="flex md:flex-col gap-2 bg-slate-800 p-3 rounded-xl border border-slate-700 justify-start items-center flex-wrap shrink-0 shadow-lg md:w-24">
+            <button data-tool="pen" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.5)]" title="Pen">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
+                <span class="text-[10px] hidden md:block text-center leading-tight">Pen</span>
+            </button>
+            <button data-tool="line" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Snap Line">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minus"><path d="M5 12h14"></path></svg>
+                <span class="text-[10px] hidden md:block text-center leading-tight">Snap Line</span>
+            </button>
+            <button data-tool="circle" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Snap Circle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle"><circle cx="12" cy="12" r="10"></circle></svg>
+                <span class="text-[10px] hidden md:block text-center leading-tight">Snap Circle</span>
+            </button>
+            <button data-tool="text" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Text">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-type"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" x2="15" y1="20" y2="20"></line><line x1="12" x2="12" y1="4" y2="20"></line></svg>
+                <span class="text-[10px] hidden md:block text-center leading-tight">Text</span>
+            </button>
+            <button data-tool="fill" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Fill Area">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paint-bucket"><path d="M19 11h-3.4L12 21H6l3.4-10H5.16a2 2 0 0 1-1.95-2.23l.14-.98A5.2 5.2 0 0 1 8.04 3h7.92a5.2 5.2 0 0 1 4.7 4.79l.14.98c.39 2.22-.36 3.47-1.94 3.73Z"></path><path d="M2.2 10H8l3.4 10h5.6c-.66-2-1.25-4-1.84-6.04"></path></svg>
+                <span class="text-[10px] hidden md:block text-center leading-tight">Fill</span>
+            </button>
+            
+            <div class="w-full flex flex-wrap justify-center gap-1 mt-2 mb-2" id="brush-sizes">
+                <button data-size="1" class="w-8 h-8 flex items-center justify-center rounded text-xs transition-colors bg-blue-500 text-white font-bold" title="Brush Size: 1px">1</button>
+                <button data-size="2" class="w-8 h-8 flex items-center justify-center rounded text-xs transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 2px">2</button>
+                <button data-size="4" class="w-8 h-8 flex items-center justify-center rounded text-xs transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 4px">4</button>
+                <button data-size="8" class="w-8 h-8 flex items-center justify-center rounded text-xs transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 8px">8</button>
+            </div>
+
+            <div class="w-px h-8 md:w-full md:h-px bg-slate-600 my-1"></div>
+            
+            <button id="toggleGridBtn" class="w-full p-3 rounded-lg flex flex-col items-center justify-center transition-all bg-slate-600 text-white" title="Toggle Grid (8x8)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-grid"><rect width="7" height="7" x="3" y="3"></rect><rect width="7" height="7" x="14" y="3"></rect><rect width="7" height="7" x="14" y="14"></rect><rect width="7" height="7" x="3" y="14"></rect></svg>
+                <span class="text-[10px] hidden md:block mt-1">Grid</span>
+            </button>
+        </aside>
+
+        <div class="flex-1 flex flex-col items-center justify-center relative touch-none">
+            <div id="textInputContainer" class="absolute top-0 w-full max-w-sm flex gap-2 p-2 bg-blue-600 rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-400 z-10 mb-4 animate-in fade-in slide-in-from-top-4 hidden">
+                <input 
+                    type="text" 
+                    id="textInput"
+                    class="flex-1 bg-slate-900/80 border border-transparent rounded px-3 py-2 text-white font-mono uppercase tracking-widest focus:outline-none focus:border-white/50 placeholder-slate-400"
+                    placeholder="TYPE HERE..."
+                    maxlength="15"
+                    value="HELLO"
+                />
+            </div>
+
+            <div class="relative bg-black shadow-2xl border-4 border-slate-800 rounded-sm overflow-hidden" 
+                 style="width: min(90vw, 70vh); height: min(90vw, 70vh);">
+                
+                <div class="absolute inset-0 pointer-events-none"
+                     style="background-image: repeating-conic-gradient(#334155 0% 25%, #1e293b 0% 50%); background-size: 16px 16px;"
+                ></div>
+
+                <canvas
+                  id="pixelCanvas"
+                  width="64"
+                  height="64"
+                  class="absolute top-0 left-0 w-full h-full cursor-crosshair z-10 pixelated"
+                  style="touch-action: none;"
+                ></canvas>
+
+                <div 
+                  id="gridOverlay"
+                  class="absolute inset-0 pointer-events-none opacity-40 z-20 mix-blend-difference"
+                  style="background-size: calc(100% / (64 / 8)) calc(100% / (64 / 8)); background-image: linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px);" 
+                ></div>
+
+                <div id="symXLine" class="absolute top-0 w-px h-full bg-red-500 shadow-[0_0_5px_red] pointer-events-none z-30 mix-blend-screen hidden" style="left: 50%;"></div>
+                <div id="symYLine" class="absolute left-0 h-px w-full bg-green-500 shadow-[0_0_5px_green] pointer-events-none z-30 mix-blend-screen hidden" style="top: 50%;"></div>
+            </div>
+
+            <div class="w-full max-w-[min(90vw,70vh)] mt-6 flex flex-col gap-3 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+                <div class="flex items-center gap-4">
+                    <button 
+                        id="toggleSymX"
+                        class="flex items-center gap-2 p-2 rounded w-28 transition-colors bg-slate-700 text-slate-400"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-horizontal"><path d="M8 3V21"></path><path d="M16 3V21"></path><path d="M12 21v-1a2 2 0 0 0-2-2H8c-2.7 0-4-1.3-4-4V8c0-2.7 1.3-4 4-4h2a2 2 0 0 0 2-2V3"></path><path d="M12 21v-1a2 2 0 0 1 2-2h2c2.7 0 4-1.3 4-4V8c0-2.7-1.3-4-4-4h-2a2 2 0 0 1-2-2V3"></path></svg>
+                        <span class="text-xs">X-AXIS</span>
+                    </button>
+                    <input 
+                        type="range" min="0" max="64" value="32" id="symXPos"
+                        class="flex-1 accent-red-500 disabled:opacity-30 slider-thumb-red" disabled
+                    />
+                </div>
+                <div class="flex items-center gap-4">
+                    <button 
+                        id="toggleSymY"
+                        class="flex items-center gap-2 p-2 rounded w-28 transition-colors bg-slate-700 text-slate-400"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-vertical"><path d="M12 8V21"></path><path d="M12 3V16"></path><path d="M4 12H2v-2a2 2 0 0 1 2-2h4c2.7 0 4 1.3 4 4v2c0 2.7-1.3 4-4 4H4a2 2 0 0 1-2-2v-2"></path><path d="M20 12H22v-2a2 2 0 0 0-2-2h-4c-2.7 0-4 1.3-4 4v2c0 2.7 1.3 4 4 4h4a2 2 0 0 0 2-2v-2"></path></svg>
+                        <span class="text-xs">Y-AXIS</span>
+                    </button>
+                    <input 
+                        type="range" min="0" max="64" value="32" id="symYPos"
+                        class="flex-1 accent-green-500 disabled:opacity-30 slider-thumb-green" disabled
+                    />
+                </div>
+            </div>
+        </div>
+
+        <aside class="flex md:flex-col gap-2 bg-slate-800 p-3 rounded-xl border border-slate-700 justify-center md:justify-start overflow-x-auto shadow-lg shrink-0 items-center" id="palette">
+            <div class="text-[10px] text-slate-400 mb-1 hidden md:block text-center font-bold tracking-wider">PALETTE</div>
+            <!-- Palette colors will be generated by JS -->
+        </aside>
+
+    </main>
+
+    <script>
+        // --- 設定・定数 ---
+        const PALETTE = [
+            '#FFFFFF', // 0番目を白色に変更
+            '#ebf8ff',
+            '#bee3f8',
+            '#90cdf4',
+            '#63b3ed',
+            '#4299e1',
+            '#3182ce',
+            '#2b6cb0',
+            '#1a365d',
+            'transparent' // 透明色を最後に追加（消しゴム用）
+        ];
+        const CANVAS_SIZE = 64;
+
+        // 5x3 ピクセルフォントデータ (A-Z, 0-9)
+        const FONT_5x3 = {
+            'A': [0,1,0, 1,0,1, 1,1,1, 1,0,1, 1,0,1],
+            'B': [1,1,0, 1,0,1, 1,1,0, 1,0,1, 1,1,0],
+            'C': [0,1,1, 1,0,0, 1,0,0, 1,0,0, 0,1,1],
+            'D': [1,1,0, 1,0,1, 1,0,1, 1,0,1, 1,1,0],
+            'E': [1,1,1, 1,0,0, 1,1,0, 1,0,0, 1,1,1],
+            'F': [1,1,1, 1,0,0, 1,1,0, 1,0,0, 1,0,0],
+            'G': [0,1,1, 1,0,0, 1,0,1, 1,0,1, 0,1,1],
+            'H': [1,0,1, 1,0,1, 1,1,1, 1,0,1, 1,0,1],
+            'I': [1,1,1, 0,1,0, 0,1,0, 0,1,0, 1,1,1],
+            'J': [0,0,1, 0,0,1, 0,0,1, 1,0,1, 0,1,0],
+            'K': [1,0,1, 1,1,0, 1,0,0, 1,1,0, 1,0,1],
+            'L': [1,0,0, 1,0,0, 1,0,0, 1,0,0, 1,1,1],
+            'M': [1,0,1, 1,1,1, 1,0,1, 1,0,1, 1,0,1],
+            'N': [1,1,0, 1,0,1, 1,0,1, 1,0,1, 1,0,1],
+            'O': [0,1,0, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
+            'P': [1,1,0, 1,0,1, 1,1,0, 1,0,0, 1,0,0],
+            'Q': [0,1,0, 1,0,1, 1,0,1, 0,1,0, 0,0,1],
+            'R': [1,1,0, 1,0,1, 1,1,0, 1,0,1, 1,0,1],
+            'S': [0,1,1, 1,0,0, 0,1,0, 0,0,1, 1,1,0],
+            'T': [1,1,1, 0,1,0, 0,1,0, 0,1,0, 0,1,0],
+            'U': [1,0,1, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
+            'V': [1,0,1, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
+            'W': [1,0,1, 1,0,1, 1,0,1, 1,1,1, 1,0,1],
+            'X': [1,0,1, 1,0,1, 0,1,0, 1,0,1, 1,0,1],
+            'Y': [1,0,1, 1,0,1, 0,1,0, 0,1,0, 0,1,0],
+            'Z': [1,1,1, 0,0,1, 0,1,0, 1,0,0, 1,1,1],
+            '0': [0,1,0, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
+            '1': [0,1,0, 1,1,0, 0,1,0, 0,1,0, 1,1,1],
+            '2': [1,1,0, 0,0,1, 0,1,0, 1,0,0, 1,1,1],
+            '3': [1,1,0, 0,0,1, 0,1,0, 0,0,1, 1,1,0],
+            '4': [1,0,1, 1,0,1, 1,1,1, 0,0,1, 0,0,1],
+            '5': [1,1,1, 1,0,0, 1,1,0, 0,0,1, 1,1,0],
+            '6': [0,1,1, 1,0,0, 1,1,0, 1,0,1, 0,1,0],
+            '7': [1,1,1, 0,0,1, 0,0,1, 0,1,0, 0,1,0],
+            '8': [0,1,0, 1,0,1, 0,1,0, 1,0,1, 0,1,0],
+            '9': [0,1,0, 1,0,1, 0,1,1, 0,0,1, 1,1,0],
+            ' ': [0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0]
+        };
+
+        const ALLOWED_TANGENTS = [0, 1/8, 1/6, 1/4, 1/3, 1/2, 1, 2, 3, 4, 6, 8, Infinity];
+        const ALLOWED_ANGLES = ALLOWED_TANGENTS.map(t => Math.atan(t));
+        const ALLOWED_RADII = [1, 2, 3, 4, 5, 7, 9, 12, 16, 20, 25, 32];
+        const BRUSH_SIZES = [1, 2, 4, 8];
+
+        // --- DOM要素の参照 ---
+        const pixelCanvas = document.getElementById('pixelCanvas');
+        const ctx = pixelCanvas.getContext('2d');
+        const toolButtons = document.querySelectorAll('aside button[data-tool]');
+        const brushSizeButtons = document.querySelectorAll('#brush-sizes button');
+        const paletteContainer = document.getElementById('palette');
+        const textInputContainer = document.getElementById('textInputContainer');
+        const textInput = document.getElementById('textInput');
+        const toggleGridBtn = document.getElementById('toggleGridBtn');
+        const gridOverlay = document.getElementById('gridOverlay');
+        const symXLine = document.getElementById('symXLine');
+        const symYLine = document.getElementById('symYLine');
+        const toggleSymXBtn = document.getElementById('toggleSymX');
+        const symXPosSlider = document.getElementById('symXPos');
+        const toggleSymYBtn = document.getElementById('toggleSymY');
+        const symYPosSlider = document.getElementById('symYPos');
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const toastElement = document.getElementById('toast');
+        const toastMsgElement = document.getElementById('toast-msg');
+
+        // --- 状態管理 ---
+        let currentTool = 'pen';
+        let brushSize = 1;
+        let colorIndex = 8; // デフォルトは暗い青
+        let symXEnabled = false;
+        let symYEnabled = false;
+        let symXPos = 32;
+        let symYPos = 32;
+        let showGrid = true;
+        let currentTextInput = "HELLO";
+
+        let pixelData = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE); // 0は白 (PALETTE[0])
+        let previewData = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE); // 0はプレビューなし, >0はPALETTEインデックス+1
+
+        let isDrawing = false;
+        let startPos = { x: 0, y: 0 };
+        let lastPos = { x: -1, y: -1 };
+        let lastPreviewKey = ''; 
+
+        // 履歴管理
+        let history = [new Uint8Array(CANVAS_SIZE * CANVAS_SIZE)];
+        let historyIndex = 0;
+
+        let audioCtx = null;
+
+        // --- 初期化処理 ---
+        function init() {
+            // 初期状態を白色で塗りつぶす
+            pixelData.fill(0); // PALETTE[0]が白色
+            renderCanvas();
+            renderPalette();
+            updateHistoryState();
+            setupEventListeners();
+            updateToolUI();
+            updateBrushSizeUI();
+            updatePaletteUI();
+            updateSymmetryUI();
+            updateGridUI();
+            updateTextInputUI();
+        }
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const ctx = audioCtx;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            const now = ctx.currentTime;
+
+            if (type === 'draw') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(400, now + 0.03);
+                gain.gain.setValueAtTime(0.02, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+                osc.start(now); osc.stop(now + 0.03);
+            } else if (type === 'snap') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1200, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'click') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'undo') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(300, now + 0.1);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            }
+        }
+
+        function showToast(msg) {
+            toastMsgElement.textContent = msg;
+            toastElement.classList.remove('hidden');
+            clearTimeout(toastElement.timeoutId);
+            toastElement.timeoutId = setTimeout(() => {
+                toastElement.classList.add('hidden');
+            }, 2500);
+        }
+
+        // --- 履歴管理 ---
+        function updateHistoryState() {
+            undoBtn.disabled = historyIndex <= 0;
+            redoBtn.disabled = historyIndex >= history.length - 1;
+        }
+
+        function saveHistory() {
+            history = history.slice(0, historyIndex + 1);
+            history.push(new Uint8Array(pixelData));
+            if (history.length > 50) history.shift(); 
+            else historyIndex++;
+            updateHistoryState();
+        }
+
+        function handleUndo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                pixelData = new Uint8Array(history[historyIndex]);
+                renderCanvas();
+                updateHistoryState();
+                playSound('undo');
+            }
+        }
+
+        function handleRedo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                pixelData = new Uint8Array(history[historyIndex]);
+                renderCanvas();
+                updateHistoryState();
+                playSound('click');
+            }
+        }
+
+        // --- 描画コア関数 ---
+        function clearPreview() {
+            previewData.fill(0);
+        }
+
+        function setPixelCore(px, py, colorIdx, isPreview = false) {
+            if (px >= 0 && px < CANVAS_SIZE && py >= 0 && py < CANVAS_SIZE) {
+                if (isPreview) {
+                    previewData[py * CANVAS_SIZE + px] = colorIdx + 1; 
+                } else {
+                    pixelData[py * CANVAS_SIZE + px] = colorIdx;
+                }
+            }
+        }
+
+        function drawBrush(cx, cy, colorIdx, isPreview = false, overrideSize = null) {
+            const size = overrideSize || brushSize;
+            const offset = Math.floor((size - 1) / 2);
+
+            const drawPoint = (px, py) => {
+                for (let dy = 0; dy < size; dy++) {
+                    for (let dx = 0; dx < size; dx++) {
+                        setPixelCore(px - offset + dx, py - offset + dy, colorIdx, isPreview);
+                    }
+                }
+            };
+
+            drawPoint(cx, cy);
+
+            if (symXEnabled) drawPoint(symXPos * 2 - cx - 1, cy);
+            if (symYEnabled) drawPoint(cx, symYPos * 2 - cy - 1);
+            if (symXEnabled && symYEnabled) drawPoint(symXPos * 2 - cx - 1, symYPos * 2 - cy - 1);
+        }
+
+        function drawLine(x0, y0, x1, y1, colorIdx, isPreview = false) {
+            if (brushSize > 1) {
+                let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+                let dy = Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+                let err = dx - dy;
+                while (true) {
+                    drawBrush(x0, y0, colorIdx, isPreview);
+                    if (x0 === x1 && y0 === y1) break;
+                    let e2 = 2 * err;
+                    if (e2 > -dy) { err -= dy; x0 += sx; }
+                    if (e2 < dx) { err += dx; y0 += sy; }
+                }
+                return;
+            }
+
+            let pts = [];
+            let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+            let dy = Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+            let err = dx - dy;
+
+            while (true) {
+                pts.push({x: x0, y: y0});
+                if (x0 === x1 && y0 === y1) break;
+                let e2 = 2 * err;
+                if (e2 > -dy) { err -= dy; x0 += sx; }
+                if (e2 < dx) { err += dx; y0 += sy; }
+            }
+            
+            // ピクセルの重複を避けるためのフィルタリング（React版から移植）
+            let filtered = [];
+            for (let i = 0; i < pts.length; i++) {
+                if (i > 0 && i < pts.length - 1) {
+                    let prev = pts[i - 1];
+                    let curr = pts[i];
+                    let next = pts[i + 1];
+                    // 直前の点と同じ座標、または直後の点とX/Yが同じで間の点を除外
+                    if ((prev.x === curr.x && curr.y === next.y) || 
+                        (prev.y === curr.y && curr.x === next.x)) {
+                        continue;
+                    }
+                }
+                filtered.push(pts[i]);
+            }
+
+            filtered.forEach(p => drawBrush(p.x, p.y, colorIdx, isPreview, 1));
+        }
+
+        function getSnappedEndPoint(x0, y0, x1, y1) {
+            const dx = x1 - x0;
+            const dy = y1 - y0;
+            if (dx === 0 && dy === 0) return { x: x0, y: y0 };
+
+            const angle = Math.atan2(Math.abs(dy), Math.abs(dx));
+            let closestAngle = ALLOWED_ANGLES[0];
+            let minDiff = Math.abs(angle - ALLOWED_ANGLES[0]);
+            
+            for (let i = 1; i < ALLOWED_ANGLES.length; i++) {
+                const diff = Math.abs(angle - ALLOWED_ANGLES[i]);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestAngle = ALLOWED_ANGLES[i];
+                }
+            }
+
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            let snappedDx = Math.round(dist * Math.cos(closestAngle));
+            let snappedDy = Math.round(dist * Math.sin(closestAngle));
+
+            if (dx < 0) snappedDx = -snappedDx;
+            if (dy < 0) snappedDy = -snappedDy;
+
+            return { x: x0 + snappedDx, y: y0 + snappedDy };
+        }
+
+        function drawCircle(xc, yc, r, colorIdx, isPreview = false) {
+            if (r === 0) {
+                drawBrush(xc, yc, colorIdx, isPreview);
+                return;
+            }
+            let x = 0, y = r, d = 3 - 2 * r;
+            const draw8 = (cx, cy, px, py) => {
+                drawBrush(cx + px, cy + py, colorIdx, isPreview);
+                drawBrush(cx - px, cy + py, colorIdx, isPreview);
+                drawBrush(cx + px, cy - py, colorIdx, isPreview);
+                drawBrush(cx - px, cy - py, colorIdx, isPreview);
+                drawBrush(cx + py, cy + px, colorIdx, isPreview);
+                drawBrush(cx - py, cy + px, colorIdx, isPreview);
+                drawBrush(cx + py, cy - px, colorIdx, isPreview);
+                drawBrush(cx - py, cy - px, colorIdx, isPreview);
+            };
+
+            draw8(xc, yc, x, y);
+            while (y >= x) {
+                x++;
+                if (d > 0) { y--; d = d + 4 * (x - y) + 10; } 
+                else { d = d + 4 * x + 6; }
+                draw8(xc, yc, x, y);
+            }
+        }
+
+        function getSnappedRadius(r) {
+            return ALLOWED_RADII.reduce((prev, curr) => Math.abs(curr - r) < Math.abs(prev - r) ? curr : prev);
+        }
+
+        function drawText(startX, startY, text, colorIdx, isPreview = false) {
+            let cx = startX;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i].toUpperCase();
+                const fontData = FONT_5x3[char] || FONT_5x3[' '];
+                for (let py = 0; py < 5; py++) {
+                    for (let px = 0; px < 3; px++) {
+                        if (fontData[py * 3 + px] === 1) drawBrush(cx + px, startY + py, colorIdx, isPreview, 1);
+                    }
+                }
+                cx += 4; 
+            }
+        }
+
+        // --- 塗りつぶしツール (Flood Fill) ---
+        function floodFill(startX, startY, fillColor, isPreview = false) {
+            const targetColor = pixelData[startY * CANVAS_SIZE + startX];
+            if (targetColor === fillColor) return; // 塗りつぶす色と同じなら何もしない
+
+            const queue = [{ x: startX, y: startY }];
+            const visited = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE); // 0:未訪問, 1:訪問済み
+
+            const getColor = (px, py) => {
+                if (px < 0 || px >= CANVAS_SIZE || py < 0 || py >= CANVAS_SIZE) return -1; // 範囲外
+                return pixelData[py * CANVAS_SIZE + px];
+            };
+
+            while (queue.length > 0) {
+                const { x, y } = queue.shift();
+                const idx = y * CANVAS_SIZE + x;
+
+                if (x < 0 || x >= CANVAS_SIZE || y < 0 || y >= CANVAS_SIZE) continue;
+                if (visited[idx] === 1) continue; // 訪問済みならスキップ
+                if (getColor(x, y) !== targetColor) continue; // ターゲット色と異なるならスキップ
+
+                setPixelCore(x, y, fillColor, isPreview);
+                visited[idx] = 1; // 訪問済みにする
+
+                // 隣接ピクセルをキューに追加 (4方向)
+                queue.push({ x: x + 1, y: y });
+                queue.push({ x: x - 1, y: y });
+                queue.push({ x: x, y: y + 1 });
+                queue.push({ x: x, y: y - 1 });
+            }
+
+            playSound('click');
+        }
+
+
+        // --- キャンバスイベントハンドラ ---
+        function getCanvasPos(e) {
+            const rect = pixelCanvas.getBoundingClientRect();
+            const scale = pixelCanvas.width / rect.width; // スケールを正しく計算
+            const x = Math.floor((e.clientX - rect.left) * scale);
+            const y = Math.floor((e.clientY - rect.top) * scale);
+            return { x, y };
+        }
+
+        function handlePointerDown(e) {
+            e.preventDefault();
+            initAudio();
+            const pos = getCanvasPos(e);
+            isDrawing = true;
+            startPos = pos;
+            lastPos = pos;
+            lastPreviewKey = '';
+            
+            saveHistory();
+
+            if (currentTool === 'pen') {
+                drawBrush(pos.x, pos.y, colorIndex);
+                playSound('draw');
+            } else if (currentTool === 'text') {
+                drawText(pos.x, pos.y, currentTextInput, colorIndex);
+                playSound('click');
+                isDrawing = false; // テキストは1クリックで完了
+            } else if (currentTool === 'fill') {
+                // 塗りつぶしはクリック時に実行し、ドラッグは不要
+                floodFill(pos.x, pos.y, colorIndex);
+                isDrawing = false; // 塗りつぶしは1クリックで完了
+            }
+        }
+
+        function handlePointerMove(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const pos = getCanvasPos(e);
+
+            if (currentTool === 'pen') {
+                if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
+                    drawLine(lastPos.x, lastPos.y, pos.x, pos.y, colorIndex);
+                    lastPos = pos;
+                    playSound('draw');
+                }
+            } else if (currentTool === 'line') {
+                clearPreview();
+                const endPos = getSnappedEndPoint(startPos.x, startPos.y, pos.x, pos.y);
+                drawLine(startPos.x, startPos.y, endPos.x, endPos.y, colorIndex, true);
+                const previewKey = `${endPos.x},${endPos.y}`;
+                if (previewKey !== lastPreviewKey) { playSound('snap'); lastPreviewKey = previewKey; }
+            } else if (currentTool === 'circle') {
+                clearPreview();
+                const r = Math.round(Math.sqrt(Math.pow(pos.x - startPos.x, 2) + Math.pow(pos.y - startPos.y, 2)));
+                const snappedR = getSnappedRadius(r);
+                drawCircle(startPos.x, startPos.y, snappedR, colorIndex, true);
+                if (snappedR !== parseInt(lastPreviewKey)) { playSound('snap'); lastPreviewKey = snappedR.toString(); }
+            }
+        }
+
+        function handlePointerUp(e) {
+            if (!isDrawing) return;
+            isDrawing = false;
+            e.preventDefault();
+            const pos = getCanvasPos(e);
+
+            if (currentTool === 'line') {
+                const endPos = getSnappedEndPoint(startPos.x, startPos.y, pos.x, pos.y);
+                drawLine(startPos.x, startPos.y, endPos.x, endPos.y, colorIndex);
+                playSound('click');
+            } else if (currentTool === 'circle') {
+                const r = Math.round(Math.sqrt(Math.pow(pos.x - startPos.x, 2) + Math.pow(pos.y - startPos.y, 2)));
+                drawCircle(startPos.x, startPos.y, getSnappedRadius(r), colorIndex);
+                playSound('click');
+            }
+            clearPreview();
+            renderCanvas(); // プレビューをクリアしたらキャンバスを再描画
+        }
+
+        // --- キャンバス描画ループ ---
+        let animationId;
+        function renderCanvas() {
+            const imgData = ctx.createImageData(CANVAS_SIZE, CANVAS_SIZE);
+            const data = imgData.data;
+
+            for (let i = 0; i < CANVAS_SIZE * CANVAS_SIZE; i++) {
+                let currentPixelColorIndex = pixelData[i];
+                const previewVal = previewData[i];
+                
+                // プレビューがあればそちらの色を優先
+                if (previewVal > 0) {
+                    currentPixelColorIndex = previewVal - 1; 
+                }
+
+                const hex = PALETTE[currentPixelColorIndex];
+
+                if (hex === 'transparent') {
+                    data[i * 4 + 3] = 0; // 透明
+                } else {
+                    data[i * 4] = parseInt(hex.slice(1, 3), 16);
+                    data[i * 4 + 1] = parseInt(hex.slice(3, 5), 16);
+                    data[i * 4 + 2] = parseInt(hex.slice(5, 7), 16);
+                    data[i * 4 + 3] = 255; // 不透明
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            animationId = requestAnimationFrame(renderCanvas);
+        }
+
+        // --- UI更新関数 ---
+        function updateToolUI() {
+            toolButtons.forEach(btn => {
+                if (btn.dataset.tool === currentTool) {
+                    btn.classList.add('bg-blue-600', 'text-white', 'shadow-[0_0_10px_rgba(37,99,235,0.5)]');
+                    btn.classList.remove('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white', 'shadow-[0_0_10px_rgba(37,99,235,0.5)]');
+                    btn.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
+                }
+            });
+
+            if (currentTool === 'text') {
+                textInputContainer.classList.remove('hidden');
+            } else {
+                textInputContainer.classList.add('hidden');
+            }
+        }
+
+        function updateBrushSizeUI() {
+            brushSizeButtons.forEach(btn => {
+                if (parseInt(btn.dataset.size) === brushSize) {
+                    btn.classList.add('bg-blue-500', 'text-white', 'font-bold');
+                    btn.classList.remove('bg-slate-700', 'text-slate-400', 'hover:bg-slate-600');
+                } else {
+                    btn.classList.remove('bg-blue-500', 'text-white', 'font-bold');
+                    btn.classList.add('bg-slate-700', 'text-slate-400', 'hover:bg-slate-600');
+                }
+            });
+        }
+
+        function renderPalette() {
+            paletteContainer.innerHTML = `
+                <div class="text-[10px] text-slate-400 mb-1 hidden md:block text-center font-bold tracking-wider">PALETTE</div>
+            `;
+            PALETTE.forEach((color, idx) => {
+                const btn = document.createElement('button');
+                btn.dataset.colorIndex = idx;
+                btn.className = `relative w-10 h-10 md:w-12 md:h-12 rounded-full border-2 transition-all shrink-0 ${colorIndex === idx ? 'border-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.5)] z-10' : 'border-slate-600 scale-100 hover:scale-105'}`;
+                
+                if (color === 'transparent') {
+                    btn.style.backgroundImage = 'repeating-conic-gradient(#cbd5e1 0% 25%, #f8fafc 0% 50%)';
+                    btn.style.backgroundSize = '8px 8px';
+                    if (colorIndex !== idx) {
+                        btn.innerHTML = `<div class="absolute inset-0 flex items-center justify-center"><div class="w-8 h-px bg-red-500/50 rotate-45"></div></div>`;
+                    }
+                } else {
+                    btn.style.backgroundColor = color;
+                }
+                btn.title = color === 'transparent' ? 'Eraser (Transparent)' : `Color ${idx}`;
+                btn.addEventListener('click', () => {
+                    colorIndex = idx;
+                    playSound('click');
+                    updatePaletteUI();
+                });
+                paletteContainer.appendChild(btn);
+            });
+        }
+
+        function updatePaletteUI() {
+            // パレットボタンの選択状態を更新
+            paletteContainer.querySelectorAll('button').forEach(btn => {
+                const idx = parseInt(btn.dataset.colorIndex);
+                if (colorIndex === idx) {
+                    btn.classList.add('border-white', 'scale-110', 'shadow-[0_0_10px_rgba(255,255,255,0.5)]', 'z-10');
+                    btn.classList.remove('border-slate-600', 'scale-100', 'hover:scale-105');
+                } else {
+                    btn.classList.remove('border-white', 'scale-110', 'shadow-[0_0_10px_rgba(255,255,255,0.5)]', 'z-10');
+                    btn.classList.add('border-slate-600', 'scale-100', 'hover:scale-105');
+                }
+                 // 透明色ボタンの斜線表示を更新
+                if (PALETTE[idx] === 'transparent') {
+                    if (colorIndex !== idx && btn.querySelector('.w-8.h-px')) {
+                        // 選択されていない透明色に斜線がない場合に追加
+                         btn.innerHTML = `<div class="absolute inset-0 flex items-center justify-center"><div class="w-8 h-px bg-red-500/50 rotate-45"></div></div>`;
+                    } else if (colorIndex === idx && btn.querySelector('.w-8.h-px')) {
+                        // 選択された透明色から斜線を削除
+                        btn.innerHTML = '';
+                    } else if (colorIndex !== idx && !btn.querySelector('.w-8.h-px')) {
+                        // 選択されていない透明色に斜線がない場合に追加（再レンダリング時など）
+                        btn.innerHTML = `<div class="absolute inset-0 flex items-center justify-center"><div class="w-8 h-px bg-red-500/50 rotate-45"></div></div>`;
+                    }
+                }
+            });
+        }
+
+        function updateGridUI() {
+            if (showGrid) {
+                gridOverlay.classList.remove('hidden');
+                toggleGridBtn.classList.add('bg-slate-600', 'text-white');
+                toggleGridBtn.classList.remove('bg-slate-700', 'text-slate-400', 'hover:bg-slate-600');
+            } else {
+                gridOverlay.classList.add('hidden');
+                toggleGridBtn.classList.remove('bg-slate-600', 'text-white');
+                toggleGridBtn.classList.add('bg-slate-700', 'text-slate-400', 'hover:bg-slate-600');
+            }
+        }
+
+        function updateSymmetryUI() {
+            // X軸対称
+            if (symXEnabled) {
+                symXLine.classList.remove('hidden');
+                toggleSymXBtn.classList.add('bg-red-900/50', 'text-red-300');
+                toggleSymXBtn.classList.remove('bg-slate-700', 'text-slate-400');
+                symXPosSlider.disabled = false;
+            } else {
+                symXLine.classList.add('hidden');
+                toggleSymXBtn.classList.remove('bg-red-900/50', 'text-red-300');
+                toggleSymXBtn.classList.add('bg-slate-700', 'text-slate-400');
+                symXPosSlider.disabled = true;
+            }
+            symXLine.style.left = `${(symXPos / CANVAS_SIZE) * 100}%`;
+
+            // Y軸対称
+            if (symYEnabled) {
+                symYLine.classList.remove('hidden');
+                toggleSymYBtn.classList.add('bg-green-900/50', 'text-green-300');
+                toggleSymYBtn.classList.remove('bg-slate-700', 'text-slate-400');
+                symYPosSlider.disabled = false;
+            } else {
+                symYLine.classList.add('hidden');
+                toggleSymYBtn.classList.remove('bg-green-900/50', 'text-green-300');
+                toggleSymYBtn.classList.add('bg-slate-700', 'text-slate-400');
+                symYPosSlider.disabled = true;
+            }
+            symYLine.style.top = `${(symYPos / CANVAS_SIZE) * 100}%`;
+        }
+
+        function updateTextInputUI() {
+            textInput.value = currentTextInput;
+        }
+
+        // --- イベントリスナー設定 ---
+        function setupEventListeners() {
+            pixelCanvas.addEventListener('pointerdown', handlePointerDown);
+            pixelCanvas.addEventListener('pointermove', handlePointerMove);
+            pixelCanvas.addEventListener('pointerup', handlePointerUp);
+            pixelCanvas.addEventListener('pointercancel', handlePointerUp);
+            pixelCanvas.addEventListener('pointerout', handlePointerUp);
+
+            toolButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    currentTool = button.dataset.tool;
+                    playSound('click');
+                    updateToolUI();
+                });
+            });
+
+            brushSizeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    brushSize = parseInt(button.dataset.size);
+                    playSound('click');
+                    updateBrushSizeUI();
+                });
+            });
+
+            textInput.addEventListener('input', (e) => {
+                currentTextInput = e.target.value.toUpperCase();
+                updateTextInputUI();
+            });
+
+            toggleGridBtn.addEventListener('click', () => {
+                showGrid = !showGrid;
+                playSound('click');
+                updateGridUI();
+            });
+
+            toggleSymXBtn.addEventListener('click', () => {
+                symXEnabled = !symXEnabled;
+                playSound('click');
+                updateSymmetryUI();
+            });
+
+            symXPosSlider.addEventListener('input', (e) => {
+                symXPos = parseInt(e.target.value);
+                playSound('snap');
+                updateSymmetryUI();
+            });
+
+            toggleSymYBtn.addEventListener('click', () => {
+                symYEnabled = !symYEnabled;
+                playSound('click');
+                updateSymmetryUI();
+            });
+
+            symYPosSlider.addEventListener('input', (e) => {
+                symYPos = parseInt(e.target.value);
+                playSound('snap');
+                updateSymmetryUI();
+            });
+
+            undoBtn.addEventListener('click', handleUndo);
+            redoBtn.addEventListener('click', handleRedo);
+
+            clearBtn.addEventListener('click', () => {
+                saveHistory();
+                pixelData.fill(0); // 白でクリア
+                playSound('click');
+                renderCanvas();
+            });
+
+            downloadBtn.addEventListener('click', () => {
+                const link = document.createElement('a');
+                link.download = 'pixel_art.png';
+                pixelCanvas.toBlob((blob) => {
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                }, 'image/png');
+                showToast('Image downloaded as pixel_art.png!');
+                playSound('snap');
+            });
+
+            // キーボードショートカット
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT') return;
+
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                    e.preventDefault();
+                    if (e.shiftKey) handleRedo();
+                    else handleUndo();
+                } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                    e.preventDefault();
+                    handleRedo();
+                } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { // Save/Download
+                    e.preventDefault();
+                    downloadBtn.click();
+                }
+            });
+        }
+
+        // ページロード時に初期化
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
