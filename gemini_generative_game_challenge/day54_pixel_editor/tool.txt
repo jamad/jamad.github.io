@@ -1,0 +1,692 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Pencil, Minus, Circle, Type, Undo, Redo, Trash2, FlipHorizontal, FlipVertical, Grid, Copy, Check } from 'lucide-react';
+
+// --- 設定・定数 ---
+
+// 0番目を「透明」とし、1〜8番目をカラーパレットとして扱う
+const PALETTE = [
+  'transparent',
+  '#ebf8ff', // 明るい
+  '#bee3f8',
+  '#90cdf4',
+  '#63b3ed',
+  '#4299e1',
+  '#3182ce',
+  '#2b6cb0',
+  '#1a365d'  // 暗い
+];
+
+const CANVAS_SIZE = 64;
+
+// 5x3 ピクセルフォントデータ (A-Z, 0-9)
+const FONT_5x3 = {
+  'A': [0,1,0, 1,0,1, 1,1,1, 1,0,1, 1,0,1],
+  'B': [1,1,0, 1,0,1, 1,1,0, 1,0,1, 1,1,0],
+  'C': [0,1,1, 1,0,0, 1,0,0, 1,0,0, 0,1,1],
+  'D': [1,1,0, 1,0,1, 1,0,1, 1,0,1, 1,1,0],
+  'E': [1,1,1, 1,0,0, 1,1,0, 1,0,0, 1,1,1],
+  'F': [1,1,1, 1,0,0, 1,1,0, 1,0,0, 1,0,0],
+  'G': [0,1,1, 1,0,0, 1,0,1, 1,0,1, 0,1,1],
+  'H': [1,0,1, 1,0,1, 1,1,1, 1,0,1, 1,0,1],
+  'I': [1,1,1, 0,1,0, 0,1,0, 0,1,0, 1,1,1],
+  'J': [0,0,1, 0,0,1, 0,0,1, 1,0,1, 0,1,0],
+  'K': [1,0,1, 1,1,0, 1,0,0, 1,1,0, 1,0,1],
+  'L': [1,0,0, 1,0,0, 1,0,0, 1,0,0, 1,1,1],
+  'M': [1,0,1, 1,1,1, 1,0,1, 1,0,1, 1,0,1],
+  'N': [1,1,0, 1,0,1, 1,0,1, 1,0,1, 1,0,1],
+  'O': [0,1,0, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
+  'P': [1,1,0, 1,0,1, 1,1,0, 1,0,0, 1,0,0],
+  'Q': [0,1,0, 1,0,1, 1,0,1, 0,1,0, 0,0,1],
+  'R': [1,1,0, 1,0,1, 1,1,0, 1,0,1, 1,0,1],
+  'S': [0,1,1, 1,0,0, 0,1,0, 0,0,1, 1,1,0],
+  'T': [1,1,1, 0,1,0, 0,1,0, 0,1,0, 0,1,0],
+  'U': [1,0,1, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
+  'V': [1,0,1, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
+  'W': [1,0,1, 1,0,1, 1,0,1, 1,1,1, 1,0,1],
+  'X': [1,0,1, 1,0,1, 0,1,0, 1,0,1, 1,0,1],
+  'Y': [1,0,1, 1,0,1, 0,1,0, 0,1,0, 0,1,0],
+  'Z': [1,1,1, 0,0,1, 0,1,0, 1,0,0, 1,1,1],
+  '0': [0,1,0, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
+  '1': [0,1,0, 1,1,0, 0,1,0, 0,1,0, 1,1,1],
+  '2': [1,1,0, 0,0,1, 0,1,0, 1,0,0, 1,1,1],
+  '3': [1,1,0, 0,0,1, 0,1,0, 0,0,1, 1,1,0],
+  '4': [1,0,1, 1,0,1, 1,1,1, 0,0,1, 0,0,1],
+  '5': [1,1,1, 1,0,0, 1,1,0, 0,0,1, 1,1,0],
+  '6': [0,1,1, 1,0,0, 1,1,0, 1,0,1, 0,1,0],
+  '7': [1,1,1, 0,0,1, 0,0,1, 0,1,0, 0,1,0],
+  '8': [0,1,0, 1,0,1, 0,1,0, 1,0,1, 0,1,0],
+  '9': [0,1,0, 1,0,1, 0,1,1, 0,0,1, 1,1,0],
+  ' ': [0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0]
+};
+
+const ALLOWED_TANGENTS = [0, 1/8, 1/6, 1/4, 1/3, 1/2, 1, 2, 3, 4, 6, 8, Infinity];
+const ALLOWED_ANGLES = ALLOWED_TANGENTS.map(t => Math.atan(t));
+const ALLOWED_RADII = [1, 2, 3, 4, 5, 7, 9, 12, 16, 20, 25, 32];
+const BRUSH_SIZES = [1, 2, 4, 8];
+
+export default function App() {
+  // --- 状態管理 ---
+  const [currentTool, setCurrentTool] = useState('pen');
+  const [brushSize, setBrushSize] = useState(1);
+  const [colorIndex, setColorIndex] = useState(8); 
+  const [symXEnabled, setSymXEnabled] = useState(false);
+  const [symYEnabled, setSymYEnabled] = useState(false);
+  const [symXPos, setSymXPos] = useState(32);
+  const [symYPos, setSymYPos] = useState(32);
+  const [showGrid, setShowGrid] = useState(true);
+  const [textInput, setTextInput] = useState("HELLO");
+  
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+
+  const canvasRef = useRef(null);
+  const pixelData = useRef(new Uint8Array(CANVAS_SIZE * CANVAS_SIZE)); 
+  const previewData = useRef(new Uint8Array(CANVAS_SIZE * CANVAS_SIZE)); 
+  
+  const historyRef = useRef([new Uint8Array(CANVAS_SIZE * CANVAS_SIZE)]);
+  const historyIndexRef = useRef(0);
+
+  const stateRefs = useRef({ currentTool, brushSize, colorIndex, symXEnabled, symYEnabled, symXPos, symYPos, textInput });
+  useEffect(() => {
+    stateRefs.current = { currentTool, brushSize, colorIndex, symXEnabled, symYEnabled, symXPos, symYPos, textInput };
+  }, [currentTool, brushSize, colorIndex, symXEnabled, symYEnabled, symXPos, symYPos, textInput]);
+
+  const isDrawing = useRef(false);
+  const startPos = useRef({ x: 0, y: 0 });
+  const lastPos = useRef({ x: -1, y: -1 });
+  const lastPreviewKey = useRef(''); 
+
+  const audioCtxRef = useRef(null);
+
+  const initAudio = () => {
+    if (!audioCtxRef.current) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtxRef.current = new AudioContext();
+    }
+    if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
+  };
+
+  const playSound = useCallback((type) => {
+    if (!audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const now = ctx.currentTime;
+
+    if (type === 'draw') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(400, now + 0.03);
+      gain.gain.setValueAtTime(0.02, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      osc.start(now); osc.stop(now + 0.03);
+    } else if (type === 'snap') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1200, now);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.start(now); osc.stop(now + 0.05);
+    } else if (type === 'click') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(200, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      osc.start(now); osc.stop(now + 0.1);
+    } else if (type === 'undo') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(100, now);
+      osc.frequency.linearRampToValueAtTime(300, now + 0.1);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.1);
+      osc.start(now); osc.stop(now + 0.1);
+    }
+  }, []);
+
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 2500);
+  };
+
+  const updateHistoryState = useCallback(() => {
+    setCanUndo(historyIndexRef.current > 0);
+    setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+  }, []);
+
+  const saveHistory = useCallback(() => {
+    const newHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
+    newHistory.push(new Uint8Array(pixelData.current));
+    if (newHistory.length > 50) newHistory.shift(); 
+    else historyIndexRef.current++;
+    
+    historyRef.current = newHistory;
+    updateHistoryState();
+  }, [updateHistoryState]);
+
+  const handleUndo = useCallback(() => {
+    if (historyIndexRef.current > 0) {
+      historyIndexRef.current--;
+      pixelData.current = new Uint8Array(historyRef.current[historyIndexRef.current]);
+      updateHistoryState();
+      playSound('undo');
+    }
+  }, [playSound, updateHistoryState]);
+
+  const handleRedo = useCallback(() => {
+    if (historyIndexRef.current < historyRef.current.length - 1) {
+      historyIndexRef.current++;
+      pixelData.current = new Uint8Array(historyRef.current[historyIndexRef.current]);
+      updateHistoryState();
+      playSound('click');
+    }
+  }, [playSound, updateHistoryState]);
+
+  // --- クリップボードコピーの修正 ---
+  const handleCopy = useCallback(() => {
+    const scale = 8; 
+    const offscreen = document.createElement('canvas');
+    offscreen.width = CANVAS_SIZE * scale;
+    offscreen.height = CANVAS_SIZE * scale;
+    const ctx = offscreen.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(canvasRef.current, 0, 0, offscreen.width, offscreen.height);
+    
+    try {
+      // セキュリティポリシーによりnavigator.clipboardが使えない環境向けの代替手段 (execCommand)
+      const dataUrl = offscreen.toDataURL('image/png');
+      const textArea = document.createElement('textarea');
+      textArea.value = dataUrl;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      textArea.style.top = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      const success = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (success) {
+        playSound('snap');
+        showToast('Image DataURL Copied! (Ready to paste)');
+      } else {
+        throw new Error('execCommand failed');
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Copy blocked by policy. Please save as image.');
+    }
+  }, [playSound]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT') return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) handleRedo();
+        else handleUndo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        handleRedo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        handleCopy();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo, handleRedo, handleCopy]);
+
+  const clearPreview = () => {
+    previewData.current.fill(0);
+  };
+
+  const setPixelCore = (px, py, colorIdx, isPreview = false) => {
+    if (px >= 0 && px < CANVAS_SIZE && py >= 0 && py < CANVAS_SIZE) {
+      if (isPreview) {
+        previewData.current[py * CANVAS_SIZE + px] = colorIdx + 1; 
+      } else {
+        pixelData.current[py * CANVAS_SIZE + px] = colorIdx;
+      }
+    }
+  };
+
+  const drawBrush = (cx, cy, colorIdx, isPreview = false, overrideSize = null) => {
+    const s = stateRefs.current;
+    const size = overrideSize || s.brushSize;
+    const offset = Math.floor((size - 1) / 2);
+
+    const drawPoint = (px, py) => {
+      for (let dy = 0; dy < size; dy++) {
+        for (let dx = 0; dx < size; dx++) {
+          setPixelCore(px - offset + dx, py - offset + dy, colorIdx, isPreview);
+        }
+      }
+    };
+
+    drawPoint(cx, cy);
+
+    if (s.symXEnabled) drawPoint(s.symXPos * 2 - cx - 1, cy);
+    if (s.symYEnabled) drawPoint(cx, s.symYPos * 2 - cy - 1);
+    if (s.symXEnabled && s.symYEnabled) drawPoint(s.symXPos * 2 - cx - 1, s.symYPos * 2 - cy - 1);
+  };
+
+  const drawLine = (x0, y0, x1, y1, colorIdx, isPreview = false) => {
+    const s = stateRefs.current;
+    
+    if (s.brushSize > 1) {
+      let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+      let dy = Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+      let err = dx - dy;
+      while (true) {
+        drawBrush(x0, y0, colorIdx, isPreview);
+        if (x0 === x1 && y0 === y1) break;
+        let e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 < dx) { err += dx; y0 += sy; }
+      }
+      return;
+    }
+
+    let pts = [];
+    let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    let dy = Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+      pts.push({x: x0, y: y0});
+      if (x0 === x1 && y0 === y1) break;
+      let e2 = 2 * err;
+      if (e2 > -dy) { err -= dy; x0 += sx; }
+      if (e2 < dx) { err += dx; y0 += sy; }
+    }
+
+    let filtered = [];
+    for (let i = 0; i < pts.length; i++) {
+      if (i > 0 && i < pts.length - 1) {
+        let prev = pts[i - 1];
+        let curr = pts[i];
+        let next = pts[i + 1];
+        if (prev.x === curr.x && curr.y === next.y) continue;
+        if (prev.y === curr.y && curr.x === next.x) continue;
+      }
+      filtered.push(pts[i]);
+    }
+
+    filtered.forEach(p => drawBrush(p.x, p.y, colorIdx, isPreview, 1));
+  };
+
+  const getSnappedEndPoint = (x0, y0, x1, y1) => {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    if (dx === 0 && dy === 0) return { x: x0, y: y0 };
+
+    const angle = Math.atan2(Math.abs(dy), Math.abs(dx));
+    let closestAngle = ALLOWED_ANGLES[0];
+    let minDiff = Math.abs(angle - ALLOWED_ANGLES[0]);
+    
+    for (let i = 1; i < ALLOWED_ANGLES.length; i++) {
+      const diff = Math.abs(angle - ALLOWED_ANGLES[i]);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestAngle = ALLOWED_ANGLES[i];
+      }
+    }
+
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    let snappedDx = Math.round(dist * Math.cos(closestAngle));
+    let snappedDy = Math.round(dist * Math.sin(closestAngle));
+
+    if (dx < 0) snappedDx = -snappedDx;
+    if (dy < 0) snappedDy = -snappedDy;
+
+    return { x: x0 + snappedDx, y: y0 + snappedDy };
+  };
+
+  const drawCircle = (xc, yc, r, colorIdx, isPreview = false) => {
+    if (r === 0) {
+      drawBrush(xc, yc, colorIdx, isPreview);
+      return;
+    }
+    let x = 0, y = r, d = 3 - 2 * r;
+    const draw8 = (cx, cy, px, py) => {
+      drawBrush(cx + px, cy + py, colorIdx, isPreview);
+      drawBrush(cx - px, cy + py, colorIdx, isPreview);
+      drawBrush(cx + px, cy - py, colorIdx, isPreview);
+      drawBrush(cx - px, cy - py, colorIdx, isPreview);
+      drawBrush(cx + py, cy + px, colorIdx, isPreview);
+      drawBrush(cx - py, cy + px, colorIdx, isPreview);
+      drawBrush(cx + py, cy - px, colorIdx, isPreview);
+      drawBrush(cx - py, cy - px, colorIdx, isPreview);
+    };
+
+    draw8(xc, yc, x, y);
+    while (y >= x) {
+      x++;
+      if (d > 0) { y--; d = d + 4 * (x - y) + 10; } 
+      else { d = d + 4 * x + 6; }
+      draw8(xc, yc, x, y);
+    }
+  };
+
+  const getSnappedRadius = (r) => ALLOWED_RADII.reduce((prev, curr) => Math.abs(curr - r) < Math.abs(prev - r) ? curr : prev);
+
+  const drawText = (startX, startY, text, colorIdx, isPreview = false) => {
+    let cx = startX;
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i].toUpperCase();
+      const fontData = FONT_5x3[char] || FONT_5x3[' '];
+      for (let py = 0; py < 5; py++) {
+        for (let px = 0; px < 3; px++) {
+          if (fontData[py * 3 + px] === 1) drawBrush(cx + px, startY + py, colorIdx, isPreview, 1);
+        }
+      }
+      cx += 4; 
+    }
+  };
+
+  const getCanvasPos = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const scale = rect.width / CANVAS_SIZE;
+    const x = Math.floor((e.clientX - rect.left) / scale);
+    const y = Math.floor((e.clientY - rect.top) / scale);
+    return { x, y };
+  };
+
+  const handlePointerDown = (e) => {
+    e.preventDefault();
+    initAudio();
+    const pos = getCanvasPos(e);
+    isDrawing.current = true;
+    startPos.current = pos;
+    lastPos.current = pos;
+    lastPreviewKey.current = '';
+    
+    saveHistory();
+
+    const s = stateRefs.current;
+    if (s.currentTool === 'pen') {
+      drawBrush(pos.x, pos.y, s.colorIndex);
+      playSound('draw');
+    } else if (s.currentTool === 'text') {
+      drawText(pos.x, pos.y, s.textInput, s.colorIndex);
+      playSound('click');
+      isDrawing.current = false; 
+    }
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDrawing.current) return;
+    e.preventDefault();
+    const pos = getCanvasPos(e);
+    const s = stateRefs.current;
+
+    if (s.currentTool === 'pen') {
+      if (pos.x !== lastPos.current.x || pos.y !== lastPos.current.y) {
+        drawLine(lastPos.current.x, lastPos.current.y, pos.x, pos.y, s.colorIndex);
+        lastPos.current = pos;
+        playSound('draw');
+      }
+    } else if (s.currentTool === 'line') {
+      clearPreview();
+      const endPos = getSnappedEndPoint(startPos.current.x, startPos.current.y, pos.x, pos.y);
+      drawLine(startPos.current.x, startPos.current.y, endPos.x, endPos.y, s.colorIndex, true);
+      const previewKey = `${endPos.x},${endPos.y}`;
+      if (previewKey !== lastPreviewKey.current) { playSound('snap'); lastPreviewKey.current = previewKey; }
+    } else if (s.currentTool === 'circle') {
+      clearPreview();
+      const r = Math.round(Math.sqrt(Math.pow(pos.x - startPos.current.x, 2) + Math.pow(pos.y - startPos.current.y, 2)));
+      const snappedR = getSnappedRadius(r);
+      drawCircle(startPos.current.x, startPos.current.y, snappedR, s.colorIndex, true);
+      if (snappedR !== parseInt(lastPreviewKey.current)) { playSound('snap'); lastPreviewKey.current = snappedR.toString(); }
+    }
+  };
+
+  const handlePointerUp = (e) => {
+    if (!isDrawing.current) return;
+    isDrawing.current = false;
+    e.preventDefault();
+    const pos = getCanvasPos(e);
+    const s = stateRefs.current;
+
+    if (s.currentTool === 'line') {
+      const endPos = getSnappedEndPoint(startPos.current.x, startPos.current.y, pos.x, pos.y);
+      drawLine(startPos.current.x, startPos.current.y, endPos.x, endPos.y, s.colorIndex);
+      playSound('click');
+    } else if (s.currentTool === 'circle') {
+      const r = Math.round(Math.sqrt(Math.pow(pos.x - startPos.current.x, 2) + Math.pow(pos.y - startPos.current.y, 2)));
+      drawCircle(startPos.current.x, startPos.current.y, getSnappedRadius(r), s.colorIndex);
+      playSound('click');
+    }
+    clearPreview();
+  };
+
+  useEffect(() => {
+    let animationId;
+    const render = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.createImageData(CANVAS_SIZE, CANVAS_SIZE);
+      const data = imgData.data;
+
+      for (let i = 0; i < CANVAS_SIZE * CANVAS_SIZE; i++) {
+        let colorIdx = pixelData.current[i];
+        const previewVal = previewData.current[i];
+        if (previewVal > 0) colorIdx = previewVal - 1; 
+
+        if (colorIdx === 0) {
+          data[i * 4 + 3] = 0; 
+        } else {
+          const hex = PALETTE[colorIdx];
+          data[i * 4] = parseInt(hex.slice(1, 3), 16);
+          data[i * 4 + 1] = parseInt(hex.slice(3, 5), 16);
+          data[i * 4 + 2] = parseInt(hex.slice(5, 7), 16);
+          data[i * 4 + 3] = 255;
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+      animationId = requestAnimationFrame(render);
+    };
+    render();
+    return () => cancelAnimationFrame(animationId);
+  }, []);
+
+  const handleClear = () => {
+    saveHistory();
+    pixelData.current.fill(0);
+    playSound('click');
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-slate-200 flex flex-col font-mono selection:bg-blue-500/30">
+      
+      {toastMsg && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg z-50 flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
+          <Check size={16} /> {toastMsg}
+        </div>
+      )}
+
+      <header className="bg-slate-800 p-4 border-b border-slate-700 flex justify-between items-center shadow-md">
+        <h1 className="text-xl font-bold tracking-wider text-blue-300">8-BIT PRECISION</h1>
+        <div className="flex gap-2">
+          <button onClick={handleCopy} className="p-2 bg-slate-700 rounded hover:bg-slate-600 text-blue-300 transition-colors" title="Copy (Ctrl+C)">
+            <Copy size={20} />
+          </button>
+          <div className="w-px bg-slate-600 mx-1"></div>
+          <button onClick={handleUndo} disabled={!canUndo} className="p-2 bg-slate-700 rounded hover:bg-slate-600 disabled:opacity-50 transition-colors" title="Undo (Ctrl+Z)">
+            <Undo size={20} />
+          </button>
+          <button onClick={handleRedo} disabled={!canRedo} className="p-2 bg-slate-700 rounded hover:bg-slate-600 disabled:opacity-50 transition-colors" title="Redo (Ctrl+Y)">
+            <Redo size={20} />
+          </button>
+          <div className="w-px bg-slate-600 mx-1"></div>
+          <button onClick={handleClear} className="p-2 bg-red-900/50 text-red-300 rounded hover:bg-red-800/50 transition-colors" title="Clear Canvas">
+            <Trash2 size={20} />
+          </button>
+        </div>
+      </header>
+
+      <main className="flex-1 flex flex-col md:flex-row p-4 gap-6 overflow-hidden">
+        
+        <aside className="flex md:flex-col gap-2 bg-slate-800 p-3 rounded-xl border border-slate-700 justify-start items-center flex-wrap shrink-0 shadow-lg md:w-24">
+          {[
+            { id: 'pen', icon: Pencil, label: 'Pen' },
+            { id: 'line', icon: Minus, label: 'Snap Line' },
+            { id: 'circle', icon: Circle, label: 'Snap Circle' },
+            { id: 'text', icon: Type, label: 'Text' },
+          ].map(tool => (
+            <button
+              key={tool.id}
+              onClick={() => { setCurrentTool(tool.id); playSound('click'); }}
+              className={`w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all ${currentTool === tool.id ? 'bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.5)]' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}`}
+              title={tool.label}
+            >
+              <tool.icon size={24} />
+              <span className="text-[10px] hidden md:block text-center leading-tight">{tool.label}</span>
+            </button>
+          ))}
+          
+          <div className="w-full flex flex-wrap justify-center gap-1 mt-2 mb-2">
+            {BRUSH_SIZES.map(size => (
+              <button
+                key={size}
+                onClick={() => { setBrushSize(size); playSound('click'); }}
+                className={`w-8 h-8 flex items-center justify-center rounded text-xs transition-colors ${brushSize === size ? 'bg-blue-500 text-white font-bold' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}`}
+                title={`Brush Size: ${size}px`}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+
+          <div className="w-px h-8 md:w-full md:h-px bg-slate-600 my-1"></div>
+          
+          <button
+            onClick={() => { setShowGrid(!showGrid); playSound('click'); }}
+            className={`w-full p-3 rounded-lg flex flex-col items-center justify-center transition-all ${showGrid ? 'bg-slate-600 text-white' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}`}
+            title="Toggle Grid (8x8)"
+          >
+            <Grid size={24} />
+            <span className="text-[10px] hidden md:block mt-1">Grid</span>
+          </button>
+        </aside>
+
+        <div className="flex-1 flex flex-col items-center justify-center relative touch-none">
+          {currentTool === 'text' && (
+            <div className="absolute top-0 w-full max-w-sm flex gap-2 p-2 bg-blue-600 rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-400 z-10 mb-4 animate-in fade-in slide-in-from-top-4">
+              <input 
+                type="text" 
+                value={textInput} 
+                onChange={(e) => setTextInput(e.target.value.toUpperCase())}
+                className="flex-1 bg-slate-900/80 border border-transparent rounded px-3 py-2 text-white font-mono uppercase tracking-widest focus:outline-none focus:border-white/50 placeholder-slate-400"
+                placeholder="TYPE HERE..."
+                maxLength={15}
+              />
+            </div>
+          )}
+
+          <div className="relative bg-black shadow-2xl border-4 border-slate-800 rounded-sm overflow-hidden" 
+               style={{ width: 'min(90vw, 70vh)', height: 'min(90vw, 70vh)' }}>
+            
+            <div className="absolute inset-0 pointer-events-none"
+                 style={{
+                   backgroundImage: 'repeating-conic-gradient(#334155 0% 25%, #1e293b 0% 50%)',
+                   backgroundSize: '16px 16px', 
+                 }}
+            />
+
+            <canvas
+              ref={canvasRef}
+              width={CANVAS_SIZE}
+              height={CANVAS_SIZE}
+              className="absolute top-0 left-0 w-full h-full cursor-crosshair z-10"
+              style={{ imageRendering: 'pixelated', touchAction: 'none' }}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              onPointerOut={handlePointerUp}
+            />
+
+            {showGrid && (
+              <div 
+                className="absolute inset-0 pointer-events-none opacity-40 z-20 mix-blend-difference"
+                style={{ 
+                  backgroundSize: `${100/(CANVAS_SIZE/8)}% ${100/(CANVAS_SIZE/8)}%`, 
+                  backgroundImage: 'linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)' 
+                }}
+              />
+            )}
+
+            {symXEnabled && (
+              <div className="absolute top-0 w-px h-full bg-red-500 shadow-[0_0_5px_red] pointer-events-none z-30 mix-blend-screen" style={{ left: `${(symXPos / CANVAS_SIZE) * 100}%` }} />
+            )}
+            {symYEnabled && (
+              <div className="absolute left-0 h-px w-full bg-green-500 shadow-[0_0_5px_green] pointer-events-none z-30 mix-blend-screen" style={{ top: `${(symYPos / CANVAS_SIZE) * 100}%` }} />
+            )}
+          </div>
+
+          <div className="w-full max-w-[min(90vw,70vh)] mt-6 flex flex-col gap-3 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => { setSymXEnabled(!symXEnabled); playSound('click'); }}
+                className={`flex items-center gap-2 p-2 rounded w-28 transition-colors ${symXEnabled ? 'bg-red-900/50 text-red-300' : 'bg-slate-700 text-slate-400'}`}
+              >
+                <FlipHorizontal size={16} /> <span className="text-xs">X-AXIS</span>
+              </button>
+              <input 
+                type="range" min="0" max="64" value={symXPos} 
+                onChange={(e) => { setSymXPos(parseInt(e.target.value)); playSound('snap'); }}
+                disabled={!symXEnabled}
+                className="flex-1 accent-red-500 disabled:opacity-30"
+              />
+            </div>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => { setSymYEnabled(!symYEnabled); playSound('click'); }}
+                className={`flex items-center gap-2 p-2 rounded w-28 transition-colors ${symYEnabled ? 'bg-green-900/50 text-green-300' : 'bg-slate-700 text-slate-400'}`}
+              >
+                <FlipVertical size={16} /> <span className="text-xs">Y-AXIS</span>
+              </button>
+              <input 
+                type="range" min="0" max="64" value={symYPos} 
+                onChange={(e) => { setSymYPos(parseInt(e.target.value)); playSound('snap'); }}
+                disabled={!symYEnabled}
+                className="flex-1 accent-green-500 disabled:opacity-30"
+              />
+            </div>
+          </div>
+        </div>
+
+        <aside className="flex md:flex-col gap-2 bg-slate-800 p-3 rounded-xl border border-slate-700 justify-center md:justify-start overflow-x-auto shadow-lg shrink-0 items-center">
+          <div className="text-[10px] text-slate-400 mb-1 hidden md:block text-center font-bold tracking-wider">PALETTE</div>
+          {PALETTE.map((color, idx) => (
+            <button
+              key={idx}
+              onClick={() => { setColorIndex(idx); playSound('click'); }}
+              className={`relative w-10 h-10 md:w-12 md:h-12 rounded-full border-2 transition-all shrink-0 ${colorIndex === idx ? 'border-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.5)] z-10' : 'border-slate-600 scale-100 hover:scale-105'}`}
+              style={
+                color === 'transparent' 
+                ? { backgroundImage: 'repeating-conic-gradient(#cbd5e1 0% 25%, #f8fafc 0% 50%)', backgroundSize: '8px 8px' } 
+                : { backgroundColor: color }
+              }
+              title={color === 'transparent' ? 'Eraser (Transparent)' : `Color ${idx}`}
+            >
+               {color === 'transparent' && colorIndex !== idx && (
+                 <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-8 h-px bg-red-500/50 rotate-45"></div>
+                 </div>
+               )}
+            </button>
+          ))}
+        </aside>
+
+      </main>
+    </div>
+  );
+}
