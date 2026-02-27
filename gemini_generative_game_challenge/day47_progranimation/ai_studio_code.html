@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Deuce Pro - Heading Stabilizer v13</title>
+    <title>Deuce Pro - Custom Spawn & Arena v16</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -23,7 +23,7 @@
         input[type=range] { width: 100%; cursor: pointer; accent-color: #3b82f6; }
         #ui-layer { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; }
         .btn-interactive { pointer-events: auto; transition: 0.2s; background: rgba(30, 41, 59, 0.9); border: 2px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; }
-        .selected { border-color: #3b82f6; background: #1d4ed8; }
+        .selected { border-color: #3b82f6; background: #1d4ed8; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
     </style>
 </head>
 <body>
@@ -31,57 +31,72 @@
     <div id="canvas-container"></div>
 
     <div id="param-panel">
-        <div class="text-xs font-bold mb-3 border-b border-white/20 pb-2 text-blue-400 uppercase text-center font-sans tracking-widest">Heading Stabilizer v13</div>
+        <div class="text-xs font-bold mb-3 border-b border-white/20 pb-2 text-blue-400 uppercase text-center font-sans tracking-widest">Arena Tuner v16</div>
         
-        <div class="slider-group"><div class="slider-label"><span>Gravity</span><span id="val-gravity">-27.5</span></div><input type="range" id="sld-gravity" min="-40" max="-1" step="0.5" value="-27.5"></div>
-        <div class="slider-group"><div class="slider-label"><span>Upright Power</span><span id="val-upright">4550</span></div><input type="range" id="sld-upright" min="0" max="8000" step="50" value="4550"></div>
+        <div class="slider-group"><div class="slider-label"><span>Gravity</span><span id="val-gravity">-13.8</span></div><input type="range" id="sld-gravity" min="-30" max="-1" step="0.5" value="-13.8"></div>
+        <div class="slider-group"><div class="slider-label"><span>Upright Power</span><span id="val-upright">5350</span></div><input type="range" id="sld-upright" min="0" max="8000" step="50" value="5350"></div>
+        <div class="slider-group"><div class="slider-label"><span>Heading Stability</span><span id="val-heading">2300</span></div><input type="range" id="sld-heading" min="0" max="5000" step="50" value="2300"></div>
         
-        <!-- 追加: 進行方向維持力 -->
+        <!-- 追加: 召喚時の向き -->
         <div class="slider-group">
-            <div class="slider-label"><span class="text-blue-300 font-bold">HEADING STABILITY</span><span id="val-heading">500</span></div>
-            <input type="range" id="sld-heading" min="0" max="3000" step="50" value="500">
+            <div class="slider-label"><span class="text-blue-300 font-bold">SPAWN ANGLE</span><span id="val-spawnAngle">0°</span></div>
+            <input type="range" id="sld-spawnAngle" min="0" max="360" step="1" value="0">
         </div>
 
-        <div class="slider-group"><div class="slider-label"><span>Walk Speed</span><span id="val-speed">6.1</span></div><input type="range" id="sld-speed" min="0" max="15" step="0.1" value="6.1"></div>
-        <div class="slider-group"><div class="slider-label"><span>Walk Range</span><span id="val-amp">0.9</span></div><input type="range" id="sld-amp" min="0" max="1.5" step="0.05" value="0.9"></div>
-        <div class="slider-group"><div class="slider-label"><span>Joint Torque</span><span id="val-power">1750</span></div><input type="range" id="sld-power" min="50" max="8000" step="50" value="1750"></div>
+        <div class="slider-group"><div class="slider-label"><span>Walk Speed</span><span id="val-speed">7.8</span></div><input type="range" id="sld-speed" min="0" max="15" step="0.1" value="7.8"></div>
+        <div class="slider-group"><div class="slider-label"><span>Walk Range</span><span id="val-amp">0.8</span></div><input type="range" id="sld-amp" min="0" max="1.5" step="0.05" value="0.8"></div>
+        <div class="slider-group"><div class="slider-label"><span>Joint Torque</span><span id="val-power">3000</span></div><input type="range" id="sld-power" min="50" max="8000" step="50" value="3000"></div>
         <div class="slider-group"><div class="slider-label"><span>Hip Center Bias</span><span id="val-hipBias">0.3</span></div><input type="range" id="sld-hipBias" min="-1.0" max="1.0" step="0.05" value="0.3"></div>
 
-        <div class="text-[9px] text-emerald-400 font-bold text-center uppercase tracking-tighter italic">Yaw-Axis Directional Lock: ACTIVE</div>
+        <div class="text-[9px] text-emerald-400 font-bold text-center uppercase tracking-tighter italic">Wide Stairs & Distant Fog: ENABLED</div>
     </div>
 
     <div id="ui-layer">
-        <button id="btn-deuce" class="btn-interactive w-24 h-16 flex items-center justify-center selected font-bold uppercase">Deuce</button>
-        <button class="btn-interactive bg-red-600/50 w-16 h-16 ml-2 inline-flex items-center justify-center" onclick="resetWorld()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <div class="flex gap-3">
+            <button id="btn-deuce" class="btn-interactive w-28 h-16 flex items-center justify-center selected font-bold uppercase tracking-widest text-xl">Deuce</button>
+            <button class="btn-interactive bg-red-600/50 w-16 h-16 flex items-center justify-center" onclick="resetWorld()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+        </div>
     </div>
 
     <script>
-        const CONFIG = { gravity: -27.5, upright: 4550, headingPower: 500, walkSpeed: 6.1, walkAmp: 0.9, jointPower: 1750, hipBias: 0.3 };
+        const CONFIG = { gravity: -13.8, upright: 5350, headingPower: 2300, walkSpeed: 7.8, walkAmp: 0.8, jointPower: 3000, hipBias: 0.3, spawnAngle: 0 };
         const GROUP_GROUND = 1, GROUP_CHAR = 2;
 
         let scene, camera, renderer, world, controls, objectsToUpdate = [], autonomousBodies = [], lastTime = 0;
 
         function init() {
-            scene = new THREE.Scene(); scene.background = new THREE.Color(0x0f172a);
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x0a1420);
+            // フォグの調整: 100m先から始まり500mで完全に隠れる（遠方効果）
+            scene.fog = new THREE.Fog(0x0a1420, 100, 500);
+
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(15, 12, 20);
+            camera.position.set(50, 40, 70);
+
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.getElementById('canvas-container').appendChild(renderer.domElement);
+
             controls = new THREE.OrbitControls(camera, renderer.domElement);
-            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-            const sun = new THREE.DirectionalLight(0xffffff, 0.9); sun.position.set(10, 25, 10); sun.castShadow = true; scene.add(sun);
+            controls.target.set(0, 5, 0);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+            sun.position.set(60, 100, 60); sun.castShadow = true;
+            sun.shadow.mapSize.set(2048, 2048);
+            sun.shadow.camera.left = sun.shadow.camera.bottom = -120;
+            sun.shadow.camera.right = sun.shadow.camera.top = 120;
+            scene.add(sun);
+
             world = new CANNON.World(); world.gravity.set(0, CONFIG.gravity, 0);
             world.solver.iterations = 100;
             
-            const groundMaterial = new CANNON.Material("groundMaterial");
-            const charMaterial = new CANNON.Material("charMaterial");
-            world.addContactMaterial(new CANNON.ContactMaterial(groundMaterial, charMaterial, {
-                friction: 1.0, restitution: 0.0
-            }));
+            const groundMat = new CANNON.Material("ground");
+            const charMat = new CANNON.Material("char");
+            world.addContactMaterial(new CANNON.ContactMaterial(groundMat, charMat, { friction: 1.0, restitution: 0.0 }));
 
-            buildWorld(groundMaterial);
+            buildWorld(groundMat);
             setupInteractions();
             setupSliders();
 
@@ -92,23 +107,24 @@
                 }
             }, true);
             if (window.initDebugOverlay) window.initDebugOverlay();
+
             renderer.setAnimationLoop(animate);
         }
 
-        function createPart(vDim, pDim, pos, mass, color, isChar = false, mat = null) {
-            const mesh = new THREE.Mesh(new THREE.BoxGeometry(vDim.x, vDim.y, vDim.z), new THREE.MeshPhongMaterial({ color }));
-            mesh.castShadow = true; mesh.receiveShadow = true; scene.add(mesh);
-            const body = new CANNON.Body({
-                mass, shape: new CANNON.Box(new CANNON.Vec3(pDim.x/2, pDim.y/2, pDim.z/2)),
-                collisionFilterGroup: isChar ? GROUP_CHAR : GROUP_GROUND,
-                collisionFilterMask: GROUP_GROUND,
-                material: mat
-            });
-            body.position.set(pos.x, pos.y, pos.z);
-            body.angularDamping = 0.4;
+        function addStaticBox(w,h,d, px,py,pz, rx=0,ry=0,rz=0, color=0x1b263b, mat) {
+            const body = new CANNON.Body({ mass:0, material:mat, collisionFilterGroup:GROUP_GROUND, collisionFilterMask:GROUP_CHAR | GROUP_GROUND });
+            body.addShape(new CANNON.Box(new CANNON.Vec3(w/2, h/2, d/2)));
+            body.position.set(px, py, pz);
+            if(rx||ry||rz) body.quaternion.setFromEuler(rx, ry, rz);
             world.addBody(body);
+
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshLambertMaterial({color}));
+            mesh.position.set(px, py, pz);
+            if(rx||ry||rz) mesh.rotation.set(rx, ry, rz);
+            mesh.castShadow = true; mesh.receiveShadow = true;
+            scene.add(mesh);
             objectsToUpdate.push({ mesh, body });
-            return body;
+            clickObjects.push(mesh);
         }
 
         let clickObjects = [];
@@ -116,38 +132,53 @@
             objectsToUpdate.forEach(obj => { scene.remove(obj.mesh); world.removeBody(obj.body); });
             objectsToUpdate = []; autonomousBodies = []; clickObjects = [];
 
-            const groundShape = new CANNON.Plane();
-            const groundBody = new CANNON.Body({ mass: 0, material: groundMat, collisionFilterGroup: GROUP_GROUND, collisionFilterMask: GROUP_CHAR | GROUP_GROUND });
-            groundBody.addShape(groundShape);
-            groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-            world.addBody(groundBody);
+            // 1. 無限床 (突き抜け防止)
+            const groundPlane = new CANNON.Body({ mass: 0, material: groundMat, collisionFilterGroup: GROUP_GROUND, collisionFilterMask: GROUP_CHAR | GROUP_GROUND });
+            groundPlane.addShape(new CANNON.Plane());
+            groundPlane.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+            world.addBody(groundPlane);
             
-            const visualFloor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshPhongMaterial({color: 0x1e293b}));
+            const visualFloor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshPhongMaterial({color: 0x1b263b}));
             visualFloor.rotation.x = -Math.PI/2; visualFloor.receiveShadow = true; scene.add(visualFloor);
-            scene.add(new THREE.GridHelper(100, 50, 0x334155, 0x1e293b));
+            scene.add(new THREE.GridHelper(300, 100, 0x334155, 0x1e293b));
             clickObjects.push(visualFloor);
 
-            const pivot = createPart({x:1, y:1, z:1}, {x:1, y:1, z:1}, {x:5, y:0.5, z:0}, 0, 0x475569);
-            const plank = createPart({x:10, y:0.2, z:3}, {x:10, y:0.2, z:3}, {x:5, y:1.2, z:0}, 5, 0x3b82f6, false, groundMat);
-            world.addConstraint(new CANNON.HingeConstraint(pivot, plank, { axisA: new CANNON.Vec3(0,0,1), axisB: new CANNON.Vec3(0,0,1) }));
+            // 2. 外周の急斜面
+            const wallTilt = Math.PI / 3.5;
+            addStaticBox(160, 2, 60, 0, 10, 120, -wallTilt, 0, 0, 0x0d1b2a, groundMat);
+            addStaticBox(160, 2, 60, 0, 10, -120, wallTilt, 0, 0, 0x0d1b2a, groundMat);
+            addStaticBox(60, 2, 160, 120, 10, 0, 0, 0, wallTilt, 0x0d1b2a, groundMat);
+            addStaticBox(60, 2, 160, -120, 10, 0, 0, 0, -wallTilt, 0x0d1b2a, groundMat);
+
+            // 3. 幅の広い大階段
+            for(let i=0; i<10; i++) {
+                addStaticBox(40, 1.2, 6, 0, i*0.6, -60 - i*5, 0, 0, 0, 0x243447, groundMat);
+            }
+
+            // 4. アスレチック
+            addStaticBox(2, 12, 2, -30, 6, 30, 0, 0, 0, 0x415a77, groundMat);
+            addStaticBox(2, 12, 2, 30, 6, 30, 0, 0, 0, 0x415a77, groundMat);
+            addStaticBox(80, 0.5, 8, 0, 12, 30, 0, 0, 0, 0x778da9, groundMat);
         }
 
         function spawnCharacter(pos) {
-            const charMat = charMaterial = new CANNON.Material();
             const y = pos.y + 4.0;
             const torso = createPart({x: 1.4, y: 1.6, z: 0.8}, {x: 1.0, y: 1.6, z: 0.7}, {x: pos.x, y: y + 1.5, z: pos.z}, 3.0, 0x10b981, true);
             
-            // 生成時の正面ベクトル（Heading）を記憶
-            const initForward = new CANNON.Vec3(0, 0, 1);
-            torso.quaternion.vmult(initForward, initForward);
-            initForward.y = 0; // 平面上の向き
-            initForward.normalize();
-            torso.targetHeading = initForward;
+            // SPAWN ANGLE スライダーの値を反映
+            const angleRad = (CONFIG.spawnAngle * Math.PI) / 180;
+            torso.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), angleRad);
+
+            // スライダーで指定した方向を「維持すべき正面」として記憶
+            const heading = new CANNON.Vec3(0, 0, 1);
+            torso.quaternion.vmult(heading, heading);
+            heading.y = 0; heading.normalize();
+            torso.targetHeading = heading;
 
             const createLeg = (side) => {
                 const thigh = createPart({x: 0.5, y: 1.4, z: 0.5}, {x: 0.15, y: 1.4, z: 0.15}, {x: pos.x + side*0.6, y: y + 0.5, z: pos.z}, 1.0, 0x059669, true);
                 const shin = createPart({x: 0.4, y: 1.4, z: 0.4}, {x: 0.15, y: 1.4, z: 0.15}, {x: pos.x + side*0.6, y: y - 0.5, z: pos.z}, 0.8, 0x047857, true);
-                const foot = createPart({x: 0.8, y: 0.4, z: 1.4}, {x: 0.7, y: 0.4, z: 1.2}, {x: pos.x + side*0.6, y: y - 1.2, z: pos.z + 0.2}, 1.0, 0x064e3b, true, charMat);
+                const foot = createPart({x: 0.8, y: 0.4, z: 1.4}, {x: 0.7, y: 0.4, z: 1.2}, {x: pos.x + side*0.6, y: y - 1.2, z: pos.z + 0.2}, 1.0, 0x064e3b, true);
                 
                 thigh.quaternion.copy(torso.quaternion); shin.quaternion.copy(torso.quaternion); foot.quaternion.copy(torso.quaternion);
 
@@ -158,7 +189,21 @@
                 [hj, kj, aj].forEach(j => { j.enableMotor(); world.addConstraint(j); });
                 return { hj, kj, aj, thigh, shin, foot };
             };
-            torso.charType = 'deuce'; torso.legs = { left: createLeg(-1), right: createLeg(1) }; autonomousBodies.push(torso);
+            torso.charType = 'deuce'; torso.legs = { left: createLeg(-1), right: createLeg(1) };
+            autonomousBodies.push(torso);
+        }
+
+        function createPart(vDim, pDim, pos, mass, color, isChar = false) {
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(vDim.x, vDim.y, vDim.z), new THREE.MeshPhongMaterial({ color }));
+            mesh.castShadow = true; mesh.receiveShadow = true; scene.add(mesh);
+            const body = new CANNON.Body({
+                mass, shape: new CANNON.Box(new CANNON.Vec3(pDim.x/2, pDim.y/2, pDim.z/2)),
+                collisionFilterGroup: isChar ? GROUP_CHAR : GROUP_GROUND,
+                collisionFilterMask: GROUP_GROUND
+            });
+            body.position.set(pos.x, pos.y, pos.z); body.angularDamping = 0.5; world.addBody(body);
+            objectsToUpdate.push({ mesh, body });
+            return body;
         }
 
         function getSafeAngle(parent, child) {
@@ -174,44 +219,40 @@
             world.step(1/60, dt, 15); 
 
             autonomousBodies.forEach(body => {
-                // 1. 直立スタビライザー（Pitch/Roll）
                 const up = new CANNON.Vec3(0,1,0); const curUp = body.quaternion.vmult(up);
-                const tiltForward = CONFIG.walkSpeed > 0.1 ? 0.15 : 0;
+                const tiltForward = CONFIG.walkSpeed > 0.1 ? 0.2 : 0;
                 const targetUp = new CANNON.Vec3(0, 1, tiltForward).unit();
                 body.torque.vadd(curUp.cross(targetUp).scale(CONFIG.upright), body.torque);
 
-                // 2. 進行方向スタビライザー（Yaw） - 追加項目
                 if (body.targetHeading) {
                     const currentForward = new CANNON.Vec3(0, 0, 1);
                     body.quaternion.vmult(currentForward, currentForward);
                     currentForward.y = 0; currentForward.normalize();
-                    // 目標方向への回転トルクを計算
                     const headingError = currentForward.cross(body.targetHeading);
                     body.torque.vadd(new CANNON.Vec3(0, headingError.y * CONFIG.headingPower, 0), body.torque);
                 }
 
-                if (body.charType === 'deuce') {
-                    const cycle = Math.sin(performance.now() / 1000 * CONFIG.walkSpeed);
-                    const ctrl = (leg, ph) => {
-                        const isStance = ph < 0;
-                        const ha = getSafeAngle(body, leg.thigh);
-                        const targetHa = (ph * CONFIG.walkAmp) + CONFIG.hipBias;
-                        let hs = (targetHa - ha) * 10.0;
-                        leg.hj.setMotorSpeed(hs); leg.hj.setMotorMaxForce(CONFIG.jointPower);
-                        
-                        const ka = getSafeAngle(leg.thigh, leg.shin);
-                        let ks = isStance ? (0.0 - ka) * 5.0 : (-0.8 - ka) * 10.0;
-                        if (ka > 0 && ks > 0) ks = -2.0; if (ka < -2.8 && ks < 0) ks = 2.0; 
-                        leg.kj.setMotorSpeed(ks); leg.kj.setMotorMaxForce(CONFIG.jointPower);
+                const cycle = Math.sin(performance.now() / 1000 * CONFIG.walkSpeed);
+                const ctrl = (leg, ph) => {
+                    const isStance = ph < 0; 
+                    const ha = getSafeAngle(body, leg.thigh);
+                    const targetHa = (ph * CONFIG.walkAmp) + CONFIG.hipBias;
+                    let hs = (targetHa - ha) * 10.0;
+                    leg.hj.setMotorSpeed(hs); leg.hj.setMotorMaxForce(CONFIG.jointPower);
+                    
+                    const ka = getSafeAngle(leg.thigh, leg.shin);
+                    let ks = isStance ? (0.0 - ka) * 5.0 : (-0.8 - ka) * 10.0;
+                    if (ka > 0 && ks > 0) ks = -5.0; if (ka < -2.8 && ks < 0) ks = 5.0; 
+                    leg.kj.setMotorSpeed(ks); leg.kj.setMotorMaxForce(CONFIG.jointPower);
 
-                        const aa = getSafeAngle(leg.shin, leg.foot);
-                        let as = (0.0 - aa) * 10.0;
-                        if (aa > 0.52) as = -15.0; if (aa < -0.52) as = 15.0; 
-                        leg.aj.setMotorSpeed(as); leg.aj.setMotorMaxForce(CONFIG.jointPower);
-                    };
-                    ctrl(body.legs.left, cycle); ctrl(body.legs.right, -cycle);
-                }
+                    const aa = getSafeAngle(leg.shin, leg.foot);
+                    let as = (0.0 - aa) * 10.0;
+                    if (aa > 0.52) as = -15.0; if (aa < -0.52) as = 15.0; 
+                    leg.aj.setMotorSpeed(as); leg.aj.setMotorMaxForce(CONFIG.jointPower);
+                };
+                ctrl(body.legs.left, cycle); ctrl(body.legs.right, -cycle);
             });
+
             objectsToUpdate.forEach(obj => { obj.mesh.position.copy(obj.body.position); obj.mesh.quaternion.copy(obj.body.quaternion); });
             controls.update(); renderer.render(scene, camera);
         }
@@ -220,11 +261,11 @@
             const bind = (id, key) => {
                 const sld = document.getElementById(`sld-${id}`); const val = document.getElementById(`val-${id}`);
                 sld.addEventListener('input', (e) => { 
-                    let v = parseFloat(e.target.value); CONFIG[key] = v; val.innerText = v.toFixed(1);
+                    let v = parseFloat(e.target.value); CONFIG[key] = v; val.innerText = (key==='spawnAngle' ? v+'°' : v.toFixed(1));
                     if(key === 'gravity') world.gravity.set(0, v, 0);
                 });
             };
-            [['gravity','gravity'],['upright','upright'],['heading','headingPower'],['speed','walkSpeed'],['amp','walkAmp'],['power','jointPower'],['hipBias','hipBias']].forEach(a => bind(a[0], a[1]));
+            [['gravity','gravity'],['upright','upright'],['heading','headingPower'],['speed','walkSpeed'],['amp','walkAmp'],['power','jointPower'],['hipBias','hipBias'],['spawnAngle','spawnAngle']].forEach(a => bind(a[0], a[1]));
         }
 
         function setupInteractions() {
