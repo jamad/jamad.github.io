@@ -243,7 +243,7 @@
                 <div id="symXLine" class="absolute top-0 w-px h-full bg-red-500 shadow-[0_0_5px_red] pointer-events-none z-10 hidden" style="left: 50%;"></div>
                 <div id="symYLine" class="absolute left-0 h-px w-full bg-green-500 shadow-[0_0_5px_green] pointer-events-none z-10 hidden" style="top: 50%;"></div>
                 
-                <!-- SVG Selection Outline (1px actual screen size) -->
+                <!-- SVG Selection Outline -->
                 <svg id="selectionSvg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-30 hidden" viewBox="0 0 64 64" preserveAspectRatio="none">
                     <rect id="selRectOuter" fill="none" stroke="black" stroke-width="1" vector-effect="non-scaling-stroke" />
                     <rect id="selRectInner" fill="none" stroke="white" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke" class="selection-ants" />
@@ -366,11 +366,10 @@
         const BASE_HUE = 207; 
         let hueShift = 0;
 
-        // 実際の描画に使われるパレット配列
         const PALETTE = [
             '#FFFFFF',
-            '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000',
-            '#000000', // 固定黒
+            '#ebf8ff', '#bee3f8', '#90cdf4', '#63b3ed', '#4299e1', '#3182ce', '#2b6cb0',
+            '#000000', 
             'transparent' 
         ];
 
@@ -393,7 +392,6 @@
             return {r, g, b};
         }
 
-        // 5x3 ピクセルフォントデータ (KUWOQ修正)
         const FONT_5x3 = {
             'A': [0,1,0, 1,0,1, 1,1,1, 1,0,1, 1,0,1],
             'B': [1,1,0, 1,0,1, 1,1,0, 1,0,1, 1,1,0],
@@ -472,13 +470,12 @@
         const clearStampBtn = document.getElementById('clearStampBtn');
         const toastElement = document.getElementById('toast');
         const toastMsgElement = document.getElementById('toast-msg');
-        
         const hueSlider = document.getElementById('hueSlider');
 
         // --- 状態管理 ---
         let currentTool = 'pen';
         let brushSize = 1;
-        let colorIndex = 4; // 初期色
+        let colorIndex = 4; 
         let symXEnabled = false;
         let symYEnabled = false;
         let symXPos = 32;
@@ -490,7 +487,8 @@
         let previewData = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE); 
         
         // Stamp Data (8x8)
-        let stampData = new Uint8Array(8 * 8).fill(9); // 9 is transparent
+        let stampData = new Uint8Array(8 * 8).fill(9); // 9=transp
+        let internalClipboard = null; // {data, w, h}
 
         // Select Tool State
         let selectionState = 'none'; 
@@ -512,7 +510,6 @@
         let historyIndex = -1;
         let audioCtx = null;
 
-        // MASK
         let lockedColors = new Set();
         let maskHorizontal = 'none';
         let maskVertical = 'none';
@@ -639,12 +636,10 @@
             if (maskChecker === 'even' && (x + y) % 2 === 0) return true;
             if (maskChecker === 'odd' && (x + y) % 2 === 1) return true;
             
-            // 1px斜めストライプ
             if (maskSlash !== 'none') {
                 if ((x + y) % 3 !== parseInt(maskSlash)) return true;
             }
             if (maskBackslash !== 'none') {
-                // javascriptのモジュロ演算で負の数を避けるためのオフセット
                 if ((x - y + CANVAS_SIZE * 10) % 3 !== parseInt(maskBackslash)) return true;
             }
 
@@ -667,7 +662,7 @@
             }
             document.querySelectorAll('#palette button').forEach(btn => {
                 let idx = parseInt(btn.dataset.colorIndex);
-                if (idx > 0 && idx < 9) {
+                if (idx > 0 && idx < 8) {
                     btn.style.backgroundColor = PALETTE[idx];
                     btn.title = `Color ${idx} (${PALETTE[idx]})`;
                 }
@@ -702,62 +697,45 @@
 
         function updateSelectionUI() {
             if (currentTool === 'select') {
+                selectionSvg.classList.remove('hidden');
+                let sx, sy, sw, sh;
                 if (selectionState !== 'none') {
-                    selectionSvg.classList.remove('hidden');
-                    selRectOuter.setAttribute('x', selRect.x);
-                    selRectOuter.setAttribute('y', selRect.y);
-                    selRectOuter.setAttribute('width', selRect.w);
-                    selRectOuter.setAttribute('height', selRect.h);
-                    
-                    selRectInner.setAttribute('x', selRect.x);
-                    selRectInner.setAttribute('y', selRect.y);
-                    selRectInner.setAttribute('width', selRect.w);
-                    selRectInner.setAttribute('height', selRect.h);
+                    sx = selRect.x; sy = selRect.y; sw = selRect.w; sh = selRect.h;
                 } else if (hoverPos && !isDrawing) {
-                    // Hover preview for 1x1 selection start
-                    selectionSvg.classList.remove('hidden');
-                    selRectOuter.setAttribute('x', hoverPos.x);
-                    selRectOuter.setAttribute('y', hoverPos.y);
-                    selRectOuter.setAttribute('width', 1);
-                    selRectOuter.setAttribute('height', 1);
-                    
-                    selRectInner.setAttribute('x', hoverPos.x);
-                    selRectInner.setAttribute('y', hoverPos.y);
-                    selRectInner.setAttribute('width', 1);
-                    selRectInner.setAttribute('height', 1);
+                    sx = hoverPos.x; sy = hoverPos.y; sw = 1; sh = 1;
                 } else {
                     selectionSvg.classList.add('hidden');
+                    return;
                 }
+                selRectOuter.setAttribute('x', sx);
+                selRectOuter.setAttribute('y', sy);
+                selRectOuter.setAttribute('width', sw);
+                selRectOuter.setAttribute('height', sh);
+                selRectInner.setAttribute('x', sx);
+                selRectInner.setAttribute('y', sy);
+                selRectInner.setAttribute('width', sw);
+                selRectInner.setAttribute('height', sh);
             } else {
                 selectionSvg.classList.add('hidden');
             }
         }
 
         // --- 描画コア関数 ---
-        function clearPreview() {
-            previewData.fill(0);
-        }
-
+        function clearPreview() { previewData.fill(0); }
         function setPixelCore(px, py, colorIdx, isPreview = false) {
             if (px >= 0 && px < CANVAS_SIZE && py >= 0 && py < CANVAS_SIZE) {
                 if (isPixelLocked(px, py)) return; 
-                if (isPreview) {
-                    previewData[py * CANVAS_SIZE + px] = colorIdx + 1; 
-                } else {
-                    pixelData[py * CANVAS_SIZE + px] = colorIdx;
-                }
+                if (isPreview) previewData[py * CANVAS_SIZE + px] = colorIdx + 1; 
+                else pixelData[py * CANVAS_SIZE + px] = colorIdx;
             }
         }
-
         function drawBrush(cx, cy, colorIdx, isPreview = false, overrideSize = null) {
             const size = overrideSize || brushSize;
             const offset = Math.floor((size - 1) / 2);
-
             for (let dy = 0; dy < size; dy++) {
                 for (let dx = 0; dx < size; dx++) {
                     const px = cx - offset + dx;
                     const py = cy - offset + dy;
-                    
                     setPixelCore(px, py, colorIdx, isPreview);
                     if (symXEnabled) setPixelCore(symXPos * 2 - px - 1, py, colorIdx, isPreview);
                     if (symYEnabled) setPixelCore(px, symYPos * 2 - py - 1, colorIdx, isPreview);
@@ -765,14 +743,10 @@
                 }
             }
         }
-
         function drawLine(x0, y0, x1, y1, colorIdx, isPreview = false) {
-            let dx = Math.abs(x1 - x0);
-            let dy = Math.abs(y1 - y0);
-            let sx = (x0 < x1) ? 1 : -1;
-            let sy = (y0 < y1) ? 1 : -1;
+            let dx = Math.abs(x1 - x0); let dy = Math.abs(y1 - y0);
+            let sx = (x0 < x1) ? 1 : -1; let sy = (y0 < y1) ? 1 : -1;
             let err = dx - dy;
-
             while (true) {
                 drawBrush(x0, y0, colorIdx, isPreview);
                 if (x0 === x1 && y0 === y1) break;
@@ -781,60 +755,37 @@
                 if (e2 < dx) { err += dx; y0 += sy; }
             }
         }
-
         function getSnappedEndPoint(x0, y0, x1, y1) {
-            const dx = x1 - x0;
-            const dy = y1 - y0;
+            const dx = x1 - x0; const dy = y1 - y0;
             if (dx === 0 && dy === 0) return { x: x0, y: y0 };
-
             const angle = Math.atan2(Math.abs(dy), Math.abs(dx));
-            let closestAngle = ALLOWED_ANGLES[0];
-            let minDiff = Math.abs(angle - ALLOWED_ANGLES[0]);
-            
+            let closestAngle = ALLOWED_ANGLES[0]; let minDiff = Math.abs(angle - ALLOWED_ANGLES[0]);
             for (let i = 1; i < ALLOWED_ANGLES.length; i++) {
                 const diff = Math.abs(angle - ALLOWED_ANGLES[i]);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestAngle = ALLOWED_ANGLES[i];
-                }
+                if (diff < minDiff) { minDiff = diff; closestAngle = ALLOWED_ANGLES[i]; }
             }
-
             const dist = Math.sqrt(dx * dx + dy * dy);
             let snappedDx = Math.round(dist * Math.cos(closestAngle));
             let snappedDy = Math.round(dist * Math.sin(closestAngle));
-
-            if (dx < 0) snappedDx = -snappedDx;
-            if (dy < 0) snappedDy = -snappedDy;
-
+            if (dx < 0) snappedDx = -snappedDx; if (dy < 0) snappedDy = -snappedDy;
             return { x: x0 + snappedDx, y: y0 + snappedDy };
         }
-
         function drawCircle(xc, yc, r, colorIdx, isPreview = false) {
             if (r === 0) { drawBrush(xc, yc, colorIdx, isPreview); return; }
             let x = 0, y = r, d = 3 - 2 * r;
             const draw8 = (cx, cy, px, py) => {
-                drawBrush(cx + px, cy + py, colorIdx, isPreview);
-                drawBrush(cx - px, cy + py, colorIdx, isPreview);
-                drawBrush(cx + px, cy - py, colorIdx, isPreview);
-                drawBrush(cx - px, cy - py, colorIdx, isPreview);
-                drawBrush(cx + py, cy + px, colorIdx, isPreview);
-                drawBrush(cx - py, cy + px, colorIdx, isPreview);
-                drawBrush(cx + py, cy - px, colorIdx, isPreview);
-                drawBrush(cx - py, cy - px, colorIdx, isPreview);
+                drawBrush(cx + px, cy + py, colorIdx, isPreview); drawBrush(cx - px, cy + py, colorIdx, isPreview);
+                drawBrush(cx + px, cy - py, colorIdx, isPreview); drawBrush(cx - px, cy - py, colorIdx, isPreview);
+                drawBrush(cx + py, cy + px, colorIdx, isPreview); drawBrush(cx - py, cy + px, colorIdx, isPreview);
+                drawBrush(cx + py, cy - px, colorIdx, isPreview); drawBrush(cx - py, cy - px, colorIdx, isPreview);
             };
             draw8(xc, yc, x, y);
             while (y >= x) {
-                x++;
-                if (d > 0) { y--; d = d + 4 * (x - y) + 10; } 
-                else { d = d + 4 * x + 6; }
+                x++; if (d > 0) { y--; d = d + 4 * (x - y) + 10; } else { d = d + 4 * x + 6; }
                 draw8(xc, yc, x, y);
             }
         }
-
-        function getSnappedRadius(r) {
-            return ALLOWED_RADII.reduce((prev, curr) => Math.abs(curr - r) < Math.abs(prev - r) ? curr : prev);
-        }
-
+        function getSnappedRadius(r) { return ALLOWED_RADII.reduce((prev, curr) => Math.abs(curr - r) < Math.abs(prev - r) ? curr : prev); }
         function drawText(startX, startY, text, colorIdx, isPreview = false) {
             let cx = startX;
             for (let i = 0; i < text.length; i++) {
@@ -842,15 +793,12 @@
                 const fontData = FONT_5x3[char] || FONT_5x3[' '];
                 for (let py = 0; py < 5; py++) {
                     for (let px = 0; px < 3; px++) {
-                        if (fontData[py * 3 + px] === 1) {
-                            drawBrush(cx + px, startY + py, colorIdx, isPreview, 1);
-                        }
+                        if (fontData[py * 3 + px] === 1) drawBrush(cx + px, startY + py, colorIdx, isPreview, 1);
                     }
                 }
                 cx += 4; 
             }
         }
-
         function floodFill(startX, startY, fillColor, isPreview = false) {
             if (isPixelLocked(startX, startY)) return; 
             const targetColor = pixelData[startY * CANVAS_SIZE + startX];
@@ -870,10 +818,8 @@
                 if (isPixelLocked(x, y)) continue; 
                 setPixelCore(x, y, fillColor, isPreview);
                 visited[idx] = 1; 
-                queue.push({ x: x + 1, y: y });
-                queue.push({ x: x - 1, y: y });
-                queue.push({ x: x, y: y + 1 });
-                queue.push({ x: x, y: y - 1 });
+                queue.push({ x: x + 1, y: y }); queue.push({ x: x - 1, y: y });
+                queue.push({ x: x, y: y + 1 }); queue.push({ x: x, y: y - 1 });
             }
             playSound('click');
         }
@@ -883,19 +829,14 @@
             const imgData = stampCtx.createImageData(8, 8);
             for(let i=0; i<64; i++) {
                 let c = stampData[i];
-                if(c === 9) {
-                    imgData.data[i*4+3] = 0;
-                } else {
+                if(c === 9) imgData.data[i*4+3] = 0;
+                else {
                     let rgb = hexToRgb(PALETTE[c]);
-                    imgData.data[i*4] = rgb.r;
-                    imgData.data[i*4+1] = rgb.g;
-                    imgData.data[i*4+2] = rgb.b;
-                    imgData.data[i*4+3] = 255;
+                    imgData.data[i*4] = rgb.r; imgData.data[i*4+1] = rgb.g; imgData.data[i*4+2] = rgb.b; imgData.data[i*4+3] = 255;
                 }
             }
             stampCtx.putImageData(imgData, 0, 0);
         }
-
         function handleStampInput(e) {
             const rect = stampCanvas.getBoundingClientRect();
             const scaleX = stampCanvas.width / rect.width;
@@ -903,475 +844,218 @@
             const x = Math.floor((e.clientX - rect.left) * scaleX);
             const y = Math.floor((e.clientY - rect.top) * scaleY);
             if (x>=0 && x<8 && y>=0 && y<8) {
-                stampData[y*8+x] = colorIndex;
-                renderStampCanvas();
+                stampData[y*8+x] = colorIndex; renderStampCanvas();
                 if(e.type==='pointerdown') playSound('draw');
             }
         }
-
         function drawStamp(cx, cy, isPreview = false) {
-            let offset = 4; // center 8x8
+            let offset = 4;
             for(let sy=0; sy<8; sy++) {
                 for(let sx=0; sx<8; sx++) {
                     let c = stampData[sy*8+sx];
-                    if (c !== 9) { // Not transparent
-                        drawBrush(cx - offset + sx, cy - offset + sy, c, isPreview, 1);
-                    }
+                    if (c !== 9) drawBrush(cx - offset + sx, cy - offset + sy, c, isPreview, 1);
                 }
             }
         }
 
         // --- キャンバスイベントハンドラ ---
-        function getCanvasPos(e) {
-            const rect = pixelCanvas.getBoundingClientRect();
-            const scaleX = pixelCanvas.width / rect.width;
-            const scaleY = pixelCanvas.height / rect.height;
-            const x = Math.floor((e.clientX - rect.left) * scaleX);
-            const y = Math.floor((e.clientY - rect.top) * scaleY);
-            return { x, y };
-        }
-
         function handlePointerDown(e) {
-            e.preventDefault();
-            initAudio();
+            e.preventDefault(); initAudio();
             const pos = getCanvasPos(e);
             hoverPos = null; 
-            
             if (currentTool === 'select') {
                 if (selectionState === 'selected') {
                     if (pos.x >= selRect.x && pos.x < selRect.x + selRect.w &&
                         pos.y >= selRect.y && pos.y < selRect.y + selRect.h) {
-                        isDraggingSelection = true;
-                        selDragStartPos = pos;
-                        selOriginalRect = {x: selRect.x, y: selRect.y};
+                        isDraggingSelection = true; selDragStartPos = pos; selOriginalRect = {x: selRect.x, y: selRect.y};
                         return; 
-                    } else {
-                        commitSelection();
-                    }
+                    } else commitSelection();
                 }
-                selectionState = 'selecting';
-                selStartPos = pos;
-                selRect = {x: pos.x, y: pos.y, w: 1, h: 1};
-                isDrawing = true;
-                updateSelectionUI();
-                return;
+                selectionState = 'selecting'; selStartPos = pos; selRect = {x: pos.x, y: pos.y, w: 1, h: 1};
+                isDrawing = true; updateSelectionUI(); return;
             }
-
             if (selectionState !== 'none') commitSelection();
-
-            isDrawing = true;
-            startPos = pos;
-            lastPos = pos;
-            lastPreviewKey = '';
+            isDrawing = true; startPos = pos; lastPos = pos; lastPreviewKey = '';
             saveHistory();
-
-            if (currentTool === 'pen') {
-                drawBrush(pos.x, pos.y, colorIndex);
-                playSound('draw');
-            } else if (currentTool === 'text') {
-                drawText(pos.x, pos.y, currentTextInput, colorIndex);
-                playSound('click');
-                saveHistory(); 
-                isDrawing = false; 
-            } else if (currentTool === 'fill') {
-                floodFill(pos.x, pos.y, colorIndex);
-                saveHistory(); 
-                isDrawing = false; 
-            } else if (currentTool === 'stamp') {
-                drawStamp(pos.x, pos.y, false);
-                playSound('click');
-                saveHistory();
-                isDrawing = false;
-            }
+            if (currentTool === 'pen') { drawBrush(pos.x, pos.y, colorIndex); playSound('draw'); }
+            else if (currentTool === 'text') { drawText(pos.x, pos.y, currentTextInput, colorIndex); playSound('click'); saveHistory(); isDrawing = false; }
+            else if (currentTool === 'fill') { floodFill(pos.x, pos.y, colorIndex); saveHistory(); isDrawing = false; }
+            else if (currentTool === 'stamp') { drawStamp(pos.x, pos.y, false); playSound('click'); saveHistory(); isDrawing = false; }
         }
 
         function handlePointerMove(e) {
             e.preventDefault();
             const pos = getCanvasPos(e);
-            
             if (!isDrawing && !isDraggingSelection) {
                 hoverPos = pos;
-                if (currentTool === 'select') updateSelectionUI();
+                updateSelectionUI(); // Hover 1x1 ants
                 return;
             }
-
             if (currentTool === 'select') {
                 if (selectionState === 'selecting') {
-                    selRect.x = Math.min(selStartPos.x, pos.x);
-                    selRect.y = Math.min(selStartPos.y, pos.y);
-                    selRect.w = Math.abs(pos.x - selStartPos.x) + 1;
-                    selRect.h = Math.abs(pos.y - selStartPos.y) + 1;
+                    selRect.x = Math.min(selStartPos.x, pos.x); selRect.y = Math.min(selStartPos.y, pos.y);
+                    selRect.w = Math.abs(pos.x - selStartPos.x) + 1; selRect.h = Math.abs(pos.y - selStartPos.y) + 1;
                     updateSelectionUI();
                 } else if (isDraggingSelection) {
-                    let dx = pos.x - selDragStartPos.x;
-                    let dy = pos.y - selDragStartPos.y;
-                    selRect.x = selOriginalRect.x + dx;
-                    selRect.y = selOriginalRect.y + dy;
+                    selRect.x = selOriginalRect.x + (pos.x - selDragStartPos.x); selRect.y = selOriginalRect.y + (pos.y - selDragStartPos.y);
                     updateSelectionUI();
                 }
                 return;
             }
-
             if (currentTool === 'pen') {
-                if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
-                    drawLine(lastPos.x, lastPos.y, pos.x, pos.y, colorIndex);
-                    lastPos = pos;
-                    playSound('draw');
-                }
+                if (pos.x !== lastPos.x || pos.y !== lastPos.y) { drawLine(lastPos.x, lastPos.y, pos.x, pos.y, colorIndex); lastPos = pos; playSound('draw'); }
             } else if (currentTool === 'line') {
                 clearPreview();
                 const endPos = getSnappedEndPoint(startPos.x, startPos.y, pos.x, pos.y);
                 drawLine(startPos.x, startPos.y, endPos.x, endPos.y, colorIndex, true);
-                const previewKey = `${endPos.x},${endPos.y}`;
-                if (previewKey !== lastPreviewKey) { playSound('snap'); lastPreviewKey = previewKey; }
+                const pk = `${endPos.x},${endPos.y}`; if (pk !== lastPreviewKey) { playSound('snap'); lastPreviewKey = pk; }
             } else if (currentTool === 'circle') {
                 clearPreview();
                 const r = Math.round(Math.sqrt(Math.pow(pos.x - startPos.x, 2) + Math.pow(pos.y - startPos.y, 2)));
-                const snappedR = getSnappedRadius(r);
-                drawCircle(startPos.x, startPos.y, snappedR, colorIndex, true);
-                if (snappedR !== parseInt(lastPreviewKey)) { playSound('snap'); lastPreviewKey = snappedR.toString(); }
+                const sr = getSnappedRadius(r);
+                drawCircle(startPos.x, startPos.y, sr, colorIndex, true);
+                if (sr !== parseInt(lastPreviewKey)) { playSound('snap'); lastPreviewKey = sr.toString(); }
             }
         }
 
         function handlePointerUp(e) {
-            if (isDraggingSelection) {
-                isDraggingSelection = false;
-                playSound('click');
-                hoverPos = getCanvasPos(e);
-                if (currentTool === 'select') updateSelectionUI();
-                return;
-            }
-
+            if (isDraggingSelection) { isDraggingSelection = false; playSound('click'); hoverPos = getCanvasPos(e); updateSelectionUI(); return; }
             if (!isDrawing) return;
-            isDrawing = false;
-            e.preventDefault();
-            const pos = getCanvasPos(e);
-            hoverPos = pos;
-
+            isDrawing = false; e.preventDefault(); const pos = getCanvasPos(e); hoverPos = pos;
             if (currentTool === 'select') {
                 if (selectionState === 'selecting') {
                     if (selRect.w > 0 && selRect.h > 0) {
-                        selectionState = 'selected';
-                        selData = new Uint8Array(selRect.w * selRect.h);
+                        selectionState = 'selected'; selData = new Uint8Array(selRect.w * selRect.h);
                         for(let dy=0; dy<selRect.h; dy++) {
                             for(let dx=0; dx<selRect.w; dx++) {
-                                let px = selRect.x + dx;
-                                let py = selRect.y + dy;
+                                let px = selRect.x + dx; let py = selRect.y + dy;
                                 if (px>=0 && px<CANVAS_SIZE && py>=0 && py<CANVAS_SIZE) {
                                     selData[dy * selRect.w + dx] = pixelData[py * CANVAS_SIZE + px];
-                                    if (!isPixelLocked(px, py)) {
-                                        pixelData[py * CANVAS_SIZE + px] = 0; // Cut out (fill with White)
-                                    }
-                                } else {
-                                    selData[dy * selRect.w + dx] = 9;
-                                }
+                                    if (!isPixelLocked(px, py)) pixelData[py * CANVAS_SIZE + px] = 0;
+                                } else selData[dy * selRect.w + dx] = 9;
                             }
                         }
                         playSound('snap');
-                    } else {
-                        selectionState = 'none';
-                    }
+                    } else selectionState = 'none';
                     updateSelectionUI();
                 }
                 return;
             }
-
             if (currentTool === 'line') {
                 const endPos = getSnappedEndPoint(startPos.x, startPos.y, pos.x, pos.y);
-                drawLine(startPos.x, startPos.y, endPos.x, endPos.y, colorIndex);
-                playSound('click');
+                drawLine(startPos.x, startPos.y, endPos.x, endPos.y, colorIndex); playSound('click');
             } else if (currentTool === 'circle') {
                 const r = Math.round(Math.sqrt(Math.pow(pos.x - startPos.x, 2) + Math.pow(pos.y - startPos.y, 2)));
-                drawCircle(startPos.x, startPos.y, getSnappedRadius(r), colorIndex);
-                playSound('click');
+                drawCircle(startPos.x, startPos.y, getSnappedRadius(r), colorIndex); playSound('click');
             }
-            
-            saveHistory(); 
-            clearPreview();
-            renderCanvas(); 
+            saveHistory(); clearPreview(); renderCanvas(); 
         }
 
-        function handlePointerOut(e) {
-            hoverPos = null;
-            if (currentTool === 'select') updateSelectionUI();
-            if (isDrawing) {
-                handlePointerUp(e);
-            }
-        }
+        function handlePointerOut(e) { hoverPos = null; updateSelectionUI(); if (isDrawing) handlePointerUp(e); }
 
-        // --- キャンバス描画ループ ---
-        let animationId;
         function renderCanvas() {
             const imgData = ctx.createImageData(CANVAS_SIZE, CANVAS_SIZE);
             const data = imgData.data;
-
             for (let i = 0; i < CANVAS_SIZE * CANVAS_SIZE; i++) {
-                const x = i % CANVAS_SIZE;
-                const y = Math.floor(i / CANVAS_SIZE);
-                
-                let currentPixelColorIndex = pixelData[i];
-                const previewVal = previewData[i];
-                
-                if (previewVal > 0) {
-                    currentPixelColorIndex = previewVal - 1; 
-                }
-
-                const hex = PALETTE[currentPixelColorIndex];
-                const locked = isPixelLocked(x, y);
-
+                const x = i % CANVAS_SIZE; const y = Math.floor(i / CANVAS_SIZE);
+                let cIdx = pixelData[i]; const pvVal = previewData[i];
+                if (pvVal > 0) cIdx = pvVal - 1; 
+                const hex = PALETTE[cIdx]; const locked = isPixelLocked(x, y);
                 if (hex === 'transparent') {
-                    if (locked) {
-                        data[i * 4] = 128; data[i * 4 + 1] = 0; data[i * 4 + 2] = 0; data[i * 4 + 3] = 128; 
-                    } else {
-                        data[i * 4 + 3] = 0; 
-                    }
+                    if (locked) { data[i * 4] = 128; data[i * 4 + 1] = 0; data[i * 4 + 2] = 0; data[i * 4 + 3] = 128; }
+                    else data[i * 4 + 3] = 0; 
                 } else {
                     let rgb = hexToRgb(hex);
-                    if (locked) {
-                        rgb.r = Math.floor((rgb.r * 0.5) + (255 * 0.5));
-                        rgb.g = Math.floor((rgb.g * 0.5) + (0 * 0.5));
-                        rgb.b = Math.floor((rgb.b * 0.5) + (0 * 0.5));
-                    }
+                    if (locked) { rgb.r = Math.floor(rgb.r*0.5+127); rgb.g = Math.floor(rgb.g*0.5); rgb.b = Math.floor(rgb.b*0.5); }
                     data[i * 4] = rgb.r; data[i * 4 + 1] = rgb.g; data[i * 4 + 2] = rgb.b; data[i * 4 + 3] = 255; 
                 }
             }
-
-            // Draw floating selection
-            if (currentTool === 'select' && selectionState === 'selected' && selData) {
+            if (selectionState === 'selected' && selData) {
                 for(let dy=0; dy<selRect.h; dy++) {
                     for(let dx=0; dx<selRect.w; dx++) {
                         let c = selData[dy * selRect.w + dx];
                         if (c !== 9) {
-                            let px = selRect.x + dx;
-                            let py = selRect.y + dy;
+                            let px = selRect.x + dx; let py = selRect.y + dy;
                             if (px>=0 && px<CANVAS_SIZE && py>=0 && py<CANVAS_SIZE) {
-                                let rgb = hexToRgb(PALETTE[c]);
-                                let idx = (py * CANVAS_SIZE + px) * 4;
+                                let rgb = hexToRgb(PALETTE[c]); let idx = (py * CANVAS_SIZE + px) * 4;
                                 data[idx] = rgb.r; data[idx+1] = rgb.g; data[idx+2] = rgb.b; data[idx+3] = 255;
                             }
                         }
                     }
                 }
             }
-
             ctx.putImageData(imgData, 0, 0);
-
-            // --- ホバープレビューのアウトライン描画 ---
             if (hoverPos && !isDrawing && currentTool !== 'select') {
                 ctx.save();
-                ctx.globalCompositeOperation = 'difference';
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; 
-                
-                const drawPixelPreview = (px, py) => {
-                    ctx.fillRect(px, py, 1, 1);
-                };
-
+                const drawPixelPreview = (px, py) => { ctx.globalCompositeOperation = 'difference'; ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fillRect(px, py, 1, 1); };
                 const drawMirroredPixelPreview = (px, py) => {
                     drawPixelPreview(px, py);
                     if (symXEnabled) drawPixelPreview(symXPos * 2 - px - 1, py);
                     if (symYEnabled) drawPixelPreview(px, symYPos * 2 - py - 1);
                     if (symXEnabled && symYEnabled) drawPixelPreview(symXPos * 2 - px - 1, symYPos * 2 - py - 1);
                 };
-
                 if (currentTool === 'text') {
-                    let cx = hoverPos.x;
-                    let cy = hoverPos.y;
+                    let cx = hoverPos.x; let cy = hoverPos.y;
                     for (let i = 0; i < currentTextInput.length; i++) {
-                        const char = currentTextInput[i].toUpperCase();
-                        const fontData = FONT_5x3[char] || FONT_5x3[' '];
-                        for (let py = 0; py < 5; py++) {
-                            for (let px = 0; px < 3; px++) {
-                                if (fontData[py * 3 + px] === 1) {
-                                    drawMirroredPixelPreview(cx + px, cy + py);
-                                }
-                            }
-                        }
+                        const fd = FONT_5x3[currentTextInput[i].toUpperCase()] || FONT_5x3[' '];
+                        for (let py = 0; py < 5; py++) { for (let px = 0; px < 3; px++) { if (fd[py * 3 + px] === 1) drawMirroredPixelPreview(cx + px, cy + py); } }
                         cx += 4;
                     }
-                } else if (currentTool === 'fill') {
-                    drawMirroredPixelPreview(hoverPos.x, hoverPos.y);
-                } else if (currentTool === 'stamp') {
-                    let cx = hoverPos.x;
-                    let cy = hoverPos.y;
+                } else if (currentTool === 'fill') drawMirroredPixelPreview(hoverPos.x, hoverPos.y);
+                else if (currentTool === 'stamp') {
                     let offset = 4;
-                    for(let sy=0; sy<8; sy++) {
-                        for(let sx=0; sx<8; sx++) {
-                            if (stampData[sy*8+sx] !== 9) {
-                                drawMirroredPixelPreview(cx - offset + sx, cy - offset + sy);
-                            }
-                        }
-                    }
+                    for(let sy=0; sy<8; sy++) { for(let sx=0; sx<8; sx++) { if (stampData[sy*8+sx] !== 9) drawMirroredPixelPreview(hoverPos.x-offset+sx, hoverPos.y-offset+sy); } }
                 } else {
-                    let size = brushSize;
-                    let offset = Math.floor((size - 1) / 2);
-                    for (let dy = 0; dy < size; dy++) {
-                        for (let dx = 0; dx < size; dx++) {
-                            if (dx === 0 || dx === size - 1 || dy === 0 || dy === size - 1) {
-                                drawMirroredPixelPreview(hoverPos.x - offset + dx, hoverPos.y - offset + dy);
-                            }
-                        }
-                    }
+                    let size = brushSize; let offset = Math.floor((size - 1) / 2);
+                    for (let dy = 0; dy < size; dy++) { for (let dx = 0; dx < size; dx++) { if (dx === 0 || dx === size - 1 || dy === 0 || dy === size - 1) drawMirroredPixelPreview(hoverPos.x - offset + dx, hoverPos.y - offset + dy); } }
                 }
                 ctx.restore();
             }
-
             animationId = requestAnimationFrame(renderCanvas);
         }
 
         // --- UI更新関数 ---
         function updateToolUI() {
             if (selectionState !== 'none' && currentTool !== 'select') commitSelection();
-
             toolButtons.forEach(btn => {
-                if (btn.dataset.tool === currentTool) {
-                    btn.classList.add('bg-blue-600', 'text-white', 'shadow-[0_0_10px_rgba(37,99,235,0.5)]');
-                    btn.classList.remove('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
-                } else {
-                    btn.classList.remove('bg-blue-600', 'text-white', 'shadow-[0_0_10px_rgba(37,99,235,0.5)]');
-                    btn.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
-                }
+                if (btn.dataset.tool === currentTool) { btn.classList.add('bg-blue-600', 'text-white', 'shadow-[0_0_10px_rgba(37,99,235,0.5)]'); btn.classList.remove('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300'); }
+                else { btn.classList.remove('bg-blue-600', 'text-white', 'shadow-[0_0_10px_rgba(37,99,235,0.5)]'); btn.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300'); }
             });
-
-            if (currentTool === 'text') {
-                textInputContainer.classList.remove('hidden');
-            } else {
-                textInputContainer.classList.add('hidden');
-            }
-            
+            textInputContainer.classList.toggle('hidden', currentTool !== 'text');
             updateSelectionUI();
         }
-
         function updateBrushSizeUI() {
             brushSizeButtons.forEach(btn => {
-                if (parseInt(btn.dataset.size) === brushSize) {
-                    btn.classList.add('bg-blue-500', 'text-white', 'font-bold');
-                    btn.classList.remove('bg-slate-700', 'text-slate-400', 'hover:bg-slate-600');
-                } else {
-                    btn.classList.remove('bg-blue-500', 'text-white', 'font-bold');
-                    btn.classList.add('bg-slate-700', 'text-slate-400', 'hover:bg-slate-600');
-                }
+                if (parseInt(btn.dataset.size) === brushSize) { btn.classList.add('bg-blue-500', 'text-white', 'font-bold'); btn.classList.remove('bg-slate-700', 'text-slate-400', 'hover:bg-slate-600'); }
+                else { btn.classList.remove('bg-blue-500', 'text-white', 'font-bold'); btn.classList.add('bg-slate-700', 'text-slate-400', 'hover:bg-slate-600'); }
             });
         }
-
         function renderPalette() {
-            paletteContainer.innerHTML = `
-                <div class="text-[10px] text-slate-400 mb-1 hidden md:block text-center font-bold tracking-wider w-full">PALETTE</div>
-            `;
+            paletteContainer.innerHTML = `<div class="text-[10px] text-slate-400 mb-1 hidden md:block text-center font-bold tracking-wider w-full">PALETTE</div>`;
             PALETTE.forEach((color, idx) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'flex items-center gap-1 md:w-full md:justify-start justify-center shrink-0';
-
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.className = 'w-3 h-3 md:w-4 md:h-4 accent-red-500 cursor-pointer shrink-0';
-                checkbox.title = 'Lock this color';
-                checkbox.checked = lockedColors.has(idx);
-                checkbox.addEventListener('change', (e) => {
-                    if (e.target.checked) lockedColors.add(idx);
-                    else lockedColors.delete(idx);
-                    playSound('click');
-                });
-
-                const btn = document.createElement('button');
-                btn.dataset.colorIndex = idx;
-                btn.className = `relative w-8 h-8 md:w-10 md:h-10 rounded-full border-2 transition-all shrink-0 ${colorIndex === idx ? 'border-orange-500 scale-110 shadow-[0_0_12px_rgba(249,115,22,0.8)] z-10' : 'border-slate-600 scale-100 hover:scale-105'}`;
-                
-                if (color === 'transparent') {
-                    btn.style.backgroundImage = 'repeating-conic-gradient(#cbd5e1 0% 25%, #f8fafc 0% 50%)';
-                    btn.style.backgroundSize = '8px 8px';
-                    btn.title = 'Eraser (Transparent)';
-                    if (colorIndex !== idx) {
-                        btn.innerHTML = `<div class="absolute inset-0 flex items-center justify-center"><div class="w-6 h-px bg-red-500/50 rotate-45"></div></div>`;
-                    }
-                } else if (idx === 0 || idx === 8) {
-                    btn.style.backgroundColor = color;
-                    btn.title = `Color ${idx} (${color.toUpperCase()})`;
-                } else {
-                    btn.style.backgroundColor = color;
-                    btn.title = `Color ${idx} (${color.toUpperCase()})`;
-                }
-                btn.addEventListener('click', () => {
-                    colorIndex = idx;
-                    playSound('click');
-                    updatePaletteUI();
-                });
-
-                wrapper.appendChild(checkbox);
-                wrapper.appendChild(btn);
-                paletteContainer.appendChild(wrapper);
+                const wrapper = document.createElement('div'); wrapper.className = 'flex items-center gap-1 md:w-full md:justify-start justify-center shrink-0';
+                const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.className = 'w-3 h-3 md:w-4 md:h-4 accent-red-500 cursor-pointer shrink-0'; checkbox.title = 'Lock color'; checkbox.checked = lockedColors.has(idx); checkbox.addEventListener('change', (e) => { if (e.target.checked) lockedColors.add(idx); else lockedColors.delete(idx); playSound('click'); });
+                const btn = document.createElement('button'); btn.dataset.colorIndex = idx; btn.className = `relative w-8 h-8 md:w-10 md:h-10 rounded-full border-2 transition-all shrink-0 ${colorIndex === idx ? 'border-orange-500 scale-110 shadow-[0_0_12px_rgba(249,115,22,0.8)] z-10' : 'border-slate-600 scale-100 hover:scale-105'}`;
+                if (color === 'transparent') { btn.style.backgroundImage = 'repeating-conic-gradient(#cbd5e1 0% 25%, #f8fafc 0% 50%)'; btn.style.backgroundSize = '8px 8px'; btn.title = 'Eraser'; if (colorIndex !== idx) btn.innerHTML = `<div class="absolute inset-0 flex items-center justify-center"><div class="w-6 h-px bg-red-500/50 rotate-45"></div></div>`; }
+                else { btn.style.backgroundColor = color; btn.title = `Color ${idx} (${color})`; }
+                btn.addEventListener('click', () => { colorIndex = idx; playSound('click'); updatePaletteUI(); });
+                wrapper.appendChild(checkbox); wrapper.appendChild(btn); paletteContainer.appendChild(wrapper);
             });
         }
-
         function updatePaletteUI() {
             paletteContainer.querySelectorAll('button').forEach(btn => {
                 const idx = parseInt(btn.dataset.colorIndex);
-                if (colorIndex === idx) {
-                    btn.classList.add('border-orange-500', 'scale-110', 'shadow-[0_0_12px_rgba(249,115,22,0.8)]', 'z-10');
-                    btn.classList.remove('border-slate-600', 'scale-100', 'hover:scale-105');
-                } else {
-                    btn.classList.remove('border-orange-500', 'scale-110', 'shadow-[0_0_12px_rgba(249,115,22,0.8)]', 'z-10');
-                    btn.classList.add('border-slate-600', 'scale-100', 'hover:scale-105');
-                }
-                
-                if (PALETTE[idx] === 'transparent') {
-                    if (colorIndex !== idx && btn.querySelector('.w-6.h-px') === null) {
-                         btn.innerHTML = `<div class="absolute inset-0 flex items-center justify-center"><div class="w-6 h-px bg-red-500/50 rotate-45"></div></div>`;
-                    } else if (colorIndex === idx && btn.querySelector('.w-6.h-px')) {
-                        btn.innerHTML = '';
-                    }
-                } else {
-                    if (btn.querySelector('.w-6.h-px')) btn.innerHTML = '';
-                }
+                if (colorIndex === idx) { btn.classList.add('border-orange-500', 'scale-110', 'shadow-[0_0_12px_rgba(249,115,22,0.8)]', 'z-10'); btn.classList.remove('border-slate-600', 'scale-100', 'hover:scale-105'); }
+                else { btn.classList.remove('border-orange-500', 'scale-110', 'shadow-[0_0_12px_rgba(249,115,22,0.8)]', 'z-10'); btn.classList.add('border-slate-600', 'scale-100', 'hover:scale-105'); }
+                if (PALETTE[idx] === 'transparent') { if (colorIndex !== idx && btn.querySelector('.w-6.h-px') === null) btn.innerHTML = `<div class="absolute inset-0 flex items-center justify-center"><div class="w-6 h-px bg-red-500/50 rotate-45"></div></div>`; else if (colorIndex === idx && btn.querySelector('.w-6.h-px')) btn.innerHTML = ''; }
             });
         }
-
-        function updateGridUI() {
-            if (showGrid) {
-                gridOverlay.classList.remove('hidden');
-                toggleGridBtn.classList.add('bg-slate-600', 'text-white');
-                toggleGridBtn.classList.remove('bg-slate-700', 'text-slate-400', 'hover:bg-slate-600');
-            } else {
-                gridOverlay.classList.add('hidden');
-                toggleGridBtn.classList.remove('bg-slate-600', 'text-white');
-                toggleGridBtn.classList.add('bg-slate-700', 'text-slate-400', 'hover:bg-slate-600');
-            }
-        }
-
+        function updateGridUI() { gridOverlay.classList.toggle('hidden', !showGrid); toggleGridBtn.classList.toggle('bg-slate-600', showGrid); toggleGridBtn.classList.toggle('bg-slate-700', !showGrid); }
         function updateSymmetryUI() {
-            if (symXEnabled) {
-                symXLine.classList.remove('hidden');
-                toggleSymXBtn.classList.add('bg-red-900/50', 'text-red-300');
-                toggleSymXBtn.classList.remove('bg-slate-700', 'text-slate-400');
-                symXPosSlider.disabled = false;
-                resetSymXBtn.disabled = false;
-            } else {
-                symXLine.classList.add('hidden');
-                toggleSymXBtn.classList.remove('bg-red-900/50', 'text-red-300');
-                toggleSymXBtn.classList.add('bg-slate-700', 'text-slate-400');
-                symXPosSlider.disabled = true;
-                resetSymXBtn.disabled = true;
-            }
-            symXLine.style.left = `${(symXPos / CANVAS_SIZE) * 100}%`;
-
-            if (symYEnabled) {
-                symYLine.classList.remove('hidden');
-                toggleSymYBtn.classList.add('bg-green-900/50', 'text-green-300');
-                toggleSymYBtn.classList.remove('bg-slate-700', 'text-slate-400');
-                symYPosSlider.disabled = false;
-                resetSymYBtn.disabled = false;
-            } else {
-                symYLine.classList.add('hidden');
-                toggleSymYBtn.classList.remove('bg-green-900/50', 'text-green-300');
-                toggleSymYBtn.classList.add('bg-slate-700', 'text-slate-400');
-                symYPosSlider.disabled = true;
-                resetSymYBtn.disabled = true;
-            }
-            symYLine.style.top = `${(symYPos / CANVAS_SIZE) * 100}%`;
+            symXLine.classList.toggle('hidden', !symXEnabled); toggleSymXBtn.classList.toggle('bg-red-900/50', symXEnabled); symXPosSlider.disabled = !symXEnabled; resetSymXBtn.disabled = !symXEnabled; symXLine.style.left = `${(symXPos / CANVAS_SIZE) * 100}%`;
+            symYLine.classList.toggle('hidden', !symYEnabled); toggleSymYBtn.classList.toggle('bg-green-900/50', symYEnabled); symYPosSlider.disabled = !symYEnabled; resetSymYBtn.disabled = !symYEnabled; symYLine.style.top = `${(symYPos / CANVAS_SIZE) * 100}%`;
         }
-
-        function updateTextInputUI() {
-            textInput.value = currentTextInput;
-        }
+        function updateTextInputUI() { textInput.value = currentTextInput; }
 
         // --- イベントリスナー設定 ---
         function setupEventListeners() {
@@ -1380,208 +1064,75 @@
             pixelCanvas.addEventListener('pointerup', handlePointerUp);
             pixelCanvas.addEventListener('pointercancel', handlePointerUp);
             pixelCanvas.addEventListener('pointerout', handlePointerOut);
-            
             stampCanvas.addEventListener('pointerdown', (e) => { isDrawingStamp=true; handleStampInput(e); });
             stampCanvas.addEventListener('pointermove', (e) => { if(isDrawingStamp) handleStampInput(e); });
             stampCanvas.addEventListener('pointerup', () => { isDrawingStamp=false; });
             stampCanvas.addEventListener('pointerout', () => { isDrawingStamp=false; });
             clearStampBtn.addEventListener('click', () => { stampData.fill(9); renderStampCanvas(); playSound('click'); });
-
-            toolButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    currentTool = button.dataset.tool;
-                    playSound('click');
-                    updateToolUI();
-                });
-            });
-
-            brushSizeButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    brushSize = parseInt(button.dataset.size);
-                    playSound('click');
-                    updateBrushSizeUI();
-                });
-            });
-
-            textInput.addEventListener('input', (e) => {
-                currentTextInput = e.target.value.toUpperCase();
-                updateTextInputUI();
-            });
-
-            toggleGridBtn.addEventListener('click', () => {
-                showGrid = !showGrid;
-                playSound('click');
-                updateGridUI();
-            });
-
-            toggleSymXBtn.addEventListener('click', () => {
-                symXEnabled = !symXEnabled;
-                playSound('click');
-                updateSymmetryUI();
-            });
-
-            symXPosSlider.addEventListener('input', (e) => {
-                symXPos = parseInt(e.target.value);
-                playSound('snap');
-                updateSymmetryUI();
-            });
-
-            resetSymXBtn.addEventListener('click', () => {
-                symXPos = 32;
-                symXPosSlider.value = 32;
-                playSound('click');
-                updateSymmetryUI();
-            });
-
-            toggleSymYBtn.addEventListener('click', () => {
-                symYEnabled = !symYEnabled;
-                playSound('click');
-                updateSymmetryUI();
-            });
-
-            symYPosSlider.addEventListener('input', (e) => {
-                symYPos = parseInt(e.target.value);
-                playSound('snap');
-                updateSymmetryUI();
-            });
-
-            resetSymYBtn.addEventListener('click', () => {
-                symYPos = 32;
-                symYPosSlider.value = 32;
-                playSound('click');
-                updateSymmetryUI();
-            });
-
-            undoBtn.addEventListener('click', handleUndo);
-            redoBtn.addEventListener('click', handleRedo);
-
-            clearBtn.addEventListener('click', () => {
-                pixelData.fill(0); 
-                playSound('click');
-                saveHistory(); 
-            });
-
+            toolButtons.forEach(button => button.addEventListener('click', () => { currentTool = button.dataset.tool; playSound('click'); updateToolUI(); }));
+            brushSizeButtons.forEach(button => button.addEventListener('click', () => { brushSize = parseInt(button.dataset.size); playSound('click'); updateBrushSizeUI(); }));
+            textInput.addEventListener('input', (e) => { currentTextInput = e.target.value.toUpperCase(); updateTextInputUI(); });
+            toggleGridBtn.addEventListener('click', () => { showGrid = !showGrid; playSound('click'); updateGridUI(); });
+            toggleSymXBtn.addEventListener('click', () => { symXEnabled = !symXEnabled; playSound('click'); updateSymmetryUI(); });
+            symXPosSlider.addEventListener('input', (e) => { symXPos = parseInt(e.target.value); playSound('snap'); updateSymmetryUI(); });
+            resetSymXBtn.addEventListener('click', () => { symXPos = 32; symXPosSlider.value = 32; playSound('click'); updateSymmetryUI(); });
+            toggleSymYBtn.addEventListener('click', () => { symYEnabled = !symYEnabled; playSound('click'); updateSymmetryUI(); });
+            symYPosSlider.addEventListener('input', (e) => { symYPos = parseInt(e.target.value); playSound('snap'); updateSymmetryUI(); });
+            resetSymYBtn.addEventListener('click', () => { symYPos = 32; symYPosSlider.value = 32; playSound('click'); updateSymmetryUI(); });
+            undoBtn.addEventListener('click', handleUndo); redoBtn.addEventListener('click', handleRedo);
+            clearBtn.addEventListener('click', () => { pixelData.fill(0); playSound('click'); saveHistory(); });
             openBtn.addEventListener('click', () => { fileInput.click(); });
-
             fileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const url = URL.createObjectURL(file);
-                const img = new Image();
+                const file = e.target.files[0]; if (!file) return;
+                const url = URL.createObjectURL(file); const img = new Image();
                 img.onload = () => {
-                    const offCanvas = document.createElement('canvas');
-                    offCanvas.width = CANVAS_SIZE;
-                    offCanvas.height = CANVAS_SIZE;
-                    const offCtx = offCanvas.getContext('2d');
-                    offCtx.fillStyle = '#FFFFFF';
-                    offCtx.fillRect(0,0,CANVAS_SIZE,CANVAS_SIZE);
-                    offCtx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
-                    const imgData = offCtx.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE).data;
-
+                    const offCanvas = document.createElement('canvas'); offCanvas.width = CANVAS_SIZE; offCanvas.height = CANVAS_SIZE;
+                    const offCtx = offCanvas.getContext('2d'); offCtx.fillStyle = '#FFFFFF'; offCtx.fillRect(0,0,CANVAS_SIZE,CANVAS_SIZE); offCtx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+                    const imgD = offCtx.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE).data;
                     for(let i=0; i<CANVAS_SIZE*CANVAS_SIZE; i++) {
-                        let r = imgData[i*4];
-                        let g = imgData[i*4+1];
-                        let b = imgData[i*4+2];
-                        let a = imgData[i*4+3];
-                        
-                        if (a < 128) {
-                            pixelData[i] = 9; 
-                            continue;
-                        }
-                        
-                        let minDist = Infinity;
-                        let closestIdx = 0;
+                        let r = imgD[i*4], g = imgD[i*4+1], b = imgD[i*4+2], a = imgD[i*4+3];
+                        if (a < 128) { pixelData[i] = 9; continue; }
+                        let minDist = Infinity, clIdx = 0;
                         for(let j=0; j<9; j++) {
-                            let rgb = hexToRgb(PALETTE[j]);
-                            let dist = (r-rgb.r)**2 + (g-rgb.g)**2 + (b-rgb.b)**2;
-                            if(dist < minDist) {
-                                minDist = dist;
-                                closestIdx = j;
-                            }
+                            let rgb = hexToRgb(PALETTE[j]); let d = (r-rgb.r)**2 + (g-rgb.g)**2 + (b-rgb.b)**2;
+                            if(d < minDist) { minDist = d; clIdx = j; }
                         }
-                        pixelData[i] = closestIdx;
+                        pixelData[i] = clIdx;
                     }
-                    saveHistory();
-                    playSound('snap');
-                    URL.revokeObjectURL(url);
-                    fileInput.value = ''; 
+                    saveHistory(); playSound('snap'); URL.revokeObjectURL(url); fileInput.value = ''; 
                 };
                 img.src = url;
             });
-
-            downloadBtn.addEventListener('click', () => {
-                if (selectionState !== 'none') commitSelection();
-                const link = document.createElement('a');
-                link.download = 'pixel_art.png';
-                link.href = pixelCanvas.toDataURL('image/png');
-                link.click();
-                showToast('Image downloaded as pixel_art.png!');
-                playSound('snap');
-            });
-
-            hueSlider.addEventListener('input', (e) => {
-                updatePaletteColors();
-            });
-
-            document.querySelectorAll('input[name="maskHorizontal"]').forEach(radio => {
-                radio.addEventListener('change', (e) => { if(e.target.checked) { maskHorizontal = e.target.value; playSound('click'); }});
-            });
-            document.querySelectorAll('input[name="maskVertical"]').forEach(radio => {
-                radio.addEventListener('change', (e) => { if(e.target.checked) { maskVertical = e.target.value; playSound('click'); }});
-            });
-            document.querySelectorAll('input[name="maskChecker"]').forEach(radio => {
-                radio.addEventListener('change', (e) => { if(e.target.checked) { maskChecker = e.target.value; playSound('click'); }});
-            });
-            document.querySelectorAll('input[name="maskSlash"]').forEach(radio => {
-                radio.addEventListener('change', (e) => { if(e.target.checked) { maskSlash = e.target.value; playSound('click'); }});
-            });
-            document.querySelectorAll('input[name="maskBackslash"]').forEach(radio => {
-                radio.addEventListener('change', (e) => { if(e.target.checked) { maskBackslash = e.target.value; playSound('click'); }});
-            });
-
-            // キーボードショートカット
+            downloadBtn.addEventListener('click', () => { if (selectionState !== 'none') commitSelection(); const link = document.createElement('a'); link.download = 'pixel_art.png'; link.href = pixelCanvas.toDataURL('image/png'); link.click(); showToast('Image downloaded!'); playSound('snap'); });
+            hueSlider.addEventListener('input', () => updatePaletteColors());
+            document.querySelectorAll('input[name="maskHorizontal"]').forEach(r => r.addEventListener('change', (e) => { if(e.target.checked) { maskHorizontal = e.target.value; playSound('click'); }}));
+            document.querySelectorAll('input[name="maskVertical"]').forEach(r => r.addEventListener('change', (e) => { if(e.target.checked) { maskVertical = e.target.value; playSound('click'); }}));
+            document.querySelectorAll('input[name="maskChecker"]').forEach(r => r.addEventListener('change', (e) => { if(e.target.checked) { maskChecker = e.target.value; playSound('click'); }}));
+            document.querySelectorAll('input[name="maskSlash"]').forEach(r => r.addEventListener('change', (e) => { if(e.target.checked) { maskSlash = e.target.value; playSound('click'); }}));
+            document.querySelectorAll('input[name="maskBackslash"]').forEach(r => r.addEventListener('change', (e) => { if(e.target.checked) { maskBackslash = e.target.value; playSound('click'); }}));
             document.addEventListener('keydown', (e) => {
                 if (e.target.tagName === 'INPUT' && e.target.type !== 'checkbox' && e.target.type !== 'radio' && e.target.type !== 'range') return;
-
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-                    e.preventDefault();
-                    if (e.shiftKey) handleRedo();
-                    else handleUndo();
-                } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
-                    e.preventDefault();
-                    handleRedo();
-                } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { 
-                    e.preventDefault();
-                    downloadBtn.click();
-                } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') { 
-                    e.preventDefault();
-                    openBtn.click();
-                } else if (e.key === 'Enter') {
-                    if (currentTool === 'select' && selectionState !== 'none') {
-                        e.preventDefault();
-                        commitSelection();
-                        playSound('snap');
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) handleRedo(); else handleUndo(); }
+                else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); handleRedo(); }
+                else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); downloadBtn.click(); }
+                else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') { e.preventDefault(); openBtn.click(); }
+                else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') { if (selectionState === 'selected') { internalClipboard = {data: new Uint8Array(selData), w: selRect.w, h: selRect.h}; showToast('Selection Copied!'); playSound('snap'); } }
+                else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+                    if (internalClipboard) {
+                        commitSelection(); currentTool = 'select'; selectionState = 'selected';
+                        selRect = {x: Math.floor((CANVAS_SIZE - internalClipboard.w)/2), y: Math.floor((CANVAS_SIZE - internalClipboard.h)/2), w: internalClipboard.w, h: internalClipboard.h};
+                        selData = new Uint8Array(internalClipboard.data); updateToolUI(); playSound('click');
                     }
                 }
-
-                // Select Tool - Keyboard Movement
+                else if (e.key === 'Enter') { if (currentTool === 'select' && selectionState !== 'none') { e.preventDefault(); commitSelection(); playSound('snap'); } }
                 if (currentTool === 'select' && selectionState === 'selected') {
                     let dx = 0, dy = 0;
-                    if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') dy = -1;
-                    if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') dy = 1;
-                    if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') dx = -1;
-                    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') dx = 1;
-                    
-                    if (dx !== 0 || dy !== 0) {
-                        e.preventDefault();
-                        selRect.x += dx;
-                        selRect.y += dy;
-                        updateSelectionUI();
-                    }
+                    if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') dy = -1; if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') dy = 1;
+                    if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') dx = -1; if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') dx = 1;
+                    if (dx !== 0 || dy !== 0) { e.preventDefault(); selRect.x += dx; selRect.y += dy; updateSelectionUI(); }
                 }
             });
         }
-
         window.addEventListener('load', init);
     </script>
 </body>
