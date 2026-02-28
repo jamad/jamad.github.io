@@ -464,7 +464,7 @@
         // --- 状態管理 ---
         let currentTool = 'pen';
         let brushSize = 1;
-        let colorIndex = 8; // デフォルトは黒
+        let colorIndex = 4; // デフォルトは純色 (PALETTE[4])
         let symXEnabled = false;
         let symYEnabled = false;
         let symXPos = 32;
@@ -492,7 +492,7 @@
 
         // --- 初期化処理 ---
         function init() {
-            updatePaletteColors(); // スライダーの初期値に基づいて色を生成
+            updatePaletteColors(); 
             pixelData.fill(0); 
             history = [new Uint8Array(pixelData)]; 
             historyIndex = 0;
@@ -877,7 +877,7 @@
                 playSound('click');
             }
             
-            saveHistory(); // ドラッグ描画完了後に保存
+            saveHistory(); 
 
             clearPreview();
             renderCanvas(); 
@@ -944,47 +944,53 @@
                 ctx.globalCompositeOperation = 'difference';
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; 
 
-                const drawHoverOutlineRect = (rx, ry, rw, rh, flipX, flipY) => {
-                    // バウンディングボックスの左上座標をミラーリングに応じて計算
-                    // 幅・高さがあるため、単純な座標反転だけでなく幅・高さ分のオフセットが必要
-                    let x = flipX ? (symXPos * 2 - rx - rw) : rx;
-                    let y = flipY ? (symYPos * 2 - ry - rh) : ry;
-                    
-                    if (rw === 1 && rh === 1) {
-                        ctx.fillRect(x, y, 1, 1);
-                    } else {
-                        ctx.fillRect(x, y, rw, 1);
-                        ctx.fillRect(x, y + rh - 1, rw, 1);
-                        ctx.fillRect(x, y + 1, 1, rh - 2);
-                        ctx.fillRect(x + rw - 1, y + 1, 1, rh - 2);
-                    }
-                };
-
                 if (currentTool === 'text') {
-                    let len = currentTextInput.length;
-                    if (len > 0) {
-                        let tw = len * 4 - 1;
-                        let th = 5;
-                        drawHoverOutlineRect(hoverPos.x, hoverPos.y, tw, th, false, false);
-                        if (symXEnabled) drawHoverOutlineRect(hoverPos.x, hoverPos.y, tw, th, true, false);
-                        if (symYEnabled) drawHoverOutlineRect(hoverPos.x, hoverPos.y, tw, th, false, true);
-                        if (symXEnabled && symYEnabled) drawHoverOutlineRect(hoverPos.x, hoverPos.y, tw, th, true, true);
+                    let cx = hoverPos.x;
+                    let cy = hoverPos.y;
+                    for (let i = 0; i < currentTextInput.length; i++) {
+                        const char = currentTextInput[i].toUpperCase();
+                        const fontData = FONT_5x3[char] || FONT_5x3[' '];
+                        for (let py = 0; py < 5; py++) {
+                            for (let px = 0; px < 3; px++) {
+                                if (fontData[py * 3 + px] === 1) {
+                                    let rx = cx + px;
+                                    let ry = cy + py;
+                                    // 実際の描画と同じようにドット単位でプレビュー・反転処理を行う
+                                    ctx.fillRect(rx, ry, 1, 1);
+                                    if (symXEnabled) ctx.fillRect(symXPos * 2 - rx - 1, ry, 1, 1);
+                                    if (symYEnabled) ctx.fillRect(rx, symYPos * 2 - ry - 1, 1, 1);
+                                    if (symXEnabled && symYEnabled) ctx.fillRect(symXPos * 2 - rx - 1, symYPos * 2 - ry - 1, 1, 1);
+                                }
+                            }
+                        }
+                        cx += 4;
                     }
                 } else if (currentTool === 'fill') {
-                    drawHoverOutlineRect(hoverPos.x, hoverPos.y, 1, 1, false, false);
-                    if (symXEnabled) drawHoverOutlineRect(hoverPos.x, hoverPos.y, 1, 1, true, false);
-                    if (symYEnabled) drawHoverOutlineRect(hoverPos.x, hoverPos.y, 1, 1, false, true);
-                    if (symXEnabled && symYEnabled) drawHoverOutlineRect(hoverPos.x, hoverPos.y, 1, 1, true, true);
+                    ctx.fillRect(hoverPos.x, hoverPos.y, 1, 1);
+                    if (symXEnabled) ctx.fillRect(symXPos * 2 - hoverPos.x - 1, hoverPos.y, 1, 1);
+                    if (symYEnabled) ctx.fillRect(hoverPos.x, symYPos * 2 - hoverPos.y - 1, 1, 1);
+                    if (symXEnabled && symYEnabled) ctx.fillRect(symXPos * 2 - hoverPos.x - 1, symYPos * 2 - hoverPos.y - 1, 1, 1);
                 } else {
                     let size = brushSize;
                     let offset = Math.floor((size - 1) / 2);
-                    let hx = hoverPos.x - offset;
-                    let hy = hoverPos.y - offset;
                     
-                    drawHoverOutlineRect(hx, hy, size, size, false, false);
-                    if (symXEnabled) drawHoverOutlineRect(hx, hy, size, size, true, false);
-                    if (symYEnabled) drawHoverOutlineRect(hx, hy, size, size, false, true);
-                    if (symXEnabled && symYEnabled) drawHoverOutlineRect(hx, hy, size, size, true, true);
+                    const drawBrushOutline = (cx, cy) => {
+                        let hx = cx - offset;
+                        let hy = cy - offset;
+                        if (size === 1) {
+                            ctx.fillRect(hx, hy, 1, 1);
+                        } else {
+                            ctx.fillRect(hx, hy, size, 1); 
+                            ctx.fillRect(hx, hy + size - 1, size, 1); 
+                            ctx.fillRect(hx, hy + 1, 1, size - 2); 
+                            ctx.fillRect(hx + size - 1, hy + 1, 1, size - 2); 
+                        }
+                    };
+
+                    drawBrushOutline(hoverPos.x, hoverPos.y);
+                    if (symXEnabled) drawBrushOutline(symXPos * 2 - hoverPos.x - 1, hoverPos.y);
+                    if (symYEnabled) drawBrushOutline(hoverPos.x, symYPos * 2 - hoverPos.y - 1);
+                    if (symXEnabled && symYEnabled) drawBrushOutline(symXPos * 2 - hoverPos.x - 1, symYPos * 2 - hoverPos.y - 1);
                 }
 
                 ctx.restore();
@@ -1032,7 +1038,6 @@
                 const wrapper = document.createElement('div');
                 wrapper.className = 'flex items-center gap-1 md:w-full md:justify-start justify-center shrink-0';
 
-                // カラーロック用チェックボックス
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.className = 'w-3 h-3 md:w-4 md:h-4 accent-red-500 cursor-pointer shrink-0';
@@ -1047,7 +1052,6 @@
                     playSound('click');
                 });
 
-                // カラー選択ボタン
                 const btn = document.createElement('button');
                 btn.dataset.colorIndex = idx;
                 btn.className = `relative w-8 h-8 md:w-10 md:h-10 rounded-full border-2 transition-all shrink-0 ${colorIndex === idx ? 'border-orange-500 scale-110 shadow-[0_0_12px_rgba(249,115,22,0.8)] z-10' : 'border-slate-600 scale-100 hover:scale-105'}`;
@@ -1059,12 +1063,9 @@
                     if (colorIndex !== idx) {
                         btn.innerHTML = `<div class="absolute inset-0 flex items-center justify-center"><div class="w-6 h-px bg-red-500/50 rotate-45"></div></div>`;
                     }
-                } else if (idx === 0 || idx === 8) {
-                    btn.style.backgroundColor = color;
-                    btn.title = `Color ${idx} (${color.toUpperCase()})`;
                 } else {
                     btn.style.backgroundColor = color;
-                    btn.title = `Color ${idx} (${color.toUpperCase()})`;
+                    btn.title = `Color ${idx} (${color})`;
                 }
                 btn.addEventListener('click', () => {
                     colorIndex = idx;
@@ -1258,7 +1259,7 @@
                         let a = imgData[i*4+3];
                         
                         if (a < 128) {
-                            pixelData[i] = 9; // transparent
+                            pixelData[i] = 9; 
                             continue;
                         }
                         
@@ -1294,8 +1295,6 @@
 
             // Hue Slider
             hueSlider.addEventListener('input', (e) => {
-                let targetHue = parseInt(e.target.value);
-                hueShift = targetHue - BASE_HUE;
                 updatePaletteColors();
             });
 
