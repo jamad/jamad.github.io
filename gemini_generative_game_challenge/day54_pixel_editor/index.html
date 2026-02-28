@@ -135,20 +135,22 @@
         </aside>
 
         <div class="flex-1 flex flex-col items-center justify-center relative touch-none">
-            <div id="textInputContainer" class="absolute top-0 w-full max-w-sm flex gap-2 p-2 bg-blue-600 rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-400 z-10 mb-4 animate-in fade-in slide-in-from-top-4 hidden">
-                <input 
-                    type="text" 
-                    id="textInput"
-                    class="flex-1 bg-slate-900/80 border border-transparent rounded px-3 py-2 text-white font-mono uppercase tracking-widest focus:outline-none focus:border-white/50 placeholder-slate-400"
-                    placeholder="TYPE HERE..."
-                    maxlength="15"
-                    value="HELLO"
-                />
-            </div>
-
+            
             <div class="relative bg-black shadow-2xl border-4 border-slate-800 rounded-sm overflow-hidden" 
                  style="width: min(90vw, 70vh); height: min(90vw, 70vh);">
                 
+                <!-- Text Inputをキャンバス内部の最前面に移動 -->
+                <div id="textInputContainer" class="absolute top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-sm flex gap-2 p-2 bg-blue-600/90 backdrop-blur-sm rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.6)] border border-blue-400 z-50 hidden">
+                    <input 
+                        type="text" 
+                        id="textInput"
+                        class="flex-1 bg-slate-900/90 border border-transparent rounded px-3 py-2 text-white font-mono uppercase tracking-widest focus:outline-none focus:border-white/50 placeholder-slate-400"
+                        placeholder="TYPE HERE..."
+                        maxlength="15"
+                        value="HELLO"
+                    />
+                </div>
+
                 <div class="absolute inset-0 pointer-events-none"
                      style="background-image: repeating-conic-gradient(#334155 0% 25%, #1e293b 0% 50%); background-size: 16px 16px;"
                 ></div>
@@ -157,7 +159,7 @@
                   id="pixelCanvas"
                   width="64"
                   height="64"
-                  class="absolute top-0 left-0 w-full h-full cursor-crosshair z-10 pixelated"
+                  class="absolute top-0 left-0 w-full h-full cursor-none z-10 pixelated"
                   style="touch-action: none;"
                 ></canvas>
 
@@ -173,7 +175,7 @@
 
             <!-- コントロールパネル -->
             <div class="w-full max-w-[min(90vw,70vh)] mt-6 flex flex-col gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
-                <!-- シンメトリー (縦並びに変更) -->
+                <!-- シンメトリー -->
                 <div class="flex flex-col gap-3 w-full">
                     <div class="flex items-center gap-4 w-full">
                         <button 
@@ -187,6 +189,9 @@
                             type="range" min="0" max="64" value="32" id="symXPos"
                             class="flex-1 accent-red-500 disabled:opacity-30 slider-thumb-red" disabled
                         />
+                        <button id="resetSymX" class="p-1.5 rounded bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-slate-700 disabled:hover:text-slate-400" title="Reset to Center" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        </button>
                     </div>
                     <div class="flex items-center gap-4 w-full">
                         <button 
@@ -200,6 +205,9 @@
                             type="range" min="0" max="64" value="32" id="symYPos"
                             class="flex-1 accent-green-500 disabled:opacity-30 slider-thumb-green" disabled
                         />
+                        <button id="resetSymY" class="p-1.5 rounded bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-slate-700 disabled:hover:text-slate-400" title="Reset to Center" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -354,14 +362,20 @@
         const symYLine = document.getElementById('symYLine');
         const toggleSymXBtn = document.getElementById('toggleSymX');
         const symXPosSlider = document.getElementById('symXPos');
+        const resetSymXBtn = document.getElementById('resetSymX');
         const toggleSymYBtn = document.getElementById('toggleSymY');
         const symYPosSlider = document.getElementById('symYPos');
+        const resetSymYBtn = document.getElementById('resetSymY');
         const undoBtn = document.getElementById('undoBtn');
         const redoBtn = document.getElementById('redoBtn');
         const clearBtn = document.getElementById('clearBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const toastElement = document.getElementById('toast');
         const toastMsgElement = document.getElementById('toast-msg');
+        
+        const maskHorizontalSelect = document.getElementById('maskHorizontal');
+        const maskVerticalSelect = document.getElementById('maskVertical');
+        const maskCheckerSelect = document.getElementById('maskChecker');
 
         // --- 状態管理 ---
         let currentTool = 'pen';
@@ -381,6 +395,7 @@
         let startPos = { x: 0, y: 0 };
         let lastPos = { x: -1, y: -1 };
         let lastPreviewKey = ''; 
+        let hoverPos = null; // ホバープレビュー用の座標
 
         // 履歴管理
         let history = [new Uint8Array(CANVAS_SIZE * CANVAS_SIZE)];
@@ -693,6 +708,7 @@
             initAudio();
             const pos = getCanvasPos(e);
             isDrawing = true;
+            hoverPos = null; // 描画中はホバープレビューを消す
             startPos = pos;
             lastPos = pos;
             lastPreviewKey = '';
@@ -713,9 +729,13 @@
         }
 
         function handlePointerMove(e) {
-            if (!isDrawing) return;
             e.preventDefault();
             const pos = getCanvasPos(e);
+            
+            if (!isDrawing) {
+                hoverPos = pos;
+                return;
+            }
 
             if (currentTool === 'pen') {
                 if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
@@ -743,6 +763,7 @@
             isDrawing = false;
             e.preventDefault();
             const pos = getCanvasPos(e);
+            hoverPos = pos; // 描画終了後はホバープレビューを再開
 
             if (currentTool === 'pen') {
                 // ペンツールは Down と Move で描画が完了
@@ -756,7 +777,14 @@
                 playSound('click');
             }
             clearPreview();
-            renderCanvas(); // プレビューをクリアしたらキャンバスを再描画
+            renderCanvas(); 
+        }
+
+        function handlePointerOut(e) {
+            hoverPos = null;
+            if (isDrawing) {
+                handlePointerUp(e);
+            }
         }
 
         // --- キャンバス描画ループ ---
@@ -807,6 +835,50 @@
                 }
             }
             ctx.putImageData(imgData, 0, 0);
+
+            // --- ホバープレビューのアウトライン描画 ---
+            if (hoverPos && !isDrawing) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'difference';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // 視認性の高い白で反転
+
+                const drawHoverOutline = (cx, cy) => {
+                    if (currentTool === 'text') {
+                        let len = currentTextInput.length;
+                        if (len === 0) return;
+                        let tw = len * 4 - 1;
+                        let th = 5;
+                        // 文字の境界枠
+                        ctx.fillRect(cx, cy, tw, 1);
+                        ctx.fillRect(cx, cy + th - 1, tw, 1);
+                        ctx.fillRect(cx, cy + 1, 1, th - 2);
+                        ctx.fillRect(cx + tw - 1, cy + 1, 1, th - 2);
+                    } else {
+                        let size = brushSize;
+                        let offset = Math.floor((size - 1) / 2);
+                        let hx = cx - offset;
+                        let hy = cy - offset;
+                        
+                        if (size === 1) {
+                            ctx.fillRect(hx, hy, 1, 1);
+                        } else {
+                            // ブラシ矩形のアウトライン (内側)
+                            ctx.fillRect(hx, hy, size, 1);
+                            ctx.fillRect(hx, hy + size - 1, size, 1);
+                            ctx.fillRect(hx, hy + 1, 1, size - 2);
+                            ctx.fillRect(hx + size - 1, hy + 1, 1, size - 2);
+                        }
+                    }
+                };
+
+                drawHoverOutline(hoverPos.x, hoverPos.y);
+                if (symXEnabled) drawHoverOutline(symXPos * 2 - hoverPos.x - 1, hoverPos.y);
+                if (symYEnabled) drawHoverOutline(hoverPos.x, symYPos * 2 - hoverPos.y - 1);
+                if (symXEnabled && symYEnabled) drawHoverOutline(symXPos * 2 - hoverPos.x - 1, symYPos * 2 - hoverPos.y - 1);
+
+                ctx.restore();
+            }
+
             animationId = requestAnimationFrame(renderCanvas);
         }
 
@@ -862,7 +934,7 @@
                         lockedColors.delete(idx);
                     }
                     playSound('click');
-                    renderCanvas(); // ロックの赤いレイヤー表示を即時反映
+                    // renderCanvasはループで回っているので即座に反映される
                 });
 
                 // カラー選択ボタン
@@ -933,11 +1005,13 @@
                 toggleSymXBtn.classList.add('bg-red-900/50', 'text-red-300');
                 toggleSymXBtn.classList.remove('bg-slate-700', 'text-slate-400');
                 symXPosSlider.disabled = false;
+                resetSymXBtn.disabled = false;
             } else {
                 symXLine.classList.add('hidden');
                 toggleSymXBtn.classList.remove('bg-red-900/50', 'text-red-300');
                 toggleSymXBtn.classList.add('bg-slate-700', 'text-slate-400');
                 symXPosSlider.disabled = true;
+                resetSymXBtn.disabled = true;
             }
             symXLine.style.left = `${(symXPos / CANVAS_SIZE) * 100}%`;
 
@@ -946,11 +1020,13 @@
                 toggleSymYBtn.classList.add('bg-green-900/50', 'text-green-300');
                 toggleSymYBtn.classList.remove('bg-slate-700', 'text-slate-400');
                 symYPosSlider.disabled = false;
+                resetSymYBtn.disabled = false;
             } else {
                 symYLine.classList.add('hidden');
                 toggleSymYBtn.classList.remove('bg-green-900/50', 'text-green-300');
                 toggleSymYBtn.classList.add('bg-slate-700', 'text-slate-400');
                 symYPosSlider.disabled = true;
+                resetSymYBtn.disabled = true;
             }
             symYLine.style.top = `${(symYPos / CANVAS_SIZE) * 100}%`;
         }
@@ -965,7 +1041,7 @@
             pixelCanvas.addEventListener('pointermove', handlePointerMove);
             pixelCanvas.addEventListener('pointerup', handlePointerUp);
             pixelCanvas.addEventListener('pointercancel', handlePointerUp);
-            pixelCanvas.addEventListener('pointerout', handlePointerUp);
+            pixelCanvas.addEventListener('pointerout', handlePointerOut); // hoverPosクリアのため変更
 
             toolButtons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -1006,6 +1082,13 @@
                 updateSymmetryUI();
             });
 
+            resetSymXBtn.addEventListener('click', () => {
+                symXPos = 32;
+                symXPosSlider.value = 32;
+                playSound('click');
+                updateSymmetryUI();
+            });
+
             toggleSymYBtn.addEventListener('click', () => {
                 symYEnabled = !symYEnabled;
                 playSound('click');
@@ -1018,6 +1101,13 @@
                 updateSymmetryUI();
             });
 
+            resetSymYBtn.addEventListener('click', () => {
+                symYPos = 32;
+                symYPosSlider.value = 32;
+                playSound('click');
+                updateSymmetryUI();
+            });
+
             undoBtn.addEventListener('click', handleUndo);
             redoBtn.addEventListener('click', handleRedo);
 
@@ -1025,7 +1115,6 @@
                 saveHistory();
                 pixelData.fill(0); // 白でクリア
                 playSound('click');
-                renderCanvas();
             });
 
             downloadBtn.addEventListener('click', () => {
@@ -1043,7 +1132,6 @@
                     if(e.target.checked) {
                         maskHorizontal = e.target.value;
                         playSound('click');
-                        renderCanvas();
                     }
                 });
             });
@@ -1052,7 +1140,6 @@
                     if(e.target.checked) {
                         maskVertical = e.target.value;
                         playSound('click');
-                        renderCanvas();
                     }
                 });
             });
@@ -1061,7 +1148,6 @@
                     if(e.target.checked) {
                         maskChecker = e.target.value;
                         playSound('click');
-                        renderCanvas();
                     }
                 });
             });
