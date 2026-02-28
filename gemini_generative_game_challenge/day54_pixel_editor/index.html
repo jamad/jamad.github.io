@@ -349,16 +349,16 @@
         // --- 設定・定数 ---
         const CANVAS_SIZE = 64;
 
-        // ベースのHSL値 (Hはスライダーから直接取得。S, Lのみ定義)
+        // 以前の美しい階調カーブを持つ8色に戻す
         const BASE_COLORS = [
             null, // 0: White (固定)
-            {s: 100, l: 90}, // 1
-            {s: 100, l: 75}, // 2
-            {s: 100, l: 60}, // 3
-            {s: 100, l: 50}, // 4 (ピュアカラー)
-            {s: 100, l: 35}, // 5
-            {s: 100, l: 20}, // 6
-            {s: 100, l: 10}, // 7
+            {h: 200, s: 100, l: 96}, // 1
+            {h: 201, s: 77, l: 86}, // 2
+            {h: 203, s: 83, l: 76}, // 3
+            {h: 205, s: 80, l: 66}, // 4 
+            {h: 207, s: 73, l: 57}, // 5
+            {h: 209, s: 62, l: 50}, // 6
+            {h: 211, s: 61, l: 43}, // 7
             null, // 8: Black (固定)
             null  // 9: Transparent
         ];
@@ -658,7 +658,7 @@
         function updatePaletteColors() {
             let currentHue = parseInt(hueSlider.value);
             hueShift = currentHue - BASE_HUE;
-            for (let i = 1; i <= 8; i++) {
+            for (let i = 1; i <= 7; i++) {
                 let c = BASE_COLORS[i];
                 if (c) {
                     let newH = (c.h + hueShift + 360) % 360;
@@ -701,17 +701,33 @@
         }
 
         function updateSelectionUI() {
-            if (currentTool === 'select' && selectionState !== 'none') {
-                selectionSvg.classList.remove('hidden');
-                selRectOuter.setAttribute('x', selRect.x);
-                selRectOuter.setAttribute('y', selRect.y);
-                selRectOuter.setAttribute('width', selRect.w);
-                selRectOuter.setAttribute('height', selRect.h);
-                
-                selRectInner.setAttribute('x', selRect.x);
-                selRectInner.setAttribute('y', selRect.y);
-                selRectInner.setAttribute('width', selRect.w);
-                selRectInner.setAttribute('height', selRect.h);
+            if (currentTool === 'select') {
+                if (selectionState !== 'none') {
+                    selectionSvg.classList.remove('hidden');
+                    selRectOuter.setAttribute('x', selRect.x);
+                    selRectOuter.setAttribute('y', selRect.y);
+                    selRectOuter.setAttribute('width', selRect.w);
+                    selRectOuter.setAttribute('height', selRect.h);
+                    
+                    selRectInner.setAttribute('x', selRect.x);
+                    selRectInner.setAttribute('y', selRect.y);
+                    selRectInner.setAttribute('width', selRect.w);
+                    selRectInner.setAttribute('height', selRect.h);
+                } else if (hoverPos && !isDrawing) {
+                    // Hover preview for 1x1 selection start
+                    selectionSvg.classList.remove('hidden');
+                    selRectOuter.setAttribute('x', hoverPos.x);
+                    selRectOuter.setAttribute('y', hoverPos.y);
+                    selRectOuter.setAttribute('width', 1);
+                    selRectOuter.setAttribute('height', 1);
+                    
+                    selRectInner.setAttribute('x', hoverPos.x);
+                    selRectInner.setAttribute('y', hoverPos.y);
+                    selRectInner.setAttribute('width', 1);
+                    selRectInner.setAttribute('height', 1);
+                } else {
+                    selectionSvg.classList.add('hidden');
+                }
             } else {
                 selectionSvg.classList.add('hidden');
             }
@@ -756,6 +772,7 @@
             let sx = (x0 < x1) ? 1 : -1;
             let sy = (y0 < y1) ? 1 : -1;
             let err = dx - dy;
+
             while (true) {
                 drawBrush(x0, y0, colorIdx, isPreview);
                 if (x0 === x1 && y0 === y1) break;
@@ -769,18 +786,26 @@
             const dx = x1 - x0;
             const dy = y1 - y0;
             if (dx === 0 && dy === 0) return { x: x0, y: y0 };
+
             const angle = Math.atan2(Math.abs(dy), Math.abs(dx));
             let closestAngle = ALLOWED_ANGLES[0];
             let minDiff = Math.abs(angle - ALLOWED_ANGLES[0]);
+            
             for (let i = 1; i < ALLOWED_ANGLES.length; i++) {
                 const diff = Math.abs(angle - ALLOWED_ANGLES[i]);
-                if (diff < minDiff) { minDiff = diff; closestAngle = ALLOWED_ANGLES[i]; }
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestAngle = ALLOWED_ANGLES[i];
+                }
             }
+
             const dist = Math.sqrt(dx * dx + dy * dy);
             let snappedDx = Math.round(dist * Math.cos(closestAngle));
             let snappedDy = Math.round(dist * Math.sin(closestAngle));
+
             if (dx < 0) snappedDx = -snappedDx;
             if (dy < 0) snappedDy = -snappedDy;
+
             return { x: x0 + snappedDx, y: y0 + snappedDy };
         }
 
@@ -966,6 +991,7 @@
             
             if (!isDrawing && !isDraggingSelection) {
                 hoverPos = pos;
+                if (currentTool === 'select') updateSelectionUI();
                 return;
             }
 
@@ -1012,6 +1038,7 @@
                 isDraggingSelection = false;
                 playSound('click');
                 hoverPos = getCanvasPos(e);
+                if (currentTool === 'select') updateSelectionUI();
                 return;
             }
 
@@ -1066,6 +1093,7 @@
 
         function handlePointerOut(e) {
             hoverPos = null;
+            if (currentTool === 'select') updateSelectionUI();
             if (isDrawing) {
                 handlePointerUp(e);
             }
@@ -1131,10 +1159,10 @@
             // --- ホバープレビューのアウトライン描画 ---
             if (hoverPos && !isDrawing && currentTool !== 'select') {
                 ctx.save();
+                ctx.globalCompositeOperation = 'difference';
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; 
                 
                 const drawPixelPreview = (px, py) => {
-                    ctx.globalCompositeOperation = 'difference';
                     ctx.fillRect(px, py, 1, 1);
                 };
 
@@ -1209,6 +1237,8 @@
             } else {
                 textInputContainer.classList.add('hidden');
             }
+            
+            updateSelectionUI();
         }
 
         function updateBrushSizeUI() {
