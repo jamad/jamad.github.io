@@ -11,21 +11,21 @@
     <style>
         body {
             /* スクロールバーを隠す */
-            -ms-overflow-style: none; /* IE and Edge */
-            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
         body::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera*/
+            display: none;
         }
         .pixelated {
             image-rendering: crisp-edges;
             image-rendering: pixelated;
         }
         .slider-thumb-red::-webkit-slider-thumb {
-            background-color: #ef4444; /* red-500 */
+            background-color: #ef4444;
         }
         .slider-thumb-green::-webkit-slider-thumb {
-            background-color: #22c55e; /* green-500 */
+            background-color: #22c55e;
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -53,18 +53,13 @@
             cursor: not-allowed;
         }
         
-        /* Hue Slider Custom Style (Synchronized with HSL) */
+        /* Hue Slider */
         #hueSlider {
             -webkit-appearance: none;
             appearance: none;
             background: linear-gradient(to right, 
-                hsl(0, 100%, 50%), 
-                hsl(60, 100%, 50%), 
-                hsl(120, 100%, 50%), 
-                hsl(180, 100%, 50%), 
-                hsl(240, 100%, 50%), 
-                hsl(300, 100%, 50%), 
-                hsl(360, 100%, 50%)
+                hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), 
+                hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%)
             );
         }
         #hueSlider::-webkit-slider-thumb {
@@ -101,11 +96,23 @@
             from { opacity: 1; transform: translate(-50%, 0); }
             to { opacity: 0; transform: translate(-50%, -10px); }
         }
+        
+        #stampCanvas {
+            background-image: repeating-conic-gradient(#cbd5e1 0% 25%, #f8fafc 0% 50%);
+            background-size: 16px 16px; 
+        }
+
+        /* SVG Marching Ants */
+        @keyframes ants {
+            to { stroke-dashoffset: -8; }
+        }
+        .selection-ants {
+            animation: ants 0.5s linear infinite;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-slate-900 text-slate-200 flex flex-col font-mono selection:bg-blue-500/30">
 
-    <!-- Toast Message -->
     <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg z-50 flex items-center gap-2 toast hidden">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M4 12.6V16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2"></path><path d="m9 12 2 2 4-4"></path></svg>
         <span id="toast-msg"></span>
@@ -114,57 +121,65 @@
     <header class="bg-slate-800 p-4 border-b border-slate-700 flex justify-between items-center shadow-md">
         <h1 class="text-xl font-bold tracking-wider text-blue-300">8-BIT PRECISION</h1>
         <div class="flex gap-2 items-center">
-            <!-- Open File -->
             <button id="openBtn" class="p-2 bg-slate-700 rounded hover:bg-slate-600 text-blue-300 transition-colors" title="Open Image (Ctrl+O)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-open"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M2 10h20"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M2 10h20"/></svg>
             </button>
             <input type="file" id="fileInput" accept="image/*" class="hidden">
             
             <button id="downloadBtn" class="p-2 bg-slate-700 rounded hover:bg-slate-600 text-blue-300 transition-colors" title="Download Image (Ctrl+S)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
             </button>
             <div class="w-px h-6 bg-slate-600 mx-1"></div>
             <button id="undoBtn" class="p-2 bg-slate-700 rounded hover:bg-slate-600 disabled:opacity-50 transition-colors" title="Undo (Ctrl+Z)" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-undo"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
             </button>
             <button id="redoBtn" class="p-2 bg-slate-700 rounded hover:bg-slate-600 disabled:opacity-50 transition-colors" title="Redo (Ctrl+Y)" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-redo"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>
             </button>
             <div class="w-px h-6 bg-slate-600 mx-1"></div>
             <button id="clearBtn" class="p-2 bg-red-900/50 text-red-300 rounded hover:bg-red-800/50 transition-colors" title="Clear Canvas">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
             </button>
         </div>
     </header>
 
     <main class="flex-1 flex flex-col md:flex-row p-4 gap-6 overflow-hidden">
         
-        <aside class="flex md:flex-col gap-2 bg-slate-800 p-3 rounded-xl border border-slate-700 justify-start items-center flex-wrap shrink-0 shadow-lg md:w-24">
-            <button data-tool="pen" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.5)]" title="Pen">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
-                <span class="text-[10px] hidden md:block text-center leading-tight">Pen</span>
-            </button>
-            <button data-tool="line" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Snap Line">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minus"><path d="M5 12h14"></path></svg>
-                <span class="text-[10px] hidden md:block text-center leading-tight">Snap Line</span>
-            </button>
-            <button data-tool="circle" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Snap Circle">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle"><circle cx="12" cy="12" r="10"></circle></svg>
-                <span class="text-[10px] hidden md:block text-center leading-tight">Snap Circle</span>
-            </button>
-            <button data-tool="text" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Text">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-type"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" x2="15" y1="20" y2="20"></line><line x1="12" x2="12" y1="4" y2="20"></line></svg>
-                <span class="text-[10px] hidden md:block text-center leading-tight">Text</span>
-            </button>
-            <button data-tool="fill" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Fill Area">
-                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19.1 11.2l-5.6-7.5c-.8-1-2.3-1.2-3.3-.4l-5.8 4.3c-1 .8-1.2 2.3-.4 3.3l5.6 7.5c.8 1 2.3 1.2 3.3.4l5.8-4.3c1-.8 1.2-2.3.4-3.3z"></path>
-                    <path d="M10 5l4 5.5"></path>
-                    <path d="M4 14l-1.5 1.5c-1 1-1 2.6 0 3.6 1 1 2.6 1 3.6 0l1.5-1.5"></path>
-                    <circle cx="4.5" cy="20.5" r="1" fill="currentColor" stroke="none"></circle>
-                </svg>
-                <span class="text-[10px] hidden md:block text-center leading-tight">Fill</span>
-            </button>
+        <aside class="flex md:flex-col gap-2 bg-slate-800 p-3 rounded-xl border border-slate-700 justify-start items-center flex-wrap shrink-0 shadow-lg md:w-24 overflow-y-auto">
+            <div class="w-full flex flex-wrap justify-center gap-2">
+                <button data-tool="pen" class="w-[calc(50%-4px)] md:w-full p-2 md:p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.5)]" title="Pen">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
+                    <span class="text-[9px] hidden md:block text-center leading-tight">Pen</span>
+                </button>
+                <button data-tool="line" class="w-[calc(50%-4px)] md:w-full p-2 md:p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Snap Line">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg>
+                    <span class="text-[9px] hidden md:block text-center leading-tight">Line</span>
+                </button>
+                <button data-tool="circle" class="w-[calc(50%-4px)] md:w-full p-2 md:p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Snap Circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                    <span class="text-[9px] hidden md:block text-center leading-tight">Circle</span>
+                </button>
+                <button data-tool="fill" class="w-[calc(50%-4px)] md:w-full p-2 md:p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Fill Area">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19.1 11.2l-5.6-7.5c-.8-1-2.3-1.2-3.3-.4l-5.8 4.3c-1 .8-1.2 2.3-.4 3.3l5.6 7.5c.8 1 2.3 1.2 3.3.4l5.8-4.3c1-.8 1.2-2.3.4-3.3z"></path>
+                        <path d="M10 5l4 5.5"></path><path d="M4 14l-1.5 1.5c-1 1-1 2.6 0 3.6 1 1 2.6 1 3.6 0l1.5-1.5"></path>
+                        <circle cx="4.5" cy="20.5" r="1" fill="currentColor" stroke="none"></circle>
+                    </svg>
+                    <span class="text-[9px] hidden md:block text-center leading-tight">Fill</span>
+                </button>
+                <button data-tool="text" class="w-[calc(50%-4px)] md:w-full p-2 md:p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Text">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" x2="15" y1="20" y2="20"></line><line x1="12" x2="12" y1="4" y2="20"></line></svg>
+                    <span class="text-[9px] hidden md:block text-center leading-tight">Text</span>
+                </button>
+                <button data-tool="select" class="w-[calc(50%-4px)] md:w-full p-2 md:p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Select & Move (WASD)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" stroke-dasharray="4 4"/></svg>
+                    <span class="text-[9px] hidden md:block text-center leading-tight">Select</span>
+                </button>
+                <button data-tool="stamp" class="w-full p-2 md:p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Place Stamp">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h20"/><path d="M20 22H4a2 2 0 0 1-2-2v-2h22v2a2 2 0 0 1-2 2Z"/><path d="M8 22v-4"/><path d="M16 22v-4"/><path d="m19.07 10.93-1.41 1.41"/></svg>
+                    <span class="text-[9px] hidden md:block text-center leading-tight">Stamp</span>
+                </button>
+            </div>
             
             <div class="w-full flex flex-wrap justify-center gap-1 mt-2 mb-2" id="brush-sizes">
                 <button data-size="1" class="w-8 h-8 flex items-center justify-center rounded text-xs transition-colors bg-blue-500 text-white font-bold" title="Brush Size: 1px">1</button>
@@ -173,16 +188,26 @@
                 <button data-size="8" class="w-8 h-8 flex items-center justify-center rounded text-xs transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 8px">8</button>
             </div>
 
-            <div class="w-px h-8 md:w-full md:h-px bg-slate-600 my-1"></div>
+            <div class="w-full h-px bg-slate-600 my-1"></div>
+
+            <!-- Stamp Editor (8x8) -->
+            <div class="w-full flex flex-col items-center gap-1 my-2 shrink-0">
+                <span class="text-[9px] text-slate-400 font-bold tracking-wider">STAMP 8x8</span>
+                <canvas id="stampCanvas" width="8" height="8" class="w-16 h-16 border-2 border-slate-600 pixelated cursor-crosshair shadow-lg touch-none rounded-sm"></canvas>
+                <button id="clearStampBtn" class="text-[9px] bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-slate-300 w-full transition-colors">CLEAR</button>
+            </div>
+
+            <div class="w-full h-px bg-slate-600 my-1"></div>
             
-            <button id="toggleGridBtn" class="w-full p-3 rounded-lg flex flex-col items-center justify-center transition-all bg-slate-600 text-white" title="Toggle Grid (8x8)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-grid"><rect width="7" height="7" x="3" y="3"></rect><rect width="7" height="7" x="14" y="3"></rect><rect width="7" height="7" x="14" y="14"></rect><rect width="7" height="7" x="3" y="14"></rect></svg>
-                <span class="text-[10px] hidden md:block mt-1">Grid</span>
+            <button id="toggleGridBtn" class="w-full p-2 rounded-lg flex flex-col items-center justify-center transition-all bg-slate-600 text-white" title="Toggle Grid (8x8)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3"></rect><rect width="7" height="7" x="14" y="3"></rect><rect width="7" height="7" x="14" y="14"></rect><rect width="7" height="7" x="3" y="14"></rect></svg>
+                <span class="text-[9px] hidden md:block mt-1">Grid</span>
             </button>
         </aside>
 
         <div class="flex-1 flex flex-col items-center justify-center relative touch-none">
             
+            <!-- Text Input -->
             <div id="textInputContainer" class="w-full max-w-[min(90vw,70vh)] flex gap-2 p-2 bg-blue-600/90 backdrop-blur-sm rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.6)] border border-blue-400 mb-4 hidden z-20 transition-all">
                 <input 
                     type="text" 
@@ -217,102 +242,88 @@
 
                 <div id="symXLine" class="absolute top-0 w-px h-full bg-red-500 shadow-[0_0_5px_red] pointer-events-none z-10 hidden" style="left: 50%;"></div>
                 <div id="symYLine" class="absolute left-0 h-px w-full bg-green-500 shadow-[0_0_5px_green] pointer-events-none z-10 hidden" style="top: 50%;"></div>
+                
+                <!-- SVG Selection Outline (1px actual screen size) -->
+                <svg id="selectionSvg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-30 hidden" viewBox="0 0 64 64" preserveAspectRatio="none">
+                    <rect id="selRectOuter" fill="none" stroke="black" stroke-width="1" vector-effect="non-scaling-stroke" />
+                    <rect id="selRectInner" fill="none" stroke="white" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke" class="selection-ants" />
+                </svg>
             </div>
 
+            <!-- コントロールパネル -->
             <div class="w-full max-w-[min(90vw,70vh)] mt-6 flex flex-col gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+                <!-- シンメトリー -->
                 <div class="flex flex-col gap-3 w-full">
                     <div class="flex items-center gap-4 w-full">
-                        <button 
-                            id="toggleSymX"
-                            class="flex items-center gap-2 p-2 rounded w-28 shrink-0 transition-colors bg-slate-700 text-slate-400"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-horizontal"><path d="M8 3V21"></path><path d="M16 3V21"></path><path d="M12 21v-1a2 2 0 0 0-2-2H8c-2.7 0-4-1.3-4-4V8c0-2.7 1.3-4 4-4h2a2 2 0 0 0 2-2V3"></path><path d="M12 21v-1a2 2 0 0 1 2-2h2c2.7 0 4-1.3 4-4V8c0-2.7-1.3-4-4-4h-2a2 2 0 0 1-2-2V3"></path></svg>
-                            <span class="text-xs">X-AXIS</span>
+                        <button id="toggleSymX" class="flex items-center justify-center gap-2 p-2 rounded w-28 shrink-0 transition-colors bg-slate-700 text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3V21"></path><path d="M16 3V21"></path><path d="M12 21v-1a2 2 0 0 0-2-2H8c-2.7 0-4-1.3-4-4V8c0-2.7 1.3-4 4-4h2a2 2 0 0 0 2-2V3"></path><path d="M12 21v-1a2 2 0 0 1 2-2h2c2.7 0 4-1.3 4-4V8c0-2.7-1.3-4-4-4h-2a2 2 0 0 1-2-2V3"></path></svg>
+                            <span class="text-[10px] font-bold">X-AXIS</span>
                         </button>
-                        <input 
-                            type="range" min="0" max="64" value="32" id="symXPos"
-                            class="flex-1 accent-red-500 disabled:opacity-30 slider-thumb-red" disabled
-                        />
+                        <input type="range" min="0" max="64" value="32" id="symXPos" class="flex-1 accent-red-500 disabled:opacity-30 slider-thumb-red" disabled>
                         <button id="resetSymX" class="p-1.5 rounded bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-slate-700 disabled:hover:text-slate-400" title="Reset to Center" disabled>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                         </button>
                     </div>
                     <div class="flex items-center gap-4 w-full">
-                        <button 
-                            id="toggleSymY"
-                            class="flex items-center gap-2 p-2 rounded w-28 shrink-0 transition-colors bg-slate-700 text-slate-400"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-vertical"><path d="M12 8V21"></path><path d="M12 3V16"></path><path d="M4 12H2v-2a2 2 0 0 1 2-2h4c2.7 0 4 1.3 4 4v2c0 2.7-1.3 4-4 4H4a2 2 0 0 1-2-2v-2"></path><path d="M20 12H22v-2a2 2 0 0 0-2-2h-4c-2.7 0-4 1.3-4 4v2c0 2.7 1.3 4 4 4h4a2 2 0 0 0 2-2v-2"></path></svg>
-                            <span class="text-xs">Y-AXIS</span>
+                        <button id="toggleSymY" class="flex items-center justify-center gap-2 p-2 rounded w-28 shrink-0 transition-colors bg-slate-700 text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V21"></path><path d="M12 3V16"></path><path d="M4 12H2v-2a2 2 0 0 1 2-2h4c2.7 0 4 1.3 4 4v2c0 2.7-1.3 4-4 4H4a2 2 0 0 1-2-2v-2"></path><path d="M20 12H22v-2a2 2 0 0 0-2-2h-4c-2.7 0-4 1.3-4 4v2c0 2.7 1.3 4 4 4h4a2 2 0 0 0 2-2v-2"></path></svg>
+                            <span class="text-[10px] font-bold">Y-AXIS</span>
                         </button>
-                        <input 
-                            type="range" min="0" max="64" value="32" id="symYPos"
-                            class="flex-1 accent-green-500 disabled:opacity-30 slider-thumb-green" disabled
-                        />
+                        <input type="range" min="0" max="64" value="32" id="symYPos" class="flex-1 accent-green-500 disabled:opacity-30 slider-thumb-green" disabled>
                         <button id="resetSymY" class="p-1.5 rounded bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-slate-700 disabled:hover:text-slate-400" title="Reset to Center" disabled>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                         </button>
                     </div>
                 </div>
 
                 <div class="w-full h-px bg-slate-700 my-1"></div>
 
+                <!-- マスキング (パターン) ラジオボタン -->
                 <div class="flex flex-col gap-3 w-full">
                     <div class="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock text-slate-400"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <span class="text-xs text-slate-400 font-bold">PATTERN MASK</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span class="text-[10px] text-slate-400 font-bold tracking-wider">PATTERN MASK</span>
                     </div>
                     
-                    <div class="flex flex-wrap gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] text-slate-400 w-12 font-bold tracking-wider">H-LINE</span>
+                            <span class="text-[9px] text-slate-400 w-12 font-bold tracking-wider">H-LINE</span>
                             <div class="flex bg-slate-900 rounded border border-slate-600 overflow-hidden">
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="maskHorizontal" value="none" class="peer sr-only" checked>
-                                    <div class="px-2 py-1 text-[10px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700 transition-colors">NONE</div>
-                                </label>
-                                <label class="cursor-pointer border-l border-slate-600">
-                                    <input type="radio" name="maskHorizontal" value="even" class="peer sr-only">
-                                    <div class="px-2 py-1 text-[10px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700 transition-colors">EVEN</div>
-                                </label>
-                                <label class="cursor-pointer border-l border-slate-600">
-                                    <input type="radio" name="maskHorizontal" value="odd" class="peer sr-only">
-                                    <div class="px-2 py-1 text-[10px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700 transition-colors">ODD</div>
-                                </label>
+                                <label class="cursor-pointer"><input type="radio" name="maskHorizontal" value="none" class="peer sr-only" checked><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">NONE</div></label>
+                                <label class="cursor-pointer border-l border-slate-600"><input type="radio" name="maskHorizontal" value="even" class="peer sr-only"><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">EVEN</div></label>
+                                <label class="cursor-pointer border-l border-slate-600"><input type="radio" name="maskHorizontal" value="odd" class="peer sr-only"><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">ODD</div></label>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] text-slate-400 w-12 font-bold tracking-wider">V-LINE</span>
+                            <span class="text-[9px] text-slate-400 w-12 font-bold tracking-wider">V-LINE</span>
                             <div class="flex bg-slate-900 rounded border border-slate-600 overflow-hidden">
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="maskVertical" value="none" class="peer sr-only" checked>
-                                    <div class="px-2 py-1 text-[10px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700 transition-colors">NONE</div>
-                                </label>
-                                <label class="cursor-pointer border-l border-slate-600">
-                                    <input type="radio" name="maskVertical" value="even" class="peer sr-only">
-                                    <div class="px-2 py-1 text-[10px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700 transition-colors">EVEN</div>
-                                </label>
-                                <label class="cursor-pointer border-l border-slate-600">
-                                    <input type="radio" name="maskVertical" value="odd" class="peer sr-only">
-                                    <div class="px-2 py-1 text-[10px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700 transition-colors">ODD</div>
-                                </label>
+                                <label class="cursor-pointer"><input type="radio" name="maskVertical" value="none" class="peer sr-only" checked><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">NONE</div></label>
+                                <label class="cursor-pointer border-l border-slate-600"><input type="radio" name="maskVertical" value="even" class="peer sr-only"><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">EVEN</div></label>
+                                <label class="cursor-pointer border-l border-slate-600"><input type="radio" name="maskVertical" value="odd" class="peer sr-only"><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">ODD</div></label>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] text-slate-400 w-12 font-bold tracking-wider">CHECKER</span>
+                            <span class="text-[9px] text-slate-400 w-12 font-bold tracking-wider">CHECKER</span>
                             <div class="flex bg-slate-900 rounded border border-slate-600 overflow-hidden">
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="maskChecker" value="none" class="peer sr-only" checked>
-                                    <div class="px-2 py-1 text-[10px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700 transition-colors">NONE</div>
-                                </label>
-                                <label class="cursor-pointer border-l border-slate-600">
-                                    <input type="radio" name="maskChecker" value="even" class="peer sr-only">
-                                    <div class="px-2 py-1 text-[10px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700 transition-colors">EVEN</div>
-                                </label>
-                                <label class="cursor-pointer border-l border-slate-600">
-                                    <input type="radio" name="maskChecker" value="odd" class="peer sr-only">
-                                    <div class="px-2 py-1 text-[10px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700 transition-colors">ODD</div>
-                                </label>
+                                <label class="cursor-pointer"><input type="radio" name="maskChecker" value="none" class="peer sr-only" checked><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">NONE</div></label>
+                                <label class="cursor-pointer border-l border-slate-600"><input type="radio" name="maskChecker" value="even" class="peer sr-only"><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">EVEN</div></label>
+                                <label class="cursor-pointer border-l border-slate-600"><input type="radio" name="maskChecker" value="odd" class="peer sr-only"><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">ODD</div></label>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] text-slate-400 w-12 font-bold tracking-wider">SLASH /</span>
+                            <div class="flex bg-slate-900 rounded border border-slate-600 overflow-hidden">
+                                <label class="cursor-pointer"><input type="radio" name="maskSlash" value="none" class="peer sr-only" checked><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">NONE</div></label>
+                                <label class="cursor-pointer border-l border-slate-600"><input type="radio" name="maskSlash" value="even" class="peer sr-only"><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">EVEN</div></label>
+                                <label class="cursor-pointer border-l border-slate-600"><input type="radio" name="maskSlash" value="odd" class="peer sr-only"><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">ODD</div></label>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] text-slate-400 w-12 font-bold tracking-wider">B-SLASH \</span>
+                            <div class="flex bg-slate-900 rounded border border-slate-600 overflow-hidden">
+                                <label class="cursor-pointer"><input type="radio" name="maskBackslash" value="none" class="peer sr-only" checked><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">NONE</div></label>
+                                <label class="cursor-pointer border-l border-slate-600"><input type="radio" name="maskBackslash" value="even" class="peer sr-only"><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">EVEN</div></label>
+                                <label class="cursor-pointer border-l border-slate-600"><input type="radio" name="maskBackslash" value="odd" class="peer sr-only"><div class="px-2 py-1 text-[9px] text-slate-400 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-slate-700">ODD</div></label>
                             </div>
                         </div>
                     </div>
@@ -323,7 +334,7 @@
         <aside class="flex md:flex-col gap-3 bg-slate-800 p-3 rounded-xl border border-slate-700 justify-start overflow-x-auto shadow-lg shrink-0 items-center md:w-24" id="paletteSide">
             <div class="flex flex-col items-center w-full gap-1 mb-2 shrink-0">
                 <span class="text-[10px] text-slate-400 font-bold tracking-wider">HUE SHIFT</span>
-                <input type="range" id="hueSlider" min="0" max="360" value="210" class="w-full h-2 rounded-lg cursor-pointer mt-1">
+                <input type="range" id="hueSlider" min="0" max="360" value="207" class="w-full h-2 rounded-lg cursor-pointer mt-1">
             </div>
             <div id="palette" class="flex md:flex-col gap-3 items-center w-full">
                 <!-- Palette colors will be generated by JS -->
@@ -336,31 +347,33 @@
         // --- 設定・定数 ---
         const CANVAS_SIZE = 64;
 
-        // ベースのHSL値 (Hはスライダーから直接取得。S, Lのみ定義)
+        // 以前の美しい階調カーブを持つ8色に戻す
         const BASE_COLORS = [
-            null, // 0: White (固定)
-            {s: 100, l: 90}, // 1
-            {s: 100, l: 75}, // 2
-            {s: 100, l: 60}, // 3
-            {s: 100, l: 50}, // 4 (ピュアカラー)
-            {s: 100, l: 35}, // 5
-            {s: 100, l: 20}, // 6
-            {s: 100, l: 10}, // 7
-            null, // 8: Black (固定)
+            null, // 0: White
+            {h: 200, s: 100, l: 96},
+            {h: 201, s: 77, l: 86},
+            {h: 203, s: 83, l: 76},
+            {h: 205, s: 80, l: 66},
+            {h: 207, s: 73, l: 57},
+            {h: 209, s: 62, l: 50},
+            {h: 211, s: 61, l: 43},
+            {h: 215, s: 56, l: 23},
             null  // 9: Transparent
         ];
 
-        // 実際の描画に使われるパレット配列 (初期化時に計算される)
+        const BASE_HUE = 207; 
+        let hueShift = 0;
+
         const PALETTE = [
             '#FFFFFF',
-            '#000000', // placeholder
-            '#000000', // placeholder
-            '#000000', // placeholder
-            '#000000', // placeholder
-            '#000000', // placeholder
-            '#000000', // placeholder
-            '#000000', // placeholder
-            '#000000', // 固定黒
+            '#ebf8ff',
+            '#bee3f8',
+            '#90cdf4',
+            '#63b3ed',
+            '#4299e1',
+            '#3182ce',
+            '#2b6cb0',
+            '#1a365d',
             'transparent' 
         ];
 
@@ -383,7 +396,7 @@
             return {r, g, b};
         }
 
-        // 5x3 ピクセルフォントデータ
+        // 5x3 ピクセルフォントデータ (KUWOQ修正)
         const FONT_5x3 = {
             'A': [0,1,0, 1,0,1, 1,1,1, 1,0,1, 1,0,1],
             'B': [1,1,0, 1,0,1, 1,1,0, 1,0,1, 1,1,0],
@@ -395,19 +408,19 @@
             'H': [1,0,1, 1,0,1, 1,1,1, 1,0,1, 1,0,1],
             'I': [1,1,1, 0,1,0, 0,1,0, 0,1,0, 1,1,1],
             'J': [0,0,1, 0,0,1, 0,0,1, 1,0,1, 0,1,0],
-            'K': [1,0,1, 1,1,0, 1,0,0, 1,1,0, 1,0,1],
+            'K': [1,0,1, 1,0,1, 1,1,0, 1,0,1, 1,0,1], // 修正
             'L': [1,0,0, 1,0,0, 1,0,0, 1,0,0, 1,1,1],
             'M': [1,0,1, 1,1,1, 1,0,1, 1,0,1, 1,0,1],
             'N': [1,1,0, 1,0,1, 1,0,1, 1,0,1, 1,0,1],
-            'O': [0,1,0, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
+            'O': [1,1,1, 1,0,1, 1,0,1, 1,0,1, 1,1,1], // 修正
             'P': [1,1,0, 1,0,1, 1,1,0, 1,0,0, 1,0,0],
-            'Q': [0,1,0, 1,0,1, 1,0,1, 0,1,0, 0,0,1],
+            'Q': [1,1,1, 1,0,1, 1,0,1, 1,1,1, 0,0,1], // 修正
             'R': [1,1,0, 1,0,1, 1,1,0, 1,0,1, 1,0,1],
             'S': [0,1,1, 1,0,0, 0,1,0, 0,0,1, 1,1,0],
             'T': [1,1,1, 0,1,0, 0,1,0, 0,1,0, 0,1,0],
-            'U': [1,0,1, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
+            'U': [1,0,1, 1,0,1, 1,0,1, 1,0,1, 1,1,1], // 修正
             'V': [1,0,1, 1,0,1, 1,0,1, 1,0,1, 0,1,0],
-            'W': [1,0,1, 1,0,1, 1,0,1, 1,1,1, 1,0,1],
+            'W': [1,0,1, 1,0,1, 1,0,1, 1,0,1, 0,1,0], // 指定画像のW
             'X': [1,0,1, 1,0,1, 0,1,0, 1,0,1, 1,0,1],
             'Y': [1,0,1, 1,0,1, 0,1,0, 0,1,0, 0,1,0],
             'Z': [1,1,1, 0,0,1, 0,1,0, 1,0,0, 1,1,1],
@@ -432,6 +445,12 @@
         // --- DOM要素の参照 ---
         const pixelCanvas = document.getElementById('pixelCanvas');
         const ctx = pixelCanvas.getContext('2d');
+        const stampCanvas = document.getElementById('stampCanvas');
+        const stampCtx = stampCanvas.getContext('2d');
+        const selectionSvg = document.getElementById('selectionSvg');
+        const selRectOuter = document.getElementById('selRectOuter');
+        const selRectInner = document.getElementById('selRectInner');
+        
         const toolButtons = document.querySelectorAll('aside button[data-tool]');
         const brushSizeButtons = document.querySelectorAll('#brush-sizes button');
         const paletteContainer = document.getElementById('palette');
@@ -453,18 +472,16 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const openBtn = document.getElementById('openBtn');
         const fileInput = document.getElementById('fileInput');
+        const clearStampBtn = document.getElementById('clearStampBtn');
         const toastElement = document.getElementById('toast');
         const toastMsgElement = document.getElementById('toast-msg');
         
-        const maskHorizontalSelect = document.getElementById('maskHorizontal');
-        const maskVerticalSelect = document.getElementById('maskVertical');
-        const maskCheckerSelect = document.getElementById('maskChecker');
         const hueSlider = document.getElementById('hueSlider');
 
         // --- 状態管理 ---
         let currentTool = 'pen';
         let brushSize = 1;
-        let colorIndex = 4; // デフォルトは純色 (PALETTE[4])
+        let colorIndex = 4; // 初期色
         let symXEnabled = false;
         let symYEnabled = false;
         let symXPos = 32;
@@ -474,21 +491,37 @@
 
         let pixelData = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE); 
         let previewData = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE); 
+        
+        // Stamp Data (8x8)
+        let stampData = new Uint8Array(8 * 8).fill(9); // 9 is transparent
+
+        // Select Tool State
+        let selectionState = 'none'; 
+        let selRect = {x:0, y:0, w:0, h:0};
+        let selData = null; 
+        let selStartPos = {x:0, y:0};
+        let selDragStartPos = {x:0, y:0};
+        let selOriginalRect = {x:0, y:0};
+        let isDraggingSelection = false;
 
         let isDrawing = false;
         let startPos = { x: 0, y: 0 };
         let lastPos = { x: -1, y: -1 };
         let lastPreviewKey = ''; 
         let hoverPos = null; 
+        let isDrawingStamp = false;
 
         let history = [];
         let historyIndex = -1;
         let audioCtx = null;
 
+        // MASK
         let lockedColors = new Set();
         let maskHorizontal = 'none';
         let maskVertical = 'none';
         let maskChecker = 'none';
+        let maskSlash = 'none';
+        let maskBackslash = 'none';
 
         // --- 初期化処理 ---
         function init() {
@@ -498,6 +531,7 @@
             historyIndex = 0;
 
             renderPalette();
+            renderStampCanvas();
             renderCanvas();
             updateHistoryState();
             setupEventListeners();
@@ -564,7 +598,6 @@
             }, 2500);
         }
 
-        // --- 履歴管理 ---
         function updateHistoryState() {
             undoBtn.disabled = historyIndex <= 0;
             redoBtn.disabled = historyIndex >= history.length - 1;
@@ -580,6 +613,7 @@
 
         function handleUndo() {
             if (historyIndex > 0) {
+                if (selectionState !== 'none') commitSelection();
                 historyIndex--;
                 pixelData = new Uint8Array(history[historyIndex]);
                 renderCanvas();
@@ -590,6 +624,7 @@
 
         function handleRedo() {
             if (historyIndex < history.length - 1) {
+                if (selectionState !== 'none') commitSelection();
                 historyIndex++;
                 pixelData = new Uint8Array(history[historyIndex]);
                 renderCanvas();
@@ -602,12 +637,16 @@
         function isPixelLocked(x, y) {
             if (maskHorizontal === 'even' && y % 2 === 0) return true;
             if (maskHorizontal === 'odd' && y % 2 === 1) return true;
-            
             if (maskVertical === 'even' && x % 2 === 0) return true;
             if (maskVertical === 'odd' && x % 2 === 1) return true;
-
             if (maskChecker === 'even' && (x + y) % 2 === 0) return true;
             if (maskChecker === 'odd' && (x + y) % 2 === 1) return true;
+            
+            // 斜めストライプ (幅2)
+            if (maskSlash === 'even' && (x + y) % 4 < 2) return true;
+            if (maskSlash === 'odd' && (x + y) % 4 >= 2) return true;
+            if (maskBackslash === 'even' && (x - y + CANVAS_SIZE) % 4 < 2) return true;
+            if (maskBackslash === 'odd' && (x - y + CANVAS_SIZE) % 4 >= 2) return true;
 
             const currentColorIdx = pixelData[y * CANVAS_SIZE + x];
             if (lockedColors.has(currentColorIdx)) return true;
@@ -618,19 +657,62 @@
         // --- 色相シフトロジック ---
         function updatePaletteColors() {
             let currentHue = parseInt(hueSlider.value);
-            for (let i = 1; i <= 7; i++) {
+            hueShift = currentHue - BASE_HUE;
+            for (let i = 1; i <= 8; i++) {
                 let c = BASE_COLORS[i];
-                PALETTE[i] = hslToHex(currentHue, c.s, c.l);
+                let newH = (c.h + hueShift + 360) % 360;
+                PALETTE[i] = hslToHex(newH, c.s, c.l);
             }
-            
-            // パレットボタンの色とツールチップを更新
             document.querySelectorAll('#palette button').forEach(btn => {
                 let idx = parseInt(btn.dataset.colorIndex);
-                if (idx > 0 && idx < 8) {
+                if (idx > 0 && idx < 9) {
                     btn.style.backgroundColor = PALETTE[idx];
                     btn.title = `Color ${idx} (${PALETTE[idx]})`;
                 }
             });
+            renderStampCanvas(); 
+        }
+
+        // --- Select Tool Logic ---
+        function commitSelection() {
+            if (selectionState === 'selected' && selData) {
+                for(let dy=0; dy<selRect.h; dy++) {
+                    for(let dx=0; dx<selRect.w; dx++) {
+                        let c = selData[dy * selRect.w + dx];
+                        if (c !== 9) { // 9=transparent
+                            let px = selRect.x + dx;
+                            let py = selRect.y + dy;
+                            if (px>=0 && px<CANVAS_SIZE && py>=0 && py<CANVAS_SIZE) {
+                                if (!isPixelLocked(px, py)) {
+                                    pixelData[py * CANVAS_SIZE + px] = c;
+                                }
+                            }
+                        }
+                    }
+                }
+                saveHistory();
+            }
+            selectionState = 'none';
+            selData = null;
+            selRect = {x:0, y:0, w:0, h:0};
+            updateSelectionUI();
+        }
+
+        function updateSelectionUI() {
+            if (currentTool === 'select' && selectionState !== 'none') {
+                selectionSvg.classList.remove('hidden');
+                selRectOuter.setAttribute('x', selRect.x);
+                selRectOuter.setAttribute('y', selRect.y);
+                selRectOuter.setAttribute('width', selRect.w);
+                selRectOuter.setAttribute('height', selRect.h);
+                
+                selRectInner.setAttribute('x', selRect.x);
+                selRectInner.setAttribute('y', selRect.y);
+                selRectInner.setAttribute('width', selRect.w);
+                selRectInner.setAttribute('height', selRect.h);
+            } else {
+                selectionSvg.classList.add('hidden');
+            }
         }
 
         // --- 描画コア関数 ---
@@ -641,7 +723,6 @@
         function setPixelCore(px, py, colorIdx, isPreview = false) {
             if (px >= 0 && px < CANVAS_SIZE && py >= 0 && py < CANVAS_SIZE) {
                 if (isPixelLocked(px, py)) return; 
-
                 if (isPreview) {
                     previewData[py * CANVAS_SIZE + px] = colorIdx + 1; 
                 } else {
@@ -673,7 +754,6 @@
             let sx = (x0 < x1) ? 1 : -1;
             let sy = (y0 < y1) ? 1 : -1;
             let err = dx - dy;
-
             while (true) {
                 drawBrush(x0, y0, colorIdx, isPreview);
                 if (x0 === x1 && y0 === y1) break;
@@ -687,34 +767,23 @@
             const dx = x1 - x0;
             const dy = y1 - y0;
             if (dx === 0 && dy === 0) return { x: x0, y: y0 };
-
             const angle = Math.atan2(Math.abs(dy), Math.abs(dx));
             let closestAngle = ALLOWED_ANGLES[0];
             let minDiff = Math.abs(angle - ALLOWED_ANGLES[0]);
-            
             for (let i = 1; i < ALLOWED_ANGLES.length; i++) {
                 const diff = Math.abs(angle - ALLOWED_ANGLES[i]);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestAngle = ALLOWED_ANGLES[i];
-                }
+                if (diff < minDiff) { minDiff = diff; closestAngle = ALLOWED_ANGLES[i]; }
             }
-
             const dist = Math.sqrt(dx * dx + dy * dy);
             let snappedDx = Math.round(dist * Math.cos(closestAngle));
             let snappedDy = Math.round(dist * Math.sin(closestAngle));
-
             if (dx < 0) snappedDx = -snappedDx;
             if (dy < 0) snappedDy = -snappedDy;
-
             return { x: x0 + snappedDx, y: y0 + snappedDy };
         }
 
         function drawCircle(xc, yc, r, colorIdx, isPreview = false) {
-            if (r === 0) {
-                drawBrush(xc, yc, colorIdx, isPreview);
-                return;
-            }
+            if (r === 0) { drawBrush(xc, yc, colorIdx, isPreview); return; }
             let x = 0, y = r, d = 3 - 2 * r;
             const draw8 = (cx, cy, px, py) => {
                 drawBrush(cx + px, cy + py, colorIdx, isPreview);
@@ -726,7 +795,6 @@
                 drawBrush(cx + py, cy - px, colorIdx, isPreview);
                 drawBrush(cx - py, cy - px, colorIdx, isPreview);
             };
-
             draw8(xc, yc, x, y);
             while (y >= x) {
                 x++;
@@ -756,42 +824,75 @@
             }
         }
 
-        // --- 塗りつぶしツール (Flood Fill) ---
         function floodFill(startX, startY, fillColor, isPreview = false) {
             if (isPixelLocked(startX, startY)) return; 
-
             const targetColor = pixelData[startY * CANVAS_SIZE + startX];
             if (targetColor === fillColor) return; 
-
             const queue = [{ x: startX, y: startY }];
             const visited = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE); 
-
             const getColor = (px, py) => {
                 if (px < 0 || px >= CANVAS_SIZE || py < 0 || py >= CANVAS_SIZE) return -1; 
                 return pixelData[py * CANVAS_SIZE + px];
             };
-
             while (queue.length > 0) {
                 const { x, y } = queue.shift();
                 const idx = y * CANVAS_SIZE + x;
-
                 if (x < 0 || x >= CANVAS_SIZE || y < 0 || y >= CANVAS_SIZE) continue;
                 if (visited[idx] === 1) continue; 
                 if (getColor(x, y) !== targetColor) continue; 
                 if (isPixelLocked(x, y)) continue; 
-
                 setPixelCore(x, y, fillColor, isPreview);
                 visited[idx] = 1; 
-
                 queue.push({ x: x + 1, y: y });
                 queue.push({ x: x - 1, y: y });
                 queue.push({ x: x, y: y + 1 });
                 queue.push({ x: x, y: y - 1 });
             }
-
             playSound('click');
         }
 
+        // --- Stamp Logic ---
+        function renderStampCanvas() {
+            const imgData = stampCtx.createImageData(8, 8);
+            for(let i=0; i<64; i++) {
+                let c = stampData[i];
+                if(c === 9) {
+                    imgData.data[i*4+3] = 0;
+                } else {
+                    let rgb = hexToRgb(PALETTE[c]);
+                    imgData.data[i*4] = rgb.r;
+                    imgData.data[i*4+1] = rgb.g;
+                    imgData.data[i*4+2] = rgb.b;
+                    imgData.data[i*4+3] = 255;
+                }
+            }
+            stampCtx.putImageData(imgData, 0, 0);
+        }
+
+        function handleStampInput(e) {
+            const rect = stampCanvas.getBoundingClientRect();
+            const scaleX = stampCanvas.width / rect.width;
+            const scaleY = stampCanvas.height / rect.height;
+            const x = Math.floor((e.clientX - rect.left) * scaleX);
+            const y = Math.floor((e.clientY - rect.top) * scaleY);
+            if (x>=0 && x<8 && y>=0 && y<8) {
+                stampData[y*8+x] = colorIndex;
+                renderStampCanvas();
+                if(e.type==='pointerdown') playSound('draw');
+            }
+        }
+
+        function drawStamp(cx, cy, isPreview = false) {
+            let offset = 4; // center 8x8
+            for(let sy=0; sy<8; sy++) {
+                for(let sx=0; sx<8; sx++) {
+                    let c = stampData[sy*8+sx];
+                    if (c !== 9) { // Not transparent
+                        drawBrush(cx - offset + sx, cy - offset + sy, c, isPreview, 1);
+                    }
+                }
+            }
+        }
 
         // --- キャンバスイベントハンドラ ---
         function getCanvasPos(e) {
@@ -807,11 +908,35 @@
             e.preventDefault();
             initAudio();
             const pos = getCanvasPos(e);
-            isDrawing = true;
             hoverPos = null; 
+            
+            if (currentTool === 'select') {
+                if (selectionState === 'selected') {
+                    if (pos.x >= selRect.x && pos.x < selRect.x + selRect.w &&
+                        pos.y >= selRect.y && pos.y < selRect.y + selRect.h) {
+                        isDraggingSelection = true;
+                        selDragStartPos = pos;
+                        selOriginalRect = {x: selRect.x, y: selRect.y};
+                        return; 
+                    } else {
+                        commitSelection();
+                    }
+                }
+                selectionState = 'selecting';
+                selStartPos = pos;
+                selRect = {x: pos.x, y: pos.y, w: 1, h: 1};
+                isDrawing = true;
+                updateSelectionUI();
+                return;
+            }
+
+            if (selectionState !== 'none') commitSelection();
+
+            isDrawing = true;
             startPos = pos;
             lastPos = pos;
             lastPreviewKey = '';
+            saveHistory();
 
             if (currentTool === 'pen') {
                 drawBrush(pos.x, pos.y, colorIndex);
@@ -825,6 +950,11 @@
                 floodFill(pos.x, pos.y, colorIndex);
                 saveHistory(); 
                 isDrawing = false; 
+            } else if (currentTool === 'stamp') {
+                drawStamp(pos.x, pos.y, false);
+                playSound('click');
+                saveHistory();
+                isDrawing = false;
             }
         }
 
@@ -832,8 +962,25 @@
             e.preventDefault();
             const pos = getCanvasPos(e);
             
-            if (!isDrawing) {
+            if (!isDrawing && !isDraggingSelection) {
                 hoverPos = pos;
+                return;
+            }
+
+            if (currentTool === 'select') {
+                if (selectionState === 'selecting') {
+                    selRect.x = Math.min(selStartPos.x, pos.x);
+                    selRect.y = Math.min(selStartPos.y, pos.y);
+                    selRect.w = Math.abs(pos.x - selStartPos.x) + 1;
+                    selRect.h = Math.abs(pos.y - selStartPos.y) + 1;
+                    updateSelectionUI();
+                } else if (isDraggingSelection) {
+                    let dx = pos.x - selDragStartPos.x;
+                    let dy = pos.y - selDragStartPos.y;
+                    selRect.x = selOriginalRect.x + dx;
+                    selRect.y = selOriginalRect.y + dy;
+                    updateSelectionUI();
+                }
                 return;
             }
 
@@ -859,15 +1006,48 @@
         }
 
         function handlePointerUp(e) {
+            if (isDraggingSelection) {
+                isDraggingSelection = false;
+                playSound('click');
+                hoverPos = getCanvasPos(e);
+                return;
+            }
+
             if (!isDrawing) return;
             isDrawing = false;
             e.preventDefault();
             const pos = getCanvasPos(e);
             hoverPos = pos;
 
-            if (currentTool === 'pen') {
-                // ペンツールは Down と Move で描画が完了
-            } else if (currentTool === 'line') {
+            if (currentTool === 'select') {
+                if (selectionState === 'selecting') {
+                    if (selRect.w > 0 && selRect.h > 0) {
+                        selectionState = 'selected';
+                        selData = new Uint8Array(selRect.w * selRect.h);
+                        for(let dy=0; dy<selRect.h; dy++) {
+                            for(let dx=0; dx<selRect.w; dx++) {
+                                let px = selRect.x + dx;
+                                let py = selRect.y + dy;
+                                if (px>=0 && px<CANVAS_SIZE && py>=0 && py<CANVAS_SIZE) {
+                                    selData[dy * selRect.w + dx] = pixelData[py * CANVAS_SIZE + px];
+                                    if (!isPixelLocked(px, py)) {
+                                        pixelData[py * CANVAS_SIZE + px] = 0; // Cut out (fill with White)
+                                    }
+                                } else {
+                                    selData[dy * selRect.w + dx] = 9;
+                                }
+                            }
+                        }
+                        playSound('snap');
+                    } else {
+                        selectionState = 'none';
+                    }
+                    updateSelectionUI();
+                }
+                return;
+            }
+
+            if (currentTool === 'line') {
                 const endPos = getSnappedEndPoint(startPos.x, startPos.y, pos.x, pos.y);
                 drawLine(startPos.x, startPos.y, endPos.x, endPos.y, colorIndex);
                 playSound('click');
@@ -878,7 +1058,6 @@
             }
             
             saveHistory(); 
-
             clearPreview();
             renderCanvas(); 
         }
@@ -912,37 +1091,57 @@
 
                 if (hex === 'transparent') {
                     if (locked) {
-                        data[i * 4] = 128;   // R
-                        data[i * 4 + 1] = 0; // G
-                        data[i * 4 + 2] = 0; // B
-                        data[i * 4 + 3] = 128; // Alpha 
+                        data[i * 4] = 128; data[i * 4 + 1] = 0; data[i * 4 + 2] = 0; data[i * 4 + 3] = 128; 
                     } else {
-                        data[i * 4 + 3] = 0; // 透明
+                        data[i * 4 + 3] = 0; 
                     }
                 } else {
-                    let r = parseInt(hex.slice(1, 3), 16);
-                    let g = parseInt(hex.slice(3, 5), 16);
-                    let b = parseInt(hex.slice(5, 7), 16);
-
+                    let rgb = hexToRgb(hex);
                     if (locked) {
-                        r = Math.floor((r * 0.5) + (255 * 0.5));
-                        g = Math.floor((g * 0.5) + (0 * 0.5));
-                        b = Math.floor((b * 0.5) + (0 * 0.5));
+                        rgb.r = Math.floor((rgb.r * 0.5) + (255 * 0.5));
+                        rgb.g = Math.floor((rgb.g * 0.5) + (0 * 0.5));
+                        rgb.b = Math.floor((rgb.b * 0.5) + (0 * 0.5));
                     }
-
-                    data[i * 4] = r;
-                    data[i * 4 + 1] = g;
-                    data[i * 4 + 2] = b;
-                    data[i * 4 + 3] = 255; 
+                    data[i * 4] = rgb.r; data[i * 4 + 1] = rgb.g; data[i * 4 + 2] = rgb.b; data[i * 4 + 3] = 255; 
                 }
             }
+
+            // Draw floating selection
+            if (currentTool === 'select' && selectionState === 'selected' && selData) {
+                for(let dy=0; dy<selRect.h; dy++) {
+                    for(let dx=0; dx<selRect.w; dx++) {
+                        let c = selData[dy * selRect.w + dx];
+                        if (c !== 9) {
+                            let px = selRect.x + dx;
+                            let py = selRect.y + dy;
+                            if (px>=0 && px<CANVAS_SIZE && py>=0 && py<CANVAS_SIZE) {
+                                let rgb = hexToRgb(PALETTE[c]);
+                                let idx = (py * CANVAS_SIZE + px) * 4;
+                                data[idx] = rgb.r; data[idx+1] = rgb.g; data[idx+2] = rgb.b; data[idx+3] = 255;
+                            }
+                        }
+                    }
+                }
+            }
+
             ctx.putImageData(imgData, 0, 0);
 
             // --- ホバープレビューのアウトライン描画 ---
-            if (hoverPos && !isDrawing) {
+            if (hoverPos && !isDrawing && currentTool !== 'select') {
                 ctx.save();
-                ctx.globalCompositeOperation = 'difference';
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; 
+                
+                const drawPixelPreview = (px, py) => {
+                    ctx.globalCompositeOperation = 'difference';
+                    ctx.fillRect(px, py, 1, 1);
+                };
+
+                const drawMirroredPixelPreview = (px, py) => {
+                    drawPixelPreview(px, py);
+                    if (symXEnabled) drawPixelPreview(symXPos * 2 - px - 1, py);
+                    if (symYEnabled) drawPixelPreview(px, symYPos * 2 - py - 1);
+                    if (symXEnabled && symYEnabled) drawPixelPreview(symXPos * 2 - px - 1, symYPos * 2 - py - 1);
+                };
 
                 if (currentTool === 'text') {
                     let cx = hoverPos.x;
@@ -953,46 +1152,36 @@
                         for (let py = 0; py < 5; py++) {
                             for (let px = 0; px < 3; px++) {
                                 if (fontData[py * 3 + px] === 1) {
-                                    let rx = cx + px;
-                                    let ry = cy + py;
-                                    // 実際の描画と同じようにドット単位でプレビュー・反転処理を行う
-                                    ctx.fillRect(rx, ry, 1, 1);
-                                    if (symXEnabled) ctx.fillRect(symXPos * 2 - rx - 1, ry, 1, 1);
-                                    if (symYEnabled) ctx.fillRect(rx, symYPos * 2 - ry - 1, 1, 1);
-                                    if (symXEnabled && symYEnabled) ctx.fillRect(symXPos * 2 - rx - 1, symYPos * 2 - ry - 1, 1, 1);
+                                    drawMirroredPixelPreview(cx + px, cy + py);
                                 }
                             }
                         }
                         cx += 4;
                     }
                 } else if (currentTool === 'fill') {
-                    ctx.fillRect(hoverPos.x, hoverPos.y, 1, 1);
-                    if (symXEnabled) ctx.fillRect(symXPos * 2 - hoverPos.x - 1, hoverPos.y, 1, 1);
-                    if (symYEnabled) ctx.fillRect(hoverPos.x, symYPos * 2 - hoverPos.y - 1, 1, 1);
-                    if (symXEnabled && symYEnabled) ctx.fillRect(symXPos * 2 - hoverPos.x - 1, symYPos * 2 - hoverPos.y - 1, 1, 1);
+                    drawMirroredPixelPreview(hoverPos.x, hoverPos.y);
+                } else if (currentTool === 'stamp') {
+                    let cx = hoverPos.x;
+                    let cy = hoverPos.y;
+                    let offset = 4;
+                    for(let sy=0; sy<8; sy++) {
+                        for(let sx=0; sx<8; sx++) {
+                            if (stampData[sy*8+sx] !== 9) {
+                                drawMirroredPixelPreview(cx - offset + sx, cy - offset + sy);
+                            }
+                        }
+                    }
                 } else {
                     let size = brushSize;
                     let offset = Math.floor((size - 1) / 2);
-                    
-                    const drawBrushOutline = (cx, cy) => {
-                        let hx = cx - offset;
-                        let hy = cy - offset;
-                        if (size === 1) {
-                            ctx.fillRect(hx, hy, 1, 1);
-                        } else {
-                            ctx.fillRect(hx, hy, size, 1); 
-                            ctx.fillRect(hx, hy + size - 1, size, 1); 
-                            ctx.fillRect(hx, hy + 1, 1, size - 2); 
-                            ctx.fillRect(hx + size - 1, hy + 1, 1, size - 2); 
+                    for (let dy = 0; dy < size; dy++) {
+                        for (let dx = 0; dx < size; dx++) {
+                            if (dx === 0 || dx === size - 1 || dy === 0 || dy === size - 1) {
+                                drawMirroredPixelPreview(hoverPos.x - offset + dx, hoverPos.y - offset + dy);
+                            }
                         }
-                    };
-
-                    drawBrushOutline(hoverPos.x, hoverPos.y);
-                    if (symXEnabled) drawBrushOutline(symXPos * 2 - hoverPos.x - 1, hoverPos.y);
-                    if (symYEnabled) drawBrushOutline(hoverPos.x, symYPos * 2 - hoverPos.y - 1);
-                    if (symXEnabled && symYEnabled) drawBrushOutline(symXPos * 2 - hoverPos.x - 1, symYPos * 2 - hoverPos.y - 1);
+                    }
                 }
-
                 ctx.restore();
             }
 
@@ -1001,6 +1190,8 @@
 
         // --- UI更新関数 ---
         function updateToolUI() {
+            if (selectionState !== 'none' && currentTool !== 'select') commitSelection();
+
             toolButtons.forEach(btn => {
                 if (btn.dataset.tool === currentTool) {
                     btn.classList.add('bg-blue-600', 'text-white', 'shadow-[0_0_10px_rgba(37,99,235,0.5)]');
@@ -1044,11 +1235,8 @@
                 checkbox.title = 'Lock this color';
                 checkbox.checked = lockedColors.has(idx);
                 checkbox.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        lockedColors.add(idx);
-                    } else {
-                        lockedColors.delete(idx);
-                    }
+                    if (e.target.checked) lockedColors.add(idx);
+                    else lockedColors.delete(idx);
                     playSound('click');
                 });
 
@@ -1157,6 +1345,12 @@
             pixelCanvas.addEventListener('pointerup', handlePointerUp);
             pixelCanvas.addEventListener('pointercancel', handlePointerUp);
             pixelCanvas.addEventListener('pointerout', handlePointerOut);
+            
+            stampCanvas.addEventListener('pointerdown', (e) => { isDrawingStamp=true; handleStampInput(e); });
+            stampCanvas.addEventListener('pointermove', (e) => { if(isDrawingStamp) handleStampInput(e); });
+            stampCanvas.addEventListener('pointerup', () => { isDrawingStamp=false; });
+            stampCanvas.addEventListener('pointerout', () => { isDrawingStamp=false; });
+            clearStampBtn.addEventListener('click', () => { stampData.fill(9); renderStampCanvas(); playSound('click'); });
 
             toolButtons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -1232,10 +1426,7 @@
                 saveHistory(); 
             });
 
-            // Open File
-            openBtn.addEventListener('click', () => {
-                fileInput.click();
-            });
+            openBtn.addEventListener('click', () => { fileInput.click(); });
 
             fileInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
@@ -1283,8 +1474,8 @@
                 img.src = url;
             });
 
-            // Download
             downloadBtn.addEventListener('click', () => {
+                if (selectionState !== 'none') commitSelection();
                 const link = document.createElement('a');
                 link.download = 'pixel_art.png';
                 link.href = pixelCanvas.toDataURL('image/png');
@@ -1293,35 +1484,24 @@
                 playSound('snap');
             });
 
-            // Hue Slider
             hueSlider.addEventListener('input', (e) => {
                 updatePaletteColors();
             });
 
-            // マスキング
             document.querySelectorAll('input[name="maskHorizontal"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    if(e.target.checked) {
-                        maskHorizontal = e.target.value;
-                        playSound('click');
-                    }
-                });
+                radio.addEventListener('change', (e) => { if(e.target.checked) { maskHorizontal = e.target.value; playSound('click'); }});
             });
             document.querySelectorAll('input[name="maskVertical"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    if(e.target.checked) {
-                        maskVertical = e.target.value;
-                        playSound('click');
-                    }
-                });
+                radio.addEventListener('change', (e) => { if(e.target.checked) { maskVertical = e.target.value; playSound('click'); }});
             });
             document.querySelectorAll('input[name="maskChecker"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    if(e.target.checked) {
-                        maskChecker = e.target.value;
-                        playSound('click');
-                    }
-                });
+                radio.addEventListener('change', (e) => { if(e.target.checked) { maskChecker = e.target.value; playSound('click'); }});
+            });
+            document.querySelectorAll('input[name="maskSlash"]').forEach(radio => {
+                radio.addEventListener('change', (e) => { if(e.target.checked) { maskSlash = e.target.value; playSound('click'); }});
+            });
+            document.querySelectorAll('input[name="maskBackslash"]').forEach(radio => {
+                radio.addEventListener('change', (e) => { if(e.target.checked) { maskBackslash = e.target.value; playSound('click'); }});
             });
 
             // キーボードショートカット
@@ -1341,11 +1521,32 @@
                 } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') { 
                     e.preventDefault();
                     openBtn.click();
+                } else if (e.key === 'Enter') {
+                    if (currentTool === 'select' && selectionState !== 'none') {
+                        e.preventDefault();
+                        commitSelection();
+                        playSound('snap');
+                    }
+                }
+
+                // Select Tool - Keyboard Movement
+                if (currentTool === 'select' && selectionState === 'selected') {
+                    let dx = 0, dy = 0;
+                    if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') dy = -1;
+                    if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') dy = 1;
+                    if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') dx = -1;
+                    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') dx = 1;
+                    
+                    if (dx !== 0 || dy !== 0) {
+                        e.preventDefault();
+                        selRect.x += dx;
+                        selRect.y += dy;
+                        updateSelectionUI();
+                    }
                 }
             });
         }
 
-        // ページロード時に初期化
         window.addEventListener('load', init);
     </script>
 </body>
