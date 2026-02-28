@@ -167,8 +167,9 @@
                   style="background-size: calc(100% / (64 / 8)) calc(100% / (64 / 8)); background-image: linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px);" 
                 ></div>
 
-                <div id="symXLine" class="absolute top-0 w-px h-full bg-red-500 shadow-[0_0_5px_red] pointer-events-none z-30 mix-blend-screen hidden" style="left: 50%;"></div>
-                <div id="symYLine" class="absolute left-0 h-px w-full bg-green-500 shadow-[0_0_5px_green] pointer-events-none z-30 mix-blend-screen hidden" style="top: 50%;"></div>
+                <!-- シンメトリ軸の合成モード(mix-blend-screen)を削除し、古いツールに合わせてz-indexを調整 -->
+                <div id="symXLine" class="absolute top-0 w-px h-full bg-red-500 shadow-[0_0_5px_red] pointer-events-none z-10 hidden" style="left: 50%;"></div>
+                <div id="symYLine" class="absolute left-0 h-px w-full bg-green-500 shadow-[0_0_5px_green] pointer-events-none z-10 hidden" style="top: 50%;"></div>
             </div>
 
             <div class="w-full max-w-[min(90vw,70vh)] mt-6 flex flex-col gap-3 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
