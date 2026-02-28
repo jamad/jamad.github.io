@@ -115,7 +115,13 @@
                 <span class="text-[10px] hidden md:block text-center leading-tight">Text</span>
             </button>
             <button data-tool="fill" class="w-full p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all bg-slate-700 hover:bg-slate-600 text-slate-300" title="Fill Area">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paint-bucket"><path d="M19 11h-3.4L12 21H6l3.4-10H5.16a2 2 0 0 1-1.95-2.23l.14-.98A5.2 5.2 0 0 1 8.04 3h7.92a5.2 5.2 0 0 1 4.7 4.79l.14.98c.39 2.22-.36 3.47-1.94 3.73Z"></path><path d="M2.2 10H8l3.4 10h5.6c-.66-2-1.25-4-1.84-6.04"></path></svg>
+                <!-- カスタムバケツアイコン -->
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19.1 11.2l-5.6-7.5c-.8-1-2.3-1.2-3.3-.4l-5.8 4.3c-1 .8-1.2 2.3-.4 3.3l5.6 7.5c.8 1 2.3 1.2 3.3.4l5.8-4.3c1-.8 1.2-2.3.4-3.3z"></path>
+                    <path d="M10 5l4 5.5"></path>
+                    <path d="M4 14l-1.5 1.5c-1 1-1 2.6 0 3.6 1 1 2.6 1 3.6 0l1.5-1.5"></path>
+                    <circle cx="4.5" cy="20.5" r="1" fill="currentColor" stroke="none"></circle>
+                </svg>
                 <span class="text-[10px] hidden md:block text-center leading-tight">Fill</span>
             </button>
             
@@ -136,21 +142,21 @@
 
         <div class="flex-1 flex flex-col items-center justify-center relative touch-none">
             
+            <!-- Text Input をキャンバス外側の上部に配置 -->
+            <div id="textInputContainer" class="w-full max-w-[min(90vw,70vh)] flex gap-2 p-2 bg-blue-600/90 backdrop-blur-sm rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.6)] border border-blue-400 mb-4 hidden z-20 transition-all">
+                <input 
+                    type="text" 
+                    id="textInput"
+                    class="flex-1 bg-slate-900/90 border border-transparent rounded px-3 py-2 text-white font-mono uppercase tracking-widest focus:outline-none focus:border-white/50 placeholder-slate-400"
+                    placeholder="TYPE HERE..."
+                    maxlength="15"
+                    value="HELLO"
+                />
+            </div>
+
             <div class="relative bg-black shadow-2xl border-4 border-slate-800 rounded-sm overflow-hidden" 
                  style="width: min(90vw, 70vh); height: min(90vw, 70vh);">
                 
-                <!-- Text Inputをキャンバス内部の最前面に移動 -->
-                <div id="textInputContainer" class="absolute top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-sm flex gap-2 p-2 bg-blue-600/90 backdrop-blur-sm rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.6)] border border-blue-400 z-50 hidden">
-                    <input 
-                        type="text" 
-                        id="textInput"
-                        class="flex-1 bg-slate-900/90 border border-transparent rounded px-3 py-2 text-white font-mono uppercase tracking-widest focus:outline-none focus:border-white/50 placeholder-slate-400"
-                        placeholder="TYPE HERE..."
-                        maxlength="15"
-                        value="HELLO"
-                    />
-                </div>
-
                 <div class="absolute inset-0 pointer-events-none"
                      style="background-image: repeating-conic-gradient(#334155 0% 25%, #1e293b 0% 50%); background-size: 16px 16px;"
                 ></div>
@@ -398,8 +404,8 @@
         let hoverPos = null; // ホバープレビュー用の座標
 
         // 履歴管理
-        let history = [new Uint8Array(CANVAS_SIZE * CANVAS_SIZE)];
-        let historyIndex = 0;
+        let history = [];
+        let historyIndex = -1;
 
         let audioCtx = null;
 
@@ -411,8 +417,10 @@
 
         // --- 初期化処理 ---
         function init() {
-            // 初期状態を白色で塗りつぶす
             pixelData.fill(0); // PALETTE[0]が白色
+            history = [new Uint8Array(pixelData)]; // 初期状態を保存
+            historyIndex = 0;
+
             renderPalette();
             renderCanvas();
             updateHistoryState();
@@ -487,6 +495,7 @@
         }
 
         function saveHistory() {
+            // 現在のインデックスより先の履歴を削除（Undo後の新しい操作用）
             history = history.slice(0, historyIndex + 1);
             history.push(new Uint8Array(pixelData));
             if (history.length > 50) history.shift(); 
@@ -712,8 +721,6 @@
             startPos = pos;
             lastPos = pos;
             lastPreviewKey = '';
-            
-            saveHistory();
 
             if (currentTool === 'pen') {
                 drawBrush(pos.x, pos.y, colorIndex);
@@ -721,10 +728,12 @@
             } else if (currentTool === 'text') {
                 drawText(pos.x, pos.y, currentTextInput, colorIndex);
                 playSound('click');
-                isDrawing = false; // テキストは1クリックで完了
+                saveHistory(); // クリックで完了なので保存
+                isDrawing = false; 
             } else if (currentTool === 'fill') {
                 floodFill(pos.x, pos.y, colorIndex);
-                isDrawing = false; // 塗りつぶしは1クリックで完了
+                saveHistory(); // クリックで完了なので保存
+                isDrawing = false; 
             }
         }
 
@@ -776,6 +785,9 @@
                 drawCircle(startPos.x, startPos.y, getSnappedRadius(r), colorIndex);
                 playSound('click');
             }
+            
+            saveHistory(); // ドラッグ描画完了後に保存
+
             clearPreview();
             renderCanvas(); 
         }
@@ -940,7 +952,7 @@
                 // カラー選択ボタン
                 const btn = document.createElement('button');
                 btn.dataset.colorIndex = idx;
-                btn.className = `relative w-8 h-8 md:w-10 md:h-10 rounded-full border-2 transition-all shrink-0 ${colorIndex === idx ? 'border-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.5)] z-10' : 'border-slate-600 scale-100 hover:scale-105'}`;
+                btn.className = `relative w-8 h-8 md:w-10 md:h-10 rounded-full border-2 transition-all shrink-0 ${colorIndex === idx ? 'border-orange-500 scale-110 shadow-[0_0_12px_rgba(249,115,22,0.8)] z-10' : 'border-slate-600 scale-100 hover:scale-105'}`;
                 
                 if (color === 'transparent') {
                     btn.style.backgroundImage = 'repeating-conic-gradient(#cbd5e1 0% 25%, #f8fafc 0% 50%)';
@@ -968,10 +980,10 @@
             paletteContainer.querySelectorAll('button').forEach(btn => {
                 const idx = parseInt(btn.dataset.colorIndex);
                 if (colorIndex === idx) {
-                    btn.classList.add('border-white', 'scale-110', 'shadow-[0_0_10px_rgba(255,255,255,0.5)]', 'z-10');
-                    btn.classList.remove('border-slate-600', 'scale-100', 'hover:scale-105');
+                    btn.classList.add('border-orange-500', 'scale-110', 'shadow-[0_0_12px_rgba(249,115,22,0.8)]', 'z-10');
+                    btn.classList.remove('border-slate-600', 'scale-100', 'hover:scale-105', 'border-white', 'shadow-[0_0_10px_rgba(255,255,255,0.5)]');
                 } else {
-                    btn.classList.remove('border-white', 'scale-110', 'shadow-[0_0_10px_rgba(255,255,255,0.5)]', 'z-10');
+                    btn.classList.remove('border-orange-500', 'scale-110', 'shadow-[0_0_12px_rgba(249,115,22,0.8)]', 'z-10', 'border-white', 'shadow-[0_0_10px_rgba(255,255,255,0.5)]');
                     btn.classList.add('border-slate-600', 'scale-100', 'hover:scale-105');
                 }
                 
@@ -1041,7 +1053,7 @@
             pixelCanvas.addEventListener('pointermove', handlePointerMove);
             pixelCanvas.addEventListener('pointerup', handlePointerUp);
             pixelCanvas.addEventListener('pointercancel', handlePointerUp);
-            pixelCanvas.addEventListener('pointerout', handlePointerOut); // hoverPosクリアのため変更
+            pixelCanvas.addEventListener('pointerout', handlePointerOut);
 
             toolButtons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -1112,9 +1124,9 @@
             redoBtn.addEventListener('click', handleRedo);
 
             clearBtn.addEventListener('click', () => {
-                saveHistory();
                 pixelData.fill(0); // 白でクリア
                 playSound('click');
+                saveHistory(); // クリア後の状態を保存
             });
 
             downloadBtn.addEventListener('click', () => {
