@@ -202,6 +202,38 @@
         </div>
 
         <div class="w-px h-6 bg-slate-600 shrink-0"></div>
+
+        <!-- Text Tool Input — visible only when text tool active -->
+        <div id="textInputContainer" class="hidden items-center gap-2 shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-300 shrink-0"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" x2="15" y1="20" y2="20"></line><line x1="12" x2="12" y1="4" y2="20"></line></svg>
+            <input
+                type="text"
+                id="textInput"
+                class="w-40 bg-slate-900 border border-blue-500/50 rounded px-3 py-1 text-white font-mono uppercase tracking-widest text-sm focus:outline-none focus:border-blue-400 placeholder-slate-500"
+                placeholder="TYPE HERE..."
+                maxlength="15"
+                value="HELLO"
+            />
+            <div class="w-px h-6 bg-slate-600 shrink-0"></div>
+        </div>
+
+        <div class="flex items-center gap-1 shrink-0">
+            <span class="text-[9px] text-slate-400 font-bold tracking-wider mr-1">SIZE</span>
+            <div id="brush-sizes" class="flex gap-1">
+                <button data-size="1"  class="w-6 h-6 flex items-center justify-center rounded text-[10px] transition-colors bg-blue-500 text-white font-bold" title="Brush Size: 1px">1</button>
+                <button data-size="2"  class="w-6 h-6 flex items-center justify-center rounded text-[10px] transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 2px">2</button>
+                <button data-size="4"  class="w-6 h-6 flex items-center justify-center rounded text-[10px] transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 4px">4</button>
+                <button data-size="8"  class="w-6 h-6 flex items-center justify-center rounded text-[10px] transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 8px">8</button>
+                <button data-size="16" class="w-6 h-6 flex items-center justify-center rounded text-[10px] transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 16px">16</button>
+            </div>
+        </div>
+        <div class="w-px h-6 bg-slate-600 shrink-0"></div>
+        <button id="toggleGridBtn" class="flex items-center gap-1 px-2 py-1 rounded transition-all bg-slate-600 text-white shrink-0" title="Toggle Grid (8x8)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3"></rect><rect width="7" height="7" x="14" y="3"></rect><rect width="7" height="7" x="14" y="14"></rect><rect width="7" height="7" x="3" y="14"></rect></svg>
+            <span class="text-[9px] font-bold">GRID</span>
+        </button>
+
+        <div class="w-px h-6 bg-slate-600 shrink-0"></div>
         <div class="flex gap-2 items-center shrink-0">
             <!-- Clipboard Slots -->
             <div class="flex items-center gap-1" title="Clipboard Slots — Click to select active slot (Ctrl+C saves here, click non-empty to paste)">
@@ -270,13 +302,6 @@
                     <span class="text-[9px] hidden md:block text-center leading-tight">Stamp</span>
                 </button>
             </div>
-            
-            <div class="w-full flex flex-wrap justify-center gap-1 mt-2 mb-2" id="brush-sizes">
-                <button data-size="1" class="w-8 h-8 flex items-center justify-center rounded text-xs transition-colors bg-blue-500 text-white font-bold" title="Brush Size: 1px">1</button>
-                <button data-size="2" class="w-8 h-8 flex items-center justify-center rounded text-xs transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 2px">2</button>
-                <button data-size="4" class="w-8 h-8 flex items-center justify-center rounded text-xs transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 4px">4</button>
-                <button data-size="8" class="w-8 h-8 flex items-center justify-center rounded text-xs transition-colors bg-slate-700 text-slate-400 hover:bg-slate-600" title="Brush Size: 8px">8</button>
-            </div>
 
             <div class="w-full h-px bg-slate-600 my-1"></div>
 
@@ -288,28 +313,10 @@
                 <button id="pasteToStampBtn" class="text-[9px] bg-blue-900/60 hover:bg-blue-800/80 px-2 py-1 rounded text-blue-300 w-full transition-colors" title="Paste clipboard to stamp (scaled to 8x8)">PASTE</button>
             </div>
 
-            <div class="w-full h-px bg-slate-600 my-1"></div>
-            
-            <button id="toggleGridBtn" class="w-full p-2 rounded-lg flex flex-col items-center justify-center transition-all bg-slate-600 text-white" title="Toggle Grid (8x8)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3"></rect><rect width="7" height="7" x="14" y="3"></rect><rect width="7" height="7" x="14" y="14"></rect><rect width="7" height="7" x="3" y="14"></rect></svg>
-                <span class="text-[9px] hidden md:block mt-1">Grid</span>
-            </button>
         </aside>
 
         <div class="flex-1 flex flex-col items-center justify-center relative touch-none pb-16">
             
-            <!-- Text Input -->
-            <div id="textInputContainer" class="w-full max-w-[min(90vw,70vh)] flex gap-2 p-2 bg-blue-600/90 backdrop-blur-sm rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.6)] border border-blue-400 mb-4 hidden z-20 transition-all">
-                <input 
-                    type="text" 
-                    id="textInput"
-                    class="flex-1 bg-slate-900/90 border border-transparent rounded px-3 py-2 text-white font-mono uppercase tracking-widest focus:outline-none focus:border-white/50 placeholder-slate-400"
-                    placeholder="TYPE HERE..."
-                    maxlength="15"
-                    value="HELLO"
-                />
-            </div>
-
             <div class="relative bg-black shadow-2xl border-4 border-slate-800 rounded-sm overflow-hidden" 
                  style="width: min(90vw, 70vh); height: min(90vw, 70vh);">
                 
@@ -370,20 +377,21 @@
         </div>
 
         <aside class="flex md:flex-col gap-3 bg-slate-800 p-3 rounded-xl border border-slate-700 justify-start overflow-x-auto shadow-lg shrink-0 items-center md:w-24" id="paletteSide">
-            <div class="flex flex-col items-center w-full gap-1 mb-2 shrink-0">
-                <span class="text-[10px] text-slate-400 font-bold tracking-wider">HUE SHIFT</span>
-                <input type="range" id="hueSlider" min="0" max="360" value="207" class="w-full h-2 rounded-lg cursor-pointer mt-1">
-            </div>
-            <div id="palette" class="flex md:flex-col gap-3 items-center w-full">
-                <!-- Palette colors will be generated by JS -->
-            </div>
-            <div class="w-full h-px bg-slate-600 my-1 shrink-0"></div>
             <div class="flex flex-col items-center w-full gap-1 shrink-0">
                 <span class="text-[10px] text-slate-400 font-bold tracking-wider">1:1</span>
                 <canvas id="realSizeCanvas" width="64" height="64"
                     class="border border-slate-600 pixelated rounded-sm"
                     style="width:64px;height:64px;background-image:repeating-conic-gradient(#cbd5e1 0% 25%, #f8fafc 0% 50%);background-size:8px 8px;">
                 </canvas>
+            </div>
+            <div class="w-full h-px bg-slate-600 my-1 shrink-0"></div>
+            <div id="palette" class="flex md:flex-col gap-3 items-center w-full">
+                <!-- Palette colors will be generated by JS -->
+            </div>
+            <div class="w-full h-px bg-slate-600 my-1 shrink-0"></div>
+            <div class="flex flex-col items-center w-full gap-1 mb-2 shrink-0">
+                <span class="text-[10px] text-slate-400 font-bold tracking-wider">HUE SHIFT</span>
+                <input type="range" id="hueSlider" min="0" max="360" value="207" class="w-full h-2 rounded-lg cursor-pointer mt-1">
             </div>
         </aside>
 
@@ -1157,6 +1165,7 @@
                 else { btn.classList.remove('bg-blue-600', 'text-white', 'shadow-[0_0_10px_rgba(37,99,235,0.5)]'); btn.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300'); }
             });
             textInputContainer.classList.toggle('hidden', currentTool !== 'text');
+            textInputContainer.classList.toggle('flex', currentTool === 'text');
             updateSelectionUI();
         }
         function updateBrushSizeUI() {
