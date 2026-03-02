@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JAMAD SVG // PIXEL TO PATH CONVERTER</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3e;
+    --accent: #4f8ef7;
+    --accent2: #f97316;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --sel-node: #ff3b3b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 14px; font-weight: bold; letter-spacing: 0.15em; color: var(--accent); }
+  header .sub { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
+  .sep { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+
+  .btn {
+    padding: 6px 14px; border: none; border-radius: 4px;
+    font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold;
+    letter-spacing: 0.12em; cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3a7be0; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-orange { background: var(--accent2); color: #fff; }
+  .btn-orange:hover { background: #ea6600; }
+  .btn-orange:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  main {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--border); overflow: hidden; min-height: 0;
+  }
+
+  .panel { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+  .panel-header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 8px 16px; display: flex; align-items: center;
+    justify-content: space-between; flex-shrink: 0;
+  }
+  .panel-title { font-size: 10px; font-weight: bold; letter-spacing: 0.15em; color: var(--muted); }
+  .panel-body {
+    flex: 1; overflow: auto; display: flex; align-items: center;
+    justify-content: center; padding: 20px; position: relative; min-height: 0;
+  }
+
+  #dropZone {
+    width: 100%; height: 100%; border: 2px dashed var(--border); border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; cursor: pointer; transition: all 0.2s; position: absolute; inset: 20px;
+  }
+  #dropZone:hover, #dropZone.drag-over { border-color: var(--accent); background: rgba(79,142,247,0.04); }
+  #dropZone .icon { font-size: 36px; opacity: 0.3; }
+  #dropZone .label { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-align: center; line-height: 1.8; }
+  #dropZone .hint { font-size: 9px; color: var(--border); letter-spacing: 0.05em; }
+  #fileInput { display: none; }
+
+  #sourcePreview { display: none; flex-direction: column; align-items: center; gap: 12px; width: 100%; height: 100%; }
+  #sourceCanvas { image-rendering: pixelated; image-rendering: crisp-edges; border: 1px solid var(--border); max-width: 100%; max-height: calc(100% - 60px); }
+  .source-info { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
+
+  #svgDisplay { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  #svgDisplay svg { max-width: 100%; max-height: 100%; border: 1px solid var(--border); }
+  #svgPlaceholder { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-align: center; line-height: 2; }
+
+  .stats { display: flex; gap: 16px; align-items: center; }
+  .stat { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; }
+  .stat span { color: var(--accent); font-weight: bold; }
+
+  #codePanel { display: none; flex-direction: column; height: 100%; width: 100%; }
+  #svgCode {
+    flex: 1; background: var(--bg); color: #a5f3fc;
+    font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6;
+    padding: 16px; overflow: auto; white-space: pre;
+    border: none; outline: none; resize: none; width: 100%;
+  }
+
+  .view-toggle { display: flex; gap: 4px; }
+  .view-btn {
+    padding: 3px 8px; font-size: 9px; font-weight: bold; letter-spacing: 0.1em;
+    border: 1px solid var(--border); background: transparent; color: var(--muted);
+    cursor: pointer; border-radius: 3px; font-family: 'Courier New', monospace; transition: all 0.15s;
+  }
+  .view-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .checker-bg {
+    background-image: repeating-conic-gradient(#2a2d3e 0% 25%, #1a1d27 0% 50%);
+    background-size: 16px 16px;
+  }
+
+  .scale-control { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); }
+  .scale-control input {
+    width: 50px; background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Courier New', monospace; font-size: 10px;
+    padding: 3px 6px; border-radius: 3px; text-align: center;
+  }
+  .scale-control input:focus { outline: none; border-color: var(--accent); }
+
+  footer {
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 6px 16px; font-size: 9px; color: var(--muted); letter-spacing: 0.08em;
+    display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+  }
+
+  #toast {
+    position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #fff; padding: 6px 16px;
+    border-radius: 20px; font-size: 11px; letter-spacing: 0.08em;
+    z-index: 100; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+  }
+  #toast.show { opacity: 1; }
+
+  /* ===== EDITOR ===== */
+  #editorPanel {
+    display: none; width: 100%; height: 100%;
+    flex-direction: row; overflow: hidden;
+  }
+
+  /* Outliner */
+  #outliner {
+    width: 112px; flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  #outliner-title {
+    padding: 7px 10px 6px; font-size: 8px; font-weight: bold;
+    letter-spacing: 0.18em; color: var(--muted);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  #outliner-list {
+    flex: 1; overflow-y: auto; padding: 6px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .ol-item {
+    display: flex; align-items: center; gap: 7px;
+    padding: 5px 7px; border-radius: 4px; cursor: pointer;
+    border: 1px solid transparent; transition: all 0.12s;
+  }
+  .ol-item:hover { background: rgba(255,255,255,0.04); border-color: var(--border); }
+  .ol-item.active { background: rgba(79,142,247,0.13); border-color: var(--accent); }
+  .ol-swatch {
+    width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+  .ol-hex {
+    font-size: 8px; color: var(--muted); letter-spacing: 0.04em;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    font-family: 'Courier New', monospace;
+  }
+  .ol-item.active .ol-hex { color: var(--accent); }
+  .ol-empty {
+    font-size: 9px; color: var(--muted); padding: 10px 4px;
+    text-align: center; letter-spacing: 0.05em; line-height: 1.7;
+  }
+
+  /* Canvas */
+  #editorCanvas {
+    flex: 1; position: relative; overflow: hidden;
+    background-image: repeating-conic-gradient(#2a2d3e 0% 25%, #1a1d27 0% 50%);
+    background-size: 16px 16px;
+  }
+  #editorSvg { width: 100%; height: 100%; display: block; touch-action: none; }
+
+  .editor-hint {
+    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+    background: rgba(15,17,23,0.92); border: 1px solid var(--border);
+    padding: 5px 14px; border-radius: 10px; font-size: 9px; color: var(--muted);
+    letter-spacing: 0.08em; pointer-events: none; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<header>
+  <div>
+    <h1>JAMAD SVG</h1>
+    <div class="sub">PIXEL TO PATH CONVERTER</div>
+  </div>
+  <div class="sep"></div>
+  <div class="scale-control">
+    <span>SCALE</span>
+    <input type="number" id="scaleInput" value="8" min="1" max="64">
+    <span>px</span>
+  </div>
+  <div class="sep"></div>
+  <button class="btn btn-primary" id="convertBtn" disabled>CONVERT →</button>
+  <div class="sep"></div>
+  <button class="btn btn-orange" id="downloadSvgBtn" disabled>↓ SVG</button>
+  <button class="btn btn-ghost" id="copySvgBtn" disabled>COPY</button>
+</header>
+
+<main>
+  <!-- Left: Source -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">SOURCE PNG</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <div class="stats" id="sourceStats" style="display:none;">
+          <div class="stat">SIZE <span id="statSize">—</span></div>
+          <div class="stat">COLORS <span id="statColors">—</span></div>
+        </div>
+        <button class="btn btn-ghost" id="clearBtn" style="display:none;padding:3px 8px;font-size:9px;">CLEAR</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('fileInput').click()" style="padding:3px 8px;font-size:9px;">OPEN</button>
+      </div>
+    </div>
+    <div class="panel-body checker-bg">
+      <div id="dropZone">
+        <div class="icon">⬛</div>
+        <div class="label">DROP PNG HERE<br>or click OPEN</div>
+        <div class="hint">JAMAD PIXEL export recommended</div>
+      </div>
+      <div id="sourcePreview">
+        <canvas id="sourceCanvas"></canvas>
+        <div class="source-info" id="sourceInfo"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: SVG Output -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">SVG OUTPUT</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div class="stats" id="svgStats" style="display:none;">
+          <div class="stat">PATHS <span id="statElements">—</span></div>
+          <div class="stat">SIZE <span id="statFileSize">—</span></div>
+        </div>
+        <div class="view-toggle">
+          <button class="view-btn active" id="viewPreview" onclick="setView('preview')">PREVIEW</button>
+          <button class="view-btn" id="viewEdit" onclick="setView('edit')">EDIT</button>
+          <button class="view-btn" id="viewCode" onclick="setView('code')">CODE</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel-body checker-bg" style="padding:0;overflow:hidden;">
+
+      <!-- PREVIEW -->
+      <div id="svgDisplay" style="padding:20px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+        <div id="svgPlaceholder">LOAD AN IMAGE<br>THEN PRESS CONVERT</div>
+      </div>
+
+      <!-- CODE -->
+      <div id="codePanel">
+        <textarea id="svgCode" readonly placeholder="// SVG code will appear here..."></textarea>
+      </div>
+
+      <!-- EDIT -->
+      <div id="editorPanel">
+        <div id="outliner">
+          <div id="outliner-title">COLORS</div>
+          <div id="outliner-list">
+            <div class="ol-empty">CONVERT<br>FIRST</div>
+          </div>
+        </div>
+        <div id="editorCanvas">
+          <svg id="editorSvg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="editor-hint">
+            SELECT COLOR IN OUTLINER &nbsp;·&nbsp;
+            CLICK <span style="color:#fff">●</span> TO SELECT NODE (→ <span style="color:#ff3b3b">●</span>) &nbsp;·&nbsp;
+            DRAG TO MOVE &nbsp;·&nbsp; GRID SNAP
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span>JAMAD SVG v20260302.3</span>
+  <span>PATH MODE · EDIT: outliner → select color → click anchor to activate → drag to reshape</span>
+</footer>
+
+<input type="file" id="fileInput" accept="image/png,image/*">
+
+<script>
+// ===== STATE =====
+let sourceImageData = null;
+let currentSvgString = null;
+let currentView = 'preview';
+
+const ed = {
+  paths: [],       // [{color, subpaths}]
+  vw: 0, vh: 0,
+  grid: 8,
+  selPath: -1,     // selected path index
+  selNode: null,   // {si, ni} selected node within selPath
+  drag: null,      // {type, si, ni}
+};
+
+// ===== DOM =====
+const dropZone       = document.getElementById('dropZone');
+const sourcePreview  = document.getElementById('sourcePreview');
+const sourceCanvas   = document.getElementById('sourceCanvas');
+const sourceCtx      = sourceCanvas.getContext('2d');
+const convertBtn     = document.getElementById('convertBtn');
+const downloadSvgBtn = document.getElementById('downloadSvgBtn');
+const copySvgBtn     = document.getElementById('copySvgBtn');
+const clearBtn       = document.getElementById('clearBtn');
+const svgDisplay     = document.getElementById('svgDisplay');
+const codePanel      = document.getElementById('codePanel');
+const editorPanel    = document.getElementById('editorPanel');
+const svgCode        = document.getElementById('svgCode');
+const editorSvg      = document.getElementById('editorSvg');
+const scaleInput     = document.getElementById('scaleInput');
+const outlinerList   = document.getElementById('outliner-list');
+
+// ===== FILE LOADING =====
+document.getElementById('fileInput').addEventListener('change', e => {
+  const f = e.target.files[0]; if (f) loadFile(f); e.target.value = '';
+});
+dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0]; if (f) loadFile(f);
+});
+
+function loadFile(file) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    sourceCanvas.width = img.width; sourceCanvas.height = img.height;
+    sourceCtx.drawImage(img, 0, 0);
+    sourceImageData = sourceCtx.getImageData(0, 0, img.width, img.height);
+    URL.revokeObjectURL(url);
+    const ds = Math.min(6, Math.floor(320 / Math.max(img.width, img.height)));
+    sourceCanvas.style.width  = img.width  * Math.max(1, ds) + 'px';
+    sourceCanvas.style.height = img.height * Math.max(1, ds) + 'px';
+    dropZone.style.display = 'none';
+    sourcePreview.style.display = 'flex';
+    clearBtn.style.display = '';
+    const colors = new Set();
+    for (let i = 0; i < sourceImageData.data.length; i += 4) {
+      if (sourceImageData.data[i+3] > 0)
+        colors.add(`${sourceImageData.data[i]},${sourceImageData.data[i+1]},${sourceImageData.data[i+2]}`);
+    }
+    document.getElementById('statSize').textContent   = `${img.width}×${img.height}`;
+    document.getElementById('statColors').textContent = colors.size;
+    document.getElementById('sourceStats').style.display = 'flex';
+    document.getElementById('sourceInfo').textContent = `${img.width}×${img.height}px · ${colors.size} colors`;
+    convertBtn.disabled = false;
+    toast('Image loaded ✓');
+  };
+  img.src = url;
+}
+
+clearBtn.addEventListener('click', () => {
+  sourceImageData = null;
+  dropZone.style.display = ''; sourcePreview.style.display = 'none';
+  clearBtn.style.display = 'none';
+  document.getElementById('sourceStats').style.display = 'none';
+  convertBtn.disabled = true;
+  resetOutput();
+});
+
+// ===== CONVERSION =====
+convertBtn.addEventListener('click', convert);
+
+function convert() {
+  if (!sourceImageData) return;
+  const scale = parseInt(scaleInput.value) || 8;
+  const svg = toPathSvg(sourceImageData, scale);
+  currentSvgString = svg;
+  initEditor(svg, scale);
+
+  document.getElementById('svgPlaceholder').style.display = 'none';
+  svgDisplay.innerHTML = svg;
+  svgDisplay.querySelector('svg').style.maxWidth = '100%';
+  svgDisplay.querySelector('svg').style.maxHeight = '100%';
+  svgCode.value = formatSvg(svg);
+
+  const elCount = (svg.match(/<path/g) || []).length;
+  const sizeKb = (new Blob([svg]).size / 1024).toFixed(1);
+  document.getElementById('statElements').textContent = elCount;
+  document.getElementById('statFileSize').textContent = sizeKb + ' KB';
+  document.getElementById('svgStats').style.display = 'flex';
+  downloadSvgBtn.disabled = false; copySvgBtn.disabled = false;
+
+  renderOutliner();
+  if (currentView === 'edit') renderEditor();
+  toast(`Converted! ${elCount} paths · ${sizeKb} KB`);
+}
+
+function toPathSvg(imgData, scale) {
+  const w = imgData.width, h = imgData.height, d = imgData.data;
+  const colorGrids = {};
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4;
+    if (d[i+3] < 128) continue;
+    const hex = rgbToHex(d[i], d[i+1], d[i+2]);
+    if (!colorGrids[hex]) colorGrids[hex] = Array.from({length: h}, () => new Uint8Array(w));
+    colorGrids[hex][y][x] = 1;
+  }
+  let paths = '';
+  for (const [hex, grid] of Object.entries(colorGrids)) {
+    let pathD = '';
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      if (!grid[y][x]) continue;
+      let rw = 1; while (x + rw < w && grid[y][x + rw]) rw++;
+      let rh = 1;
+      outer: while (y + rh < h) {
+        for (let dx = 0; dx < rw; dx++) if (!grid[y+rh][x+dx]) break outer;
+        rh++;
+      }
+      for (let dy = 0; dy < rh; dy++) for (let dx = 0; dx < rw; dx++) grid[y+dy][x+dx] = 0;
+      const px = x*scale, py = y*scale, pw = rw*scale, ph = rh*scale;
+      pathD += `M${px},${py}h${pw}v${ph}h-${pw}z`;
+    }
+    paths += `\n  <path fill="${hex}" d="${pathD}"/>`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w*scale}" height="${h*scale}" viewBox="0 0 ${w*scale} ${h*scale}" shape-rendering="crispEdges">${paths}\n</svg>`;
+}
+
+// ===== OUTLINER =====
+function renderOutliner() {
+  outlinerList.innerHTML = '';
+  if (!ed.paths.length) {
+    outlinerList.innerHTML = '<div class="ol-empty">CONVERT<br>FIRST</div>'; return;
+  }
+  ed.paths.forEach((ep, pi) => {
+    const item = document.createElement('div');
+    item.className = 'ol-item' + (pi === ed.selPath ? ' active' : '');
+    item.innerHTML = `
+      <div class="ol-swatch" style="background:${ep.color};"></div>
+      <div class="ol-hex">${ep.color}</div>
+    `;
+    item.addEventListener('click', () => {
+      ed.selPath = pi;
+      ed.selNode = null;
+      renderOutliner();
+      renderEditor();
+    });
+    outlinerList.appendChild(item);
+  });
+}
+
+// ===== EDITOR =====
+function tokenizePath(d) {
+  const re = /([MmHhVvLlCcSsQqTtAaZz])|([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/g;
+  const tokens = []; let m;
+  while ((m = re.exec(d)) !== null) tokens.push(m[0]);
+  return tokens;
+}
+
+function parsePathD(d) {
+  const tokens = tokenizePath(d);
+  const subpaths = [];
+  let cur = null, cx = 0, cy = 0, sx = 0, sy = 0;
+  let i = 0, cmd = 'M';
+  const num = () => parseFloat(tokens[i++]);
+  const node = (x, y) => ({ x, y, cpIn: {x, y}, cpOut: {x, y} });
+  const push = (x, y) => { if (cur) cur.push(node(x, y)); cx = x; cy = y; };
+  while (i < tokens.length) {
+    const t = tokens[i];
+    if (/^[MmHhVvLlCcSsQqTtAaZz]$/.test(t)) {
+      cmd = t; i++;
+      if (cmd === 'Z' || cmd === 'z') {
+        if (cur && cur.length) { subpaths.push(cur); cur = null; }
+        cx = sx; cy = sy;
+      }
+      continue;
+    }
+    switch (cmd) {
+      case 'M': { if (cur) subpaths.push(cur); cx=num(); cy=num(); sx=cx; sy=cy; cur=[node(cx,cy)]; cmd='L'; break; }
+      case 'm': { if (cur) subpaths.push(cur); cx+=num(); cy+=num(); sx=cx; sy=cy; cur=[node(cx,cy)]; cmd='l'; break; }
+      case 'H': { push(num(), cy); break; }
+      case 'h': { push(cx+num(), cy); break; }
+      case 'V': { push(cx, num()); break; }
+      case 'v': { push(cx, cy+num()); break; }
+      case 'L': { push(num(), num()); break; }
+      case 'l': { const dx=num(),dy=num(); push(cx+dx,cy+dy); break; }
+      case 'C': {
+        const cp1x=num(),cp1y=num(),cp2x=num(),cp2y=num(),x=num(),y=num();
+        if (cur && cur.length) cur[cur.length-1].cpOut = {x:cp1x,y:cp1y};
+        if (cur) cur.push({x, y, cpIn:{x:cp2x,y:cp2y}, cpOut:{x,y}});
+        cx=x; cy=y; break;
+      }
+      default: i++;
+    }
+  }
+  if (cur && cur.length) subpaths.push(cur);
+  return subpaths;
+}
+
+function initEditor(svgStr, scale) {
+  const doc = new DOMParser().parseFromString(svgStr, 'image/svg+xml');
+  const svgEl = doc.querySelector('svg');
+  ed.vw = parseFloat(svgEl.getAttribute('width'));
+  ed.vh = parseFloat(svgEl.getAttribute('height'));
+  ed.grid = scale;
+  ed.selPath = -1; ed.selNode = null; ed.drag = null;
+  ed.paths = Array.from(doc.querySelectorAll('path')).map(p => ({
+    color: p.getAttribute('fill'),
+    subpaths: parsePathD(p.getAttribute('d'))
+  }));
+}
+
+function buildD(subpaths) {
+  let d = '';
+  for (const sp of subpaths) {
+    if (!sp.length) continue;
+    d += `M${n(sp[0].x)},${n(sp[0].y)}`;
+    for (let k = 1; k < sp.length; k++) {
+      const pv = sp[k-1], cv = sp[k];
+      if (cpAt(pv.cpOut, pv) && cpAt(cv.cpIn, cv))
+        d += `L${n(cv.x)},${n(cv.y)}`;
+      else
+        d += `C${n(pv.cpOut.x)},${n(pv.cpOut.y)} ${n(cv.cpIn.x)},${n(cv.cpIn.y)} ${n(cv.x)},${n(cv.y)}`;
+    }
+    const last = sp[sp.length-1], first = sp[0];
+    if (!(cpAt(last.cpOut, last) && cpAt(first.cpIn, first)))
+      d += `C${n(last.cpOut.x)},${n(last.cpOut.y)} ${n(first.cpIn.x)},${n(first.cpIn.y)} ${n(first.x)},${n(first.y)}`;
+    d += 'Z';
+  }
+  return d;
+}
+
+function rebuildSvg() {
+  let paths = '';
+  for (const ep of ed.paths)
+    paths += `\n  <path fill="${ep.color}" d="${buildD(ep.subpaths)}"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${ed.vw}" height="${ed.vh}" viewBox="0 0 ${ed.vw} ${ed.vh}">${paths}\n</svg>`;
+}
+
+const n = v => parseFloat(v.toFixed(2));
+const cpAt = (cp, nd) => Math.abs(cp.x - nd.x) < 0.4 && Math.abs(cp.y - nd.y) < 0.4;
+const snap = v => Math.round(v / ed.grid) * ed.grid;
+const isSN = (si, ni) => ed.selNode && ed.selNode.si === si && ed.selNode.ni === ni;
+
+function toSvgPt(e) {
+  const pt = editorSvg.createSVGPoint();
+  pt.x = e.clientX; pt.y = e.clientY;
+  return pt.matrixTransform(editorSvg.getScreenCTM().inverse());
+}
+
+function renderEditor() {
+  if (!ed.paths.length) return;
+  editorSvg.setAttribute('viewBox', `0 0 ${ed.vw} ${ed.vh}`);
+
+  const g  = ed.grid;
+  const AR = Math.max(2.5, g * 0.34);
+  const CR = Math.max(1.8, g * 0.24);
+  const LW = Math.max(0.5, g * 0.08);
+  const GW = Math.max(0.3, g * 0.045);
+
+  let html = '';
+
+  // Background + grid
+  html += `<rect width="${ed.vw}" height="${ed.vh}" fill="#0f1117"/>`;
+  html += `<g stroke="#2a2d3e" stroke-width="${GW}">`;
+  for (let x = 0; x <= ed.vw; x += g) html += `<line x1="${x}" y1="0" x2="${x}" y2="${ed.vh}"/>`;
+  for (let y = 0; y <= ed.vh; y += g) html += `<line x1="0" y1="${y}" x2="${ed.vw}" y2="${y}"/>`;
+  html += `</g>`;
+
+  // All shapes
+  for (let pi = 0; pi < ed.paths.length; pi++) {
+    const ep = ed.paths[pi];
+    const isSel = pi === ed.selPath;
+    const d = buildD(ep.subpaths);
+    if (isSel)
+      html += `<path d="${d}" fill="none" stroke="#ffffff" stroke-width="${LW*2}" opacity="0.08" pointer-events="none"/>`;
+    html += `<path fill="${ep.color}" d="${d}" data-pi="${pi}" class="ep"
+      opacity="${isSel ? 1 : 0.72}" style="cursor:${isSel ? 'default' : 'pointer'};"/>`;
+  }
+
+  // Handles — only for selected path
+  if (ed.selPath >= 0 && ed.selPath < ed.paths.length) {
+    const ep = ed.paths[ed.selPath];
+
+    // Lines first
+    for (let si = 0; si < ep.subpaths.length; si++) {
+      const sp = ep.subpaths[si];
+      for (let ni = 0; ni < sp.length; ni++) {
+        const nd = sp[ni];
+        const sel = isSN(si, ni);
+        if (!cpAt(nd.cpIn, nd))
+          html += `<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpIn.x}" y2="${nd.cpIn.y}"
+            stroke="${sel ? '#ff3b3b' : '#4f8ef7'}" stroke-width="${LW}" opacity="${sel ? 1 : 0.7}" pointer-events="none"/>`;
+        if (!cpAt(nd.cpOut, nd))
+          html += `<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpOut.x}" y2="${nd.cpOut.y}"
+            stroke="${sel ? '#ff6b3b' : '#f97316'}" stroke-width="${LW}" opacity="${sel ? 1 : 0.7}" pointer-events="none"/>`;
+      }
+    }
+
+    // Handles + anchors
+    for (let si = 0; si < ep.subpaths.length; si++) {
+      const sp = ep.subpaths[si];
+      for (let ni = 0; ni < sp.length; ni++) {
+        const nd = sp[ni];
+        const sel = isSN(si, ni);
+
+        if (!cpAt(nd.cpIn, nd)) {
+          const c = sel ? '#ff3b3b' : '#4f8ef7';
+          html += `<rect x="${nd.cpIn.x-CR}" y="${nd.cpIn.y-CR}" width="${CR*2}" height="${CR*2}"
+            fill="${c}" stroke="#0f1117" stroke-width="${LW*0.5}"
+            transform="rotate(45 ${nd.cpIn.x} ${nd.cpIn.y})"
+            data-drag="cpIn" data-si="${si}" data-ni="${ni}" style="cursor:move;"/>`;
+        }
+        if (!cpAt(nd.cpOut, nd)) {
+          const c = sel ? '#ff6b3b' : '#f97316';
+          html += `<rect x="${nd.cpOut.x-CR}" y="${nd.cpOut.y-CR}" width="${CR*2}" height="${CR*2}"
+            fill="${c}" stroke="#0f1117" stroke-width="${LW*0.5}"
+            transform="rotate(45 ${nd.cpOut.x} ${nd.cpOut.y})"
+            data-drag="cpOut" data-si="${si}" data-ni="${ni}" style="cursor:move;"/>`;
+        }
+        // Anchor: white normally, red when selected
+        const aFill   = sel ? '#ff3b3b' : '#ffffff';
+        const aStroke = sel ? '#ff9999' : '#0f1117';
+        // Red outer ring for selected anchor
+        if (sel)
+          html += `<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.7}"
+            fill="none" stroke="#ff3b3b" stroke-width="${LW}" opacity="0.45" pointer-events="none"/>`;
+        html += `<circle cx="${nd.x}" cy="${nd.y}" r="${AR}"
+          fill="${aFill}" stroke="${aStroke}" stroke-width="${LW}"
+          data-drag="anchor" data-si="${si}" data-ni="${ni}" style="cursor:move;"/>`;
+      }
+    }
+  }
+
+  editorSvg.innerHTML = html;
+
+  // Path click → change selected path
+  editorSvg.querySelectorAll('.ep').forEach(el => {
+    el.addEventListener('mousedown', e => {
+      const pi = parseInt(el.dataset.pi);
+      if (pi !== ed.selPath) {
+        ed.selPath = pi; ed.selNode = null;
+        renderOutliner(); renderEditor();
+      }
+      e.stopPropagation();
+    });
+  });
+
+  // Handle/anchor drag
+  editorSvg.querySelectorAll('[data-drag]').forEach(el => {
+    el.addEventListener('mousedown', e => {
+      const si = parseInt(el.dataset.si);
+      const ni = parseInt(el.dataset.ni);
+      ed.selNode = { si, ni };
+      ed.drag = { type: el.dataset.drag, si, ni };
+      window.addEventListener('mousemove', onDrag);
+      window.addEventListener('mouseup', endDrag);
+      renderEditor();
+      e.preventDefault(); e.stopPropagation();
+    });
+  });
+
+  // Background → deselect node
+  editorSvg.addEventListener('mousedown', e => {
+    if (e.target === editorSvg) { ed.selNode = null; renderEditor(); }
+  }, { once: true });
+}
+
+function onDrag(e) {
+  if (!ed.drag || ed.selPath < 0) return;
+  const pt = toSvgPt(e);
+  const x = snap(pt.x), y = snap(pt.y);
+  const { type, si, ni } = ed.drag;
+  const nd = ed.paths[ed.selPath].subpaths[si][ni];
+  if (type === 'anchor') {
+    const dx = x - nd.x, dy = y - nd.y;
+    nd.cpIn.x += dx; nd.cpIn.y += dy;
+    nd.cpOut.x += dx; nd.cpOut.y += dy;
+    nd.x = x; nd.y = y;
+  } else if (type === 'cpIn') {
+    nd.cpIn.x = x; nd.cpIn.y = y;
+  } else {
+    nd.cpOut.x = x; nd.cpOut.y = y;
+  }
+  renderEditor();
+}
+
+function endDrag() {
+  ed.drag = null;
+  window.removeEventListener('mousemove', onDrag);
+  window.removeEventListener('mouseup', endDrag);
+  currentSvgString = rebuildSvg();
+  svgCode.value = formatSvg(currentSvgString);
+  document.getElementById('statFileSize').textContent =
+    (new Blob([currentSvgString]).size / 1024).toFixed(1) + ' KB';
+}
+
+// ===== VIEW =====
+function setView(v) {
+  currentView = v;
+  document.getElementById('viewPreview').classList.toggle('active', v === 'preview');
+  document.getElementById('viewEdit').classList.toggle('active', v === 'edit');
+  document.getElementById('viewCode').classList.toggle('active', v === 'code');
+  svgDisplay.style.display  = v === 'preview' ? 'flex' : 'none';
+  editorPanel.style.display = v === 'edit'    ? 'flex' : 'none';
+  codePanel.style.display   = v === 'code'    ? 'flex' : 'none';
+  if (v === 'edit') { renderOutliner(); renderEditor(); }
+}
+
+// ===== HELPERS =====
+function rgbToHex(r, g, b) {
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+function formatSvg(svg) {
+  return svg.replace(/></g, '>\n<').replace(/(<\/svg>)/g, '\n$1');
+}
+function resetOutput() {
+  currentSvgString = null; ed.paths = [];
+  svgDisplay.innerHTML = '<div id="svgPlaceholder" style="font-size:11px;color:var(--muted);letter-spacing:0.1em;text-align:center;line-height:2;">LOAD AN IMAGE<br>THEN PRESS CONVERT</div>';
+  svgCode.value = ''; editorSvg.innerHTML = '';
+  outlinerList.innerHTML = '<div class="ol-empty">CONVERT<br>FIRST</div>';
+  document.getElementById('svgStats').style.display = 'none';
+  downloadSvgBtn.disabled = true; copySvgBtn.disabled = true;
+}
+
+downloadSvgBtn.addEventListener('click', () => {
+  if (!currentSvgString) return;
+  const blob = new Blob([currentSvgString], { type: 'image/svg+xml' });
+  const a = document.createElement('a');
+  a.download = 'jamad_pixel.svg'; a.href = URL.createObjectURL(blob); a.click();
+  URL.revokeObjectURL(a.href);
+  toast('SVG downloaded!');
+});
+copySvgBtn.addEventListener('click', () => {
+  if (!currentSvgString) return;
+  navigator.clipboard.writeText(currentSvgString).then(() => toast('Copied!'));
+});
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tid); t._tid = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+scaleInput.addEventListener('change', () => { if (sourceImageData) convert(); });
+</script>
+</body>
+</html>
