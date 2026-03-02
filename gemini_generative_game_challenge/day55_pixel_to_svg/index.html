@@ -22,8 +22,7 @@
   body {
     background: var(--bg); color: var(--text);
     font-family: 'Courier New', monospace;
-    min-height: 100vh; display: flex; flex-direction: column;
-    user-select: none;
+    min-height: 100vh; display: flex; flex-direction: column; user-select: none;
   }
   header {
     background: var(--surface); border-bottom: 1px solid var(--border);
@@ -80,10 +79,9 @@
     justify-content: center; padding: 20px; position: relative; min-height: 0;
   }
   #dropZone {
-    width: 100%; height: 100%; border: 2px dashed var(--border);
-    border-radius: 10px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 12px;
-    cursor: pointer; transition: all .2s; position: absolute; inset: 20px;
+    width: 100%; height: 100%; border: 2px dashed var(--border); border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; cursor: pointer; transition: all .2s; position: absolute; inset: 20px;
   }
   #dropZone:hover, #dropZone.drag-over { border-color: var(--accent); background: rgba(59,130,246,.05); }
   #dropZone .icon { font-size: 32px; opacity: .25; }
@@ -133,11 +131,9 @@
   /* ── EDITOR ───────────────────────────────────────────── */
   #editorPanel { display: none; width: 100%; height: 100%; flex-direction: row; overflow: hidden; }
 
-  /* Outliner */
   #outliner {
-    width: 128px; flex-shrink: 0;
-    background: var(--surface); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; overflow: hidden;
+    width: 128px; flex-shrink: 0; background: var(--surface);
+    border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
   }
   .ol-section-title {
     padding: 6px 10px 5px; font-size: 8px; font-weight: bold;
@@ -157,22 +153,29 @@
   .ol-hex { flex: 1; font-size: 8px; color: var(--muted); letter-spacing: .03em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .ol-item.active .ol-hex { color: #93c5fd; }
   .ol-lock-btn {
-    flex-shrink: 0; width: 16px; height: 16px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 3px; transition: all .12s; color: var(--muted2);
+    flex-shrink: 0; width: 16px; height: 16px; display: flex; align-items: center;
+    justify-content: center; border-radius: 3px; transition: all .12s; color: var(--muted2);
     background: transparent; border: none; cursor: pointer; padding: 0;
   }
   .ol-lock-btn:hover { color: var(--text); background: var(--border); }
   .ol-lock-btn.locked { color: var(--danger); }
   .ol-empty { font-size: 9px; color: var(--muted2); padding: 12px 6px; text-align: center; letter-spacing: .06em; line-height: 1.8; }
+
   #node-section { display: none; border-top: 1px solid var(--border); padding: 8px 8px 10px; flex-shrink: 0; }
   #node-section .ns-title { font-size: 8px; font-weight: bold; letter-spacing: .2em; color: var(--muted2); margin-bottom: 6px; }
   #node-section .seg-toggle { width: 100%; }
   #node-section .seg-btn { flex: 1; text-align: center; }
 
-  /* Canvas area */
   #editorCanvas { flex: 1; position: relative; overflow: hidden; }
-  #editorSvg { width: 100%; height: 100%; display: block; touch-action: none; }
+
+  /* Cursor modes via class on editorCanvas */
+  #editorCanvas.cur-default { cursor: default; }
+  #editorCanvas.cur-shape   { cursor: move; }
+  #editorCanvas.cur-anchor  { cursor: crosshair; }
+  #editorCanvas.cur-handle  { cursor: pointer; }
+  #editorCanvas.cur-drag    { cursor: grabbing; }
+
+  #editorSvg { width: 100%; height: 100%; display: block; touch-action: none; cursor: inherit; }
 
   .editor-hint {
     position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
@@ -259,16 +262,15 @@
             <div class="ns-title">NODE TYPE</div>
             <div class="seg-toggle">
               <button class="seg-btn active" id="nodeSharpBtn" onclick="setNodeType('sharp')">◆ SHARP</button>
-              <button class="seg-btn" id="nodeCurveBtn" onclick="setNodeType('curve')">⌒ CURVE</button>
+              <button class="seg-btn"        id="nodeCurveBtn" onclick="setNodeType('curve')">⌒ CURVE</button>
             </div>
           </div>
         </div>
-        <div id="editorCanvas">
+        <div id="editorCanvas" class="cur-default">
           <svg id="editorSvg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
           <div class="editor-hint">
-            DRAG <span style="color:#fff">SHAPE</span> TO MOVE &nbsp;·&nbsp;
-            CLICK <span style="color:#f1f5f9">●</span> ANCHOR (→ <span style="color:#ff3b3b">●</span>) &nbsp;·&nbsp;
-            DBLCLICK <span style="color:#fb923c">◆</span> HANDLE TO MIRROR
+            HOVER SHAPE → <span style="color:#ef4444">RED</span> · DRAG (selected) · CLICK <span style="color:#f1f5f9">●</span> ANCHOR ·
+            DBLCLICK <span style="color:#fb923c">◆</span> MIRROR · <span style="color:#94a3b8">DEL</span> DELETE
           </div>
         </div>
       </div>
@@ -277,30 +279,13 @@
 </main>
 
 <footer>
-  <span>JAMAD SVG v20260302.5</span>
-  <span>EDIT: drag shape · click anchor · dblclick handle to mirror · SHARP/CURVE toggle</span>
+  <span>JAMAD SVG v20260302.7</span>
+  <span>EDIT: hover=red tint · click to select · drag selected shape · DEL node/subpath</span>
 </footer>
 <input type="file" id="fileInput" accept="image/png,image/*">
 
 <script>
 'use strict';
-
-// ═══════════════════════════════════════════════════════════
-// CUSTOM CURSORS  (SVG data URIs, 24×24, hotspot center)
-// ═══════════════════════════════════════════════════════════
-function makeCursorUrl(color, strokeColor) {
-  // 4-arrow move cursor in given fill color
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-    <path d="M12 2 L9 6 L11 6 L11 11 L6 11 L6 9 L2 12 L6 15 L6 13 L11 13 L11 18 L9 18 L12 22 L15 18 L13 18 L13 13 L18 13 L18 15 L22 12 L18 9 L18 11 L13 11 L13 6 L15 6 Z"
-      fill="${color}" stroke="${strokeColor}" stroke-width="0.8" stroke-linejoin="round"/>
-  </svg>`;
-  return `url("data:image/svg+xml;base64,${btoa(svg)}") 12 12, move`;
-}
-
-const CURSOR_DEFAULT = 'default';
-const CURSOR_SHAPE   = makeCursorUrl('#ffffff', '#1e293b');  // white  – shape
-const CURSOR_ANCHOR  = makeCursorUrl('#ff3b3b', '#7f1d1d');  // red    – anchor
-const CURSOR_HANDLE  = makeCursorUrl('#f97316', '#7c2d12');  // orange – handle
 
 // ═══════════════════════════════════════════════════════════
 // STATE
@@ -310,17 +295,21 @@ let currentSvgString = null;
 let currentView      = 'preview';
 
 const ed = {
-  paths:   [],
-  locked:  new Set(),
-  vw: 0, vh: 0,
-  grid: 8,
-  selPath: -1,
-  selNode: null,      // {si, ni}
-  drag:    null,      // {type:'anchor'|'cpIn'|'cpOut'|'shape', si?, ni?, startX, startY, origNodes?}
+  paths:    [],          // [{color, subpaths}]
+  locked:   new Set(),
+  vw: 0, vh: 0, grid: 8,
+  selPath:  -1,          // selected color index (outliner)
+  selShape: null,        // {pi, si} — subpath clicked/active for move/delete
+  selNode:  null,        // {si, ni} — selected anchor node
+  // drag state
+  dragShape:  null,      // {pi, si, startX, startY, origNodes}
+  dragHandle: null,      // {type, si, ni}
+  // dblclick detection
+  lastHit: { time: 0, type: '', si: -1, ni: -1 },
 };
 
 // ═══════════════════════════════════════════════════════════
-// DOM
+// DOM REFS
 // ═══════════════════════════════════════════════════════════
 const dropZone       = document.getElementById('dropZone');
 const sourcePreview  = document.getElementById('sourcePreview');
@@ -343,6 +332,19 @@ const nodeSharpBtn   = document.getElementById('nodeSharpBtn');
 const nodeCurveBtn   = document.getElementById('nodeCurveBtn');
 
 // ═══════════════════════════════════════════════════════════
+// CURSOR
+// ═══════════════════════════════════════════════════════════
+function setCursor(name) { editorCanvas.className = 'cur-' + name; }
+
+// ═══════════════════════════════════════════════════════════
+// HOVER TINT (lightweight — no full re-render)
+// ═══════════════════════════════════════════════════════════
+function setHoverTint(pi, si, on) {
+  const el = editorSvg.querySelector(`.ep-tint[data-pi="${pi}"][data-si="${si}"]`);
+  if (el) el.setAttribute('visibility', on ? 'visible' : 'hidden');
+}
+
+// ═══════════════════════════════════════════════════════════
 // FILE LOADING
 // ═══════════════════════════════════════════════════════════
 document.getElementById('fileInput').addEventListener('change', e => {
@@ -355,7 +357,6 @@ dropZone.addEventListener('drop', e => {
   e.preventDefault(); dropZone.classList.remove('drag-over');
   const f = e.dataTransfer.files[0]; if (f) loadFile(f);
 });
-
 function loadFile(file) {
   const url = URL.createObjectURL(file);
   const img = new Image();
@@ -380,7 +381,6 @@ function loadFile(file) {
   };
   img.src = url;
 }
-
 clearBtn.addEventListener('click', () => {
   sourceImageData = null;
   dropZone.style.display = ''; sourcePreview.style.display = 'none'; clearBtn.style.display = 'none';
@@ -392,7 +392,6 @@ clearBtn.addEventListener('click', () => {
 // CONVERSION
 // ═══════════════════════════════════════════════════════════
 convertBtn.addEventListener('click', convert);
-
 function convert() {
   if (!sourceImageData) return;
   const scale = parseInt(scaleInput.value) || 8;
@@ -414,7 +413,6 @@ function convert() {
   if (currentView === 'edit') renderEditor();
   toast(`Converted! ${elCount} paths · ${sizeKb} KB`);
 }
-
 function toPathSvg(imgData, scale) {
   const w = imgData.width, h = imgData.height, d = imgData.data;
   const colorGrids = {};
@@ -449,7 +447,6 @@ function toPathSvg(imgData, scale) {
 // ═══════════════════════════════════════════════════════════
 const ICON_LOCK   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
 const ICON_UNLOCK = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`;
-
 function renderOutliner() {
   outlinerList.innerHTML = '';
   if (!ed.paths.length) { outlinerList.innerHTML = '<div class="ol-empty">CONVERT<br>FIRST</div>'; return; }
@@ -460,7 +457,7 @@ function renderOutliner() {
     item.className = 'ol-item' + (isActive ? ' active' : '') + (isLocked ? ' ol-locked' : '');
     const swatch = Object.assign(document.createElement('div'), { className: 'ol-swatch' });
     swatch.style.background = ep.color;
-    const hex = Object.assign(document.createElement('div'), { className: 'ol-hex', textContent: ep.color });
+    const hex    = Object.assign(document.createElement('div'), { className: 'ol-hex', textContent: ep.color });
     const lockBtn = document.createElement('button');
     lockBtn.className = 'ol-lock-btn' + (isLocked ? ' locked' : '');
     lockBtn.title = isLocked ? 'Unlock' : 'Lock';
@@ -468,13 +465,16 @@ function renderOutliner() {
     lockBtn.addEventListener('click', e => {
       e.stopPropagation();
       if (ed.locked.has(pi)) { ed.locked.delete(pi); }
-      else { ed.locked.add(pi); if (ed.selPath === pi) { ed.selPath = -1; ed.selNode = null; updateNodeSection(); } }
+      else {
+        ed.locked.add(pi);
+        if (ed.selPath === pi) { ed.selPath = -1; ed.selShape = null; ed.selNode = null; updateNodeSection(); }
+      }
       renderOutliner(); renderEditor();
     });
     item.append(swatch, hex, lockBtn);
     item.addEventListener('click', () => {
       if (ed.locked.has(pi)) return;
-      ed.selPath = pi; ed.selNode = null;
+      ed.selPath = pi; ed.selShape = null; ed.selNode = null;
       renderOutliner(); renderEditor(); updateNodeSection();
     });
     outlinerList.appendChild(item);
@@ -493,42 +493,82 @@ function updateNodeSection() {
   nodeSharpBtn.classList.toggle('active',  isSharp);
   nodeCurveBtn.classList.toggle('active', !isSharp);
 }
-
 function setNodeType(type) {
   if (!ed.selNode || ed.selPath < 0) return;
   const { si, ni } = ed.selNode;
   const nd = ed.paths[ed.selPath].subpaths[si][ni];
-  if (type === 'sharp') {
-    nd.cpIn  = { x: nd.x, y: nd.y };
-    nd.cpOut = { x: nd.x, y: nd.y };
-  } else {
-    autoHandles(ed.selPath, si, ni);
-  }
+  if (type === 'sharp') { nd.cpIn = {x:nd.x,y:nd.y}; nd.cpOut = {x:nd.x,y:nd.y}; }
+  else autoHandles(ed.selPath, si, ni);
   updateNodeSection(); renderEditor(); commitEdit();
 }
-
 function autoHandles(pi, si, ni) {
-  const sp = ed.paths[pi].subpaths[si];
-  const N  = sp.length;
-  const nd = sp[ni];
-  const g  = ed.grid;
-  const prev = sp[(ni - 1 + N) % N];
-  const next = sp[(ni + 1) % N];
-  let tx = (next.x - prev.x) / 6;
-  let ty = (next.y - prev.y) / 6;
-  if (Math.abs(tx) < 0.5 && Math.abs(ty) < 0.5) { tx = (next.x - nd.x) / 3; ty = (next.y - nd.y) / 3; }
-  if (Math.abs(tx) < 0.5 && Math.abs(ty) < 0.5) { tx = g; ty = 0; }
-  let outX = snap(nd.x + tx), outY = snap(nd.y + ty);
-  let inX  = snap(nd.x - tx), inY  = snap(nd.y - ty);
-  const dom = Math.abs(tx) >= Math.abs(ty) ? 'x' : 'y';
-  const nudge = (ox, oy) => {
-    if (ox !== nd.x || oy !== nd.y) return [ox, oy];
-    return [ox + (dom === 'x' ? (tx >= 0 ? g : -g) : 0), oy + (dom === 'y' ? (ty >= 0 ? g : -g) : 0)];
+  const sp = ed.paths[pi].subpaths[si], N = sp.length, nd = sp[ni], g = ed.grid;
+  const prev = sp[(ni-1+N)%N], next = sp[(ni+1)%N];
+  let tx = (next.x - prev.x) / 6, ty = (next.y - prev.y) / 6;
+  if (Math.abs(tx)<0.5 && Math.abs(ty)<0.5) { tx=(next.x-nd.x)/3; ty=(next.y-nd.y)/3; }
+  if (Math.abs(tx)<0.5 && Math.abs(ty)<0.5) { tx=g; ty=0; }
+  let outX=snap(nd.x+tx), outY=snap(nd.y+ty), inX=snap(nd.x-tx), inY=snap(nd.y-ty);
+  const dom = Math.abs(tx)>=Math.abs(ty)?'x':'y';
+  const nudge = (ox,oy) => {
+    if (ox!==nd.x||oy!==nd.y) return [ox,oy];
+    return [ox+(dom==='x'?(tx>=0?g:-g):0), oy+(dom==='y'?(ty>=0?g:-g):0)];
   };
-  [outX, outY] = nudge(outX, outY);
-  [inX,  inY ] = nudge(inX,  inY);
-  nd.cpOut = { x: outX, y: outY };
-  nd.cpIn  = { x: inX,  y: inY };
+  [outX,outY]=nudge(outX,outY); [inX,inY]=nudge(inX,inY);
+  nd.cpOut={x:outX,y:outY}; nd.cpIn={x:inX,y:inY};
+}
+
+// ═══════════════════════════════════════════════════════════
+// DELETE
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (currentView !== 'edit') return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+  e.preventDefault();
+
+  // Priority 1: delete selected node
+  if (ed.selNode && ed.selPath >= 0) {
+    const { si, ni } = ed.selNode;
+    const sp = ed.paths[ed.selPath].subpaths[si];
+
+    if (sp.length <= 2) {
+      // Too few nodes → remove entire subpath
+      ed.paths[ed.selPath].subpaths.splice(si, 1);
+      toast('Subpath removed');
+    } else {
+      sp.splice(ni, 1);
+      toast('Node deleted');
+    }
+    ed.selNode  = null;
+    // Clean up empty paths
+    cleanEmptyPaths();
+    updateNodeSection(); renderOutliner(); renderEditor(); commitEdit();
+    return;
+  }
+
+  // Priority 2: delete selected subpath
+  if (ed.selShape && ed.selPath >= 0) {
+    const { pi, si } = ed.selShape;
+    if (!ed.locked.has(pi)) {
+      ed.paths[pi].subpaths.splice(si, 1);
+      ed.selShape = null;
+      cleanEmptyPaths();
+      toast('Shape deleted');
+      renderOutliner(); renderEditor(); commitEdit();
+    }
+  }
+});
+
+function cleanEmptyPaths() {
+  // Remove paths with no subpaths left; adjust selPath
+  for (let pi = ed.paths.length - 1; pi >= 0; pi--) {
+    if (ed.paths[pi].subpaths.length === 0) {
+      ed.paths.splice(pi, 1);
+      ed.locked.delete(pi);
+      if (ed.selPath === pi) ed.selPath = -1;
+      else if (ed.selPath > pi) ed.selPath--;
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -538,329 +578,353 @@ function parsePathD(d) {
   const re = /([MmHhVvLlCcSsQqTtAaZz])|([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/g;
   const tokens = []; let m;
   while ((m = re.exec(d)) !== null) tokens.push(m[0]);
-
   const subpaths = [];
-  let cur = null, cx = 0, cy = 0, sx = 0, sy = 0;
-  let i = 0, cmd = 'M';
+  let cur=null, cx=0, cy=0, sx=0, sy=0, i=0, cmd='M';
   const num  = () => parseFloat(tokens[i++]);
-  const node = (x, y) => ({ x, y, cpIn: {x, y}, cpOut: {x, y} });
-  const push = (x, y) => { if (cur) cur.push(node(x, y)); cx = x; cy = y; };
+  const node = (x,y) => ({x,y,cpIn:{x,y},cpOut:{x,y}});
+  const push = (x,y) => { if(cur) cur.push(node(x,y)); cx=x; cy=y; };
   while (i < tokens.length) {
     const t = tokens[i];
     if (/^[MmHhVvLlCcSsQqTtAaZz]$/.test(t)) {
-      cmd = t; i++;
-      if (cmd === 'Z' || cmd === 'z') { if (cur && cur.length) { subpaths.push(cur); cur = null; } cx = sx; cy = sy; }
+      cmd=t; i++;
+      if (cmd==='Z'||cmd==='z') { if(cur&&cur.length){subpaths.push(cur);cur=null;} cx=sx;cy=sy; }
       continue;
     }
-    switch (cmd) {
-      case 'M': { if (cur) subpaths.push(cur); cx=num(); cy=num(); sx=cx; sy=cy; cur=[node(cx,cy)]; cmd='L'; break; }
-      case 'm': { if (cur) subpaths.push(cur); cx+=num(); cy+=num(); sx=cx; sy=cy; cur=[node(cx,cy)]; cmd='l'; break; }
-      case 'H': { push(num(), cy); break; }
-      case 'h': { push(cx+num(), cy); break; }
-      case 'V': { push(cx, num()); break; }
-      case 'v': { push(cx, cy+num()); break; }
-      case 'L': { push(num(), num()); break; }
-      case 'l': { const dx=num(), dy=num(); push(cx+dx, cy+dy); break; }
+    switch(cmd) {
+      case 'M': { if(cur)subpaths.push(cur); cx=num();cy=num();sx=cx;sy=cy;cur=[node(cx,cy)];cmd='L'; break; }
+      case 'm': { if(cur)subpaths.push(cur); cx+=num();cy+=num();sx=cx;sy=cy;cur=[node(cx,cy)];cmd='l'; break; }
+      case 'H': { push(num(),cy); break; }
+      case 'h': { push(cx+num(),cy); break; }
+      case 'V': { push(cx,num()); break; }
+      case 'v': { push(cx,cy+num()); break; }
+      case 'L': { push(num(),num()); break; }
+      case 'l': { const dx=num(),dy=num(); push(cx+dx,cy+dy); break; }
       case 'C': {
         const cp1x=num(),cp1y=num(),cp2x=num(),cp2y=num(),x=num(),y=num();
-        if (cur && cur.length) cur[cur.length-1].cpOut = {x:cp1x,y:cp1y};
-        if (cur) cur.push({x, y, cpIn:{x:cp2x,y:cp2y}, cpOut:{x,y}});
-        cx=x; cy=y; break;
+        if(cur&&cur.length) cur[cur.length-1].cpOut={x:cp1x,y:cp1y};
+        if(cur) cur.push({x,y,cpIn:{x:cp2x,y:cp2y},cpOut:{x,y}});
+        cx=x;cy=y; break;
       }
       default: i++;
     }
   }
-  if (cur && cur.length) subpaths.push(cur);
+  if (cur&&cur.length) subpaths.push(cur);
   return subpaths;
 }
-
 function initEditor(svgStr, scale) {
-  const doc   = new DOMParser().parseFromString(svgStr, 'image/svg+xml');
+  const doc = new DOMParser().parseFromString(svgStr, 'image/svg+xml');
   const svgEl = doc.querySelector('svg');
   ed.vw = parseFloat(svgEl.getAttribute('width'));
   ed.vh = parseFloat(svgEl.getAttribute('height'));
   ed.grid = scale;
   ed.locked.clear();
-  ed.selPath = -1; ed.selNode = null; ed.drag = null;
-  ed.paths = Array.from(doc.querySelectorAll('path')).map(p => ({
+  ed.selPath=-1; ed.selShape=null; ed.selNode=null;
+  ed.dragShape=null; ed.dragHandle=null;
+  ed.lastHit={time:0,type:'',si:-1,ni:-1};
+  ed.paths = Array.from(doc.querySelectorAll('path')).map(p=>({
     color: p.getAttribute('fill'), subpaths: parsePathD(p.getAttribute('d'))
   }));
 }
-
-function buildD(subpaths) {
-  let d = '';
-  for (const sp of subpaths) {
-    if (!sp.length) continue;
-    d += `M${n(sp[0].x)},${n(sp[0].y)}`;
-    for (let k = 1; k < sp.length; k++) {
-      const pv = sp[k-1], cv = sp[k];
-      if (cpAt(pv.cpOut, pv) && cpAt(cv.cpIn, cv))
-        d += `L${n(cv.x)},${n(cv.y)}`;
-      else
-        d += `C${n(pv.cpOut.x)},${n(pv.cpOut.y)} ${n(cv.cpIn.x)},${n(cv.cpIn.y)} ${n(cv.x)},${n(cv.y)}`;
-    }
-    const last = sp[sp.length-1], first = sp[0];
-    if (!(cpAt(last.cpOut, last) && cpAt(first.cpIn, first)))
-      d += `C${n(last.cpOut.x)},${n(last.cpOut.y)} ${n(first.cpIn.x)},${n(first.cpIn.y)} ${n(first.x)},${n(first.y)}`;
-    d += 'Z';
+function buildSubD(sp) {
+  if (!sp.length) return '';
+  let d = `M${n(sp[0].x)},${n(sp[0].y)}`;
+  for (let k=1; k<sp.length; k++) {
+    const pv=sp[k-1], cv=sp[k];
+    if (cpAt(pv.cpOut,pv)&&cpAt(cv.cpIn,cv)) d+=`L${n(cv.x)},${n(cv.y)}`;
+    else d+=`C${n(pv.cpOut.x)},${n(pv.cpOut.y)} ${n(cv.cpIn.x)},${n(cv.cpIn.y)} ${n(cv.x)},${n(cv.y)}`;
   }
-  return d;
+  const last=sp[sp.length-1], first=sp[0];
+  if (!(cpAt(last.cpOut,last)&&cpAt(first.cpIn,first)))
+    d+=`C${n(last.cpOut.x)},${n(last.cpOut.y)} ${n(first.cpIn.x)},${n(first.cpIn.y)} ${n(first.x)},${n(first.y)}`;
+  return d+'Z';
 }
-
+function buildD(subpaths) { return subpaths.map(sp=>buildSubD(sp)).join(''); }
 function rebuildSvg() {
-  let paths = '';
+  let paths='';
   for (const ep of ed.paths)
-    paths += `\n  <path fill="${ep.color}" d="${buildD(ep.subpaths)}"/>`;
+    paths+=`\n  <path fill="${ep.color}" d="${buildD(ep.subpaths)}"/>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${ed.vw}" height="${ed.vh}" viewBox="0 0 ${ed.vw} ${ed.vh}">${paths}\n</svg>`;
 }
-
 function commitEdit() {
   currentSvgString = rebuildSvg();
   svgCode.value = formatSvg(currentSvgString);
-  document.getElementById('statFileSize').textContent = (new Blob([currentSvgString]).size / 1024).toFixed(1) + ' KB';
+  document.getElementById('statFileSize').textContent = (new Blob([currentSvgString]).size/1024).toFixed(1)+' KB';
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+const n    = v  => parseFloat(v.toFixed(2));
+const cpAt = (cp,nd) => Math.abs(cp.x-nd.x)<0.4 && Math.abs(cp.y-nd.y)<0.4;
+const snap = v  => Math.round(v/ed.grid)*ed.grid;
+const isSN = (si,ni) => ed.selNode && ed.selNode.si===si && ed.selNode.ni===ni;
+function toSvgPt(e) {
+  const pt=editorSvg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
+  return pt.matrixTransform(editorSvg.getScreenCTM().inverse());
+}
+function mirrorHandle(nd, draggedType) {
+  if (draggedType==='cpOut') nd.cpIn ={x:snap(2*nd.x-nd.cpOut.x),y:snap(2*nd.y-nd.cpOut.y)};
+  else                        nd.cpOut={x:snap(2*nd.x-nd.cpIn.x), y:snap(2*nd.y-nd.cpIn.y) };
 }
 
 // ═══════════════════════════════════════════════════════════
 // EDITOR RENDER
+// Full re-render. Hover tint is handled via lightweight DOM
+// update (setHoverTint), NOT via re-render.
 // ═══════════════════════════════════════════════════════════
-const n    = v  => parseFloat(v.toFixed(2));
-const cpAt = (cp, nd) => Math.abs(cp.x - nd.x) < 0.4 && Math.abs(cp.y - nd.y) < 0.4;
-const snap = v  => Math.round(v / ed.grid) * ed.grid;
-const isSN = (si, ni) => ed.selNode && ed.selNode.si === si && ed.selNode.ni === ni;
-
-function toSvgPt(e) {
-  const pt = editorSvg.createSVGPoint();
-  pt.x = e.clientX; pt.y = e.clientY;
-  return pt.matrixTransform(editorSvg.getScreenCTM().inverse());
-}
-
 function renderEditor() {
   if (!ed.paths.length) return;
   editorSvg.setAttribute('viewBox', `0 0 ${ed.vw} ${ed.vh}`);
 
   const g  = ed.grid;
-  const AR = Math.max(2.5, g * 0.34);
-  const CR = Math.max(1.8, g * 0.24);
-  const LW = Math.max(0.5, g * 0.08);
-  const GW = Math.max(0.3, g * 0.045);
-  // Hit-area inflation for handles (bigger invisible target)
-  const HIT = Math.max(CR * 2, 6);
+  const AR = Math.max(2.5, g*0.34);
+  const CR = Math.max(1.8, g*0.24);
+  const LW = Math.max(0.5, g*0.08);
+  const GW = Math.max(0.3, g*0.045);
+  const HIT = Math.max(CR*2.5, 7);
 
   let html = '';
 
-  // Background + grid
+  // Grid background
   html += `<rect width="${ed.vw}" height="${ed.vh}" fill="#0f172a"/>`;
   html += `<g stroke="#1e293b" stroke-width="${GW}" pointer-events="none">`;
-  for (let x = 0; x <= ed.vw; x += g) html += `<line x1="${x}" y1="0" x2="${x}" y2="${ed.vh}"/>`;
-  for (let y = 0; y <= ed.vh; y += g) html += `<line x1="0" y1="${y}" x2="${ed.vw}" y2="${y}"/>`;
+  for (let x=0; x<=ed.vw; x+=g) html+=`<line x1="${x}" y1="0" x2="${x}" y2="${ed.vh}"/>`;
+  for (let y=0; y<=ed.vh; y+=g) html+=`<line x1="0" y1="${y}" x2="${ed.vw}" y2="${y}"/>`;
   html += `</g>`;
 
-  // Shapes
-  for (let pi = 0; pi < ed.paths.length; pi++) {
+  // ── Layer 1: all shape fills (individual subpaths) ──────
+  // For each subpath: fill, then an INVISIBLE hit-target, then a hidden tint overlay
+  for (let pi=0; pi<ed.paths.length; pi++) {
     const ep     = ed.paths[pi];
-    const isSel  = pi === ed.selPath;
     const isLock = ed.locked.has(pi);
-    const d = buildD(ep.subpaths);
-    if (isSel)
-      html += `<path d="${d}" fill="none" stroke="#ffffff" stroke-width="${LW*2.2}" opacity="0.07" pointer-events="none"/>`;
-    const op     = isLock ? 0.35 : isSel ? 1 : 0.75;
-    // Shape gets white-move cursor if selectable/moveable
-    const cur    = isLock ? 'default' : 'var(--shape-cursor, default)';
-    html += `<path fill="${ep.color}" d="${d}" data-pi="${pi}" class="ep" opacity="${op}" style="cursor:${cur};"/>`;
+    const isSelP = pi===ed.selPath;
+    for (let si=0; si<ep.subpaths.length; si++) {
+      const d = buildSubD(ep.subpaths[si]);
+      const isSelS = ed.selShape && ed.selShape.pi===pi && ed.selShape.si===si;
+      const op = isLock ? 0.35 : 1;
+
+      // Selection glow
+      if (isSelS)
+        html+=`<path d="${d}" fill="none" stroke="#ffffff" stroke-width="${LW*2.5}" opacity="0.1" pointer-events="none"/>`;
+
+      // Fill (no hover styling — cursor only via JS below)
+      html+=`<path fill="${ep.color}" d="${d}" data-pi="${pi}" data-si="${si}" class="ep" opacity="${op}"/>`;
+
+      // Tint overlay (hidden by default, revealed on hover via setHoverTint)
+      html+=`<path class="ep-tint" data-pi="${pi}" data-si="${si}" d="${d}"
+        fill="rgba(239,68,68,0.35)" stroke="#ef4444" stroke-width="${LW*1.2}" opacity="0.85"
+        visibility="hidden" pointer-events="none"/>`;
+    }
   }
 
-  // Handles for selected path
-  if (ed.selPath >= 0 && !ed.locked.has(ed.selPath)) {
+  // ── Layer 2: handle lines + shapes for selected path ────
+  if (ed.selPath>=0 && !ed.locked.has(ed.selPath)) {
     const ep = ed.paths[ed.selPath];
 
-    // Lines
-    for (let si = 0; si < ep.subpaths.length; si++) {
+    // Handle lines
+    for (let si=0; si<ep.subpaths.length; si++) {
       const sp = ep.subpaths[si];
-      for (let ni = 0; ni < sp.length; ni++) {
-        const nd = sp[ni]; const sel = isSN(si, ni);
-        if (!cpAt(nd.cpIn,  nd)) html += `<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpIn.x}"  y2="${nd.cpIn.y}"  stroke="${sel?'#ff3b3b':'#60a5fa'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
-        if (!cpAt(nd.cpOut, nd)) html += `<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpOut.x}" y2="${nd.cpOut.y}" stroke="${sel?'#ff8c3b':'#fb923c'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
+      for (let ni=0; ni<sp.length; ni++) {
+        const nd=sp[ni]; const sel=isSN(si,ni);
+        if (!cpAt(nd.cpIn, nd))  html+=`<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpIn.x}"  y2="${nd.cpIn.y}"  stroke="${sel?'#ff3b3b':'#60a5fa'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
+        if (!cpAt(nd.cpOut,nd))  html+=`<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpOut.x}" y2="${nd.cpOut.y}" stroke="${sel?'#ff8c3b':'#fb923c'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
       }
     }
-
-    // Handles + anchors (visible shapes first, then big invisible hit areas on top)
-    for (let si = 0; si < ep.subpaths.length; si++) {
+    // Visible handle + anchor shapes (pointer-events none)
+    for (let si=0; si<ep.subpaths.length; si++) {
       const sp = ep.subpaths[si];
-      for (let ni = 0; ni < sp.length; ni++) {
-        const nd = sp[ni]; const sel = isSN(si, ni);
-
-        // ── cpIn (visible diamond) ──
-        if (!cpAt(nd.cpIn, nd)) {
-          const c = sel ? '#ff3b3b' : '#60a5fa';
-          html += `<rect x="${nd.cpIn.x-CR}" y="${nd.cpIn.y-CR}" width="${CR*2}" height="${CR*2}"
-            fill="${c}" stroke="#0f172a" stroke-width="${LW*0.5}"
+      for (let ni=0; ni<sp.length; ni++) {
+        const nd=sp[ni]; const sel=isSN(si,ni);
+        if (!cpAt(nd.cpIn,nd))
+          html+=`<rect x="${nd.cpIn.x-CR}" y="${nd.cpIn.y-CR}" width="${CR*2}" height="${CR*2}"
+            fill="${sel?'#ff3b3b':'#60a5fa'}" stroke="#0f172a" stroke-width="${LW*0.5}"
             transform="rotate(45 ${nd.cpIn.x} ${nd.cpIn.y})" pointer-events="none"/>`;
-        }
-        // ── cpOut (visible diamond) ──
-        if (!cpAt(nd.cpOut, nd)) {
-          const c = sel ? '#ff8c3b' : '#fb923c';
-          html += `<rect x="${nd.cpOut.x-CR}" y="${nd.cpOut.y-CR}" width="${CR*2}" height="${CR*2}"
-            fill="${c}" stroke="#0f172a" stroke-width="${LW*0.5}"
+        if (!cpAt(nd.cpOut,nd))
+          html+=`<rect x="${nd.cpOut.x-CR}" y="${nd.cpOut.y-CR}" width="${CR*2}" height="${CR*2}"
+            fill="${sel?'#ff8c3b':'#fb923c'}" stroke="#0f172a" stroke-width="${LW*0.5}"
             transform="rotate(45 ${nd.cpOut.x} ${nd.cpOut.y})" pointer-events="none"/>`;
-        }
-
-        // ── Anchor (visible circle) ──
-        const aFill = sel ? '#ff3b3b' : '#f1f5f9';
-        const aStr  = sel ? '#ff9999' : '#0f172a';
-        if (sel) html += `<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.75}" fill="none" stroke="#ff3b3b" stroke-width="${LW}" opacity="0.4" pointer-events="none"/>`;
-        html += `<circle cx="${nd.x}" cy="${nd.y}" r="${AR}" fill="${aFill}" stroke="${aStr}" stroke-width="${LW}" pointer-events="none"/>`;
-
-        // ── Invisible hit targets (on top, with correct cursors & data) ──
-        if (!cpAt(nd.cpIn, nd))
-          html += `<circle cx="${nd.cpIn.x}"  cy="${nd.cpIn.y}"  r="${HIT}" fill="transparent" style="cursor:${CURSOR_HANDLE};" data-drag="cpIn"  data-si="${si}" data-ni="${ni}"/>`;
-        if (!cpAt(nd.cpOut, nd))
-          html += `<circle cx="${nd.cpOut.x}" cy="${nd.cpOut.y}" r="${HIT}" fill="transparent" style="cursor:${CURSOR_HANDLE};" data-drag="cpOut" data-si="${si}" data-ni="${ni}"/>`;
-        html += `<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.5}" fill="transparent" style="cursor:${CURSOR_ANCHOR};" data-drag="anchor" data-si="${si}" data-ni="${ni}"/>`;
+        if (sel)
+          html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.75}" fill="none" stroke="#ff3b3b" stroke-width="${LW}" opacity="0.4" pointer-events="none"/>`;
+        html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR}"
+          fill="${sel?'#ff3b3b':'#f1f5f9'}" stroke="${sel?'#ff9999':'#0f172a'}" stroke-width="${LW}" pointer-events="none"/>`;
+      }
+    }
+    // Invisible hit targets
+    for (let si=0; si<ep.subpaths.length; si++) {
+      const sp = ep.subpaths[si];
+      for (let ni=0; ni<sp.length; ni++) {
+        const nd=sp[ni];
+        if (!cpAt(nd.cpIn,nd))
+          html+=`<circle cx="${nd.cpIn.x}"  cy="${nd.cpIn.y}"  r="${HIT}" fill="transparent" data-hit="cpIn"  data-si="${si}" data-ni="${ni}"/>`;
+        if (!cpAt(nd.cpOut,nd))
+          html+=`<circle cx="${nd.cpOut.x}" cy="${nd.cpOut.y}" r="${HIT}" fill="transparent" data-hit="cpOut" data-si="${si}" data-ni="${ni}"/>`;
+        html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.6}" fill="transparent" data-hit="anchor" data-si="${si}" data-ni="${ni}"/>`;
       }
     }
   }
 
   editorSvg.innerHTML = html;
+  attachEditorEvents();
+}
 
-  // ── Assign shape cursor via CSS variable trick ────────────
-  // We inject a <style> block into the SVG setting the CSS var
-  // Actually simpler: set it on each ep element directly after innerHTML
+// ═══════════════════════════════════════════════════════════
+// ATTACH EVENTS (after innerHTML re-build)
+// Key rule: NEVER call renderEditor() from mouseenter/mouseleave.
+// Use setHoverTint() for hover visuals instead.
+// ═══════════════════════════════════════════════════════════
+function attachEditorEvents() {
+
+  // ── Shape (subpath) events ────────────────────────────────
   editorSvg.querySelectorAll('.ep').forEach(el => {
     const pi = parseInt(el.dataset.pi);
-    if (!ed.locked.has(pi)) {
-      el.style.cursor = CURSOR_SHAPE;
-    }
-  });
+    const si = parseInt(el.dataset.si);
+    if (ed.locked.has(pi)) return;
 
-  // ── Shape mousedown → move or select ─────────────────────
-  editorSvg.querySelectorAll('.ep').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      // Lightweight: only show tint + change cursor (NO renderEditor)
+      setHoverTint(pi, si, true);
+      setCursor('shape');
+    });
+    el.addEventListener('mouseleave', () => {
+      setHoverTint(pi, si, false);
+      setCursor('default');
+    });
+
     el.addEventListener('mousedown', e => {
-      const pi = parseInt(el.dataset.pi);
-      if (ed.locked.has(pi)) { e.stopPropagation(); return; }
+      e.preventDefault(); e.stopPropagation();
 
       if (pi !== ed.selPath) {
-        ed.selPath = pi; ed.selNode = null;
-        renderOutliner(); updateNodeSection(); renderEditor();
-        e.stopPropagation(); return;
+        // Select this color group
+        ed.selPath  = pi;
+        ed.selShape = { pi, si };
+        ed.selNode  = null;
+        renderOutliner(); updateNodeSection();
+        renderEditor();   // Full re-render OK: we just clicked, no hover loop issue
+        return;
       }
 
-      // Same path selected → start shape drag
+      // Already selected color — update selected subpath
+      ed.selShape = { pi, si };
+      ed.selNode  = null;
+      updateNodeSection();
+
+      // Start shape drag immediately
       const pt = toSvgPt(e);
-      // Deep-copy all nodes for undo-on-cancel
-      const origNodes = ed.paths[pi].subpaths.map(sp =>
-        sp.map(nd => ({ x: nd.x, y: nd.y, cpIn: {...nd.cpIn}, cpOut: {...nd.cpOut} }))
-      );
-      ed.drag = { type: 'shape', pi, startX: pt.x, startY: pt.y, origNodes, hasMoved: false };
-      window.addEventListener('mousemove', onDrag);
-      window.addEventListener('mouseup',   endDrag);
-      e.preventDefault(); e.stopPropagation();
+      const origNodes = ed.paths[pi].subpaths[si].map(nd=>({
+        x:nd.x, y:nd.y, cpIn:{...nd.cpIn}, cpOut:{...nd.cpOut}
+      }));
+      ed.dragShape = { pi, si, startX: pt.x, startY: pt.y, origNodes };
+      setCursor('drag');
+      window.addEventListener('mousemove', onShapeDrag);
+      window.addEventListener('mouseup',   onShapeDragEnd);
     });
   });
 
-  // ── Handle / anchor mousedown ─────────────────────────────
-  editorSvg.querySelectorAll('[data-drag]').forEach(el => {
+  // ── Handle / anchor hit targets ───────────────────────────
+  editorSvg.querySelectorAll('[data-hit]').forEach(el => {
+    const type = el.dataset.hit;
+    const si   = parseInt(el.dataset.si);
+    const ni   = parseInt(el.dataset.ni);
+
+    el.addEventListener('mouseenter', () => setCursor(type==='anchor'?'anchor':'handle'));
+    el.addEventListener('mouseleave', () => setCursor('default'));
+
     el.addEventListener('mousedown', e => {
-      const si   = parseInt(el.dataset.si);
-      const ni   = parseInt(el.dataset.ni);
-      const type = el.dataset.drag;
-      ed.selNode = { si, ni };
-      ed.drag    = { type, si, ni };
-      window.addEventListener('mousemove', onDrag);
-      window.addEventListener('mouseup',   endDrag);
-      updateNodeSection(); renderEditor();
       e.preventDefault(); e.stopPropagation();
-    });
 
-    // ── Double-click handle → mirror opposite ────────────────
-    el.addEventListener('dblclick', e => {
-      const type = el.dataset.drag;
-      if (type !== 'cpIn' && type !== 'cpOut') return;
-      const si = parseInt(el.dataset.si);
-      const ni = parseInt(el.dataset.ni);
-      const nd = ed.paths[ed.selPath].subpaths[si][ni];
-      mirrorHandle(nd, type);
-      renderEditor(); commitEdit();
-      e.preventDefault(); e.stopPropagation();
+      const now = Date.now();
+      const { lastHit } = ed;
+      const isDbl = (now - lastHit.time < 350)
+                 && lastHit.type === type
+                 && lastHit.si   === si
+                 && lastHit.ni   === ni;
+      ed.lastHit = { time: now, type, si, ni };
+
+      if (isDbl && (type==='cpIn'||type==='cpOut')) {
+        const nd = ed.paths[ed.selPath].subpaths[si][ni];
+        mirrorHandle(nd, type);
+        renderEditor(); commitEdit();
+        return;
+      }
+
+      // Select node + start drag
+      ed.selNode    = { si, ni };
+      ed.dragHandle = { type, si, ni };
+      setCursor('drag');
+      window.addEventListener('mousemove', onHandleDrag);
+      window.addEventListener('mouseup',   onHandleDragEnd);
+      updateNodeSection();
+      // Lightweight anchor highlight update — avoid full re-render here
+      // to keep drag working. We'll re-render after mouseup.
+      highlightSelectedAnchor(si, ni);
     });
   });
 
-  // Background click → deselect node
+  // Background → deselect node
   editorSvg.addEventListener('mousedown', e => {
-    if (e.target === editorSvg) { ed.selNode = null; updateNodeSection(); renderEditor(); }
+    if (e.target===editorSvg) {
+      ed.selNode=null; ed.selShape=null;
+      updateNodeSection(); setCursor('default'); renderEditor();
+    }
   }, { once: true });
 }
 
-// Mirror handle: moves the OPPOSITE handle to the reflected position
-function mirrorHandle(nd, movedType) {
-  const g = ed.grid;
-  if (movedType === 'cpOut') {
-    // Mirror cpOut → cpIn  (cpIn = anchor - (cpOut - anchor))
-    const rx = snap(2 * nd.x - nd.cpOut.x);
-    const ry = snap(2 * nd.y - nd.cpOut.y);
-    nd.cpIn = { x: rx, y: ry };
-  } else {
-    // Mirror cpIn → cpOut
-    const rx = snap(2 * nd.x - nd.cpIn.x);
-    const ry = snap(2 * nd.y - nd.cpIn.y);
-    nd.cpOut = { x: rx, y: ry };
-  }
-}
-
-// ── Drag handler ──────────────────────────────────────────
-function onDrag(e) {
-  if (!ed.drag) return;
-  const pt = toSvgPt(e);
-
-  if (ed.drag.type === 'shape') {
-    const { pi, startX, startY, origNodes } = ed.drag;
-    const rawDx = pt.x - startX;
-    const rawDy = pt.y - startY;
-
-    // Snap the total displacement to grid
-    const dx = snap(rawDx);
-    const dy = snap(rawDy);
-
-    if (dx !== 0 || dy !== 0) ed.drag.hasMoved = true;
-
-    const sp2 = ed.paths[pi].subpaths;
-    for (let si = 0; si < sp2.length; si++) {
-      for (let ni = 0; ni < sp2[si].length; ni++) {
-        const orig = origNodes[si][ni];
-        const nd   = sp2[si][ni];
-        nd.x        = orig.x        + dx;
-        nd.y        = orig.y        + dy;
-        nd.cpIn.x   = orig.cpIn.x   + dx;
-        nd.cpIn.y   = orig.cpIn.y   + dy;
-        nd.cpOut.x  = orig.cpOut.x  + dx;
-        nd.cpOut.y  = orig.cpOut.y  + dy;
-      }
-    }
-    renderEditor();
-    return;
-  }
-
-  // Anchor / handle drag
-  if (ed.selPath < 0) return;
-  const x = snap(pt.x), y = snap(pt.y);
-  const { type, si, ni } = ed.drag;
-  const nd = ed.paths[ed.selPath].subpaths[si][ni];
-  if (type === 'anchor') {
-    const dx = x - nd.x, dy = y - nd.y;
-    nd.cpIn.x += dx; nd.cpIn.y += dy;
-    nd.cpOut.x += dx; nd.cpOut.y += dy;
-    nd.x = x; nd.y = y;
-  } else if (type === 'cpIn') {
-    nd.cpIn.x = x; nd.cpIn.y = y;
-  } else {
-    nd.cpOut.x = x; nd.cpOut.y = y;
-  }
+// Fast anchor highlight without full re-render
+function highlightSelectedAnchor(si, ni) {
+  // Find the anchor circle for this node and update its fill
+  // (pointer-events="none" circles can't be queried by data-hit,
+  // so we re-render fully but that's fine since we do it once on click)
   renderEditor();
 }
 
-function endDrag() {
-  ed.drag = null;
-  window.removeEventListener('mousemove', onDrag);
-  window.removeEventListener('mouseup',   endDrag);
+// ═══════════════════════════════════════════════════════════
+// SHAPE DRAG
+// ═══════════════════════════════════════════════════════════
+function onShapeDrag(e) {
+  if (!ed.dragShape) return;
+  const pt = toSvgPt(e);
+  const { pi, si, startX, startY, origNodes } = ed.dragShape;
+  const dx = snap(pt.x - startX);
+  const dy = snap(pt.y - startY);
+  const sp = ed.paths[pi].subpaths[si];
+  for (let ni=0; ni<sp.length; ni++) {
+    const orig=origNodes[ni], nd=sp[ni];
+    nd.x=orig.x+dx;           nd.y=orig.y+dy;
+    nd.cpIn.x=orig.cpIn.x+dx; nd.cpIn.y=orig.cpIn.y+dy;
+    nd.cpOut.x=orig.cpOut.x+dx; nd.cpOut.y=orig.cpOut.y+dy;
+  }
+  renderEditor();
+}
+function onShapeDragEnd() {
+  window.removeEventListener('mousemove', onShapeDrag);
+  window.removeEventListener('mouseup',   onShapeDragEnd);
+  ed.dragShape = null;
+  setCursor('default');
+  commitEdit(); renderEditor();
+}
+
+// ═══════════════════════════════════════════════════════════
+// HANDLE / ANCHOR DRAG
+// ═══════════════════════════════════════════════════════════
+function onHandleDrag(e) {
+  if (!ed.dragHandle||ed.selPath<0) return;
+  const pt=toSvgPt(e);
+  const x=snap(pt.x), y=snap(pt.y);
+  const {type,si,ni}=ed.dragHandle;
+  const nd=ed.paths[ed.selPath].subpaths[si][ni];
+  if (type==='anchor') {
+    const dx=x-nd.x, dy=y-nd.y;
+    nd.cpIn.x+=dx; nd.cpIn.y+=dy; nd.cpOut.x+=dx; nd.cpOut.y+=dy;
+    nd.x=x; nd.y=y;
+  } else if (type==='cpIn') { nd.cpIn.x=x; nd.cpIn.y=y; }
+  else                       { nd.cpOut.x=x; nd.cpOut.y=y; }
+  renderEditor();
+}
+function onHandleDragEnd() {
+  window.removeEventListener('mousemove', onHandleDrag);
+  window.removeEventListener('mouseup',   onHandleDragEnd);
+  ed.dragHandle=null;
+  setCursor('default');
   commitEdit();
 }
 
@@ -869,51 +933,48 @@ function endDrag() {
 // ═══════════════════════════════════════════════════════════
 function setView(v) {
   currentView = v;
-  ['preview','edit','code'].forEach(n =>
-    document.getElementById('view' + n.charAt(0).toUpperCase() + n.slice(1)).classList.toggle('active', v === n)
-  );
-  svgDisplay.style.display  = v === 'preview' ? 'flex'  : 'none';
-  editorPanel.style.display = v === 'edit'    ? 'flex'  : 'none';
-  codePanel.style.display   = v === 'code'    ? 'flex'  : 'none';
-  if (v === 'edit') { renderOutliner(); updateNodeSection(); renderEditor(); }
+  document.getElementById('viewPreview').classList.toggle('active', v==='preview');
+  document.getElementById('viewEdit').classList.toggle('active',    v==='edit');
+  document.getElementById('viewCode').classList.toggle('active',    v==='code');
+  svgDisplay.style.display  = v==='preview'?'flex':'none';
+  editorPanel.style.display = v==='edit'   ?'flex':'none';
+  codePanel.style.display   = v==='code'   ?'flex':'none';
+  if (v==='edit') { renderOutliner(); updateNodeSection(); renderEditor(); }
 }
 
 // ═══════════════════════════════════════════════════════════
-// HELPERS
+// MISC HELPERS
 // ═══════════════════════════════════════════════════════════
-function rgbToHex(r, g, b) { return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join(''); }
-function formatSvg(svg)     { return svg.replace(/></g,'>\n<').replace(/(<\/svg>)/g,'\n$1'); }
-
+function rgbToHex(r,g,b) { return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join(''); }
+function formatSvg(svg)   { return svg.replace(/></g,'>\n<').replace(/(<\/svg>)/g,'\n$1'); }
 function resetOutput() {
-  currentSvgString = null;
-  Object.assign(ed, { paths:[], locked: new Set(), selPath:-1, selNode:null, drag:null });
-  svgDisplay.innerHTML = '<div id="svgPlaceholder" style="font-size:11px;color:var(--muted);letter-spacing:.1em;text-align:center;line-height:2.2;">LOAD AN IMAGE<br>THEN PRESS CONVERT</div>';
-  svgCode.value = ''; editorSvg.innerHTML = '';
-  outlinerList.innerHTML = '<div class="ol-empty">CONVERT<br>FIRST</div>';
-  nodeSection.style.display = 'none';
-  document.getElementById('svgStats').style.display = 'none';
-  downloadSvgBtn.disabled = true; copySvgBtn.disabled = true;
+  currentSvgString=null;
+  Object.assign(ed,{paths:[],locked:new Set(),selPath:-1,selShape:null,selNode:null,
+    dragShape:null,dragHandle:null,lastHit:{time:0,type:'',si:-1,ni:-1}});
+  svgDisplay.innerHTML='<div id="svgPlaceholder" style="font-size:11px;color:var(--muted);letter-spacing:.1em;text-align:center;line-height:2.2;">LOAD AN IMAGE<br>THEN PRESS CONVERT</div>';
+  svgCode.value=''; editorSvg.innerHTML='';
+  outlinerList.innerHTML='<div class="ol-empty">CONVERT<br>FIRST</div>';
+  nodeSection.style.display='none';
+  document.getElementById('svgStats').style.display='none';
+  downloadSvgBtn.disabled=true; copySvgBtn.disabled=true; setCursor('default');
 }
-
-downloadSvgBtn.addEventListener('click', () => {
+downloadSvgBtn.addEventListener('click',()=>{
   if (!currentSvgString) return;
-  const blob = new Blob([currentSvgString], { type: 'image/svg+xml' });
-  const a = document.createElement('a');
-  a.download = 'jamad_pixel.svg'; a.href = URL.createObjectURL(blob); a.click();
+  const blob=new Blob([currentSvgString],{type:'image/svg+xml'});
+  const a=document.createElement('a');
+  a.download='jamad_pixel.svg'; a.href=URL.createObjectURL(blob); a.click();
   URL.revokeObjectURL(a.href); toast('SVG downloaded!');
 });
-copySvgBtn.addEventListener('click', () => {
+copySvgBtn.addEventListener('click',()=>{
   if (!currentSvgString) return;
-  navigator.clipboard.writeText(currentSvgString).then(() => toast('Copied!'));
+  navigator.clipboard.writeText(currentSvgString).then(()=>toast('Copied!'));
 });
-
 function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._tid); t._tid = setTimeout(() => t.classList.remove('show'), 2200);
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tid); t._tid=setTimeout(()=>t.classList.remove('show'),2200);
 }
-
-scaleInput.addEventListener('change', () => { if (sourceImageData) convert(); });
+scaleInput.addEventListener('change',()=>{ if(sourceImageData) convert(); });
 </script>
 </body>
 </html>
