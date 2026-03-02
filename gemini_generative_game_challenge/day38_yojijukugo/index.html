@@ -25,6 +25,17 @@
             width: 100vw;
         }
 
+
+        /* スタート画面専用のレイアウト調整 */
+        #start-screen {
+            /* 要素同士の間隔を空ける */
+            gap: 25px; 
+            
+            /* 画面端ギリギリにならないよう内側に余白を作る */
+            padding: 40px; 
+            background: #050505; /* ★追加：後ろを透かさず真っ黒にする */
+        }
+
         /* --- UI & Footer --- */
         #shared-footer, shared-footer { position: fixed !important; bottom: 0; width: 100%; z-index: 3000; background: rgba(0,0,0,0.8); pointer-events: auto; }
         
@@ -36,6 +47,14 @@
             text-shadow: 0 0 10px var(--neon); 
             color: var(--neon);
             letter-spacing: 0.1em;
+            font-variant-numeric: tabular-nums; /* ★追加：数字の幅を全員同じ（等幅）にする */
+        }
+
+        /* ★追加：タイマー専用の幅固定（ガタガタ揺れるのを防ぐ） */
+        #timer-display {
+            display: inline-block;
+            min-width: 130px; /* 00:00.000 がすっぽり入る幅 */
+            text-align: right; /* 右寄せにしてピタッと止める */
         }
 
         /* --- 3D Scene --- */
@@ -87,8 +106,8 @@
             border-radius: 8px; z-index: 10;
             box-shadow: 0 0 30px rgba(0,0,0,1);
         }
-        .jp-meaning { font-size: 1.8rem; margin-bottom: 5px; font-weight: 900; }
-        .jp-reading { font-size: 1.1rem; color: #ddd; margin-bottom: 12px; }
+        .jp-meaning { font-size: 1.5rem; margin-bottom: 5px; font-weight: 900; }
+        .jp-reading { font-size: 1.1rem; color: #ddd; margin-bottom: 5px; }
         .en-box { 
             border-top: 1px solid #555; 
             padding-top: 12px; 
@@ -121,7 +140,8 @@
 
         /* --- Overlays --- */
         .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            position: fixed; inset: 0; 
+            background: rgba(0,0,0,0.85); /* 0.95から0.85に変更 */
             z-index: 2000; display: flex; flex-direction: column;
             justify-content: center; align-items: center; backdrop-filter: blur(5px);
         }
@@ -203,6 +223,17 @@
             #ui-layer {
                 padding: 60px 50px; /* 余白を増やして、文字を内側に押し込む */
             }
+
+            /* ★追加：これが抜けていたのでボタンの文字が大きくなっていました */
+            .door-btn {
+                background: #000; border: 1px solid #555; color: #e0e0e0;
+                font-size: 1.1rem; /* ★修正：1.2rem から 1.1rem に少し下げる */
+                cursor: pointer;
+                display: flex; justify-content: center; align-items: center;
+                box-shadow: 0 4px 0 #222;
+                pointer-events: auto !important;
+                transform: translateZ(5px); transition: all 0.2s;
+            }
         }
 
 
@@ -275,7 +306,7 @@
             height: 100vh;
             position: absolute;
             top: 0; left: 0;
-            overflow: hidden;
+            /* overflow: hidden; ← ★この行を削除するだけ！   スケール縮小時に画面が切れるバグの修正  大元の body タグに overflow: hidden がついているので、スクロールバーが出る心配はありません。  */  
             transform-origin: center center; /* 中央から拡大縮小 */
             transition: transform 0.1s;
 
@@ -316,9 +347,44 @@
         }
         #scale-slider:hover { opacity: 1; }
 
+
+
+        /* 審査対策 ＆ 背景演出：四字熟語の雪降らし */
+        #idiom-snow-container {
+            position: absolute; /* ★fixedからabsoluteに変更 */
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0; /* -1から0に変更 */
+            overflow: hidden;
+
+
+            /* ★この1行を追加：透明度を変える時に1秒かけてフワッと消えるようにする */
+            transition: opacity 1s ease-out; 
+        }
+
+        .snow-item {
+            position: absolute;
+            top: -100px;
+            white-space: nowrap;
+            font-family: sans-serif;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            animation: snowfall linear infinite;
+        }
+
+        @keyframes snowfall {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(110vh); }
+        }
+
     </style>
+
+
 </head>
 <body>
+
+
     <div id="ipad-frame"></div> <!-- シミュレーターの箱を追加 -->
 
     <div id="internal-debugger">Hit: <span id="hit-target">---</span></div>
@@ -338,6 +404,10 @@
         </div>
 
         <div id="start-screen" class="overlay">
+
+            <!-- ★ここへ移動：スタート画面の背景として雪を降らせる -->
+            <div id="idiom-snow-container"></div>
+
             <h1>YoJi-Juku GO!</h1>
 
             <p> </p>
@@ -349,15 +419,43 @@
             <p> </p>
             <p> </p>
             <p> </p>
-            <button class="btn-primary" onclick="game.start()">勇往邁進<br><small style="color:#ddd;">(Dash forward)</small>
+            <button class="btn-primary" onclick="game.start()">勇往邁進<br><small style="color:#ddd;">(Dash forward)</small></button>
+
+
+
+             <!-- ★ここに追加：プライバシーポリシー -->
+            <div style="margin-top: 120px; font-size: 0.8rem; font-family: sans-serif;">
+                <a href="https://yojijuku-go-2a7e46.gitlab.io/privacy.html" target="_blank" style="color: #888; text-decoration: none; border-bottom: 1px solid #888;">
+                    プライバシーポリシー / Privacy Policy
+                </a>
+            </div>
+        
         </div>
+
 
         <div id="penalty-screen" class="overlay hidden">
             <h2 style="color:var(--red-seal); font-size:3rem; margin-bottom: 10px;">多岐亡羊</h2>
 
             <p><small style="color:#aaa; font-size:1.5rem;">(At a loss)</small></p>
 
-            <div style="width:200px; height:50px; background:#fff; margin:20px; display:flex; justify-content:center; align-items:center; color:#333; font-weight: bold;">[ 虚位待人 ]</div>
+        
+                <!-- ★広告枠：サイズを300x250に広げるのが収益化のコツです -->
+            <div style="width:300px; height:250px; background:#fff; margin:20px; display:flex; justify-content:center; align-items:center; overflow:hidden;">
+            
+            <!-- ▼ ここに AdSense 管理画面で作成した「ディスプレイ広告」のコードを貼る ▼ -->
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3003563675352534"
+                 crossorigin="anonymous"></script>
+            <!-- relax_moment -->
+            <ins class="adsbygoogle"
+                 style="display:inline-block;width:300px;height:250px"
+                 data-ad-client="ca-pub-3003563675352534"
+                 data-ad-slot="3290462294"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+            <!-- ▲ ここまで ▲ -->
+
+            </div>
 
             <button class="btn-primary" onclick="game.closePenalty()">改過自新<br><small style="color:#ddd;">(Repent and start anew)</small></button>
         </div>
@@ -397,6 +495,37 @@
                 const response = await fetch('idioms.json');
                 const data = await response.json();
                 this.idioms = data.filter(item => item.word.length === 4);
+
+
+                // ★背景の雪（四字熟語）を生成
+                const container = document.getElementById('idiom-snow-container');
+                 if (container) {
+                    const sample = this.shuffle([...this.idioms]).slice(0, 60); // 60個降らせる
+                    sample.forEach(i => {
+                        const div = document.createElement('div');
+                        div.className = 'snow-item';
+                        div.innerHTML = `<strong>${i.word}</strong>: ${i.meaning}`;
+                        
+                        // ★修正：ランダムな位置（中央を避けて左右に多く配置する）
+                        const r = Math.random();
+                        let leftPos;
+                        if (r < 0.4) {
+                            leftPos = Math.random() * 25; // 40%の確率で左側 (0%〜25%の範囲)
+                        } else if (r < 0.8) {
+                            leftPos = 75 + Math.random() * 25; // 40%の確率で右側 (75%〜100%の範囲)
+                        } else {
+                            leftPos = 25 + Math.random() * 50; // 残り20%は中央付近
+                        }
+                        div.style.left = leftPos + '%';
+                        
+                        div.style.animationDuration = (Math.random() * 20 + 20) + 's';
+                        div.style.animationDelay = (Math.random() * -40) + 's';
+                        div.style.opacity = Math.random() * 0.4 + 0.05;
+                        div.style.fontSize = (Math.random() * 0.3 + 0.7) + 'rem';
+                        
+                        container.appendChild(div);
+                    });
+                }
             }
 
             getPerms(str) {
@@ -423,6 +552,7 @@
             start() {
                 this.initQuestions();
                 document.getElementById('start-screen').classList.add('hidden');
+
                 document.getElementById('world').innerHTML = '';
                 this.currentIndex = 0;
                 this.renderGate(0);
@@ -448,26 +578,21 @@
                 const enReading = q.target.reading_en || "[ English Pronunciation ]";
 
                 gate.innerHTML = `
-
-                    <div class="gate-scaler"> <!-- ★この箱で包む -->
+                    <div class="gate-scaler">
                         <div class="question-plate" style="pointer-events: none;">
-
-                            <!-- ここを z.kanji から z.k に修正（データと合わせるため） -->
                             <div style="position:absolute; top:10px; left:15px; font-size:2.5rem; opacity:0.1; color:var(--gate-border); font-weight:900;">${z.k}</div>
                         
-                                <div class="jp-meaning">${enMeaning}</div>
-                                <div class="jp-reading">(${enReading})</div>
+                            <!-- ★上段（主役）：英語 -->
+                            <div class="en-meaning" style="font-size: 1.6rem; color: #fff; line-height: 1.2;">${enMeaning}</div>
+                            <div class="en-reading" style="font-size: 0.9rem; color: #ccc; margin-bottom: 10px;">(${enReading})</div>
 
-                            <div class="en-box">
-
-                                <div class="jp-meaning">${q.target.meaning}</div>
-                                <div class="jp-reading">(${q.target.reading})</div>
-
+                            <!-- ★下段（補足）：日本語 -->
+                            <div class="jp-box" style="border-top: 1px solid #444; margin-top: 10px; padding-top: 10px;">
+                                <div style="font-size: 1.1rem; color: var(--gate-border); font-weight: bold;">${q.target.meaning}</div>
+                                <div style="font-size: 0.9rem; color: #ddd;">(${q.target.reading})</div>
                             </div>
                         </div>
 
-
-                        <!-- 文字を扉（gate-door）の中に入れることで、扉と一緒にスライドさせます -->
                         <div class="gate-door gate-left" style="pointer-events: none;">
                             <div class="zodiac-deco deco-left" style="pointer-events: none;">${z.k}</div>
                             ${btnHtml(0, 12)}
@@ -477,7 +602,6 @@
                             ${btnHtml(12, 24)}
                         </div>
                     </div>`;
-
 
                 document.getElementById('world').appendChild(gate);
             }
@@ -526,7 +650,10 @@
                     this.currentIndex++;
                     if (this.currentIndex < this.maxQuestions) {
                         this.renderGate(this.currentIndex);
-                        const nextZ = (this.currentIndex * this.gateDistance) + 0;
+
+                        // ★ここを修正：+0 ではなく -300 にする（門を奥に配置）
+                        const nextZ = (this.currentIndex * this.gateDistance) - 300; 
+                        
                         document.getElementById('world').style.transform = `translateZ(${nextZ}px)`;
                         document.getElementById('current-q').textContent = this.currentIndex + 1;
 
@@ -597,6 +724,9 @@
             // 全体をスケーリング
             wrapper.style.transform = `scale(${val})`;
             display.textContent = `${val}x`;
+
+            // iPadなどのブラウザ向けに、再計算を促す
+            window.dispatchEvent(new Event('resize'));
         }
     </script>
 
@@ -610,7 +740,8 @@
     <script src="https://shared-components-be4c86.gitlab.io/ga.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/debug-overlay.js"></script>
     <script src="https://shared-components-be4c86.gitlab.io/footer.js"></script>
-    <shared-footer version="v20260216.22" project="yojijuku_go"></shared-footer>
+    <shared-footer version="v20260302.4" project="yojijuku_go"></shared-footer>
+
 
 
 </body>
