@@ -6,198 +6,183 @@
 <title>JAMAD SVG // PIXEL TO PATH CONVERTER</title>
 <style>
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --border: #2a2d3e;
-    --accent: #4f8ef7;
-    --accent2: #f97316;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --sel-node: #ff3b3b;
+    --bg:       #0f172a;
+    --surface:  #1e293b;
+    --border:   #334155;
+    --border2:  #475569;
+    --accent:   #3b82f6;
+    --accent-d: #2563eb;
+    --text:     #e2e8f0;
+    --muted:    #94a3b8;
+    --muted2:   #64748b;
+    --danger:   #ef4444;
+    --orange:   #f97316;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg);
-    color: var(--text);
+    background: var(--bg); color: var(--text);
     font-family: 'Courier New', monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    min-height: 100vh; display: flex; flex-direction: column;
     user-select: none;
   }
-
   header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-shrink: 0;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 10px 18px; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
   }
-  header h1 { font-size: 14px; font-weight: bold; letter-spacing: 0.15em; color: var(--accent); }
-  header .sub { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
-  .sep { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
-
+  header h1 { font-size: 14px; font-weight: bold; letter-spacing: .18em; color: #93c5fd; }
+  header .sub { font-size: 9px; color: var(--muted); letter-spacing: .1em; }
+  .sep { width: 1px; height: 22px; background: var(--border2); flex-shrink: 0; }
   .btn {
-    padding: 6px 14px; border: none; border-radius: 4px;
+    padding: 5px 12px; border: none; border-radius: 6px;
     font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold;
-    letter-spacing: 0.12em; cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+    letter-spacing: .1em; cursor: pointer; transition: all .15s; flex-shrink: 0;
   }
   .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #3a7be0; }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary:hover { background: var(--accent-d); }
+  .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
   .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
   .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-orange { background: var(--accent2); color: #fff; }
+  .btn-orange { background: var(--orange); color: #fff; border-radius: 6px; }
   .btn-orange:hover { background: #ea6600; }
-  .btn-orange:disabled { opacity: 0.4; cursor: not-allowed; }
-
+  .btn-orange:disabled { opacity: .4; cursor: not-allowed; }
+  .seg-toggle {
+    display: flex; background: var(--bg);
+    border: 1px solid var(--border2); border-radius: 4px; overflow: hidden;
+  }
+  .seg-btn {
+    padding: 3px 9px; font-size: 9px; font-weight: bold; letter-spacing: .1em;
+    font-family: 'Courier New', monospace; color: var(--muted);
+    cursor: pointer; border: none; background: transparent; transition: all .12s;
+  }
+  .seg-btn + .seg-btn { border-left: 1px solid var(--border2); }
+  .seg-btn.active { background: var(--accent-d); color: #fff; }
+  .seg-btn:hover:not(.active) { background: var(--border); color: var(--text); }
+  .scale-control { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); }
+  .scale-control input {
+    width: 48px; background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Courier New', monospace; font-size: 10px;
+    padding: 3px 6px; border-radius: 4px; text-align: center;
+  }
+  .scale-control input:focus { outline: none; border-color: var(--accent); }
   main {
     flex: 1; display: grid; grid-template-columns: 1fr 1fr;
     gap: 1px; background: var(--border); overflow: hidden; min-height: 0;
   }
-
   .panel { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
   .panel-header {
     background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 8px 16px; display: flex; align-items: center;
+    padding: 7px 14px; display: flex; align-items: center;
     justify-content: space-between; flex-shrink: 0;
   }
-  .panel-title { font-size: 10px; font-weight: bold; letter-spacing: 0.15em; color: var(--muted); }
+  .panel-title { font-size: 9px; font-weight: bold; letter-spacing: .18em; color: var(--muted); }
   .panel-body {
     flex: 1; overflow: auto; display: flex; align-items: center;
     justify-content: center; padding: 20px; position: relative; min-height: 0;
   }
-
   #dropZone {
-    width: 100%; height: 100%; border: 2px dashed var(--border); border-radius: 8px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 12px; cursor: pointer; transition: all 0.2s; position: absolute; inset: 20px;
+    width: 100%; height: 100%; border: 2px dashed var(--border);
+    border-radius: 10px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    cursor: pointer; transition: all .2s; position: absolute; inset: 20px;
   }
-  #dropZone:hover, #dropZone.drag-over { border-color: var(--accent); background: rgba(79,142,247,0.04); }
-  #dropZone .icon { font-size: 36px; opacity: 0.3; }
-  #dropZone .label { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-align: center; line-height: 1.8; }
-  #dropZone .hint { font-size: 9px; color: var(--border); letter-spacing: 0.05em; }
+  #dropZone:hover, #dropZone.drag-over { border-color: var(--accent); background: rgba(59,130,246,.05); }
+  #dropZone .icon { font-size: 32px; opacity: .25; }
+  #dropZone .label { font-size: 11px; color: var(--muted); letter-spacing: .1em; text-align: center; line-height: 1.9; }
+  #dropZone .hint { font-size: 9px; color: var(--border2); letter-spacing: .06em; }
   #fileInput { display: none; }
-
   #sourcePreview { display: none; flex-direction: column; align-items: center; gap: 12px; width: 100%; height: 100%; }
   #sourceCanvas { image-rendering: pixelated; image-rendering: crisp-edges; border: 1px solid var(--border); max-width: 100%; max-height: calc(100% - 60px); }
-  .source-info { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
-
+  .source-info { font-size: 10px; color: var(--muted); letter-spacing: .08em; }
   #svgDisplay { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
   #svgDisplay svg { max-width: 100%; max-height: 100%; border: 1px solid var(--border); }
-  #svgPlaceholder { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-align: center; line-height: 2; }
-
-  .stats { display: flex; gap: 16px; align-items: center; }
-  .stat { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; }
+  #svgPlaceholder { font-size: 11px; color: var(--muted); letter-spacing: .1em; text-align: center; line-height: 2.2; }
+  .stats { display: flex; gap: 14px; align-items: center; }
+  .stat { font-size: 9px; color: var(--muted); letter-spacing: .08em; }
   .stat span { color: var(--accent); font-weight: bold; }
-
   #codePanel { display: none; flex-direction: column; height: 100%; width: 100%; }
   #svgCode {
-    flex: 1; background: var(--bg); color: #a5f3fc;
+    flex: 1; background: var(--bg); color: #7dd3fc;
     font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6;
     padding: 16px; overflow: auto; white-space: pre;
     border: none; outline: none; resize: none; width: 100%;
   }
-
   .view-toggle { display: flex; gap: 4px; }
   .view-btn {
-    padding: 3px 8px; font-size: 9px; font-weight: bold; letter-spacing: 0.1em;
-    border: 1px solid var(--border); background: transparent; color: var(--muted);
-    cursor: pointer; border-radius: 3px; font-family: 'Courier New', monospace; transition: all 0.15s;
+    padding: 3px 8px; font-size: 9px; font-weight: bold; letter-spacing: .1em;
+    border: 1px solid var(--border2); background: transparent; color: var(--muted);
+    cursor: pointer; border-radius: 4px; font-family: 'Courier New', monospace; transition: all .15s;
   }
-  .view-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-
+  .view-btn.active { background: var(--accent-d); border-color: var(--accent-d); color: #fff; }
   .checker-bg {
-    background-image: repeating-conic-gradient(#2a2d3e 0% 25%, #1a1d27 0% 50%);
+    background-image: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%);
     background-size: 16px 16px;
   }
-
-  .scale-control { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); }
-  .scale-control input {
-    width: 50px; background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); font-family: 'Courier New', monospace; font-size: 10px;
-    padding: 3px 6px; border-radius: 3px; text-align: center;
-  }
-  .scale-control input:focus { outline: none; border-color: var(--accent); }
-
   footer {
     background: var(--surface); border-top: 1px solid var(--border);
-    padding: 6px 16px; font-size: 9px; color: var(--muted); letter-spacing: 0.08em;
-    display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+    padding: 5px 14px; font-size: 9px; color: var(--muted2); letter-spacing: .08em;
+    display: flex; align-items: center; gap: 14px; flex-shrink: 0;
   }
-
   #toast {
-    position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
-    background: var(--accent); color: #fff; padding: 6px 16px;
-    border-radius: 20px; font-size: 11px; letter-spacing: 0.08em;
-    z-index: 100; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+    position: fixed; top: 58px; left: 50%; transform: translateX(-50%);
+    background: var(--accent-d); color: #fff; padding: 5px 16px;
+    border-radius: 20px; font-size: 11px; letter-spacing: .08em;
+    z-index: 100; opacity: 0; transition: opacity .2s; pointer-events: none;
   }
   #toast.show { opacity: 1; }
 
-  /* ===== EDITOR ===== */
-  #editorPanel {
-    display: none; width: 100%; height: 100%;
-    flex-direction: row; overflow: hidden;
-  }
+  /* ── EDITOR ───────────────────────────────────────────── */
+  #editorPanel { display: none; width: 100%; height: 100%; flex-direction: row; overflow: hidden; }
 
   /* Outliner */
   #outliner {
-    width: 112px; flex-shrink: 0;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
+    width: 128px; flex-shrink: 0;
+    background: var(--surface); border-right: 1px solid var(--border);
     display: flex; flex-direction: column; overflow: hidden;
   }
-  #outliner-title {
-    padding: 7px 10px 6px; font-size: 8px; font-weight: bold;
-    letter-spacing: 0.18em; color: var(--muted);
+  .ol-section-title {
+    padding: 6px 10px 5px; font-size: 8px; font-weight: bold;
+    letter-spacing: .2em; color: var(--muted2);
     border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
-  #outliner-list {
-    flex: 1; overflow-y: auto; padding: 6px;
-    display: flex; flex-direction: column; gap: 3px;
-  }
+  #outliner-list { flex: 1; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; gap: 2px; }
   .ol-item {
-    display: flex; align-items: center; gap: 7px;
-    padding: 5px 7px; border-radius: 4px; cursor: pointer;
-    border: 1px solid transparent; transition: all 0.12s;
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 6px 4px 7px; border-radius: 5px; cursor: pointer;
+    border: 1px solid transparent; transition: all .12s;
   }
-  .ol-item:hover { background: rgba(255,255,255,0.04); border-color: var(--border); }
-  .ol-item.active { background: rgba(79,142,247,0.13); border-color: var(--accent); }
-  .ol-swatch {
-    width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0;
-    border: 1px solid rgba(255,255,255,0.18);
+  .ol-item:hover { background: rgba(255,255,255,.04); border-color: var(--border); }
+  .ol-item.active { background: rgba(59,130,246,.13); border-color: var(--accent); }
+  .ol-item.ol-locked { opacity: .45; }
+  .ol-swatch { width: 15px; height: 15px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(255,255,255,.15); }
+  .ol-hex { flex: 1; font-size: 8px; color: var(--muted); letter-spacing: .03em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .ol-item.active .ol-hex { color: #93c5fd; }
+  .ol-lock-btn {
+    flex-shrink: 0; width: 16px; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 3px; transition: all .12s; color: var(--muted2);
+    background: transparent; border: none; cursor: pointer; padding: 0;
   }
-  .ol-hex {
-    font-size: 8px; color: var(--muted); letter-spacing: 0.04em;
-    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-    font-family: 'Courier New', monospace;
-  }
-  .ol-item.active .ol-hex { color: var(--accent); }
-  .ol-empty {
-    font-size: 9px; color: var(--muted); padding: 10px 4px;
-    text-align: center; letter-spacing: 0.05em; line-height: 1.7;
-  }
+  .ol-lock-btn:hover { color: var(--text); background: var(--border); }
+  .ol-lock-btn.locked { color: var(--danger); }
+  .ol-empty { font-size: 9px; color: var(--muted2); padding: 12px 6px; text-align: center; letter-spacing: .06em; line-height: 1.8; }
+  #node-section { display: none; border-top: 1px solid var(--border); padding: 8px 8px 10px; flex-shrink: 0; }
+  #node-section .ns-title { font-size: 8px; font-weight: bold; letter-spacing: .2em; color: var(--muted2); margin-bottom: 6px; }
+  #node-section .seg-toggle { width: 100%; }
+  #node-section .seg-btn { flex: 1; text-align: center; }
 
-  /* Canvas */
-  #editorCanvas {
-    flex: 1; position: relative; overflow: hidden;
-    background-image: repeating-conic-gradient(#2a2d3e 0% 25%, #1a1d27 0% 50%);
-    background-size: 16px 16px;
-  }
+  /* Canvas area */
+  #editorCanvas { flex: 1; position: relative; overflow: hidden; }
   #editorSvg { width: 100%; height: 100%; display: block; touch-action: none; }
 
   .editor-hint {
     position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-    background: rgba(15,17,23,0.92); border: 1px solid var(--border);
-    padding: 5px 14px; border-radius: 10px; font-size: 9px; color: var(--muted);
-    letter-spacing: 0.08em; pointer-events: none; white-space: nowrap;
+    background: rgba(15,23,42,.92); border: 1px solid var(--border);
+    padding: 4px 14px; border-radius: 10px; font-size: 9px; color: var(--muted2);
+    letter-spacing: .08em; pointer-events: none; white-space: nowrap;
   }
 </style>
 </head>
 <body>
-
 <div id="toast"></div>
 
 <header>
@@ -219,7 +204,6 @@
 </header>
 
 <main>
-  <!-- Left: Source -->
   <div class="panel">
     <div class="panel-header">
       <span class="panel-title">SOURCE PNG</span>
@@ -245,7 +229,6 @@
     </div>
   </div>
 
-  <!-- Right: SVG Output -->
   <div class="panel">
     <div class="panel-header">
       <span class="panel-title">SVG OUTPUT</span>
@@ -262,62 +245,83 @@
       </div>
     </div>
     <div class="panel-body checker-bg" style="padding:0;overflow:hidden;">
-
-      <!-- PREVIEW -->
       <div id="svgDisplay" style="padding:20px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
         <div id="svgPlaceholder">LOAD AN IMAGE<br>THEN PRESS CONVERT</div>
       </div>
-
-      <!-- CODE -->
       <div id="codePanel">
         <textarea id="svgCode" readonly placeholder="// SVG code will appear here..."></textarea>
       </div>
-
-      <!-- EDIT -->
       <div id="editorPanel">
         <div id="outliner">
-          <div id="outliner-title">COLORS</div>
-          <div id="outliner-list">
-            <div class="ol-empty">CONVERT<br>FIRST</div>
+          <div class="ol-section-title">COLORS</div>
+          <div id="outliner-list"><div class="ol-empty">CONVERT<br>FIRST</div></div>
+          <div id="node-section">
+            <div class="ns-title">NODE TYPE</div>
+            <div class="seg-toggle">
+              <button class="seg-btn active" id="nodeSharpBtn" onclick="setNodeType('sharp')">◆ SHARP</button>
+              <button class="seg-btn" id="nodeCurveBtn" onclick="setNodeType('curve')">⌒ CURVE</button>
+            </div>
           </div>
         </div>
         <div id="editorCanvas">
           <svg id="editorSvg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
           <div class="editor-hint">
-            SELECT COLOR IN OUTLINER &nbsp;·&nbsp;
-            CLICK <span style="color:#fff">●</span> TO SELECT NODE (→ <span style="color:#ff3b3b">●</span>) &nbsp;·&nbsp;
-            DRAG TO MOVE &nbsp;·&nbsp; GRID SNAP
+            DRAG <span style="color:#fff">SHAPE</span> TO MOVE &nbsp;·&nbsp;
+            CLICK <span style="color:#f1f5f9">●</span> ANCHOR (→ <span style="color:#ff3b3b">●</span>) &nbsp;·&nbsp;
+            DBLCLICK <span style="color:#fb923c">◆</span> HANDLE TO MIRROR
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </main>
 
 <footer>
-  <span>JAMAD SVG v20260302.3</span>
-  <span>PATH MODE · EDIT: outliner → select color → click anchor to activate → drag to reshape</span>
+  <span>JAMAD SVG v20260302.5</span>
+  <span>EDIT: drag shape · click anchor · dblclick handle to mirror · SHARP/CURVE toggle</span>
 </footer>
-
 <input type="file" id="fileInput" accept="image/png,image/*">
 
 <script>
-// ===== STATE =====
-let sourceImageData = null;
+'use strict';
+
+// ═══════════════════════════════════════════════════════════
+// CUSTOM CURSORS  (SVG data URIs, 24×24, hotspot center)
+// ═══════════════════════════════════════════════════════════
+function makeCursorUrl(color, strokeColor) {
+  // 4-arrow move cursor in given fill color
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <path d="M12 2 L9 6 L11 6 L11 11 L6 11 L6 9 L2 12 L6 15 L6 13 L11 13 L11 18 L9 18 L12 22 L15 18 L13 18 L13 13 L18 13 L18 15 L22 12 L18 9 L18 11 L13 11 L13 6 L15 6 Z"
+      fill="${color}" stroke="${strokeColor}" stroke-width="0.8" stroke-linejoin="round"/>
+  </svg>`;
+  return `url("data:image/svg+xml;base64,${btoa(svg)}") 12 12, move`;
+}
+
+const CURSOR_DEFAULT = 'default';
+const CURSOR_SHAPE   = makeCursorUrl('#ffffff', '#1e293b');  // white  – shape
+const CURSOR_ANCHOR  = makeCursorUrl('#ff3b3b', '#7f1d1d');  // red    – anchor
+const CURSOR_HANDLE  = makeCursorUrl('#f97316', '#7c2d12');  // orange – handle
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let sourceImageData  = null;
 let currentSvgString = null;
-let currentView = 'preview';
+let currentView      = 'preview';
 
 const ed = {
-  paths: [],       // [{color, subpaths}]
+  paths:   [],
+  locked:  new Set(),
   vw: 0, vh: 0,
   grid: 8,
-  selPath: -1,     // selected path index
-  selNode: null,   // {si, ni} selected node within selPath
-  drag: null,      // {type, si, ni}
+  selPath: -1,
+  selNode: null,      // {si, ni}
+  drag:    null,      // {type:'anchor'|'cpIn'|'cpOut'|'shape', si?, ni?, startX, startY, origNodes?}
 };
 
-// ===== DOM =====
+// ═══════════════════════════════════════════════════════════
+// DOM
+// ═══════════════════════════════════════════════════════════
 const dropZone       = document.getElementById('dropZone');
 const sourcePreview  = document.getElementById('sourcePreview');
 const sourceCanvas   = document.getElementById('sourceCanvas');
@@ -331,15 +335,21 @@ const codePanel      = document.getElementById('codePanel');
 const editorPanel    = document.getElementById('editorPanel');
 const svgCode        = document.getElementById('svgCode');
 const editorSvg      = document.getElementById('editorSvg');
+const editorCanvas   = document.getElementById('editorCanvas');
 const scaleInput     = document.getElementById('scaleInput');
 const outlinerList   = document.getElementById('outliner-list');
+const nodeSection    = document.getElementById('node-section');
+const nodeSharpBtn   = document.getElementById('nodeSharpBtn');
+const nodeCurveBtn   = document.getElementById('nodeCurveBtn');
 
-// ===== FILE LOADING =====
+// ═══════════════════════════════════════════════════════════
+// FILE LOADING
+// ═══════════════════════════════════════════════════════════
 document.getElementById('fileInput').addEventListener('change', e => {
   const f = e.target.files[0]; if (f) loadFile(f); e.target.value = '';
 });
 dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop', e => {
   e.preventDefault(); dropZone.classList.remove('drag-over');
@@ -357,34 +367,30 @@ function loadFile(file) {
     const ds = Math.min(6, Math.floor(320 / Math.max(img.width, img.height)));
     sourceCanvas.style.width  = img.width  * Math.max(1, ds) + 'px';
     sourceCanvas.style.height = img.height * Math.max(1, ds) + 'px';
-    dropZone.style.display = 'none';
-    sourcePreview.style.display = 'flex';
-    clearBtn.style.display = '';
+    dropZone.style.display = 'none'; sourcePreview.style.display = 'flex'; clearBtn.style.display = '';
     const colors = new Set();
-    for (let i = 0; i < sourceImageData.data.length; i += 4) {
+    for (let i = 0; i < sourceImageData.data.length; i += 4)
       if (sourceImageData.data[i+3] > 0)
         colors.add(`${sourceImageData.data[i]},${sourceImageData.data[i+1]},${sourceImageData.data[i+2]}`);
-    }
     document.getElementById('statSize').textContent   = `${img.width}×${img.height}`;
     document.getElementById('statColors').textContent = colors.size;
     document.getElementById('sourceStats').style.display = 'flex';
-    document.getElementById('sourceInfo').textContent = `${img.width}×${img.height}px · ${colors.size} colors`;
-    convertBtn.disabled = false;
-    toast('Image loaded ✓');
+    document.getElementById('sourceInfo').textContent    = `${img.width}×${img.height}px · ${colors.size} colors`;
+    convertBtn.disabled = false; toast('Image loaded ✓');
   };
   img.src = url;
 }
 
 clearBtn.addEventListener('click', () => {
   sourceImageData = null;
-  dropZone.style.display = ''; sourcePreview.style.display = 'none';
-  clearBtn.style.display = 'none';
+  dropZone.style.display = ''; sourcePreview.style.display = 'none'; clearBtn.style.display = 'none';
   document.getElementById('sourceStats').style.display = 'none';
-  convertBtn.disabled = true;
-  resetOutput();
+  convertBtn.disabled = true; resetOutput();
 });
 
-// ===== CONVERSION =====
+// ═══════════════════════════════════════════════════════════
+// CONVERSION
+// ═══════════════════════════════════════════════════════════
 convertBtn.addEventListener('click', convert);
 
 function convert() {
@@ -393,20 +399,17 @@ function convert() {
   const svg = toPathSvg(sourceImageData, scale);
   currentSvgString = svg;
   initEditor(svg, scale);
-
   document.getElementById('svgPlaceholder').style.display = 'none';
   svgDisplay.innerHTML = svg;
-  svgDisplay.querySelector('svg').style.maxWidth = '100%';
+  svgDisplay.querySelector('svg').style.maxWidth  = '100%';
   svgDisplay.querySelector('svg').style.maxHeight = '100%';
   svgCode.value = formatSvg(svg);
-
   const elCount = (svg.match(/<path/g) || []).length;
-  const sizeKb = (new Blob([svg]).size / 1024).toFixed(1);
+  const sizeKb  = (new Blob([svg]).size / 1024).toFixed(1);
   document.getElementById('statElements').textContent = elCount;
   document.getElementById('statFileSize').textContent = sizeKb + ' KB';
-  document.getElementById('svgStats').style.display = 'flex';
+  document.getElementById('svgStats').style.display   = 'flex';
   downloadSvgBtn.disabled = false; copySvgBtn.disabled = false;
-
   renderOutliner();
   if (currentView === 'edit') renderEditor();
   toast(`Converted! ${elCount} paths · ${sizeKb} KB`);
@@ -430,8 +433,7 @@ function toPathSvg(imgData, scale) {
       let rw = 1; while (x + rw < w && grid[y][x + rw]) rw++;
       let rh = 1;
       outer: while (y + rh < h) {
-        for (let dx = 0; dx < rw; dx++) if (!grid[y+rh][x+dx]) break outer;
-        rh++;
+        for (let dx = 0; dx < rw; dx++) if (!grid[y+rh][x+dx]) break outer; rh++;
       }
       for (let dy = 0; dy < rh; dy++) for (let dx = 0; dx < rw; dx++) grid[y+dy][x+dx] = 0;
       const px = x*scale, py = y*scale, pw = rw*scale, ph = rh*scale;
@@ -442,53 +444,112 @@ function toPathSvg(imgData, scale) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w*scale}" height="${h*scale}" viewBox="0 0 ${w*scale} ${h*scale}" shape-rendering="crispEdges">${paths}\n</svg>`;
 }
 
-// ===== OUTLINER =====
+// ═══════════════════════════════════════════════════════════
+// OUTLINER
+// ═══════════════════════════════════════════════════════════
+const ICON_LOCK   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+const ICON_UNLOCK = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`;
+
 function renderOutliner() {
   outlinerList.innerHTML = '';
-  if (!ed.paths.length) {
-    outlinerList.innerHTML = '<div class="ol-empty">CONVERT<br>FIRST</div>'; return;
-  }
+  if (!ed.paths.length) { outlinerList.innerHTML = '<div class="ol-empty">CONVERT<br>FIRST</div>'; return; }
   ed.paths.forEach((ep, pi) => {
+    const isLocked = ed.locked.has(pi);
+    const isActive = pi === ed.selPath;
     const item = document.createElement('div');
-    item.className = 'ol-item' + (pi === ed.selPath ? ' active' : '');
-    item.innerHTML = `
-      <div class="ol-swatch" style="background:${ep.color};"></div>
-      <div class="ol-hex">${ep.color}</div>
-    `;
+    item.className = 'ol-item' + (isActive ? ' active' : '') + (isLocked ? ' ol-locked' : '');
+    const swatch = Object.assign(document.createElement('div'), { className: 'ol-swatch' });
+    swatch.style.background = ep.color;
+    const hex = Object.assign(document.createElement('div'), { className: 'ol-hex', textContent: ep.color });
+    const lockBtn = document.createElement('button');
+    lockBtn.className = 'ol-lock-btn' + (isLocked ? ' locked' : '');
+    lockBtn.title = isLocked ? 'Unlock' : 'Lock';
+    lockBtn.innerHTML = isLocked ? ICON_LOCK : ICON_UNLOCK;
+    lockBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (ed.locked.has(pi)) { ed.locked.delete(pi); }
+      else { ed.locked.add(pi); if (ed.selPath === pi) { ed.selPath = -1; ed.selNode = null; updateNodeSection(); } }
+      renderOutliner(); renderEditor();
+    });
+    item.append(swatch, hex, lockBtn);
     item.addEventListener('click', () => {
-      ed.selPath = pi;
-      ed.selNode = null;
-      renderOutliner();
-      renderEditor();
+      if (ed.locked.has(pi)) return;
+      ed.selPath = pi; ed.selNode = null;
+      renderOutliner(); renderEditor(); updateNodeSection();
     });
     outlinerList.appendChild(item);
   });
 }
 
-// ===== EDITOR =====
-function tokenizePath(d) {
+// ═══════════════════════════════════════════════════════════
+// NODE TYPE
+// ═══════════════════════════════════════════════════════════
+function updateNodeSection() {
+  if (!ed.selNode || ed.selPath < 0) { nodeSection.style.display = 'none'; return; }
+  nodeSection.style.display = 'block';
+  const { si, ni } = ed.selNode;
+  const nd = ed.paths[ed.selPath].subpaths[si][ni];
+  const isSharp = cpAt(nd.cpIn, nd) && cpAt(nd.cpOut, nd);
+  nodeSharpBtn.classList.toggle('active',  isSharp);
+  nodeCurveBtn.classList.toggle('active', !isSharp);
+}
+
+function setNodeType(type) {
+  if (!ed.selNode || ed.selPath < 0) return;
+  const { si, ni } = ed.selNode;
+  const nd = ed.paths[ed.selPath].subpaths[si][ni];
+  if (type === 'sharp') {
+    nd.cpIn  = { x: nd.x, y: nd.y };
+    nd.cpOut = { x: nd.x, y: nd.y };
+  } else {
+    autoHandles(ed.selPath, si, ni);
+  }
+  updateNodeSection(); renderEditor(); commitEdit();
+}
+
+function autoHandles(pi, si, ni) {
+  const sp = ed.paths[pi].subpaths[si];
+  const N  = sp.length;
+  const nd = sp[ni];
+  const g  = ed.grid;
+  const prev = sp[(ni - 1 + N) % N];
+  const next = sp[(ni + 1) % N];
+  let tx = (next.x - prev.x) / 6;
+  let ty = (next.y - prev.y) / 6;
+  if (Math.abs(tx) < 0.5 && Math.abs(ty) < 0.5) { tx = (next.x - nd.x) / 3; ty = (next.y - nd.y) / 3; }
+  if (Math.abs(tx) < 0.5 && Math.abs(ty) < 0.5) { tx = g; ty = 0; }
+  let outX = snap(nd.x + tx), outY = snap(nd.y + ty);
+  let inX  = snap(nd.x - tx), inY  = snap(nd.y - ty);
+  const dom = Math.abs(tx) >= Math.abs(ty) ? 'x' : 'y';
+  const nudge = (ox, oy) => {
+    if (ox !== nd.x || oy !== nd.y) return [ox, oy];
+    return [ox + (dom === 'x' ? (tx >= 0 ? g : -g) : 0), oy + (dom === 'y' ? (ty >= 0 ? g : -g) : 0)];
+  };
+  [outX, outY] = nudge(outX, outY);
+  [inX,  inY ] = nudge(inX,  inY);
+  nd.cpOut = { x: outX, y: outY };
+  nd.cpIn  = { x: inX,  y: inY };
+}
+
+// ═══════════════════════════════════════════════════════════
+// PATH PARSING & BUILDING
+// ═══════════════════════════════════════════════════════════
+function parsePathD(d) {
   const re = /([MmHhVvLlCcSsQqTtAaZz])|([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/g;
   const tokens = []; let m;
   while ((m = re.exec(d)) !== null) tokens.push(m[0]);
-  return tokens;
-}
 
-function parsePathD(d) {
-  const tokens = tokenizePath(d);
   const subpaths = [];
   let cur = null, cx = 0, cy = 0, sx = 0, sy = 0;
   let i = 0, cmd = 'M';
-  const num = () => parseFloat(tokens[i++]);
+  const num  = () => parseFloat(tokens[i++]);
   const node = (x, y) => ({ x, y, cpIn: {x, y}, cpOut: {x, y} });
   const push = (x, y) => { if (cur) cur.push(node(x, y)); cx = x; cy = y; };
   while (i < tokens.length) {
     const t = tokens[i];
     if (/^[MmHhVvLlCcSsQqTtAaZz]$/.test(t)) {
       cmd = t; i++;
-      if (cmd === 'Z' || cmd === 'z') {
-        if (cur && cur.length) { subpaths.push(cur); cur = null; }
-        cx = sx; cy = sy;
-      }
+      if (cmd === 'Z' || cmd === 'z') { if (cur && cur.length) { subpaths.push(cur); cur = null; } cx = sx; cy = sy; }
       continue;
     }
     switch (cmd) {
@@ -499,7 +560,7 @@ function parsePathD(d) {
       case 'V': { push(cx, num()); break; }
       case 'v': { push(cx, cy+num()); break; }
       case 'L': { push(num(), num()); break; }
-      case 'l': { const dx=num(),dy=num(); push(cx+dx,cy+dy); break; }
+      case 'l': { const dx=num(), dy=num(); push(cx+dx, cy+dy); break; }
       case 'C': {
         const cp1x=num(),cp1y=num(),cp2x=num(),cp2y=num(),x=num(),y=num();
         if (cur && cur.length) cur[cur.length-1].cpOut = {x:cp1x,y:cp1y};
@@ -514,15 +575,15 @@ function parsePathD(d) {
 }
 
 function initEditor(svgStr, scale) {
-  const doc = new DOMParser().parseFromString(svgStr, 'image/svg+xml');
+  const doc   = new DOMParser().parseFromString(svgStr, 'image/svg+xml');
   const svgEl = doc.querySelector('svg');
   ed.vw = parseFloat(svgEl.getAttribute('width'));
   ed.vh = parseFloat(svgEl.getAttribute('height'));
   ed.grid = scale;
+  ed.locked.clear();
   ed.selPath = -1; ed.selNode = null; ed.drag = null;
   ed.paths = Array.from(doc.querySelectorAll('path')).map(p => ({
-    color: p.getAttribute('fill'),
-    subpaths: parsePathD(p.getAttribute('d'))
+    color: p.getAttribute('fill'), subpaths: parsePathD(p.getAttribute('d'))
   }));
 }
 
@@ -553,9 +614,18 @@ function rebuildSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${ed.vw}" height="${ed.vh}" viewBox="0 0 ${ed.vw} ${ed.vh}">${paths}\n</svg>`;
 }
 
-const n = v => parseFloat(v.toFixed(2));
+function commitEdit() {
+  currentSvgString = rebuildSvg();
+  svgCode.value = formatSvg(currentSvgString);
+  document.getElementById('statFileSize').textContent = (new Blob([currentSvgString]).size / 1024).toFixed(1) + ' KB';
+}
+
+// ═══════════════════════════════════════════════════════════
+// EDITOR RENDER
+// ═══════════════════════════════════════════════════════════
+const n    = v  => parseFloat(v.toFixed(2));
 const cpAt = (cp, nd) => Math.abs(cp.x - nd.x) < 0.4 && Math.abs(cp.y - nd.y) < 0.4;
-const snap = v => Math.round(v / ed.grid) * ed.grid;
+const snap = v  => Math.round(v / ed.grid) * ed.grid;
 const isSN = (si, ni) => ed.selNode && ed.selNode.si === si && ed.selNode.ni === ni;
 
 function toSvgPt(e) {
@@ -573,118 +643,204 @@ function renderEditor() {
   const CR = Math.max(1.8, g * 0.24);
   const LW = Math.max(0.5, g * 0.08);
   const GW = Math.max(0.3, g * 0.045);
+  // Hit-area inflation for handles (bigger invisible target)
+  const HIT = Math.max(CR * 2, 6);
 
   let html = '';
 
   // Background + grid
-  html += `<rect width="${ed.vw}" height="${ed.vh}" fill="#0f1117"/>`;
-  html += `<g stroke="#2a2d3e" stroke-width="${GW}">`;
+  html += `<rect width="${ed.vw}" height="${ed.vh}" fill="#0f172a"/>`;
+  html += `<g stroke="#1e293b" stroke-width="${GW}" pointer-events="none">`;
   for (let x = 0; x <= ed.vw; x += g) html += `<line x1="${x}" y1="0" x2="${x}" y2="${ed.vh}"/>`;
   for (let y = 0; y <= ed.vh; y += g) html += `<line x1="0" y1="${y}" x2="${ed.vw}" y2="${y}"/>`;
   html += `</g>`;
 
-  // All shapes
+  // Shapes
   for (let pi = 0; pi < ed.paths.length; pi++) {
-    const ep = ed.paths[pi];
-    const isSel = pi === ed.selPath;
+    const ep     = ed.paths[pi];
+    const isSel  = pi === ed.selPath;
+    const isLock = ed.locked.has(pi);
     const d = buildD(ep.subpaths);
     if (isSel)
-      html += `<path d="${d}" fill="none" stroke="#ffffff" stroke-width="${LW*2}" opacity="0.08" pointer-events="none"/>`;
-    html += `<path fill="${ep.color}" d="${d}" data-pi="${pi}" class="ep"
-      opacity="${isSel ? 1 : 0.72}" style="cursor:${isSel ? 'default' : 'pointer'};"/>`;
+      html += `<path d="${d}" fill="none" stroke="#ffffff" stroke-width="${LW*2.2}" opacity="0.07" pointer-events="none"/>`;
+    const op     = isLock ? 0.35 : isSel ? 1 : 0.75;
+    // Shape gets white-move cursor if selectable/moveable
+    const cur    = isLock ? 'default' : 'var(--shape-cursor, default)';
+    html += `<path fill="${ep.color}" d="${d}" data-pi="${pi}" class="ep" opacity="${op}" style="cursor:${cur};"/>`;
   }
 
-  // Handles — only for selected path
-  if (ed.selPath >= 0 && ed.selPath < ed.paths.length) {
+  // Handles for selected path
+  if (ed.selPath >= 0 && !ed.locked.has(ed.selPath)) {
     const ep = ed.paths[ed.selPath];
 
-    // Lines first
+    // Lines
     for (let si = 0; si < ep.subpaths.length; si++) {
       const sp = ep.subpaths[si];
       for (let ni = 0; ni < sp.length; ni++) {
-        const nd = sp[ni];
-        const sel = isSN(si, ni);
-        if (!cpAt(nd.cpIn, nd))
-          html += `<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpIn.x}" y2="${nd.cpIn.y}"
-            stroke="${sel ? '#ff3b3b' : '#4f8ef7'}" stroke-width="${LW}" opacity="${sel ? 1 : 0.7}" pointer-events="none"/>`;
-        if (!cpAt(nd.cpOut, nd))
-          html += `<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpOut.x}" y2="${nd.cpOut.y}"
-            stroke="${sel ? '#ff6b3b' : '#f97316'}" stroke-width="${LW}" opacity="${sel ? 1 : 0.7}" pointer-events="none"/>`;
+        const nd = sp[ni]; const sel = isSN(si, ni);
+        if (!cpAt(nd.cpIn,  nd)) html += `<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpIn.x}"  y2="${nd.cpIn.y}"  stroke="${sel?'#ff3b3b':'#60a5fa'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
+        if (!cpAt(nd.cpOut, nd)) html += `<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpOut.x}" y2="${nd.cpOut.y}" stroke="${sel?'#ff8c3b':'#fb923c'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
       }
     }
 
-    // Handles + anchors
+    // Handles + anchors (visible shapes first, then big invisible hit areas on top)
     for (let si = 0; si < ep.subpaths.length; si++) {
       const sp = ep.subpaths[si];
       for (let ni = 0; ni < sp.length; ni++) {
-        const nd = sp[ni];
-        const sel = isSN(si, ni);
+        const nd = sp[ni]; const sel = isSN(si, ni);
 
+        // ── cpIn (visible diamond) ──
         if (!cpAt(nd.cpIn, nd)) {
-          const c = sel ? '#ff3b3b' : '#4f8ef7';
+          const c = sel ? '#ff3b3b' : '#60a5fa';
           html += `<rect x="${nd.cpIn.x-CR}" y="${nd.cpIn.y-CR}" width="${CR*2}" height="${CR*2}"
-            fill="${c}" stroke="#0f1117" stroke-width="${LW*0.5}"
-            transform="rotate(45 ${nd.cpIn.x} ${nd.cpIn.y})"
-            data-drag="cpIn" data-si="${si}" data-ni="${ni}" style="cursor:move;"/>`;
+            fill="${c}" stroke="#0f172a" stroke-width="${LW*0.5}"
+            transform="rotate(45 ${nd.cpIn.x} ${nd.cpIn.y})" pointer-events="none"/>`;
         }
+        // ── cpOut (visible diamond) ──
         if (!cpAt(nd.cpOut, nd)) {
-          const c = sel ? '#ff6b3b' : '#f97316';
+          const c = sel ? '#ff8c3b' : '#fb923c';
           html += `<rect x="${nd.cpOut.x-CR}" y="${nd.cpOut.y-CR}" width="${CR*2}" height="${CR*2}"
-            fill="${c}" stroke="#0f1117" stroke-width="${LW*0.5}"
-            transform="rotate(45 ${nd.cpOut.x} ${nd.cpOut.y})"
-            data-drag="cpOut" data-si="${si}" data-ni="${ni}" style="cursor:move;"/>`;
+            fill="${c}" stroke="#0f172a" stroke-width="${LW*0.5}"
+            transform="rotate(45 ${nd.cpOut.x} ${nd.cpOut.y})" pointer-events="none"/>`;
         }
-        // Anchor: white normally, red when selected
-        const aFill   = sel ? '#ff3b3b' : '#ffffff';
-        const aStroke = sel ? '#ff9999' : '#0f1117';
-        // Red outer ring for selected anchor
-        if (sel)
-          html += `<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.7}"
-            fill="none" stroke="#ff3b3b" stroke-width="${LW}" opacity="0.45" pointer-events="none"/>`;
-        html += `<circle cx="${nd.x}" cy="${nd.y}" r="${AR}"
-          fill="${aFill}" stroke="${aStroke}" stroke-width="${LW}"
-          data-drag="anchor" data-si="${si}" data-ni="${ni}" style="cursor:move;"/>`;
+
+        // ── Anchor (visible circle) ──
+        const aFill = sel ? '#ff3b3b' : '#f1f5f9';
+        const aStr  = sel ? '#ff9999' : '#0f172a';
+        if (sel) html += `<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.75}" fill="none" stroke="#ff3b3b" stroke-width="${LW}" opacity="0.4" pointer-events="none"/>`;
+        html += `<circle cx="${nd.x}" cy="${nd.y}" r="${AR}" fill="${aFill}" stroke="${aStr}" stroke-width="${LW}" pointer-events="none"/>`;
+
+        // ── Invisible hit targets (on top, with correct cursors & data) ──
+        if (!cpAt(nd.cpIn, nd))
+          html += `<circle cx="${nd.cpIn.x}"  cy="${nd.cpIn.y}"  r="${HIT}" fill="transparent" style="cursor:${CURSOR_HANDLE};" data-drag="cpIn"  data-si="${si}" data-ni="${ni}"/>`;
+        if (!cpAt(nd.cpOut, nd))
+          html += `<circle cx="${nd.cpOut.x}" cy="${nd.cpOut.y}" r="${HIT}" fill="transparent" style="cursor:${CURSOR_HANDLE};" data-drag="cpOut" data-si="${si}" data-ni="${ni}"/>`;
+        html += `<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.5}" fill="transparent" style="cursor:${CURSOR_ANCHOR};" data-drag="anchor" data-si="${si}" data-ni="${ni}"/>`;
       }
     }
   }
 
   editorSvg.innerHTML = html;
 
-  // Path click → change selected path
+  // ── Assign shape cursor via CSS variable trick ────────────
+  // We inject a <style> block into the SVG setting the CSS var
+  // Actually simpler: set it on each ep element directly after innerHTML
+  editorSvg.querySelectorAll('.ep').forEach(el => {
+    const pi = parseInt(el.dataset.pi);
+    if (!ed.locked.has(pi)) {
+      el.style.cursor = CURSOR_SHAPE;
+    }
+  });
+
+  // ── Shape mousedown → move or select ─────────────────────
   editorSvg.querySelectorAll('.ep').forEach(el => {
     el.addEventListener('mousedown', e => {
       const pi = parseInt(el.dataset.pi);
+      if (ed.locked.has(pi)) { e.stopPropagation(); return; }
+
       if (pi !== ed.selPath) {
         ed.selPath = pi; ed.selNode = null;
-        renderOutliner(); renderEditor();
+        renderOutliner(); updateNodeSection(); renderEditor();
+        e.stopPropagation(); return;
       }
-      e.stopPropagation();
-    });
-  });
 
-  // Handle/anchor drag
-  editorSvg.querySelectorAll('[data-drag]').forEach(el => {
-    el.addEventListener('mousedown', e => {
-      const si = parseInt(el.dataset.si);
-      const ni = parseInt(el.dataset.ni);
-      ed.selNode = { si, ni };
-      ed.drag = { type: el.dataset.drag, si, ni };
+      // Same path selected → start shape drag
+      const pt = toSvgPt(e);
+      // Deep-copy all nodes for undo-on-cancel
+      const origNodes = ed.paths[pi].subpaths.map(sp =>
+        sp.map(nd => ({ x: nd.x, y: nd.y, cpIn: {...nd.cpIn}, cpOut: {...nd.cpOut} }))
+      );
+      ed.drag = { type: 'shape', pi, startX: pt.x, startY: pt.y, origNodes, hasMoved: false };
       window.addEventListener('mousemove', onDrag);
-      window.addEventListener('mouseup', endDrag);
-      renderEditor();
+      window.addEventListener('mouseup',   endDrag);
       e.preventDefault(); e.stopPropagation();
     });
   });
 
-  // Background → deselect node
+  // ── Handle / anchor mousedown ─────────────────────────────
+  editorSvg.querySelectorAll('[data-drag]').forEach(el => {
+    el.addEventListener('mousedown', e => {
+      const si   = parseInt(el.dataset.si);
+      const ni   = parseInt(el.dataset.ni);
+      const type = el.dataset.drag;
+      ed.selNode = { si, ni };
+      ed.drag    = { type, si, ni };
+      window.addEventListener('mousemove', onDrag);
+      window.addEventListener('mouseup',   endDrag);
+      updateNodeSection(); renderEditor();
+      e.preventDefault(); e.stopPropagation();
+    });
+
+    // ── Double-click handle → mirror opposite ────────────────
+    el.addEventListener('dblclick', e => {
+      const type = el.dataset.drag;
+      if (type !== 'cpIn' && type !== 'cpOut') return;
+      const si = parseInt(el.dataset.si);
+      const ni = parseInt(el.dataset.ni);
+      const nd = ed.paths[ed.selPath].subpaths[si][ni];
+      mirrorHandle(nd, type);
+      renderEditor(); commitEdit();
+      e.preventDefault(); e.stopPropagation();
+    });
+  });
+
+  // Background click → deselect node
   editorSvg.addEventListener('mousedown', e => {
-    if (e.target === editorSvg) { ed.selNode = null; renderEditor(); }
+    if (e.target === editorSvg) { ed.selNode = null; updateNodeSection(); renderEditor(); }
   }, { once: true });
 }
 
+// Mirror handle: moves the OPPOSITE handle to the reflected position
+function mirrorHandle(nd, movedType) {
+  const g = ed.grid;
+  if (movedType === 'cpOut') {
+    // Mirror cpOut → cpIn  (cpIn = anchor - (cpOut - anchor))
+    const rx = snap(2 * nd.x - nd.cpOut.x);
+    const ry = snap(2 * nd.y - nd.cpOut.y);
+    nd.cpIn = { x: rx, y: ry };
+  } else {
+    // Mirror cpIn → cpOut
+    const rx = snap(2 * nd.x - nd.cpIn.x);
+    const ry = snap(2 * nd.y - nd.cpIn.y);
+    nd.cpOut = { x: rx, y: ry };
+  }
+}
+
+// ── Drag handler ──────────────────────────────────────────
 function onDrag(e) {
-  if (!ed.drag || ed.selPath < 0) return;
+  if (!ed.drag) return;
   const pt = toSvgPt(e);
+
+  if (ed.drag.type === 'shape') {
+    const { pi, startX, startY, origNodes } = ed.drag;
+    const rawDx = pt.x - startX;
+    const rawDy = pt.y - startY;
+
+    // Snap the total displacement to grid
+    const dx = snap(rawDx);
+    const dy = snap(rawDy);
+
+    if (dx !== 0 || dy !== 0) ed.drag.hasMoved = true;
+
+    const sp2 = ed.paths[pi].subpaths;
+    for (let si = 0; si < sp2.length; si++) {
+      for (let ni = 0; ni < sp2[si].length; ni++) {
+        const orig = origNodes[si][ni];
+        const nd   = sp2[si][ni];
+        nd.x        = orig.x        + dx;
+        nd.y        = orig.y        + dy;
+        nd.cpIn.x   = orig.cpIn.x   + dx;
+        nd.cpIn.y   = orig.cpIn.y   + dy;
+        nd.cpOut.x  = orig.cpOut.x  + dx;
+        nd.cpOut.y  = orig.cpOut.y  + dy;
+      }
+    }
+    renderEditor();
+    return;
+  }
+
+  // Anchor / handle drag
+  if (ed.selPath < 0) return;
   const x = snap(pt.x), y = snap(pt.y);
   const { type, si, ni } = ed.drag;
   const nd = ed.paths[ed.selPath].subpaths[si][ni];
@@ -704,37 +860,37 @@ function onDrag(e) {
 function endDrag() {
   ed.drag = null;
   window.removeEventListener('mousemove', onDrag);
-  window.removeEventListener('mouseup', endDrag);
-  currentSvgString = rebuildSvg();
-  svgCode.value = formatSvg(currentSvgString);
-  document.getElementById('statFileSize').textContent =
-    (new Blob([currentSvgString]).size / 1024).toFixed(1) + ' KB';
+  window.removeEventListener('mouseup',   endDrag);
+  commitEdit();
 }
 
-// ===== VIEW =====
+// ═══════════════════════════════════════════════════════════
+// VIEW
+// ═══════════════════════════════════════════════════════════
 function setView(v) {
   currentView = v;
-  document.getElementById('viewPreview').classList.toggle('active', v === 'preview');
-  document.getElementById('viewEdit').classList.toggle('active', v === 'edit');
-  document.getElementById('viewCode').classList.toggle('active', v === 'code');
-  svgDisplay.style.display  = v === 'preview' ? 'flex' : 'none';
-  editorPanel.style.display = v === 'edit'    ? 'flex' : 'none';
-  codePanel.style.display   = v === 'code'    ? 'flex' : 'none';
-  if (v === 'edit') { renderOutliner(); renderEditor(); }
+  ['preview','edit','code'].forEach(n =>
+    document.getElementById('view' + n.charAt(0).toUpperCase() + n.slice(1)).classList.toggle('active', v === n)
+  );
+  svgDisplay.style.display  = v === 'preview' ? 'flex'  : 'none';
+  editorPanel.style.display = v === 'edit'    ? 'flex'  : 'none';
+  codePanel.style.display   = v === 'code'    ? 'flex'  : 'none';
+  if (v === 'edit') { renderOutliner(); updateNodeSection(); renderEditor(); }
 }
 
-// ===== HELPERS =====
-function rgbToHex(r, g, b) {
-  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
-}
-function formatSvg(svg) {
-  return svg.replace(/></g, '>\n<').replace(/(<\/svg>)/g, '\n$1');
-}
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+function rgbToHex(r, g, b) { return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join(''); }
+function formatSvg(svg)     { return svg.replace(/></g,'>\n<').replace(/(<\/svg>)/g,'\n$1'); }
+
 function resetOutput() {
-  currentSvgString = null; ed.paths = [];
-  svgDisplay.innerHTML = '<div id="svgPlaceholder" style="font-size:11px;color:var(--muted);letter-spacing:0.1em;text-align:center;line-height:2;">LOAD AN IMAGE<br>THEN PRESS CONVERT</div>';
+  currentSvgString = null;
+  Object.assign(ed, { paths:[], locked: new Set(), selPath:-1, selNode:null, drag:null });
+  svgDisplay.innerHTML = '<div id="svgPlaceholder" style="font-size:11px;color:var(--muted);letter-spacing:.1em;text-align:center;line-height:2.2;">LOAD AN IMAGE<br>THEN PRESS CONVERT</div>';
   svgCode.value = ''; editorSvg.innerHTML = '';
   outlinerList.innerHTML = '<div class="ol-empty">CONVERT<br>FIRST</div>';
+  nodeSection.style.display = 'none';
   document.getElementById('svgStats').style.display = 'none';
   downloadSvgBtn.disabled = true; copySvgBtn.disabled = true;
 }
@@ -744,8 +900,7 @@ downloadSvgBtn.addEventListener('click', () => {
   const blob = new Blob([currentSvgString], { type: 'image/svg+xml' });
   const a = document.createElement('a');
   a.download = 'jamad_pixel.svg'; a.href = URL.createObjectURL(blob); a.click();
-  URL.revokeObjectURL(a.href);
-  toast('SVG downloaded!');
+  URL.revokeObjectURL(a.href); toast('SVG downloaded!');
 });
 copySvgBtn.addEventListener('click', () => {
   if (!currentSvgString) return;
@@ -755,7 +910,7 @@ copySvgBtn.addEventListener('click', () => {
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._tid); t._tid = setTimeout(() => t.classList.remove('show'), 2000);
+  clearTimeout(t._tid); t._tid = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
 scaleInput.addEventListener('change', () => { if (sourceImageData) convert(); });
