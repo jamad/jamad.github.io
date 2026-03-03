@@ -1,1164 +1,766 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JAMAD SVG // PIXEL TO PATH CONVERTER</title>
+---
+layout: default
+---
+
+<!-- 
+[DEVELOPMENT NOTES FOR AI ASSISTANTS]
+CURRENT VERSION: v20260303.2-ROOT
+MANDATORY RULES:
+1. NO UNSOLICITED REFACTORING: Do not reorder elements or rewrite existing CSS/HTML. 
+   Maintain the exact indentation and spacing found in this file.
+2. MAINTAIN JEKYLL FRONTMATTER: Do not remove or modify the --- block at the top.
+3. MINIMAL DIFFS: Only update the content of specific project cards as requested.
+4. PROJECT LINKS: Ensure ReticuluMind card links to both '3d-mindmap/index.html' (Editor) and '3d-mindmap/browser.html' (Viewer).
+5. VERSIONING: Always increment CURRENT VERSION using YYYYMMDD.XX format.
+-->
+
+<!-- ページ内専用のスタイル定義 -->
 <style>
+
   :root {
-    --bg:       #0f172a;
-    --surface:  #1e293b;
-    --border:   #334155;
-    --border2:  #475569;
-    --accent:   #3b82f6;
-    --accent-d: #2563eb;
-    --text:     #e2e8f0;
-    --muted:    #94a3b8;
-    --muted2:   #64748b;
-    --danger:   #ef4444;
-    --orange:   #f97316;
+    color-scheme: dark;
+    --led-orange: #fb923c;
+    --led-glow: rgba(249, 115, 22, 0.4);
+    --nav-height: 180px; /* JSで動的に上書きされるナビゲーションの高さ */
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: 'Courier New', monospace;
-    height: 100vh; display: flex; flex-direction: column; user-select: none;
+
+  html, body {
+    background-color: #020617; /* Slate-950 相当 */
+    color: #e2e8f0;
+    margin: 0;
+    scroll-behavior: smooth; /* スムーズスクロール有効化 */
+  }
+
+  header, nav {
+  color: #e2e8f0;
+  }
+
+  header a, nav a {
+    color: #e2e8f0;
+  }
+  
+  /* 全体のリストスタイル解除 */
+  .project-list {
+    padding: 0;
+    list-style: none;
+  }
+
+  /* カード共通デザイン (ダークテーマ統一) */
+  .project-card {
+    background-color: #0f172a; /* Slate-900 */
+    border: 1px solid #1e293b; /* Slate-800 */
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    color: #e2e8f0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    position: relative;
     overflow: hidden;
+    /* ジャンプ時にナビゲーションの下に潜り込まないための余白設定（動的計算） */
+    scroll-margin-top: calc(var(--nav-height) + 24px); 
   }
 
-  /* ── HEADER ─────────────────────────────────────────── */
-  header {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 9px 18px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
-  }
-  header h1 { font-size: 14px; font-weight: bold; letter-spacing: .18em; color: #93c5fd; white-space: nowrap; }
-  header .sub { font-size: 9px; color: var(--muted); letter-spacing: .1em; }
-  .sep { width: 1px; height: 22px; background: var(--border2); flex-shrink: 0; }
 
-  /* Drop target indicator in header */
-  #openArea {
-    display: flex; align-items: center; gap: 8px;
-    padding: 5px 12px; border: 1px dashed var(--border2); border-radius: 6px;
-    cursor: pointer; transition: all .15s; font-size: 10px; color: var(--muted);
-    letter-spacing: .08em;
-  }
-  #openArea:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.06); }
-  #openArea.drag-over { border-color: var(--accent); background: rgba(59,130,246,.1); color: var(--accent); }
-  #fileInput { display: none; }
-
-  .btn {
-    padding: 5px 12px; border: none; border-radius: 6px;
-    font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold;
-    letter-spacing: .1em; cursor: pointer; transition: all .15s; flex-shrink: 0;
-  }
-  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-orange { background: var(--orange); color: #fff; }
-  .btn-orange:hover { background: #ea6600; }
-  .btn-orange:disabled { opacity: .4; cursor: not-allowed; }
-
-  /* Filename display */
-  #filenameDisplay {
-    font-size: 10px; color: var(--muted); letter-spacing: .06em;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
+  @media (max-width: 768px) {
+    .project-card {
+      /* JSで正確な高さが計算されるため、固定値の220pxは削除（上書き）します */
+      scroll-margin-top: calc(var(--nav-height) + 24px);
+    }
   }
 
-  /* View toggle */
-  .view-toggle { display: flex; gap: 4px; margin-left: auto; }
-  .view-btn {
-    padding: 3px 10px; font-size: 9px; font-weight: bold; letter-spacing: .12em;
-    border: 1px solid var(--border2); background: transparent; color: var(--muted);
-    cursor: pointer; border-radius: 4px; font-family: 'Courier New', monospace; transition: all .15s;
-  }
-  .view-btn.active { background: var(--accent-d); border-color: var(--accent-d); color: #fff; }
 
-  /* Stats */
-  .stats { display: flex; gap: 12px; align-items: center; }
-  .stat { font-size: 9px; color: var(--muted); letter-spacing: .08em; }
-  .stat span { color: var(--accent); font-weight: bold; }
-
-  /* ── MAIN ────────────────────────────────────────────── */
-  main { flex: 1; display: flex; overflow: hidden; min-height: 0; position: relative; }
-
-  /* ── DROP OVERLAY (shown before first load) ──────────── */
-  #dropOverlay {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px;
-    background: var(--bg); z-index: 10;
-  }
-  #dropOverlay .big-icon { font-size: 48px; opacity: .2; }
-  #dropOverlay .label { font-size: 13px; color: var(--muted); letter-spacing: .12em; text-align: center; line-height: 2; }
-  #dropOverlay .hint  { font-size: 10px; color: var(--border2); letter-spacing: .08em; }
-  #dropOverlay.hidden { display: none; }
-
-  /* ── CODE VIEW ────────────────────────────────────────── */
-  #codePanel {
-    display: none; flex: 1; flex-direction: column;
-  }
-  #svgCode {
-    flex: 1; background: var(--bg); color: #7dd3fc;
-    font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6;
-    padding: 20px; overflow: auto; white-space: pre;
-    border: none; outline: none; resize: none; width: 100%; height: 100%;
+  /* ホバー時の浮き上がりエフェクト */
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    border-color: #334155;
   }
 
-  /* ── EDITOR ─────────────────────────────────────────── */
-  #editorPanel { flex: 1; display: none; flex-direction: row; overflow: hidden; }
-
-  /* Outliner */
-  #outliner {
-    width: 128px; flex-shrink: 0; background: var(--surface);
-    border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
-  }
-  .ol-section-title {
-    padding: 6px 10px 5px; font-size: 8px; font-weight: bold;
-    letter-spacing: .2em; color: var(--muted2);
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
-  }
-  #outliner-list { flex: 1; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; gap: 2px; }
-  .ol-item {
-    display: flex; align-items: center; gap: 5px;
-    padding: 4px 6px 4px 7px; border-radius: 5px; cursor: pointer;
-    border: 1px solid transparent; transition: all .12s;
-  }
-  .ol-item:hover { background: rgba(255,255,255,.04); border-color: var(--border); }
-  .ol-item.active { background: rgba(59,130,246,.13); border-color: var(--accent); }
-  .ol-item.ol-locked { opacity: .45; }
-  .ol-swatch { width: 15px; height: 15px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(255,255,255,.15); }
-  .ol-hex { flex: 1; font-size: 8px; color: var(--muted); letter-spacing: .03em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  .ol-item.active .ol-hex { color: #93c5fd; }
-  .ol-vis-btn, .ol-lock-btn {
-    flex-shrink: 0; width: 16px; height: 16px; display: flex; align-items: center;
-    justify-content: center; border-radius: 3px; color: var(--muted2);
-    background: transparent; border: none; cursor: pointer; padding: 0; transition: all .12s;
-  }
-  .ol-vis-btn:hover, .ol-lock-btn:hover { color: var(--text); background: var(--border); }
-  .ol-lock-btn.locked { color: var(--danger); }
-  .ol-vis-btn.hidden-color { color: var(--muted2); opacity: .4; }
-  .ol-empty { font-size: 9px; color: var(--muted2); padding: 14px 8px; text-align: center; letter-spacing: .06em; line-height: 1.9; }
-
-  #node-section { display: none; border-top: 1px solid var(--border); padding: 8px 8px 10px; flex-shrink: 0; }
-  #node-section .ns-title { font-size: 8px; font-weight: bold; letter-spacing: .2em; color: var(--muted2); margin-bottom: 6px; }
-  .seg-toggle { display: flex; background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
-  .seg-btn {
-    padding: 3px 8px; font-size: 9px; font-weight: bold; letter-spacing: .08em;
-    font-family: 'Courier New', monospace; color: var(--muted);
-    cursor: pointer; border: none; background: transparent; transition: all .12s;
-  }
-  .seg-btn + .seg-btn { border-left: 1px solid var(--border2); }
-  .seg-btn.active { background: var(--accent-d); color: #fff; }
-  .seg-btn:hover:not(.active) { background: var(--border); color: var(--text); }
-  #node-section .seg-toggle { width: 100%; }
-  #node-section .seg-btn { flex: 1; text-align: center; }
-
-  /* Editor canvas */
-  #editorCanvas {
-    flex: 1; position: relative; overflow: hidden;
-    background-image: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%);
-    background-size: 16px 16px;
-  }
-  #editorCanvas.cur-default { cursor: default; }
-  #editorCanvas.cur-shape   { cursor: move; }
-  #editorCanvas.cur-anchor  { cursor: crosshair; }
-  #editorCanvas.cur-handle  { cursor: pointer; }
-  #editorCanvas.cur-drag    { cursor: grabbing; }
-  #editorCanvas.cur-add-node { cursor: cell; }
-  #editorSvg { width: 100%; height: 100%; display: block; touch-action: none; cursor: inherit; }
+  /* プロジェクトごとのアクセントカラー定義 */
+  .card-jamadsvg { border-left: 4px solid #3b82f6; }
+  .card-jamadpixel { border-left: 4px solid #f97316; } /* Orange-500 */
+  .card-snowtrace { border-left: 4px solid #7dd3fc; } /* Sky-300 */
+  .card-compass { border-left: 4px solid #f43f5e; } /* Rose-500 */
+  .card-strandbeest { border-left: 4px solid #00d4f0; }
+  .card-masslessenergy { border-left: 4px solid #F02000; } 
+  .card-taylorshift { border-left: 4px solid #00bcd4; } 
+  .card-yojijuku { border-left: 4px solid #facc15; } /* Yellow-400 */
+  .card-decoder { border-left: 4px solid #3344f1; } /* Indigo-500 */
+  .card-fishing { border-left: 4px solid #38bdf8; }
+  .card-onyx { border-left: 4px solid #10b981; }
+  .card-reticulumind { border-left: 4px solid #4a90e2; }
+  .card-defense { border-left: 4px solid #c026d3; }
+  .card-deca { border-left: 4px solid #06b6d4; }
+  .card-calendar { border-left: 4px solid #f59e0b; }
 
 
+  /* ボタンの色 */
 
-  /* Toast */
-  #toast {
-    position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
-    background: var(--accent-d); color: #fff; padding: 5px 16px;
-    border-radius: 20px; font-size: 11px; letter-spacing: .08em;
-    z-index: 100; opacity: 0; transition: opacity .2s; pointer-events: none;
-  }
-  #toast.show { opacity: 1; }
+  .btn-jamadsvg  { background: linear-gradient(90deg, #1e3a8a, #3b82f6); }
+  .btn-jamadpixel { background: linear-gradient(90deg, #1d4ed8, #f97316); } /* Blue to Orange */
+  .btn-secondary { background: transparent; border: 1px solid #475569; color: #94a3b8; }
+  .btn-secondary:hover { border-color: #94a3b8; color: #e2e8f0; }
+  
+  .btn-snowtrace { background: linear-gradient(90deg, #0369a1, #7dd3fc); } /* Deep Ocean to Sky */
+  .btn-compass { background: linear-gradient(90deg, #6366f1, #f43f5e); } /* Indigo to Rose */
+  .btn-strandbeest  { background: linear-gradient(90deg, #0a4060, #00d4f0); }
+  .btn-masslessenergy { background: linear-gradient(90deg, #F02000,  #F0B050); } 
+  .btn-taylorshift { background: linear-gradient(90deg, #0284c7,  #00bcd4); } 
+  .btn-yojijuku { background: linear-gradient(90deg, #d97706, #facc15); }
+  .btn-decoder { background: linear-gradient(90deg, #4f46e5, #3344f1); }
+  .btn-fishing { background: linear-gradient(90deg, #0284c7, #38bdf8); }
+  .btn-onyx { background: linear-gradient(90deg, #064e3b, #10b981); }
+  .btn-reticulumind { background: linear-gradient(90deg, #4a90e2, #357abd); }
+  .btn-defense { background: linear-gradient(90deg, #c026d3, #7e22ce); }
+  .btn-deca { background: linear-gradient(90deg, #06b6d4, #0891b2); }
+  .btn-calendar { background: linear-gradient(90deg, #f59e0b, #d97706); }
 
-  footer {
-    background: #020617;
-    border-top: 2px solid #1e293b;
-    padding: 10px 20px 12px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-family: ui-monospace, 'Cascadia Code', 'Courier New', monospace;
-  }
-  .footer-tips {
-    display: flex; flex-wrap: wrap; gap: 6px 14px;
-    border-bottom: 1px solid #1e293b; padding-bottom: 8px;
-  }
-  .footer-tip {
-    font-size: 9px; letter-spacing: .07em; color: #475569;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .footer-tip .tip-key {
-    display: inline-flex; align-items: center;
-    background: #0f172a; border: 1px solid #334155;
-    border-radius: 3px; padding: 1px 5px;
-    font-size: 8px; font-weight: bold; color: #64748b;
-    letter-spacing: .05em; white-space: nowrap;
-  }
-  .footer-tip .tip-label { color: #334155; }
-  .footer-meta {
-    display: flex; align-items: center; gap: 14px;
-    font-size: 8px; letter-spacing: .12em; color: #1e293b;
+
+  /* メタタグ (★ 3D Visualization など) */
+  .project-meta {
+    font-size: 0.85em;
+    font-weight: bold;
     text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    display: block;
   }
-  .footer-meta .ver { color: #334155; }
-  .footer-meta .dot { color: #1e293b; }
+
+  /* タイトルリンク */
+  .project-title a {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #fff !important;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+
+  /* 説明文 */
+  .project-desc-main {
+    color: #cbd5e1; /* Slate-300 */
+    font-size: 1em;
+    line-height: 1.6;
+    margin-bottom: 0.5em;
+  }
+  
+  .project-desc-sub {
+    color: #94a3b8; /* Slate-400 */
+    font-size: 0.85em;
+    margin-top: 0;
+    line-height: 1.5;
+  }
+
+  /* アクションボタン共通 */
+  .action-btn {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 8px 20px;
+    color: #fff !important;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: filter 0.2s;
+  }
+  .action-btn:hover {
+    filter: brightness(1.1);
+    text-decoration: none;
+  }
+
+  .project-image {
+    width: 100%; /* モバイルでは画面幅いっぱい */
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: block;
+  }
+
+  @media (min-width: 1024px) {
+    .project-image {
+      max-width: 50%; /* デスクトップでは現在の落ち着いたサイズ */
+    }
+  }
+
+  /* --- ORANGE LED TICKER --- */
+  .ticker-container {
+    width: 100%;
+    background-color: #000;
+    border-bottom: 2px solid #1e293b;
+    overflow: hidden;
+    padding: 12px 0;
+    display: flex; /* コンテンツを横並びに固定 */
+  }
+  .ticker-text {
+    display: flex;
+    white-space: nowrap;
+    animation: ticker-scroll 40s linear infinite; /* スピード調整 */
+    color: var(--led-orange);
+    font-weight: bold;
+    text-transform: uppercase;
+    text-shadow: 0 0 8px var(--led-glow), 0 0 2px var(--led-orange); /* 発光 */
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+  }
+
+  .ticker-text span { padding-right: 100px; } /* テキスト間の余白 */
+
+  @keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); } /* 半分動いた瞬間にリセットしてループ */
+  }
+
+  /* --- STICKY BUTTON INDEX --- */
+  .index-nav {
+    position: sticky;
+    top: 0;
+    background-color: #0c0a09; /* 非常に深い石のような色 */
+    background-image: linear-gradient(to right, #451a03 0%, #0c0a09 100%); /* 左側に微かな琥珀色の帯 */
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    padding: 10px 0;
+    border-top: 1px solid #78350f; /* 帯の上端 */
+    border-bottom: 1px solid #78350f; /* 帯の下端 */
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+  }
+
+  .index-list { 
+    display: grid;
+    /* モバイルでは2列、PCでは画面幅に合わせて自動で列数を増やす */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+   list-style: none; 
+    padding: 0 15px;
+    margin: 0 auto;
+    max-width: 1200px;
+   }
+
+  .index-link {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.55rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-align: center; /* 文字を中央寄せ */
+
+    border: 1px solid #334155;
+    padding: 10px 4px;
+    border-radius: 4px;
+    background-color: rgba(15, 23, 42, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+
+    text-overflow: ellipsis; /* 長すぎる名前があれば自動で「...」に */
+
+    transition: all 0.2s;
+    display: block; /* Grid内で幅いっぱいに広がる */
+
+  }
+  
+  /* Hover: 触れた瞬間の鋭い光 */
+  .index-link:hover { 
+    color: #fff; 
+    border-color: var(--led-orange); 
+    background-color: rgba(249, 115, 22, 0.2);
+    box-shadow: 0 0 15px var(--led-glow); 
+  }
+
+  /* Active: 現在地を示す落ち着いた琥珀色の点灯 */
+  .index-link.active { 
+    color: var(--led-orange); 
+    border-color: #78350f; /* 帯の境界色と同期 */
+    background-color: rgba(69, 26, 3, 0.8); /* 帯の深い赤/琥珀色に同調 */
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6);
+    border-width: 2px;
+  }
+
+  .index-link:active {
+    transform: scale(0.96);
+  }
+
 </style>
-</head>
-<body>
-<div id="toast"></div>
 
-<!-- ═══ HEADER ═══════════════════════════════════════════ -->
-<header>
-  <div>
-    <h1>JAMAD SVG</h1>
-    <div class="sub">PIXEL TO PATH CONVERTER</div>
-  </div>
-  <div class="sep"></div>
 
-  <!-- Open / Drop target -->
-  <div id="openArea" title="Click or drop PNG here">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M12 10v6m-3-3 3 3 3-3"/></svg>
-    OPEN PNG
-  </div>
-  <input type="file" id="fileInput" accept="image/png,image/*">
+<div class="home">
 
-  <span id="filenameDisplay"></span>
+  <!-- 5W1H LED TICKER -->
+  <header class="ticker-container">
+    <div class="ticker-text" id="ticker">
+       <span>WHO: Junichi Yamada aka JAMAD / Software Engineer</span>
+       <span>WHY: Transform complex logic into intuitive experience.</span>
+       <span>WHAT: 3D Visualization, Physics Simulations, Language Tools.</span>
+       <span>HOW: Gemini, AI Studio, Claude.ai, ChatGPT, Copilot / Three.js, Vanilla JS.</span>
+       <span>WHERE: Helsinki / Remote.</span>
+       <span>WHEN: 2023 - PRESENT (Post-AI Development Era).</span>
+     </div>
+   </header>
 
-  <div class="sep"></div>
-  <div class="stats" id="svgStats" style="display:none;">
-    <div class="stat">PATHS <span id="statElements">—</span></div>
-    <div class="stat">SIZE <span id="statFileSize">—</span></div>
-  </div>
+  <!-- ALL PROJECTS INDEX -->
+  <nav class="index-nav" id="sticky-nav">
+    <ul class="index-list">
+      <li><a href="#jamadpixel" class="index-link">JAMAD PIXEL</a></li>
+      <li><a href="#snowtrace" class="index-link">SNOW TRACE</a></li>
+      <li><a href="#compass" class="index-link">SIJAMUOTO COMPASS</a></li>
+      <li><a href="#strandbeest" class="index-link">STRANDBEEST SIM</a></li>
+      <li><a href="#masslessenergy" class="index-link">MASSLESS ENERGY</a></li>
+      <li><a href="#taylorshift" class="index-link">TAYLOR SHIFT</a></li>
+      <li><a href="#yojijuku" class="index-link">YOJI-JUKU GO!</a></li>
+      <li><a href="#decoder" class="index-link">HEL STREET DECODER</a></li>
+      <li><a href="#fishing" class="index-link">KANJI FISHING</a></li>
+      <li><a href="#onyx" class="index-link">JAMAD ONYX</a></li>
+      <li><a href="#calendar" class="index-link">JAMAD CAL</a></li>
+      <li><a href="#deca" class="index-link">DECA SEARCH</a></li>
+      <li><a href="#reticulumind" class="index-link">RETICULUMIND</a></li>
+      <li><a href="#defense" class="index-link">FINNISH DEFENSE</a></li>
+    </ul>
+  </nav>
 
-  <div class="sep" id="statsSep" style="display:none;"></div>
-  <button class="btn btn-orange" id="downloadSvgBtn" disabled>↓ SVG</button>
-  <button class="btn btn-ghost"  id="copySvgBtn"     disabled title="Copy SVG code to clipboard">COPY SVG</button>
-  <div class="sep"></div>
-  <button class="btn btn-ghost" id="undoBtn" disabled title="Undo (Ctrl+Z)" onclick="undo()">↩ UNDO</button>
-  <button class="btn btn-ghost" id="redoBtn" disabled title="Redo (Ctrl+Y)" onclick="redo()">↪ REDO</button>
+  <ul class="project-list">
 
-  <div class="view-toggle">
-    <button class="view-btn active" id="viewEdit" onclick="setView('edit')">EDIT</button>
-    <button class="view-btn"        id="viewCode" onclick="setView('code')">CODE</button>
-  </div>
-</header>
 
-<!-- ═══ MAIN ═════════════════════════════════════════════ -->
-<main>
-  <!-- Drop overlay (visible before first load) -->
-  <div id="dropOverlay">
-    <div class="big-icon">⬛</div>
-    <div class="label">DROP PNG HERE<br>or click OPEN PNG above</div>
-    <div class="hint">JAMAD PIXEL export recommended · Opens and converts automatically</div>
-  </div>
 
-  <!-- CODE view -->
-  <div id="codePanel">
-    <textarea id="svgCode" readonly placeholder="// SVG code will appear after loading an image..."></textarea>
-  </div>
+    <!-- 14. JAMAD SVG -->
+    <li class="project-card card-jamadsvg" id="jamadsvg">
 
-  <!-- EDIT view -->
-  <div id="editorPanel">
-    <div id="editorCanvas" class="cur-default">
-      <svg id="editorSvg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+      <!-- デモ動画があれば video タグに差し替え -->
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://jamad-svg-308cd6.gitlab.io/demo.mp4" type="video/mp4">
+      </video>
 
-    </div>
-    <div id="outliner">
-      <div class="ol-section-title">COLORS</div>
-      <div id="outliner-list"><div class="ol-empty">OPEN AN<br>IMAGE</div></div>
-      <div id="node-section">
-        <div class="ns-title">NODE TYPE</div>
-        <div class="seg-toggle">
-          <button class="seg-btn active" id="nodeSharpBtn" onclick="setNodeType('sharp')">◆ SHARP</button>
-          <button class="seg-btn"        id="nodeCurveBtn" onclick="setNodeType('curve')">⌒ CURVE</button>
-        </div>
+      <span class="project-meta" style="color:#93c5fd;text-shadow:0 0 8px rgba(147,197,253,0.4);">
+        ★ Vector Tool
+      </span>
+
+      <h2 class="project-title">
+        <a href="https://jamad-svg-308cd6.gitlab.io/">JAMAD SVG v20260303.3 ( WIP ) </a>
+      </h2>
+
+      <p class="project-desc-main">
+        JAMAD SVG // PIXEL TO PATH CONVERTER.<br>
+        JAMAD PIXEL アートをベジェ曲線ベクターパスへ変換・編集するSVGエディター。
+      </p>
+
+      <p class="project-desc-sub">
+        Converts JAMAD PIXEL exports to clean SVG paths automatically.<br>
+        Features per-subpath bezier editing, sharp/curve node toggle, handle mirroring,
+        color lock, and one-click shape drag. Export as SVG or copy code.
+      </p>
+
+      <a href="https://jamad-svg-308cd6.gitlab.io/" class="action-btn btn-jamadsvg">
+        OPEN EDITOR &rarr;
+      </a>
+
+    </li>
+
+    <!-- 13. JAMAD PIXEL -->
+    <li class="project-card card-jamadpixel" id="jamadpixel">
+      <!-- 動画デモ（パスが確定したらsourceを差し替え） -->
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://jamad-pixel-4264bf.gitlab.io/demoB.mp4" type="video/mp4">
+      </video>
+
+      <span class="project-meta" style="color: #fb923c; text-shadow: 0 0 8px rgba(249, 115, 22, 0.4);">
+        ★ Pixel Art Tool
+      </span>
+
+      <h2 class="project-title">
+        <a href="https://jamad-pixel-4264bf.gitlab.io/">JAMAD PIXEL v20260301.4</a>
+      </h2>
+      <p class="project-desc-main">
+        JAMAD PIXEL // LO-FI CANVAS.<br>
+        9色パレットと対称描画を備えた、ブラウザで動くピクセルアートエディター。
+      </p>
+      <img src="https://jamad-pixel-4264bf.gitlab.io/output.gif" alt="example" style="width:64px; height:64px;">
+      <p class="project-desc-sub">
+        64×64 pixel canvas with 9-color hue-shift palette, symmetry axes, pattern masking, and stamp editor.<br>
+        Features 8-slot clipboard, selection tool, text tool, keyboard shortcuts, and PNG export.<br>
+        Single-file. No-install.
+      </p>
+      <a href="https://jamad-pixel-4264bf.gitlab.io/" class="action-btn btn-jamadpixel">OPEN EDITOR &rarr;</a>
+      <a href="https://jamad-pixel-4264bf.gitlab.io/demoA.mp4" class="action-btn btn-secondary" target="_blank">demoA.mp4</a>
+      <a href="https://jamad-pixel-4264bf.gitlab.io/demoB.mp4" class="action-btn btn-secondary" target="_blank">demoB.mp4</a>
+      <a href="https://jamad-pixel-4264bf.gitlab.io/demoC.mp4" class="action-btn btn-secondary" target="_blank">demoC.mp4</a>
+    </li>
+
+    <!-- 12. SNOW TRACE -->
+    <li class="project-card card-snowtrace" id="snowtrace">
+
+      <!-- 動画デモ（パスが確定したらsourceを差し替え） -->
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://snow-trace-d88ad4.gitlab.io/SnowTrace2026-02-25_22-54-17.mp4" type="video/mp4">
+      </video>
+
+      <span class="project-meta" style="color: #7dd3fc; text-shadow: 0 0 8px rgba(125, 211, 252, 0.4);">
+        ★ 3D Maze Logic
+      </span>
+
+      <h2 class="project-title">
+        <a href="https://snow-trace-d88ad4.gitlab.io/">SNOW TRACE v20260225.3</a>
+      </h2>
+      <p class="project-desc-main">
+        SNOW TRACE // PAW PRINT NAVIGATION SYSTEM.<br>
+        三次元の氷の迷路を、自らの足跡を唯一の導きとして踏破するロジカルパズル。
+      </p>
+      <p class="project-desc-sub">
+        Explore a 3-floor structural labyrinth using Three.js. <br>
+        Features multi-floor navigation, dynamic paw print tracking, and an interactive 3D minimap. <br>
+        Multi-language support (JA/EN/FI/DA).
+      </p>
+      <a href="https://snow-trace-d88ad4.gitlab.io/" class="action-btn btn-snowtrace">ENTER THE MAZE &rarr;</a>
+    </li>
+
+    <!-- 11. Sijamuoto Compass -->
+    <li class="project-card card-compass" id="compass">
+
+      <!-- 動画があれば差し替え -->
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://sijamuoto-compass-b37aef.gitlab.io/SijamuotoCompass2026-02-23_22-44-20.mp4" type="video/mp4">
+      </video>
+
+
+      <span class="project-meta" style="color: #fb7185; text-shadow: 0 0 8px rgba(244, 63, 94, 0.4);">
+        ★ Linguistic Logic
+      </span>
+
+      <h2 class="project-title">
+        <a href="https://sijamuoto-compass-b37aef.gitlab.io/">Sijamuoto Compass v20260223.5</a>
+      </h2>
+      <p class="project-desc-main">
+        SIJAMUOTO COMPASS // LINGUISTIC ORIENTATION SYSTEM.<br>
+        フィンランド語の複雑な格システムを、空間的な方向性と論理で解き明かす羅針盤。
+      </p>
+      <p class="project-desc-sub">
+        Deconstructs Finnish cases into a logical spatial map (Input / State / Output).<br>
+        Features kinetic motion pathing, KPT grade-shift color coding, and native audio synthesis.
+      </p>
+      <a href="https://sijamuoto-compass-b37aef.gitlab.io/" class="action-btn btn-compass">LAUNCH COMPASS &rarr;</a>
+    </li>
+
+    <!-- 10. Strandbeest Simulator -->
+    <li class="project-card card-strandbeest" id="strandbeest">
+
+            <!-- 動画があれば差し替え -->
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://strandbeest-simulator-c11732.gitlab.io/StrandBeestSim2026-02-22_22-51-49.mp4" type="video/mp4">
+      </video>
+
+      <span class="project-meta" style="color: #00d4f0; text-shadow: 0 0 8px rgba(0, 212, 240, 0.4);">
+        ★ Physics Simulation
+      </span>
+
+      <h2 class="project-title">
+        <a href="https://strandbeest-simulator-c11732.gitlab.io/">Strandbeest Simulator v20260222.1</a>
+      </h2>
+      <p class="project-desc-main">
+        THEO JANSEN LINKAGE // 11-BAR WALKING MECHANISM.<br>
+        Theo Jansenの歩行機構をブラウザで調整できるインタラクティブシミュレーター。
+      </p>
+      <p class="project-desc-sub">
+        Simulates the exact 11-bar Jansen linkage with real-time parameter editing.<br>
+        Features gait visualization, multi-leg support (2–8 legs), and iPad/touch optimized controls.
+      </p>
+      <a href="https://strandbeest-simulator-c11732.gitlab.io/" class="action-btn btn-strandbeest">LAUNCH SIMULATOR →</a>
+    </li>
+
+
+    <!--9  MASSLESS ENERGY -->
+    <li class="project-card card-masslessenergy" id="masslessenergy">
+      <!-- 動画があれば差し替え -->
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://massless-energy-54bbf1.gitlab.io/MasslessEnergy2026-02-20_23-15-53.mp4" type="video/mp4">
+      </video>
+
+      <span class="project-meta" style="color: #F06030; text-shadow: 0 0 8px rgba(0, 188, 212, 0.4);">
+        ★ Physics Visualization
+      </span>
+      <h2 class="project-title">
+        <a href="https://massless-energy-54bbf1.gitlab.io/">Massless Energy v20260220.15</a>
+      </h2>
+      <p class="project-desc-main">
+        MASSLESS ENERGY // PHOTON MOMENTUM VISUALIZER.  <br>
+        質量のない光子の「勢い」が原子を叩いて熱を生むメカニズムを体験するインタラクティブシミュレーター。
+      </p>
+      <p class="project-desc-sub">
+        Visualize how massless photons transfer momentum to atoms, generating heat without mass.  <br>
+        Features real-time solar intensity, frequency (IR→UV), and reflectivity controls with live atomic-scale micro view. <br> 
+        Multi-language support (JP/EN/FI/DA).
+      </p>
+      <a href="https://massless-energy-54bbf1.gitlab.io/" class="action-btn btn-masslessenergy">LAUNCH EXPERIMENT &rarr;</a>
+    </li>
+
+
+    <!--8 Taylor Shift -->
+    <li class="project-card card-taylorshift" id="taylorshift">
+
+      <!-- 動画があれば差し替え -->
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://polynominal-morph-294b26.gitlab.io/TaylorShift2026-02-19_01-14-23.mp4" type="video/mp4">
+      </video>
+
+      <span class="project-meta" style="color: #00bcd4; text-shadow: 0 0 8px rgba(0, 188, 212, 0.4);">
+        ★ Math Visualization
+      </span>
+      <h2 class="project-title">
+        <a href="https://polynominal-morph-294b26.gitlab.io/">Taylor Shift v20260219.1</a>
+      </h2>
+      <p class="project-desc-main">
+        TAYLOR SERIES // DANCING WITH MACLAURIN.<br>
+        テイラー展開とマクローリン展開をリアルタイムで体験する数学ビジュアライザー。
+      </p>
+      <p class="project-desc-sub">
+        Watch polynomial approximations converge to sin, cos, tan, e^x, arctan, √(1+x), e^(-x²) and more.<br>
+        Features symbolic formula display, adjustable center point (a), animated term playback, and multi-language support (JA/EN/FI/DA).
+      </p>
+      <a href="https://polynominal-morph-294b26.gitlab.io/" class="action-btn btn-taylorshift">EXPLORE SERIES &rarr;</a>
+    </li>
+
+    <!-- 7. YoJi-Juku GO! -->
+    <li class="project-card card-yojijuku" id="yojijuku">
+      
+      <!-- 動画デモ（GitHub Pages等のパスが通る場合） -->
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://yojijuku-go-2a7e46.gitlab.io/yojijukugo2026-02-17_00-14-09.mp4" type="video/mp4">
+      </video> 
+
+      <span class="project-meta" style="color: #facc15; text-shadow: 0 0 8px rgba(250, 204, 21, 0.4);">
+        ★ 3D Word Game
+      </span>
+      <h2 class="project-title">
+        <a href="https://yojijuku-go-2a7e46.gitlab.io/">YoJi-Juku GO! v20260302.3</a>
+      </h2>
+      <p class="project-desc-main">
+        FAST-PACED IDIOM GATES // ZODIAC TRIALS.<br>
+        十二支の門をスライドで突破し、最速タイムを競う3D四字熟語ゲーム。
+      </p>
+      <p class="project-desc-sub">
+        Navigate through 12 zodiac-themed 3D gates. Solve 24-permutation idiom puzzles in a high-speed time attack. <br>
+        Features bilingual support (JP/EN), a customizable real-time scaling system, and a high-immersion 3D CSS engine.
+      </p>
+      <a href="https://yojijuku-go-2a7e46.gitlab.io/" class="action-btn btn-yojijuku">ENTER THE GATES &rarr;</a>
+    </li>
+
+    <!-- 6. Helsinki Street Decoder -->
+    <li class="project-card card-decoder" id="decoder">
+      
+      <!-- デモ動画がある場合はここに <video> タグを入れる -->
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://helsinki-street-decoder-b79330.gitlab.io/helsinki_street_decoder.mp4" type="video/mp4">
+      </video> 
+
+      <span class="project-meta" style="color: #818cf8; text-shadow: 0 0 8px rgba(129, 140, 248, 0.4);">
+        ★ Map Application
+      </span>
+      <h2 class="project-title">
+        <a href="/helsinki_street_decoder/">Helsinki Street Decoder v20260213.7</a>
+      </h2>
+      <p class="project-desc-main">
+        DECODE THE CITY // NAME MEANINGS.<br>
+        フィンランドの通り名の裏にある意味を発見するツール。
+      </p>
+      <p class="project-desc-sub">
+        Discover the meanings behind Finnish street names (e.g., "Kaivokatu" = Well Street).<br>
+        Features semantic translation (FI/SV/EN/JA), iPad-optimized touch map, and Dark mode.
+      </p>
+      <a href="https://helsinki-street-decoder-b79330.gitlab.io/" class="action-btn btn-decoder">START DECODING &rarr;</a>
+    </li>
+
+    <!-- 5. Kanji Fishing -->
+    <li class="project-card card-fishing" id="fishing">
+      <!-- 後で動画を入れる場合はここに <video> タグを挿入 -->
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://gitlab.com/junichiyamada/kanji_fishing/-/raw/main/kanji_fishing_2026-02-11_01-30-45.mp4" type="video/mp4">
+      </video>
+
+       <span class="project-meta" style="color: #38bdf8; text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);">
+        ★ Zen Game
+      </span>
+      <h2 class="project-title">
+        <a href="https://kanji-fishing-6e9a37.gitlab.io/">Kanji Fishing v20260223.1</a>
+      </h2>
+      <p class="project-desc-main">
+        ZEN EXPLORATION // NO SCORE.<br>
+        スコアも制限時間もない、深海で静かに難読漢字を釣り上げる瞑想的な体験。
+      </p>
+      <p class="project-desc-sub">
+        A meditative "Zen game" focusing on the quiet beauty of Kanji. <br>
+        No pressure, no score—just minimalist audio and the search for ancient characters in the silent abyss.
+      </p>
+      <a href="https://kanji-fishing-6e9a37.gitlab.io/" class="action-btn btn-fishing">CAST LINE &rarr;</a>
+    </li>
+
+    <!-- 4. Jamad Onyx -->
+    <li class="project-card card-onyx" id="onyx">
+
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://gitlab.com/-/project/78316560/uploads/b6073da6c6b4511c9810031678aab01c/jamadOnyx_2026-02-07_23-29-05.mp4" type="video/mp4">
+      </video>
+
+      <span class="project-meta" style="color: #10b981; text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);">
+        ★ Productivity Tool
+      </span>
+      <h2 class="project-title">
+        <a href="https://jamad-keypad-f3a389.gitlab.io/">Jamad Onyx v20260208.2</a>
+      </h2>
+      <p class="project-desc-main">
+        NORDIC WRITING SURFACE // IME OPTIMIZED.<br>
+        言語切り替え時の記号配置の混乱を解消し、Markdown執筆を加速させる入力デバイス。
+      </p>
+      <p class="project-desc-sub">
+        Intelligent Nordic writing surface for JA/EN/FI/DA users. Features WASD cyclic navigation and high-contrast Onyx UI.<br>
+        FI: Pohjoismainen kirjoitusalusta. / DA: Nordisk skriveoverflade.
+      </p>
+      <a href="https://jamad-keypad-f3a389.gitlab.io/" class="action-btn btn-onyx">LAUNCH SURFACE &rarr;</a>
+    </li>
+
+    <!-- 3. Jamad Calendar -->
+    <li class="project-card card-calendar" id="calendar">
+      
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://gitlab.com/-/project/78066379/uploads/862ae1af2fc537d9cf8bce2cee415e70/jamad_cal_demo_2026-01-29.mp4" type="video/mp4">
+      </video>
+
+      <span class="project-meta" style="color: #fbbf24; text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);">
+        ★ Data Visualization
+      </span>
+      <h2 class="project-title">
+        <a href="/jamad-calendar/">Jamad Calendar v20260129.10</a>
+      </h2>
+      <p class="project-desc-main">
+        TIME MATRIX // 120 YEARS.<br>
+        120年分の時間を1画面に積層し、高精度のレンズで探索するカレンダー。
+      </p>
+      <p class="project-desc-sub">
+        High-density texture view with 100x zoom loupe.<br>
+        Features Life-Span Masking, Precision Speed Control, and Multi-language support (JA/EN/FI/DA).
+      </p>
+      <a href="/jamad-calendar/" class="action-btn btn-calendar">EXPLORE TIME &rarr;</a>
+    </li>
+
+    <!-- 2. Deca-Search -->
+    <li class="project-card card-deca" id="deca">
+      <span class="project-meta" style="color: #22d3ee; text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);">
+        ★ Web Application
+      </span>
+      <h2 class="project-title">
+        <a href="/deca-search-ui/">Deca-Search v20260127.9</a>
+      </h2>
+      <p class="project-desc-main">
+        Omniscient Browser Interface.<br>
+        1000億件のデータ宇宙を探索するReactアプリケーション。
+      </p>
+      <p class="project-desc-sub">
+        A React-based interface designed to explore a data universe of 100 billion records.<br>
+        Featuring Touch-Optimization, Heatmap Visualization, and Auto-Pilot.
+      </p>
+      <a href="/deca-search-ui/" class="action-btn btn-deca">LAUNCH SYSTEM &rarr;</a>
+    </li>
+
+    <!-- 1. ReticuluMind -->
+    <li class="project-card card-reticulumind" id="reticulumind">
+      
+      <video autoplay muted loop playsinline class="project-image">
+        <source src="https://gitlab.com/junichiyamada/3d-mindmap/-/wikis/uploads/52f2018a93ecb6eda0a51bd7301a6646/reticulumind-demo_no_soundx1.5_B.mp4" type="video/mp4">
+      </video>
+
+
+      <span class="project-meta" style="color: #4a90e2; text-shadow: 0 0 8px rgba(74, 144, 226, 0.4);">
+        ★ 3D Visualization
+      </span>
+      <h2 class="project-title">
+        <a href="/3d-mindmap/index.html">ReticuluMind v20260126.38</a>
+      </h2>
+      <p class="project-desc-main">
+        A Spatial Mind Map in 3D.<br>
+        物理演算ベースの3D空間で思考を網目(ネットワーク)のように紡ぐツール。
+      </p>
+      <p class="project-desc-sub">
+        Single-file, No-install, Physics-based.<br>
+        Features WASD navigation, QR code generation, and JSON export.
+      </p>
+
+      <div class="project-actions">
+        <a href="/3d-mindmap/index.html" class="action-btn btn-reticulumind">OPEN EDITOR &rarr;</a>
+        <a href="/3d-mindmap/browser.html" class="action-btn btn-reticulumind" style="filter: saturate(0.5) brightness(0.8);">KNOWLEDGE BROWSER</a>
+        <a href="https://gitlab.com/junichiyamada/3d-mindmap" class="action-btn btn-secondary" target="_blank" rel="noopener noreferrer">SOURCE CODE</a>
       </div>
-    </div>
-  </div>
-</main>
 
-<footer>
-  <div class="footer-tips">
-    <div class="footer-tip"><span class="tip-key">DRAG ●</span><span class="tip-label">move shape</span></div>
-    <div class="footer-tip"><span class="tip-key">CLICK ●</span><span class="tip-label">select anchor</span></div>
-    <div class="footer-tip"><span class="tip-key">HOVER EDGE</span><span class="tip-label">preview add node</span></div>
-    <div class="footer-tip"><span class="tip-key">CLICK EDGE</span><span class="tip-label">insert node</span></div>
-    <div class="footer-tip"><span class="tip-key">DBLCLICK ◆</span><span class="tip-label">mirror handle</span></div>
-    <div class="footer-tip"><span class="tip-key">DEL</span><span class="tip-label">delete node / shape</span></div>
-    <div class="footer-tip"><span class="tip-key">Ctrl Z</span><span class="tip-label">undo</span></div>
-    <div class="footer-tip"><span class="tip-key">Ctrl Y</span><span class="tip-label">redo</span></div>
-    <div class="footer-tip"><span class="tip-key">COPY SVG</span><span class="tip-label">→ Inkscape: File &gt; Import &gt; paste into file</span></div>
-  </div>
-  <div class="footer-meta">
-    <span class="ver">JAMAD SVG v20260302.9</span>
-    <span class="dot">·</span>
-    <span>PIXEL TO PATH CONVERTER</span>
-    <span class="dot">·</span>
-    <span>JAMAD TOOLS</span>
-  </div>
-</footer>
+    </li>
 
+    <!-- 0. Finnish Defense -->
+    <li class="project-card card-defense" id="defense">
+      <span class="project-meta" style="color: #e879f9; text-shadow: 0 0 8px rgba(232, 121, 249, 0.4);">
+        ★ New Game
+      </span>
+      <h2 class="project-title">
+        <a href="/finnish-defense/">Finnish Defense v20260119.5</a>
+      </h2>
+      <p class="project-desc-main">
+        HELSINKI DEFENSE SYSTEM.<br>
+        フィンランド語タイピングで隕石を迎撃する、レトロフューチャー防衛ゲーム。
+      </p>
+      <p class="project-desc-sub">
+        Protect the city with SISU.<br>
+        A retro-style typing shooter built with HTML5 Canvas & Vanilla JS.
+      </p>
+      <a href="/finnish-defense/" class="action-btn btn-defense">PLAY NOW &rarr;</a>
+    </li>
+
+  </ul>
+
+
+</div> <!-- homeの終わり -->
+ 
 <script>
-'use strict';
-
-// ═══════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════
-let currentSvgString = null;
-let currentView      = 'edit';
-
-const ed = {
-  paths:    [],
-  locked:   new Set(),
-  hidden:   new Set(),
-  vw: 0, vh: 0, grid: 8,
-  selPath:  -1,
-  selShape: null,   // {pi, si}
-  selNode:  null,   // {si, ni}
-  dragShape:  null, // {pi, si, startX, startY, origNodes, didMove}
-  dragHandle: null, // {type, si, ni}
-  lastHit:    { time: 0, type: '', si: -1, ni: -1 },
-  hoverEdge:  null,
-};
-
-// ═══════════════════════════════════════════════════════════
-// DOM REFS
-// ═══════════════════════════════════════════════════════════
-const fileInput      = document.getElementById('fileInput');
-const openArea       = document.getElementById('openArea');
-const dropOverlay    = document.getElementById('dropOverlay');
-const downloadSvgBtn = document.getElementById('downloadSvgBtn');
-const copySvgBtn     = document.getElementById('copySvgBtn');
-const svgCode        = document.getElementById('svgCode');
-const editorSvg      = document.getElementById('editorSvg');
-const editorCanvas   = document.getElementById('editorCanvas');
-const editorPanel    = document.getElementById('editorPanel');
-const codePanel      = document.getElementById('codePanel');
-const outlinerList   = document.getElementById('outliner-list');
-const nodeSection    = document.getElementById('node-section');
-const nodeSharpBtn   = document.getElementById('nodeSharpBtn');
-const nodeCurveBtn   = document.getElementById('nodeCurveBtn');
-
-// ═══════════════════════════════════════════════════════════
-// CURSOR
-// ═══════════════════════════════════════════════════════════
-function setCursor(name) { editorCanvas.className = 'cur-' + name; }
-
-// ═══════════════════════════════════════════════════════════
-// HOVER TINT — lightweight, no re-render
-// ═══════════════════════════════════════════════════════════
-function setHoverTint(pi, si, on) {
-  const el = editorSvg.querySelector(`.ep-tint[data-pi="${pi}"][data-si="${si}"]`);
-  if (el) el.setAttribute('visibility', on ? 'visible' : 'hidden');
-}
-
-// ═══════════════════════════════════════════════════════════
-// FILE LOADING — auto-convert on load
-// ═══════════════════════════════════════════════════════════
-openArea.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => {
-  const f = e.target.files[0]; if (f) loadFile(f); e.target.value = '';
-});
-
-// Drag & drop onto the entire page
-document.addEventListener('dragover',  e => { e.preventDefault(); openArea.classList.add('drag-over'); });
-document.addEventListener('dragleave', e => { if (e.relatedTarget === null) openArea.classList.remove('drag-over'); });
-document.addEventListener('drop', e => {
-  e.preventDefault(); openArea.classList.remove('drag-over');
-  const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) loadFile(f);
-});
-
-function loadFile(file) {
-  const url = URL.createObjectURL(file);
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width; canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    const imgData = ctx.getImageData(0, 0, img.width, img.height);
-    URL.revokeObjectURL(url);
-
-    document.getElementById('filenameDisplay').textContent = file.name;
-
-    // Auto-convert immediately — use scale=8 (hidden, sensible default)
-    convert(imgData, 8);
-    toast(`${file.name} loaded & converted ✓`);
-  };
-  img.onerror = () => { URL.revokeObjectURL(url); toast('Failed to load image'); };
-  img.src = url;
-}
-
-// ═══════════════════════════════════════════════════════════
-// CONVERSION
-// ═══════════════════════════════════════════════════════════
-function convert(imgData, scale) {
-  const svg = toPathSvg(imgData, scale);
-  currentSvgString = svg;
-  initEditor(svg, scale);
-
-  svgCode.value = formatSvg(svg);
-  const elCount = (svg.match(/<path/g) || []).length;
-  const sizeKb  = (new Blob([svg]).size / 1024).toFixed(1);
-  document.getElementById('statElements').textContent = elCount;
-  document.getElementById('statFileSize').textContent = sizeKb + ' KB';
-  document.getElementById('svgStats').style.display   = 'flex';
-  document.getElementById('statsSep').style.display   = '';
-  downloadSvgBtn.disabled = false; copySvgBtn.disabled = false;
-
-  dropOverlay.classList.add('hidden');
-  renderOutliner();
-  setView('edit');
-}
-
-// ── Union boundary tracing ────────────────────────────────
-function traceRegion(grid, w, h) {
-  const edges = [], vertEdges = {};
-  function addEdge(x1,y1,x2,y2) {
-    const idx=edges.length;
-    edges.push({x1,y1,x2,y2,used:false});
-    const k=x1+','+y1;
-    (vertEdges[k]||(vertEdges[k]=[])).push(idx);
-  }
-  for(let r=0;r<h;r++) for(let c=0;c<w;c++) {
-    if(!grid[r][c]) continue;
-    if(r===0     ||!grid[r-1][c]) addEdge(c,  r,  c+1,r  );
-    if(c===w-1   ||!grid[r][c+1]) addEdge(c+1,r,  c+1,r+1);
-    if(r===h-1   ||!grid[r+1][c]) addEdge(c+1,r+1,c,  r+1);
-    if(c===0     ||!grid[r][c-1]) addEdge(c,  r+1,c,  r  );
-  }
-  const polys=[];
-  for(let i=0;i<edges.length;i++) {
-    if(edges[i].used) continue;
-    const verts=[]; let cur=i;
-    for(let iter=0;iter<200000;iter++) {
-      const e=edges[cur]; if(e.used) break;
-      e.used=true; verts.push([e.x1,e.y1]);
-      const cands=vertEdges[e.x2+','+e.y2]||[];
-      let nxt=-1;
-      for(const ci of cands) if(!edges[ci].used){nxt=ci;break;}
-      if(nxt===-1) break;
-      cur=nxt;
+  // Tickerのシームレスループを制御
+  window.addEventListener('DOMContentLoaded', () => {
+    const ticker = document.getElementById('ticker');
+    if (ticker) {
+      // コンテンツを複製して末尾に結合（CSSの-50%スライドと連動）
+      const clone = ticker.innerHTML;
+      ticker.innerHTML = ticker.innerHTML + clone;
     }
-    if(verts.length>2) polys.push(verts);
-  }
-  return polys;
-}
 
-function simplifyPoly(pts) {
-  const n=pts.length; if(n<3) return pts;
-  const out=[];
-  for(let i=0;i<n;i++) {
-    const a=pts[(i-1+n)%n],b=pts[i],c=pts[(i+1)%n];
-    if((b[0]-a[0])*(c[1]-b[1])!==(b[1]-a[1])*(c[0]-b[0])) out.push(b);
-  }
-  return out.length>=3?out:pts;
-}
-
-function toPathSvg(imgData, scale) {
-  const w=imgData.width, h=imgData.height, d=imgData.data;
-  const colorGrids={};
-  for(let y=0;y<h;y++) for(let x=0;x<w;x++) {
-    const i=(y*w+x)*4; if(d[i+3]<128) continue;
-    const hex=rgbToHex(d[i],d[i+1],d[i+2]);
-    if(!colorGrids[hex]) colorGrids[hex]=Array.from({length:h},()=>new Uint8Array(w));
-    colorGrids[hex][y][x]=1;
-  }
-  let paths='';
-  for(const [hex,grid] of Object.entries(colorGrids)) {
-    let pathD='';
-    for(const raw of traceRegion(grid,w,h)) {
-      const pts=simplifyPoly(raw); if(pts.length<3) continue;
-      pathD+=`M${pts[0][0]*scale},${pts[0][1]*scale}`;
-      for(let i=1;i<pts.length;i++) pathD+=`L${pts[i][0]*scale},${pts[i][1]*scale}`;
-      pathD+='Z';
-    }
-    if(pathD) paths+=`\n  <path fill="${hex}" d="${pathD}"/>`;
-  }
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w*scale}" height="${h*scale}" viewBox="0 0 ${w*scale} ${h*scale}">${paths}\n</svg>`;
-}
-
-// ═══════════════════════════════════════════════════════════
-// OUTLINER
-// ═══════════════════════════════════════════════════════════
-const ICON_EYE     = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
-const ICON_EYE_OFF = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`;
-const ICON_LOCK   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
-const ICON_UNLOCK = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`;
-
-function renderOutliner() {
-  outlinerList.innerHTML = '';
-  if (!ed.paths.length) { outlinerList.innerHTML = '<div class="ol-empty">OPEN AN<br>IMAGE</div>'; return; }
-  ed.paths.forEach((ep, pi) => {
-    const isLocked = ed.locked.has(pi);
-    const isActive = pi === ed.selPath;
-    const item = document.createElement('div');
-    item.className = 'ol-item' + (isActive ? ' active' : '') + (isLocked ? ' ol-locked' : '');
-    const isHidden = ed.hidden.has(pi);
-
-    // Visibility button (eye)
-    const visBtn = document.createElement('button');
-    visBtn.className = 'ol-vis-btn' + (isHidden ? ' hidden-color' : '');
-    visBtn.title = isHidden ? 'Show' : 'Hide';
-    visBtn.innerHTML = isHidden ? ICON_EYE_OFF : ICON_EYE;
-    visBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      if (ed.hidden.has(pi)) ed.hidden.delete(pi);
-      else {
-        ed.hidden.add(pi);
-        if (ed.selPath === pi) { ed.selPath = -1; ed.selShape = null; ed.selNode = null; updateNodeSection(); }
+    // --- 【追加】ナビゲーションの高さを動的計算してCSS変数にセット ---
+    const updateNavHeight = () => {
+      const nav = document.getElementById('sticky-nav');
+      if (nav) {
+        // ナビゲーションの実際の高さ（ボタンの折り返し等を含む）を取得
+        const height = nav.offsetHeight;
+        // CSS変数にセットし、scroll-margin-top に反映させる
+        document.documentElement.style.setProperty('--nav-height', `${height}px`);
       }
-      renderOutliner(); renderEditor();
-    });
+    };
+    window.addEventListener('resize', updateNavHeight);
+    updateNavHeight(); // 初期実行
+    // ------------------------------------------------------------------
 
-    // Lock button
-    const lockBtn = document.createElement('button');
-    lockBtn.className = 'ol-lock-btn' + (isLocked ? ' locked' : '');
-    lockBtn.title = isLocked ? 'Unlock' : 'Lock';
-    lockBtn.innerHTML = isLocked ? ICON_LOCK : ICON_UNLOCK;
-    lockBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      if (ed.locked.has(pi)) ed.locked.delete(pi);
-      else {
-        ed.locked.add(pi);
-        if (ed.selPath === pi) { ed.selPath = -1; ed.selShape = null; ed.selNode = null; updateNodeSection(); }
-      }
-      renderOutliner(); renderEditor();
-    });
+    // ScrollSpy: スクロール位置に合わせてボタンをハイライト
+    const sections = document.querySelectorAll('.project-card');
+    const navLinks = document.querySelectorAll('.index-link');
 
-    // Swatch + hex
-    const swatch = Object.assign(document.createElement('div'), { className: 'ol-swatch' });
-    swatch.style.background = ep.color;
-    const hex = Object.assign(document.createElement('div'), { className: 'ol-hex', textContent: ep.color });
+    const observerOptions = {
+      root: null,
+      rootMargin: '-30% 0px -60% 0px', // 画面のどの位置に来たら「アクティブ」とするか
+      threshold: 0
+    };
 
-    // Order: [vis] [lock] [swatch] [hex]
-    item.append(visBtn, lockBtn, swatch, hex);
-    item.addEventListener('click', () => {
-      if (ed.locked.has(pi)) return;
-      ed.selPath = pi; ed.selShape = null; ed.selNode = null;
-      renderOutliner(); renderEditor(); updateNodeSection();
-    });
-    outlinerList.appendChild(item);
-  });
-}
-
-// ═══════════════════════════════════════════════════════════
-// NODE TYPE
-// ═══════════════════════════════════════════════════════════
-function updateNodeSection() {
-  if (!ed.selNode || ed.selPath < 0) { nodeSection.style.display = 'none'; return; }
-  nodeSection.style.display = 'block';
-  const { si, ni } = ed.selNode;
-  const nd = ed.paths[ed.selPath].subpaths[si][ni];
-  const isSharp = cpAt(nd.cpIn, nd) && cpAt(nd.cpOut, nd);
-  nodeSharpBtn.classList.toggle('active',  isSharp);
-  nodeCurveBtn.classList.toggle('active', !isSharp);
-}
-
-function setNodeType(type) {
-  if (!ed.selNode || ed.selPath < 0) return;
-  pushHistory();
-  const { si, ni } = ed.selNode;
-  const nd = ed.paths[ed.selPath].subpaths[si][ni];
-  if (type === 'sharp') { nd.cpIn = {x:nd.x,y:nd.y}; nd.cpOut = {x:nd.x,y:nd.y}; }
-  else autoHandles(ed.selPath, si, ni);
-  updateNodeSection(); renderEditor(); commitEdit();
-}
-
-function autoHandles(pi, si, ni) {
-  const sp = ed.paths[pi].subpaths[si], N = sp.length, nd = sp[ni], g = ed.grid;
-  const prev = sp[(ni-1+N)%N], next = sp[(ni+1)%N];
-  let tx = (next.x-prev.x)/6, ty = (next.y-prev.y)/6;
-  if (Math.abs(tx)<0.5&&Math.abs(ty)<0.5) { tx=(next.x-nd.x)/3; ty=(next.y-nd.y)/3; }
-  if (Math.abs(tx)<0.5&&Math.abs(ty)<0.5) { tx=ed.grid; ty=0; }
-  let outX=snap(nd.x+tx), outY=snap(nd.y+ty), inX=snap(nd.x-tx), inY=snap(nd.y-ty);
-  const dom = Math.abs(tx)>=Math.abs(ty)?'x':'y';
-  const nudge = (ox,oy) => {
-    if (ox!==nd.x||oy!==nd.y) return [ox,oy];
-    return [ox+(dom==='x'?(tx>=0?ed.grid:-ed.grid):0), oy+(dom==='y'?(ty>=0?ed.grid:-ed.grid):0)];
-  };
-  [outX,outY]=nudge(outX,outY); [inX,inY]=nudge(inX,inY);
-  nd.cpOut={x:outX,y:outY}; nd.cpIn={x:inX,y:inY};
-}
-
-// ═══════════════════════════════════════════════════════════
-// DELETE
-// ═══════════════════════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  // Undo / Redo shortcuts
-  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
-  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return; }
-  if (currentView !== 'edit') return;
-  if (e.key !== 'Delete' && e.key !== 'Backspace') return;
-  e.preventDefault();
-
-  if (ed.selNode && ed.selPath >= 0) {
-    pushHistory();
-    const { si, ni } = ed.selNode;
-    const sp = ed.paths[ed.selPath].subpaths[si];
-    if (sp.length <= 2) { ed.paths[ed.selPath].subpaths.splice(si, 1); toast('Subpath removed'); }
-    else { sp.splice(ni, 1); toast('Node deleted'); }
-    ed.selNode = null;
-    cleanEmptyPaths(); updateNodeSection(); renderOutliner(); renderEditor(); commitEdit();
-    return;
-  }
-
-  if (ed.selShape && ed.selPath >= 0 && !ed.locked.has(ed.selShape.pi)) {
-    pushHistory();
-    const { pi, si } = ed.selShape;
-    ed.paths[pi].subpaths.splice(si, 1);
-    ed.selShape = null;
-    cleanEmptyPaths(); toast('Shape deleted');
-    renderOutliner(); renderEditor(); commitEdit();
-  }
-});
-
-function cleanEmptyPaths() {
-  for (let pi = ed.paths.length-1; pi >= 0; pi--) {
-    if (ed.paths[pi].subpaths.length === 0) {
-      ed.paths.splice(pi, 1); ed.locked.delete(pi); ed.hidden.delete(pi);
-      if (ed.selPath === pi) ed.selPath = -1;
-      else if (ed.selPath > pi) ed.selPath--;
-    }
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// UNDO / REDO  (50 levels)
-// ═══════════════════════════════════════════════════════════
-const history = { past: [], future: [], MAX: 50 };
-
-function deepCopy(paths) {
-  return paths.map(ep => ({
-    color: ep.color,
-    subpaths: ep.subpaths.map(sp => sp.map(nd => ({
-      x:nd.x, y:nd.y, cpIn:{...nd.cpIn}, cpOut:{...nd.cpOut}
-    })))
-  }));
-}
-
-function pushHistory() {
-  history.past.push(deepCopy(ed.paths));
-  if(history.past.length > history.MAX) history.past.shift();
-  history.future = [];
-  updateUndoRedo();
-}
-
-function undo() {
-  if(!history.past.length) return;
-  history.future.push(deepCopy(ed.paths));
-  if(history.future.length > history.MAX) history.future.shift();
-  ed.paths = history.past.pop();
-  ed.selNode=null; ed.selShape=null;
-  if(ed.selPath >= ed.paths.length) ed.selPath = ed.paths.length-1;
-  updateUndoRedo(); updateNodeSection(); renderOutliner(); renderEditor(); commitEdit();
-  toast('Undo (' + history.past.length + ' left)');
-}
-
-function redo() {
-  if(!history.future.length) return;
-  history.past.push(deepCopy(ed.paths));
-  if(history.past.length > history.MAX) history.past.shift();
-  ed.paths = history.future.pop();
-  ed.selNode=null; ed.selShape=null;
-  if(ed.selPath >= ed.paths.length) ed.selPath = ed.paths.length-1;
-  updateUndoRedo(); updateNodeSection(); renderOutliner(); renderEditor(); commitEdit();
-  toast('Redo (' + history.future.length + ' left)');
-}
-
-function updateUndoRedo() {
-  const u=document.getElementById('undoBtn'), r=document.getElementById('redoBtn');
-  if(u) u.disabled = history.past.length === 0;
-  if(r) r.disabled = history.future.length === 0;
-}
-
-// ═══════════════════════════════════════════════════════════
-// PATH PARSING & BUILDING
-// ═══════════════════════════════════════════════════════════
-function parsePathD(d) {
-  const re = /([MmHhVvLlCcSsQqTtAaZz])|([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/g;
-  const tokens = []; let m;
-  while ((m = re.exec(d)) !== null) tokens.push(m[0]);
-  const subpaths = [];
-  let cur=null, cx=0, cy=0, sx=0, sy=0, i=0, cmd='M';
-  const num  = () => parseFloat(tokens[i++]);
-  const node = (x,y) => ({x,y,cpIn:{x,y},cpOut:{x,y}});
-  const push = (x,y) => { if(cur) cur.push(node(x,y)); cx=x; cy=y; };
-  while (i < tokens.length) {
-    const t = tokens[i];
-    if (/^[MmHhVvLlCcSsQqTtAaZz]$/.test(t)) {
-      cmd=t; i++;
-      if(cmd==='Z'||cmd==='z'){if(cur&&cur.length){subpaths.push(cur);cur=null;}cx=sx;cy=sy;}
-      continue;
-    }
-    switch(cmd) {
-      case 'M':{if(cur)subpaths.push(cur);cx=num();cy=num();sx=cx;sy=cy;cur=[node(cx,cy)];cmd='L';break;}
-      case 'm':{if(cur)subpaths.push(cur);cx+=num();cy+=num();sx=cx;sy=cy;cur=[node(cx,cy)];cmd='l';break;}
-      case 'H':{push(num(),cy);break;}
-      case 'h':{push(cx+num(),cy);break;}
-      case 'V':{push(cx,num());break;}
-      case 'v':{push(cx,cy+num());break;}
-      case 'L':{push(num(),num());break;}
-      case 'l':{const dx=num(),dy=num();push(cx+dx,cy+dy);break;}
-      case 'C':{
-        const cp1x=num(),cp1y=num(),cp2x=num(),cp2y=num(),x=num(),y=num();
-        if(cur&&cur.length)cur[cur.length-1].cpOut={x:cp1x,y:cp1y};
-        if(cur)cur.push({x,y,cpIn:{x:cp2x,y:cp2y},cpOut:{x,y}});
-        cx=x;cy=y;break;
-      }
-      default:i++;
-    }
-  }
-  if(cur&&cur.length)subpaths.push(cur);
-  return subpaths;
-}
-
-function initEditor(svgStr, scale) {
-  const doc = new DOMParser().parseFromString(svgStr, 'image/svg+xml');
-  const svgEl = doc.querySelector('svg');
-  ed.vw = parseFloat(svgEl.getAttribute('width'));
-  ed.vh = parseFloat(svgEl.getAttribute('height'));
-  ed.grid = scale;
-  ed.locked.clear(); ed.hidden.clear();
-  ed.selPath=-1; ed.selShape=null; ed.selNode=null; ed.hoverEdge=null;
-  ed.dragShape=null; ed.dragHandle=null;
-  ed.lastHit={time:0,type:'',si:-1,ni:-1};
-  history.past=[]; history.future=[]; updateUndoRedo();
-  ed.paths = Array.from(doc.querySelectorAll('path')).map(p=>({
-    color: p.getAttribute('fill'), subpaths: parsePathD(p.getAttribute('d'))
-  }));
-}
-
-function buildSubD(sp) {
-  if (!sp.length) return '';
-  let d = `M${n(sp[0].x)},${n(sp[0].y)}`;
-  for (let k=1; k<sp.length; k++) {
-    const pv=sp[k-1],cv=sp[k];
-    if(cpAt(pv.cpOut,pv)&&cpAt(cv.cpIn,cv)) d+=`L${n(cv.x)},${n(cv.y)}`;
-    else d+=`C${n(pv.cpOut.x)},${n(pv.cpOut.y)} ${n(cv.cpIn.x)},${n(cv.cpIn.y)} ${n(cv.x)},${n(cv.y)}`;
-  }
-  const last=sp[sp.length-1],first=sp[0];
-  if(!(cpAt(last.cpOut,last)&&cpAt(first.cpIn,first)))
-    d+=`C${n(last.cpOut.x)},${n(last.cpOut.y)} ${n(first.cpIn.x)},${n(first.cpIn.y)} ${n(first.x)},${n(first.y)}`;
-  return d+'Z';
-}
-function buildD(sp) { return sp.map(s=>buildSubD(s)).join(''); }
-
-function rebuildSvg() {
-  let paths='';
-  for (const ep of ed.paths)
-    paths+=`\n  <path fill="${ep.color}" d="${buildD(ep.subpaths)}"/>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${ed.vw}" height="${ed.vh}" viewBox="0 0 ${ed.vw} ${ed.vh}">${paths}\n</svg>`;
-}
-
-function commitEdit() {
-  currentSvgString = rebuildSvg();
-  svgCode.value = formatSvg(currentSvgString);
-  document.getElementById('statFileSize').textContent = (new Blob([currentSvgString]).size/1024).toFixed(1)+' KB';
-}
-
-// ═══════════════════════════════════════════════════════════
-// CORE HELPERS
-// ═══════════════════════════════════════════════════════════
-const n    = v  => parseFloat(v.toFixed(2));
-const cpAt = (cp,nd) => Math.abs(cp.x-nd.x)<0.4&&Math.abs(cp.y-nd.y)<0.4;
-const snap = v  => Math.round(v/ed.grid)*ed.grid;
-const isSN = (si,ni) => ed.selNode&&ed.selNode.si===si&&ed.selNode.ni===ni;
-function toSvgPt(e) {
-  const pt=editorSvg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
-  return pt.matrixTransform(editorSvg.getScreenCTM().inverse());
-}
-function mirrorHandle(nd,type) {
-  if(type==='cpOut') nd.cpIn ={x:snap(2*nd.x-nd.cpOut.x),y:snap(2*nd.y-nd.cpOut.y)};
-  else               nd.cpOut={x:snap(2*nd.x-nd.cpIn.x), y:snap(2*nd.y-nd.cpIn.y) };
-}
-
-// Point → segment distance & parameter
-function pointToSeg(px,py,ax,ay,bx,by) {
-  const dx=bx-ax,dy=by-ay,len2=dx*dx+dy*dy;
-  if(len2===0) return {dist:Math.hypot(px-ax,py-ay),t:0,cx:ax,cy:ay};
-  const t=Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/len2));
-  const cx=ax+t*dx,cy=ay+t*dy;
-  return {dist:Math.hypot(px-cx,py-cy),t,cx,cy};
-}
-
-// Insert node on edge using de Casteljau split at t
-function insertNodeOnEdge(pi,si,ni,t) {
-  const sp=ed.paths[pi].subpaths[si], N=sp.length, niB=(ni+1)%N;
-  const a=sp[ni], b=sp[niB];
-  const lp=(a,b,t)=>({x:a.x*(1-t)+b.x*t,y:a.y*(1-t)+b.y*t});
-  const p0={x:a.x,y:a.y},p1={x:a.cpOut.x,y:a.cpOut.y};
-  const p2={x:b.cpIn.x,y:b.cpIn.y},p3={x:b.x,y:b.y};
-  const p01=lp(p0,p1,t),p12=lp(p1,p2,t),p23=lp(p2,p3,t);
-  const p012=lp(p01,p12,t),p123=lp(p12,p23,t),mid=lp(p012,p123,t);
-  // Update surrounding handles
-  a.cpOut={x:snap(p01.x),y:snap(p01.y)};
-  b.cpIn ={x:snap(p23.x),y:snap(p23.y)};
-  const newNode={x:snap(mid.x),y:snap(mid.y),
-    cpIn:{x:snap(p012.x),y:snap(p012.y)},
-    cpOut:{x:snap(p123.x),y:snap(p123.y)}};
-  if(niB===0){ sp.push(newNode); ed.selNode={si,ni:sp.length-1}; }
-  else { sp.splice(ni+1,0,newNode); ed.selNode={si,ni:ni+1}; }
-}
-
-// Update edge-preview dot (lightweight, no renderEditor)
-function updateEdgePreview() {
-  const dot=editorSvg.querySelector('.edge-preview');
-  if(!dot) return;
-  if(ed.hoverEdge) {
-    dot.setAttribute('cx',ed.hoverEdge.cx);
-    dot.setAttribute('cy',ed.hoverEdge.cy);
-    dot.setAttribute('visibility','visible');
-  } else {
-    dot.setAttribute('visibility','hidden');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// EDITOR RENDER
-// IMPORTANT: hover tint is managed via setHoverTint() (DOM attr toggle),
-//            NOT by calling renderEditor() — prevents mouse event loops.
-// ═══════════════════════════════════════════════════════════
-function renderEditor() {
-  if (!ed.paths.length) { editorSvg.innerHTML=''; return; }
-  editorSvg.setAttribute('viewBox', `0 0 ${ed.vw} ${ed.vh}`);
-
-  const g  = ed.grid;
-  const AR = Math.max(2.5, g*0.34);
-  const CR = Math.max(1.8, g*0.24);
-  const LW = Math.max(0.5, g*0.08);
-  const GW = Math.max(0.3, g*0.045);
-  const HIT = Math.max(CR*2.5, 7);
-
-  let html='';
-
-  // Grid
-  html+=`<rect width="${ed.vw}" height="${ed.vh}" fill="#0f172a"/>`;
-  html+=`<g stroke="#1e293b" stroke-width="${GW}" pointer-events="none">`;
-  for(let x=0;x<=ed.vw;x+=g) html+=`<line x1="${x}" y1="0" x2="${x}" y2="${ed.vh}"/>`;
-  for(let y=0;y<=ed.vh;y+=g) html+=`<line x1="0" y1="${y}" x2="${ed.vw}" y2="${y}"/>`;
-  html+=`</g>`;
-
-  // ── All shapes (each subpath individually) ───────────────
-  for (let pi=0; pi<ed.paths.length; pi++) {
-    const ep=ed.paths[pi], isLock=ed.locked.has(pi), isHide=ed.hidden.has(pi), isSelP=pi===ed.selPath;
-    if(isHide) continue; // skip hidden color
-    for (let si=0; si<ep.subpaths.length; si++) {
-      const d=buildSubD(ep.subpaths[si]);
-      const isSelS=ed.selShape&&ed.selShape.pi===pi&&ed.selShape.si===si;
-
-      // Selection glow ring
-      if(isSelS) html+=`<path d="${d}" fill="none" stroke="#ffffff" stroke-width="${LW*2.5}" opacity="0.12" pointer-events="none"/>`;
-
-      // Fill shape — receives mouse events for hover/click/drag
-      // shape-rendering="crispEdges" fixes color unevenness at adjacent pixel boundaries
-      const op=isLock?0.3:1;
-      html+=`<path fill="${ep.color}" d="${d}" data-pi="${pi}" data-si="${si}" class="ep" opacity="${op}" shape-rendering="crispEdges"/>`;
-
-      // Tint overlay — starts hidden, toggled by setHoverTint()
-      // Also shown while dragging (rendered as visible if dragShape matches)
-      const isDragging=ed.dragShape&&ed.dragShape.pi===pi&&ed.dragShape.si===si;
-      html+=`<path class="ep-tint" data-pi="${pi}" data-si="${si}" d="${d}"
-        fill="rgba(239,68,68,0.32)" stroke="#ef4444" stroke-width="${LW*1.2}"
-        visibility="${isDragging?'visible':'hidden'}" pointer-events="none"/>`;
-    }
-  }
-
-  // ── Handles for selected (non-locked) path ───────────────
-  if(ed.selPath>=0 && !ed.locked.has(ed.selPath) && !ed.hidden.has(ed.selPath)) {
-    const ep=ed.paths[ed.selPath];
-
-    // Handle lines
-    for(let si=0;si<ep.subpaths.length;si++) {
-      const sp=ep.subpaths[si];
-      for(let ni=0;ni<sp.length;ni++) {
-        const nd=sp[ni],sel=isSN(si,ni);
-        if(!cpAt(nd.cpIn,nd))  html+=`<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpIn.x}"  y2="${nd.cpIn.y}"  stroke="${sel?'#ff3b3b':'#60a5fa'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
-        if(!cpAt(nd.cpOut,nd)) html+=`<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpOut.x}" y2="${nd.cpOut.y}" stroke="${sel?'#ff8c3b':'#fb923c'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
-      }
-    }
-    // Visible diamonds + anchor circles (pointer-events="none")
-    for(let si=0;si<ep.subpaths.length;si++) {
-      const sp=ep.subpaths[si];
-      for(let ni=0;ni<sp.length;ni++) {
-        const nd=sp[ni],sel=isSN(si,ni);
-        if(!cpAt(nd.cpIn,nd))
-          html+=`<rect x="${nd.cpIn.x-CR}" y="${nd.cpIn.y-CR}" width="${CR*2}" height="${CR*2}"
-            fill="${sel?'#ff3b3b':'#60a5fa'}" stroke="#0f172a" stroke-width="${LW*0.5}"
-            transform="rotate(45 ${nd.cpIn.x} ${nd.cpIn.y})" pointer-events="none"/>`;
-        if(!cpAt(nd.cpOut,nd))
-          html+=`<rect x="${nd.cpOut.x-CR}" y="${nd.cpOut.y-CR}" width="${CR*2}" height="${CR*2}"
-            fill="${sel?'#ff8c3b':'#fb923c'}" stroke="#0f172a" stroke-width="${LW*0.5}"
-            transform="rotate(45 ${nd.cpOut.x} ${nd.cpOut.y})" pointer-events="none"/>`;
-        if(sel) html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.75}" fill="none" stroke="#ff3b3b" stroke-width="${LW}" opacity="0.4" pointer-events="none"/>`;
-        html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR}" fill="${sel?'#ff3b3b':'#f1f5f9'}" stroke="${sel?'#ff9999':'#0f172a'}" stroke-width="${LW}" pointer-events="none"/>`;
-      }
-    }
-    // Hit targets (transparent circles — carry events)
-    for(let si=0;si<ep.subpaths.length;si++) {
-      const sp=ep.subpaths[si];
-      for(let ni=0;ni<sp.length;ni++) {
-        const nd=sp[ni];
-        if(!cpAt(nd.cpIn,nd))  html+=`<circle cx="${nd.cpIn.x}"  cy="${nd.cpIn.y}"  r="${HIT}" fill="transparent" data-hit="cpIn"  data-si="${si}" data-ni="${ni}"/>`;
-        if(!cpAt(nd.cpOut,nd)) html+=`<circle cx="${nd.cpOut.x}" cy="${nd.cpOut.y}" r="${HIT}" fill="transparent" data-hit="cpOut" data-si="${si}" data-ni="${ni}"/>`;
-        html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.6}" fill="transparent" data-hit="anchor" data-si="${si}" data-ni="${ni}"/>`;
-      }
-    }
-  }
-
-  editorSvg.innerHTML = html;
-
-  // Edge-preview dot (green circle, shown on edge hover)
-  const previewDot = document.createElementNS('http://www.w3.org/2000/svg','circle');
-  previewDot.setAttribute('class','edge-preview');
-  previewDot.setAttribute('r', AR*0.85);
-  previewDot.setAttribute('fill','#22c55e');
-  previewDot.setAttribute('stroke','#0f172a');
-  previewDot.setAttribute('stroke-width',LW);
-  previewDot.setAttribute('visibility','hidden');
-  previewDot.setAttribute('pointer-events','none');
-  editorSvg.appendChild(previewDot);
-
-  attachEditorEvents(g, AR);
-}
-
-// ═══════════════════════════════════════════════════════════
-// ATTACH EDITOR EVENTS
-// Rule: NEVER call renderEditor() from mouseenter/mouseleave.
-// ═══════════════════════════════════════════════════════════
-function attachEditorEvents(g, AR) {
-  g = g || ed.grid; AR = AR || Math.max(2.5, ed.grid*0.34);
-
-  // ── Edge hover + insert (on SVG background) ───────────────
-  editorSvg.addEventListener('mousemove', e => {
-    if(ed.dragShape || ed.dragHandle) return;
-    if(ed.selPath<0 || ed.locked.has(ed.selPath) || ed.hidden.has(ed.selPath)) return;
-    // Skip if over handle/anchor
-    if(e.target && e.target.dataset && e.target.dataset.hit) {
-      if(ed.hoverEdge){ ed.hoverEdge=null; updateEdgePreview(); }
-      return;
-    }
-    const pt=toSvgPt(e);
-    const ep=ed.paths[ed.selPath];
-    const THRESH=Math.max(3, ed.grid*0.55);
-    let best=null, bestDist=Infinity;
-    for(let si=0;si<ep.subpaths.length;si++) {
-      const sp=ep.subpaths[si], N=sp.length;
-      for(let ni=0;ni<N;ni++) {
-        const a=sp[ni], b=sp[(ni+1)%N];
-        const res=pointToSeg(pt.x,pt.y,a.x,a.y,b.x,b.y);
-        if(res.dist<THRESH && res.dist<bestDist && res.t>0.08 && res.t<0.92) {
-          bestDist=res.dist;
-          best={si,ni,t:res.t,cx:snap(res.cx),cy:snap(res.cy)};
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + entry.target.id) {
+              link.classList.add('active');
+            }
+          });
         }
-      }
-    }
-    if(best) {
-      ed.hoverEdge=best; setCursor('add-node');
-    } else {
-      ed.hoverEdge=null;
-      if(!ed.dragShape) setCursor('default');
-    }
-    updateEdgePreview();
+      });
+    }, observerOptions);
+
+    sections.forEach(section => observer.observe(section));
   });
-
-  // Click on edge → insert node
-  editorSvg.addEventListener('click', e => {
-    if(!ed.hoverEdge || ed.selPath<0) return;
-    if(e.target && e.target.dataset && e.target.dataset.hit) return;
-    pushHistory();
-    insertNodeOnEdge(ed.selPath, ed.hoverEdge.si, ed.hoverEdge.ni, ed.hoverEdge.t);
-    ed.hoverEdge=null;
-    updateNodeSection(); updateEdgePreview(); renderEditor(); commitEdit();
-    toast('Node added');
-  });
-
-  // ── Shape subpath events ──────────────────────────────────
-  editorSvg.querySelectorAll('.ep').forEach(el => {
-    const pi=parseInt(el.dataset.pi), si=parseInt(el.dataset.si);
-    if(ed.locked.has(pi)) return;
-
-    el.addEventListener('mouseenter', () => {
-      // Lightweight — no renderEditor
-      setHoverTint(pi, si, true);
-      setCursor('shape');
-    });
-    el.addEventListener('mouseleave', () => {
-      setHoverTint(pi, si, false);
-      if(!ed.dragShape) setCursor('default');
-    });
-
-    el.addEventListener('mousedown', e => {
-      e.preventDefault(); e.stopPropagation();
-
-      // Always select this color/subpath
-      const wasSelected = (pi === ed.selPath);
-      ed.selPath  = pi;
-      ed.selShape = { pi, si };
-      ed.selNode  = null;
-      updateNodeSection();
-
-      if(!wasSelected) {
-        // First click on new color: update outliner + re-render to show handles
-        renderOutliner();
-        renderEditor();
-        // Still start drag so immediate drag works
-      }
-
-      // Start drag regardless (whether first click or not)
-      pushHistory();
-      const pt = toSvgPt(e);
-      const origNodes = ed.paths[pi].subpaths[si].map(nd=>({
-        x:nd.x,y:nd.y,cpIn:{...nd.cpIn},cpOut:{...nd.cpOut}
-      }));
-      ed.dragShape = { pi, si, startX:pt.x, startY:pt.y, origNodes, didMove:false };
-      setCursor('drag');
-      window.addEventListener('mousemove', onShapeDrag);
-      window.addEventListener('mouseup',   onShapeDragEnd);
-    });
-  });
-
-  // ── Handle / anchor hit targets ───────────────────────────
-  editorSvg.querySelectorAll('[data-hit]').forEach(el => {
-    const type=el.dataset.hit, si=parseInt(el.dataset.si), ni=parseInt(el.dataset.ni);
-
-    el.addEventListener('mouseenter', () => setCursor(type==='anchor'?'anchor':'handle'));
-    el.addEventListener('mouseleave', () => { if(!ed.dragHandle) setCursor('default'); });
-
-    el.addEventListener('mousedown', e => {
-      e.preventDefault(); e.stopPropagation();
-
-      // Dblclick detection
-      const now=Date.now(), lh=ed.lastHit;
-      const isDbl=(now-lh.time<350)&&lh.type===type&&lh.si===si&&lh.ni===ni;
-      ed.lastHit={time:now,type,si,ni};
-
-      if(isDbl&&(type==='cpIn'||type==='cpOut')) {
-        pushHistory();
-        const nd=ed.paths[ed.selPath].subpaths[si][ni];
-        mirrorHandle(nd,type);
-        renderEditor(); commitEdit();
-        return;
-      }
-
-      ed.selNode    = {si,ni};
-      pushHistory();
-      ed.dragHandle = {type,si,ni};
-      setCursor('drag');
-      window.addEventListener('mousemove', onHandleDrag);
-      window.addEventListener('mouseup',   onHandleDragEnd);
-      updateNodeSection();
-      renderEditor(); // show selection highlight
-    });
-  });
-
-  // Background click → deselect node/shape
-  editorSvg.addEventListener('mousedown', e => {
-    if(e.target===editorSvg) {
-      ed.selNode=null; ed.selShape=null;
-      updateNodeSection(); setCursor('default'); renderEditor();
-    }
-  }, {once:true});
-}
-
-// ═══════════════════════════════════════════════════════════
-// SHAPE DRAG
-// ═══════════════════════════════════════════════════════════
-function onShapeDrag(e) {
-  if(!ed.dragShape) return;
-  const pt=toSvgPt(e);
-  const {pi,si,startX,startY,origNodes}=ed.dragShape;
-  const dx=snap(pt.x-startX), dy=snap(pt.y-startY);
-  if(dx!==0||dy!==0) ed.dragShape.didMove=true;
-  const sp=ed.paths[pi].subpaths[si];
-  for(let ni=0;ni<sp.length;ni++) {
-    const o=origNodes[ni],nd=sp[ni];
-    nd.x=o.x+dx;nd.y=o.y+dy;
-    nd.cpIn.x=o.cpIn.x+dx;nd.cpIn.y=o.cpIn.y+dy;
-    nd.cpOut.x=o.cpOut.x+dx;nd.cpOut.y=o.cpOut.y+dy;
-  }
-  renderEditor();
-}
-function onShapeDragEnd() {
-  window.removeEventListener('mousemove',onShapeDrag);
-  window.removeEventListener('mouseup',  onShapeDragEnd);
-  const moved = ed.dragShape && ed.dragShape.didMove;
-  ed.dragShape=null;
-  setCursor('default');
-  if(!moved) history.past.pop(); // no actual movement: discard the pre-drag snapshot
-  else { commitEdit(); updateUndoRedo(); }
-  renderEditor();
-}
-
-// ═══════════════════════════════════════════════════════════
-// HANDLE / ANCHOR DRAG
-// ═══════════════════════════════════════════════════════════
-function onHandleDrag(e) {
-  if(!ed.dragHandle||ed.selPath<0) return;
-  const pt=toSvgPt(e);
-  const x=snap(pt.x),y=snap(pt.y);
-  const {type,si,ni}=ed.dragHandle;
-  const nd=ed.paths[ed.selPath].subpaths[si][ni];
-  if(type==='anchor') {
-    const dx=x-nd.x,dy=y-nd.y;
-    nd.cpIn.x+=dx;nd.cpIn.y+=dy;nd.cpOut.x+=dx;nd.cpOut.y+=dy;
-    nd.x=x;nd.y=y;
-  } else if(type==='cpIn') { nd.cpIn.x=x;nd.cpIn.y=y; }
-  else                      { nd.cpOut.x=x;nd.cpOut.y=y; }
-  renderEditor();
-}
-function onHandleDragEnd() {
-  window.removeEventListener('mousemove',onHandleDrag);
-  window.removeEventListener('mouseup',  onHandleDragEnd);
-  ed.dragHandle=null; setCursor('default'); commitEdit();
-}
-
-// ═══════════════════════════════════════════════════════════
-// VIEW
-// ═══════════════════════════════════════════════════════════
-function setView(v) {
-  currentView=v;
-  document.getElementById('viewEdit').classList.toggle('active',v==='edit');
-  document.getElementById('viewCode').classList.toggle('active',v==='code');
-  editorPanel.style.display = v==='edit'?'flex':'none';
-  codePanel.style.display   = v==='code'?'flex':'none';
-  if(v==='edit') renderEditor();
-}
-
-// ═══════════════════════════════════════════════════════════
-// MISC
-// ═══════════════════════════════════════════════════════════
-function rgbToHex(r,g,b) { return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join(''); }
-function formatSvg(svg)   { return svg.replace(/></g,'>\n<').replace(/(<\/svg>)/g,'\n$1'); }
-
-downloadSvgBtn.addEventListener('click',()=>{
-  if(!currentSvgString) return;
-  const blob=new Blob([currentSvgString],{type:'image/svg+xml'});
-  const a=document.createElement('a');
-  a.download='jamad_pixel.svg';a.href=URL.createObjectURL(blob);a.click();
-  URL.revokeObjectURL(a.href); toast('SVG downloaded!');
-});
-copySvgBtn.addEventListener('click',()=>{
-  if(!currentSvgString) return;
-  navigator.clipboard.writeText(currentSvgString).then(()=>toast('SVG code copied to clipboard!'));
-});
-
-function toast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._tid);t._tid=setTimeout(()=>t.classList.remove('show'),2500);
-}
-
-// Initial view
-setView('edit');
-</script>
-</body>
-</html>
+ </script>
