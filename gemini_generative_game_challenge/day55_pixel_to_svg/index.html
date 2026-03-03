@@ -1,929 +1,754 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JAMAD SVG // PIXEL TO PATH CONVERTER</title>
-<style>
-  :root {
-    --bg:       #0f172a;
-    --surface:  #1e293b;
-    --border:   #334155;
-    --border2:  #475569;
-    --accent:   #3b82f6;
-    --accent-d: #2563eb;
-    --text:     #e2e8f0;
-    --muted:    #94a3b8;
-    --muted2:   #64748b;
-    --danger:   #ef4444;
-    --orange:   #f97316;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: 'Courier New', monospace;
-    height: 100vh; display: flex; flex-direction: column; user-select: none;
-    overflow: hidden;
-  }
+  <meta charset="UTF-8" />
+  <title>AI Prompt Designer – Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #05060a;
+      --panel: #10121a;
+      --accent: #5fd7ff;
+      --accent-soft: rgba(95, 215, 255, 0.12);
+      --text-main: #f5f7ff;
+      --text-sub: #9aa0c2;
+      --border: #262a3b;
+      --danger: #ff6b81;
+      --muted: #3a3f55;
+      --radius: 10px;
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.55);
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, "Liberation Mono", "Courier New", monospace;
+    }
 
-  /* ── HEADER ─────────────────────────────────────────── */
-  header {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 9px 18px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
-  }
-  header h1 { font-size: 14px; font-weight: bold; letter-spacing: .18em; color: #93c5fd; white-space: nowrap; }
-  header .sub { font-size: 9px; color: var(--muted); letter-spacing: .1em; }
-  .sep { width: 1px; height: 22px; background: var(--border2); flex-shrink: 0; }
+    * {
+      box-sizing: border-box;
+    }
 
-  /* Drop target indicator in header */
-  #openArea {
-    display: flex; align-items: center; gap: 8px;
-    padding: 5px 12px; border: 1px dashed var(--border2); border-radius: 6px;
-    cursor: pointer; transition: all .15s; font-size: 10px; color: var(--muted);
-    letter-spacing: .08em;
-  }
-  #openArea:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.06); }
-  #openArea.drag-over { border-color: var(--accent); background: rgba(59,130,246,.1); color: var(--accent); }
-  #fileInput { display: none; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-main);
+      background: radial-gradient(circle at top, #15182a 0, #05060a 55%);
+      color: var(--text-main);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 24px;
+    }
 
-  .btn {
-    padding: 5px 12px; border: none; border-radius: 6px;
-    font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold;
-    letter-spacing: .1em; cursor: pointer; transition: all .15s; flex-shrink: 0;
-  }
-  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-orange { background: var(--orange); color: #fff; }
-  .btn-orange:hover { background: #ea6600; }
-  .btn-orange:disabled { opacity: .4; cursor: not-allowed; }
 
-  /* Filename display */
-  #filenameDisplay {
-    font-size: 10px; color: var(--muted); letter-spacing: .06em;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
-  }
+.lang-select {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
 
-  /* View toggle */
-  .view-toggle { display: flex; gap: 4px; margin-left: auto; }
-  .view-btn {
-    padding: 3px 10px; font-size: 9px; font-weight: bold; letter-spacing: .12em;
-    border: 1px solid var(--border2); background: transparent; color: var(--muted);
-    cursor: pointer; border-radius: 4px; font-family: 'Courier New', monospace; transition: all .15s;
-  }
-  .view-btn.active { background: var(--accent-d); border-color: var(--accent-d); color: #fff; }
+.lang-select button {
+  padding: 4px 10px;
+  font-size: 11px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  cursor: pointer;
+}
 
-  /* Stats */
-  .stats { display: flex; gap: 12px; align-items: center; }
-  .stat { font-size: 9px; color: var(--muted); letter-spacing: .08em; }
-  .stat span { color: var(--accent); font-weight: bold; }
+.lang-select button.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
-  /* ── MAIN ────────────────────────────────────────────── */
-  main { flex: 1; display: flex; overflow: hidden; min-height: 0; }
 
-  /* ── DROP OVERLAY (shown before first load) ──────────── */
-  #dropOverlay {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px;
-    background: var(--bg); z-index: 10;
-  }
-  #dropOverlay .big-icon { font-size: 48px; opacity: .2; }
-  #dropOverlay .label { font-size: 13px; color: var(--muted); letter-spacing: .12em; text-align: center; line-height: 2; }
-  #dropOverlay .hint  { font-size: 10px; color: var(--border2); letter-spacing: .08em; }
-  #dropOverlay.hidden { display: none; }
 
-  /* ── CODE VIEW ────────────────────────────────────────── */
-  #codePanel {
-    display: none; flex: 1; flex-direction: column;
-  }
-  #svgCode {
-    flex: 1; background: var(--bg); color: #7dd3fc;
-    font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6;
-    padding: 20px; overflow: auto; white-space: pre;
-    border: none; outline: none; resize: none; width: 100%; height: 100%;
-  }
+    .frame {
+      width: 100%;
+      max-width: 1120px;
+      background: linear-gradient(145deg, #0b0d16, #05060a);
+      border-radius: 18px;
+      border: 1px solid rgba(120, 140, 255, 0.18);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-  /* ── EDITOR ─────────────────────────────────────────── */
-  #editorPanel { flex: 1; display: none; flex-direction: row; overflow: hidden; }
+    header {
+      padding: 16px 20px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
 
-  /* Outliner */
-  #outliner {
-    width: 128px; flex-shrink: 0; background: var(--surface);
-    border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
-  }
-  .ol-section-title {
-    padding: 6px 10px 5px; font-size: 8px; font-weight: bold;
-    letter-spacing: .2em; color: var(--muted2);
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
-  }
-  #outliner-list { flex: 1; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; gap: 2px; }
-  .ol-item {
-    display: flex; align-items: center; gap: 5px;
-    padding: 4px 6px 4px 7px; border-radius: 5px; cursor: pointer;
-    border: 1px solid transparent; transition: all .12s;
-  }
-  .ol-item:hover { background: rgba(255,255,255,.04); border-color: var(--border); }
-  .ol-item.active { background: rgba(59,130,246,.13); border-color: var(--accent); }
-  .ol-item.ol-locked { opacity: .45; }
-  .ol-swatch { width: 15px; height: 15px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(255,255,255,.15); }
-  .ol-hex { flex: 1; font-size: 8px; color: var(--muted); letter-spacing: .03em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  .ol-item.active .ol-hex { color: #93c5fd; }
-  .ol-vis-btn, .ol-lock-btn {
-    flex-shrink: 0; width: 16px; height: 16px; display: flex; align-items: center;
-    justify-content: center; border-radius: 3px; color: var(--muted2);
-    background: transparent; border: none; cursor: pointer; padding: 0; transition: all .12s;
-  }
-  .ol-vis-btn:hover, .ol-lock-btn:hover { color: var(--text); background: var(--border); }
-  .ol-lock-btn.locked { color: var(--danger); }
-  .ol-vis-btn.hidden-color { color: var(--muted2); opacity: .4; }
-  .ol-empty { font-size: 9px; color: var(--muted2); padding: 14px 8px; text-align: center; letter-spacing: .06em; line-height: 1.9; }
+    .title {
+      font-size: 16px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-sub);
+    }
 
-  #node-section { display: none; border-top: 1px solid var(--border); padding: 8px 8px 10px; flex-shrink: 0; }
-  #node-section .ns-title { font-size: 8px; font-weight: bold; letter-spacing: .2em; color: var(--muted2); margin-bottom: 6px; }
-  .seg-toggle { display: flex; background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
-  .seg-btn {
-    padding: 3px 8px; font-size: 9px; font-weight: bold; letter-spacing: .08em;
-    font-family: 'Courier New', monospace; color: var(--muted);
-    cursor: pointer; border: none; background: transparent; transition: all .12s;
-  }
-  .seg-btn + .seg-btn { border-left: 1px solid var(--border2); }
-  .seg-btn.active { background: var(--accent-d); color: #fff; }
-  .seg-btn:hover:not(.active) { background: var(--border); color: var(--text); }
-  #node-section .seg-toggle { width: 100%; }
-  #node-section .seg-btn { flex: 1; text-align: center; }
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-sub);
+      opacity: 0.9;
+    }
 
-  /* Editor canvas */
-  #editorCanvas {
-    flex: 1; position: relative; overflow: hidden;
-    background-image: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%);
-    background-size: 16px 16px;
-  }
-  #editorCanvas.cur-default { cursor: default; }
-  #editorCanvas.cur-shape   { cursor: move; }
-  #editorCanvas.cur-anchor  { cursor: crosshair; }
-  #editorCanvas.cur-handle  { cursor: pointer; }
-  #editorCanvas.cur-drag    { cursor: grabbing; }
-  #editorSvg { width: 100%; height: 100%; display: block; touch-action: none; cursor: inherit; }
+    .badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(95, 215, 255, 0.5);
+      color: var(--accent);
+      background: radial-gradient(circle at top, rgba(95, 215, 255, 0.16), transparent 60%);
+      white-space: nowrap;
+    }
 
-  .editor-hint {
-    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-    background: rgba(15,23,42,.92); border: 1px solid var(--border);
-    padding: 4px 14px; border-radius: 10px; font-size: 9px; color: var(--muted2);
-    letter-spacing: .07em; pointer-events: none; white-space: nowrap;
-  }
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
+      gap: 0;
+      min-height: 420px;
+    }
 
-  /* Toast */
-  #toast {
-    position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
-    background: var(--accent-d); color: #fff; padding: 5px 16px;
-    border-radius: 20px; font-size: 11px; letter-spacing: .08em;
-    z-index: 100; opacity: 0; transition: opacity .2s; pointer-events: none;
-  }
-  #toast.show { opacity: 1; }
+    @media (max-width: 880px) {
+      main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      body {
+        padding: 12px;
+      }
+      .frame {
+        border-radius: 14px;
+      }
+    }
 
-  footer {
-    background: var(--surface); border-top: 1px solid var(--border);
-    padding: 4px 16px; font-size: 9px; color: var(--muted2); letter-spacing: .08em;
-    display: flex; align-items: center; gap: 14px; flex-shrink: 0;
-  }
-</style>
+    .panel {
+      padding: 18px 18px 20px;
+    }
+
+    .panel + .panel {
+      border-left: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .panel-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-sub);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(95, 215, 255, 0.9);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      resize: vertical;
+      background: radial-gradient(circle at top left, #181b2a 0, #090b12 55%);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 12px 12px 10px;
+      color: var(--text-main);
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      outline: none;
+      transition: border 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(95, 215, 255, 0.4);
+      background: radial-gradient(circle at top left, #1b2034 0, #090b12 55%);
+    }
+
+    textarea::placeholder {
+      color: var(--muted);
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--text-sub);
+      opacity: 0.9;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      background: radial-gradient(circle at top, #5fd7ff, #3a9ad1);
+      color: #020308;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+      white-space: nowrap;
+    }
+
+    button span.icon {
+      font-size: 14px;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.7);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7);
+      filter: brightness(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+      transform: none;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+    }
+
+    .outputs {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 10px;
+      height: 100%;
+    }
+
+    .score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      background: radial-gradient(circle at left, rgba(95, 215, 255, 0.16), transparent 60%);
+      border: 1px solid rgba(95, 215, 255, 0.35);
+    }
+
+    .score-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-sub);
+    }
+
+    .score-value {
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    .score-bar {
+      position: relative;
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ff6b81, #ffd66b, #5fd7ff, #7dffb3);
+      overflow: hidden;
+      opacity: 0.9;
+    }
+
+    .score-bar-inner {
+      position: absolute;
+      inset: 0;
+      transform-origin: left center;
+      transform: scaleX(0.4);
+      filter: saturate(1.2);
+    }
+
+    .score-comment {
+      font-size: 11px;
+      color: var(--text-sub);
+      text-align: right;
+    }
+
+    .output-block {
+      border-radius: var(--radius);
+      background: radial-gradient(circle at top left, #171a27 0, #070910 55%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 10px 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 90px;
+    }
+
+    .output-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .output-body {
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-main);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .output-body.muted {
+      color: var(--muted);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .chip {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-sub);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .footer {
+      padding: 6px 18px 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 10px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-<div id="toast"></div>
-
-<!-- ═══ HEADER ═══════════════════════════════════════════ -->
-<header>
-  <div>
-    <h1>JAMAD SVG</h1>
-    <div class="sub">PIXEL TO PATH CONVERTER</div>
-  </div>
-  <div class="sep"></div>
-
-  <!-- Open / Drop target -->
-  <div id="openArea" title="Click or drop PNG here">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M12 10v6m-3-3 3 3 3-3"/></svg>
-    OPEN PNG
-  </div>
-  <input type="file" id="fileInput" accept="image/png,image/*">
-
-  <span id="filenameDisplay"></span>
-
-  <div class="sep"></div>
-  <div class="stats" id="svgStats" style="display:none;">
-    <div class="stat">PATHS <span id="statElements">—</span></div>
-    <div class="stat">SIZE <span id="statFileSize">—</span></div>
-  </div>
-
-  <div class="sep" id="statsSep" style="display:none;"></div>
-  <button class="btn btn-orange" id="downloadSvgBtn" disabled>↓ SVG</button>
-  <button class="btn btn-ghost"  id="copySvgBtn"     disabled title="Copy SVG code to clipboard">COPY SVG</button>
-
-  <div class="view-toggle">
-    <button class="view-btn active" id="viewEdit" onclick="setView('edit')">EDIT</button>
-    <button class="view-btn"        id="viewCode" onclick="setView('code')">CODE</button>
-  </div>
-</header>
-
-<!-- ═══ MAIN ═════════════════════════════════════════════ -->
-<main>
-  <!-- Drop overlay (visible before first load) -->
-  <div id="dropOverlay">
-    <div class="big-icon">⬛</div>
-    <div class="label">DROP PNG HERE<br>or click OPEN PNG above</div>
-    <div class="hint">JAMAD PIXEL export recommended · Opens and converts automatically</div>
-  </div>
-
-  <!-- CODE view -->
-  <div id="codePanel">
-    <textarea id="svgCode" readonly placeholder="// SVG code will appear after loading an image..."></textarea>
-  </div>
-
-  <!-- EDIT view -->
-  <div id="editorPanel">
-    <div id="editorCanvas" class="cur-default">
-      <svg id="editorSvg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="editor-hint">
-        DRAG <span style="color:#ef4444">●</span> SHAPE TO MOVE ·
-        CLICK <span style="color:#f1f5f9">●</span> ANCHOR (→ <span style="color:#ff3b3b">●</span>) ·
-        DBLCLICK <span style="color:#fb923c">◆</span> HANDLE TO MIRROR ·
-        <span style="color:#94a3b8">DEL</span> DELETE
+  <div class="frame">
+    <header>
+      <div>
+        <div class="title" id="ui_title">AI Prompt Designer</div>
+        <div class="subtitle" id="ui_subtitle">Lightweight prompt optimizer prototype</div>
       </div>
-    </div>
-    <div id="outliner">
-      <div class="ol-section-title">COLORS</div>
-      <div id="outliner-list"><div class="ol-empty">OPEN AN<br>IMAGE</div></div>
-      <div id="node-section">
-        <div class="ns-title">NODE TYPE</div>
-        <div class="seg-toggle">
-          <button class="seg-btn active" id="nodeSharpBtn" onclick="setNodeType('sharp')">◆ SHARP</button>
-          <button class="seg-btn"        id="nodeCurveBtn" onclick="setNodeType('curve')">⌒ CURVE</button>
+
+      <div class="lang-select">
+        <button data-lang="en" class="active">EN</button>
+        <button data-lang="fi">FI</button>
+        <button data-lang="ja">JA</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <span class="panel-title" id="ui_input_title">INPUT PROMPT</span>
+
+        <textarea
+          id="promptInput"
+          placeholder="例: あなたはシニアAIエンジニアです。医療現場で使われるワークフロー支援ツールの要件を、箇条書きで5つ提案してください。制約条件: 1) 患者データの匿名化 2) 既存のHL7/FHIRシステムとの連携 3) 看護師が3タップ以内で操作できるUI。出力は日本語で。"
+        ></textarea>
+        <div class="controls">
+          <div class="hint" id="ui_hint">
+              ヒント: 役割・目的・制約・出力形式が含まれているとスコアが上がります。
+            </div>
+
+          <button id="optimizeBtn">
+            <span class="icon">⚡</span>
+            <span id="ui_optimize">Optimize</span>
+
+          </button>
         </div>
-      </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">
+             <span class="dot"></span>
+              <span id="ui_analysis_title">ANALYSIS & VARIANTS</span>
+        </div>
+
+        <div class="outputs">
+          <div class="score-row">
+            <div>
+                <div class="score-label" id="ui_score_label">Prompt Quality Score</div>
+
+              <div class="score-value" id="scoreValue">– / 10</div>
+            </div>
+            <div class="score-bar">
+              <div class="score-bar-inner" id="scoreBar"></div>
+            </div>
+            <div class="score-comment" id="scoreComment">Enter a prompt to analyze.</div>
+          </div>
+
+          <div class="output-block">
+            <div class="output-title">
+                <span id="ui_improved_title">Improved Prompt</span>
+
+              <div class="chips">
+                <span class="chip">Structure</span>
+                <span class="chip">Constraints</span>
+              </div>
+            </div>
+            <div class="output-body muted" id="improvedOutput">
+              Waiting for input…
+            </div>
+          </div>
+
+          <div class="output-block">
+            <div class="output-title">
+                <span id="ui_variants_title">Variants</span>
+
+              <div class="chips">
+                <span class="chip">Concise</span>
+                <span class="chip">Detailed</span>
+                <span class="chip">Creative</span>
+              </div>
+            </div>
+            <div class="output-body muted" id="variantsOutput">
+              You’ll see three alternative prompts here.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="footer">
+      <div>Prototype logic is local & heuristic – swap in an LLM API when ready.</div>
+      <div>Designed as a single-file artifact for portfolios.</div>
     </div>
   </div>
-</main>
 
-<footer>
-  <span>JAMAD SVG v20260302.8</span>
-  <span>COPY SVG = copies SVG source code to clipboard · DEL = delete selected node or shape</span>
-</footer>
+  <script>
+    const inputEl = document.getElementById("promptInput");
+    const btn = document.getElementById("optimizeBtn");
+    const scoreValueEl = document.getElementById("scoreValue");
+    const scoreBarEl = document.getElementById("scoreBar");
+    const scoreCommentEl = document.getElementById("scoreComment");
+    const improvedEl = document.getElementById("improvedOutput");
+    const variantsEl = document.getElementById("variantsOutput");
 
-<script>
-'use strict';
+const LANG = {
+  en: {
+    title: "AI Prompt Designer",
+    subtitle: "Lightweight prompt optimizer prototype",
+    input_title: "INPUT PROMPT",
+    analysis_title: "ANALYSIS & VARIANTS",
+    hint: "Hint: Include role, goal, constraints, output format.",
+    optimize: "Optimize",
+    score_label: "Prompt Quality Score",
+    improved_title: "Improved Prompt",
+    variants_title: "Variants",
+    waiting: "Waiting for input…",
+    enter_prompt: "Enter a prompt.",
+    variant_labels: ["Concise", "Detailed", "Creative"],
+    template(role, goal, constraints, format, langHint, raw) {
+      return `
+[ROLE]
+${role}
 
-// ═══════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════
-let currentSvgString = null;
-let currentView      = 'edit';
+[GOAL]
+${goal}
 
-const ed = {
-  paths:    [],
-  locked:   new Set(),
-  hidden:   new Set(),
-  vw: 0, vh: 0, grid: 8,
-  selPath:  -1,
-  selShape: null,   // {pi, si}
-  selNode:  null,   // {si, ni}
-  dragShape:  null, // {pi, si, startX, startY, origNodes, didMove}
-  dragHandle: null, // {type, si, ni}
-  lastHit: { time: 0, type: '', si: -1, ni: -1 },
+[CONSTRAINTS]
+${constraints}
+
+[OUTPUT FORMAT]
+${format}
+
+[LANGUAGE]
+${langHint}
+
+[ORIGINAL PROMPT]
+${raw}
+`.trim();
+    },
+    defaultRole: "You are a senior AI engineer.",
+    defaultGoal: "Generate clear and reproducible output based on the user's instructions.",
+    defaultConstraints: "1. Clarify assumptions.\n2. Keep explanations concise.",
+    defaultFormat: "Use bullet points.",
+    langHint: "Answer in English."
+  },
+
+  fi: {
+    title: "AI Prompt Designer",
+    subtitle: "Kevyt kehotteen optimointityökalu",
+    input_title: "SYÖTE",
+    analysis_title: "ANALYYSI & VAIHTOEHDOT",
+    hint: "Vinkki: Lisää rooli, tavoite, rajoitukset ja muoto.",
+    optimize: "Optimoi",
+    score_label: "Kehotteen laatu",
+    improved_title: "Parannettu kehotus",
+    variants_title: "Vaihtoehdot",
+    waiting: "Odottaa syötettä…",
+    enter_prompt: "Kirjoita kehotus.",
+    variant_labels: ["Tiivis", "Yksityiskohtainen", "Luova"],
+    template(role, goal, constraints, format, langHint, raw) {
+      return `
+[ROOLI]
+${role}
+
+[TAVOITE]
+${goal}
+
+[RAJOITUKSET]
+${constraints}
+
+[MUOTO]
+${format}
+
+[KIELI]
+${langHint}
+
+[ALKUPERÄINEN KEHOTUS]
+${raw}
+`.trim();
+    },
+    defaultRole: "Toimit kokeneena AI-insinöörinä.",
+    defaultGoal: "Tuota selkeä ja toistettava vastaus käyttäjän ohjeiden perusteella.",
+    defaultConstraints: "1. Selvennä oletukset.\n2. Pidä kohdat lyhyinä.",
+    defaultFormat: "Käytä luettelomuotoa.",
+    langHint: "Vastaa suomeksi."
+  },
+
+  ja: {
+    title: "AI Prompt Designer",
+    subtitle: "軽量プロンプト最適化ツール",
+    input_title: "入力プロンプト",
+    analysis_title: "分析とバリエーション",
+    hint: "ヒント：役割・目的・制約・出力形式を含めるとスコアが上がります。",
+    optimize: "最適化",
+    score_label: "プロンプト品質スコア",
+    improved_title: "改善プロンプト",
+    variants_title: "バリエーション",
+    waiting: "入力待ち…",
+    enter_prompt: "プロンプトを入力してください。",
+    variant_labels: ["簡潔版", "詳細版", "クリエイティブ"],
+    template(role, goal, constraints, format, langHint, raw) {
+      return `
+【役割】
+${role}
+
+【目的】
+${goal}
+
+【制約条件】
+${constraints}
+
+【出力形式】
+${format}
+
+【言語】
+${langHint}
+
+【元の指示】
+${raw}
+`.trim();
+    },
+    defaultRole: "あなたはシニアAIエンジニアとして振る舞います。",
+    defaultGoal: "ユーザーの指示に基づき、明確で再現性の高い出力を生成してください。",
+    defaultConstraints: "1. 不明点は仮定を明示して補完してください。\n2. 各項目は簡潔に。",
+    defaultFormat: "箇条書きで出力してください。",
+    langHint: "日本語で回答してください。"
+  }
 };
 
-// ═══════════════════════════════════════════════════════════
-// DOM REFS
-// ═══════════════════════════════════════════════════════════
-const fileInput      = document.getElementById('fileInput');
-const openArea       = document.getElementById('openArea');
-const dropOverlay    = document.getElementById('dropOverlay');
-const downloadSvgBtn = document.getElementById('downloadSvgBtn');
-const copySvgBtn     = document.getElementById('copySvgBtn');
-const svgCode        = document.getElementById('svgCode');
-const editorSvg      = document.getElementById('editorSvg');
-const editorCanvas   = document.getElementById('editorCanvas');
-const editorPanel    = document.getElementById('editorPanel');
-const codePanel      = document.getElementById('codePanel');
-const outlinerList   = document.getElementById('outliner-list');
-const nodeSection    = document.getElementById('node-section');
-const nodeSharpBtn   = document.getElementById('nodeSharpBtn');
-const nodeCurveBtn   = document.getElementById('nodeCurveBtn');
 
-// ═══════════════════════════════════════════════════════════
-// CURSOR
-// ═══════════════════════════════════════════════════════════
-function setCursor(name) { editorCanvas.className = 'cur-' + name; }
 
-// ═══════════════════════════════════════════════════════════
-// HOVER TINT — lightweight, no re-render
-// ═══════════════════════════════════════════════════════════
-function setHoverTint(pi, si, on) {
-  const el = editorSvg.querySelector(`.ep-tint[data-pi="${pi}"][data-si="${si}"]`);
-  if (el) el.setAttribute('visibility', on ? 'visible' : 'hidden');
-}
+    function applyLanguage(lang) {
+      const L = LANG[lang];
+      currentLang = lang;
 
-// ═══════════════════════════════════════════════════════════
-// FILE LOADING — auto-convert on load
-// ═══════════════════════════════════════════════════════════
-openArea.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => {
-  const f = e.target.files[0]; if (f) loadFile(f); e.target.value = '';
-});
-
-// Drag & drop onto the entire page
-document.addEventListener('dragover',  e => { e.preventDefault(); openArea.classList.add('drag-over'); });
-document.addEventListener('dragleave', e => { if (e.relatedTarget === null) openArea.classList.remove('drag-over'); });
-document.addEventListener('drop', e => {
-  e.preventDefault(); openArea.classList.remove('drag-over');
-  const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) loadFile(f);
-});
-
-function loadFile(file) {
-  const url = URL.createObjectURL(file);
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width; canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    const imgData = ctx.getImageData(0, 0, img.width, img.height);
-    URL.revokeObjectURL(url);
-
-    document.getElementById('filenameDisplay').textContent = file.name;
-
-    // Auto-convert immediately — use scale=8 (hidden, sensible default)
-    convert(imgData, 8);
-    toast(`${file.name} loaded & converted ✓`);
-  };
-  img.onerror = () => { URL.revokeObjectURL(url); toast('Failed to load image'); };
-  img.src = url;
-}
-
-// ═══════════════════════════════════════════════════════════
-// CONVERSION
-// ═══════════════════════════════════════════════════════════
-function convert(imgData, scale) {
-  const svg = toPathSvg(imgData, scale);
-  currentSvgString = svg;
-  initEditor(svg, scale);
-
-  svgCode.value = formatSvg(svg);
-  const elCount = (svg.match(/<path/g) || []).length;
-  const sizeKb  = (new Blob([svg]).size / 1024).toFixed(1);
-  document.getElementById('statElements').textContent = elCount;
-  document.getElementById('statFileSize').textContent = sizeKb + ' KB';
-  document.getElementById('svgStats').style.display   = 'flex';
-  document.getElementById('statsSep').style.display   = '';
-  downloadSvgBtn.disabled = false; copySvgBtn.disabled = false;
-
-  dropOverlay.classList.add('hidden');
-  renderOutliner();
-  setView('edit');
-}
-
-function toPathSvg(imgData, scale) {
-  const w = imgData.width, h = imgData.height, d = imgData.data;
-  const colorGrids = {};
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = (y * w + x) * 4;
-    if (d[i+3] < 128) continue;
-    const hex = rgbToHex(d[i], d[i+1], d[i+2]);
-    if (!colorGrids[hex]) colorGrids[hex] = Array.from({length: h}, () => new Uint8Array(w));
-    colorGrids[hex][y][x] = 1;
-  }
-  let paths = '';
-  for (const [hex, grid] of Object.entries(colorGrids)) {
-    let pathD = '';
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      if (!grid[y][x]) continue;
-      let rw = 1; while (x + rw < w && grid[y][x + rw]) rw++;
-      let rh = 1;
-      outer: while (y + rh < h) {
-        for (let dx = 0; dx < rw; dx++) if (!grid[y+rh][x+dx]) break outer; rh++;
-      }
-      for (let dy = 0; dy < rh; dy++) for (let dx = 0; dx < rw; dx++) grid[y+dy][x+dx] = 0;
-      const px = x*scale, py = y*scale, pw = rw*scale, ph = rh*scale;
-      pathD += `M${px},${py}h${pw}v${ph}h-${pw}z`;
+      document.getElementById("ui_title").textContent = L.title;
+      document.getElementById("ui_subtitle").textContent = L.subtitle;
+      document.getElementById("ui_input_title").textContent = L.input_title;
+      document.getElementById("ui_analysis_title").textContent = L.analysis_title;
+      document.getElementById("ui_hint").textContent = L.hint;
+      document.getElementById("ui_optimize").textContent = L.optimize;
+      document.getElementById("ui_score_label").textContent = L.score_label;
+      document.getElementById("ui_improved_title").textContent = L.improved_title;
+      document.getElementById("ui_variants_title").textContent = L.variants_title;
     }
-    paths += `\n  <path fill="${hex}" d="${pathD}"/>`;
-  }
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w*scale}" height="${h*scale}" viewBox="0 0 ${w*scale} ${h*scale}" shape-rendering="crispEdges">${paths}\n</svg>`;
-}
 
-// ═══════════════════════════════════════════════════════════
-// OUTLINER
-// ═══════════════════════════════════════════════════════════
-const ICON_EYE     = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
-const ICON_EYE_OFF = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`;
-const ICON_LOCK   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
-const ICON_UNLOCK = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`;
 
-function renderOutliner() {
-  outlinerList.innerHTML = '';
-  if (!ed.paths.length) { outlinerList.innerHTML = '<div class="ol-empty">OPEN AN<br>IMAGE</div>'; return; }
-  ed.paths.forEach((ep, pi) => {
-    const isLocked = ed.locked.has(pi);
-    const isActive = pi === ed.selPath;
-    const item = document.createElement('div');
-    item.className = 'ol-item' + (isActive ? ' active' : '') + (isLocked ? ' ol-locked' : '');
-    const isHidden = ed.hidden.has(pi);
-
-    // Visibility button (eye)
-    const visBtn = document.createElement('button');
-    visBtn.className = 'ol-vis-btn' + (isHidden ? ' hidden-color' : '');
-    visBtn.title = isHidden ? 'Show' : 'Hide';
-    visBtn.innerHTML = isHidden ? ICON_EYE_OFF : ICON_EYE;
-    visBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      if (ed.hidden.has(pi)) ed.hidden.delete(pi);
-      else {
-        ed.hidden.add(pi);
-        if (ed.selPath === pi) { ed.selPath = -1; ed.selShape = null; ed.selNode = null; updateNodeSection(); }
+    function analyzePrompt(prompt) {
+      const raw = prompt.trim();
+      if (!raw) {
+        return {
+          score: 0,
+          comment: "Empty prompt. Add role, goal, constraints, and output format.",
+          improved: "",
+          variants: [],
+        };
       }
-      renderOutliner(); renderEditor();
+
+      const lower = raw.toLowerCase();
+      const length = raw.length;
+      const hasRole =
+        /you are |あなたは|役割|role:|as an? /i.test(raw) || /engineer|designer|doctor|teacher/i.test(raw);
+      const hasGoal =
+        /please|してください|目的|goal|task|要求|要件|describe|explain|design|提案/i.test(raw);
+      const hasConstraints =
+        /制約|constraints?|条件|must|should|禁止|avoid|limit|上記/i.test(raw) ||
+        /steps?|箇条書き|bullets?|list/i.test(raw);
+      const hasFormat =
+        /output|format|形式|JSON|表形式|table|markdown|箇条書き|bulleted/i.test(raw);
+      const hasLanguage =
+        /日本語|英語|in japanese|in english|language/i.test(raw);
+
+      let score = 2;
+      if (length > 40) score += 1;
+      if (length > 120) score += 1;
+      if (hasRole) score += 2;
+      if (hasGoal) score += 2;
+      if (hasConstraints) score += 1.5;
+      if (hasFormat) score += 1.5;
+      if (hasLanguage) score += 1;
+
+      score = Math.max(1, Math.min(10, Math.round(score * 10) / 10));
+
+      let comment;
+      if (score < 4) {
+        comment = "Very vague. Clarify role, goal, and constraints.";
+      } else if (score < 6.5) {
+        comment = "Decent, but constraints and output format can be clearer.";
+      } else if (score < 8.5) {
+        comment = "Good structure. Minor refinements could improve reliability.";
+      } else {
+        comment = "Strong prompt. Well-structured and likely to be reliable.";
+      }
+
+      const L = LANG[currentLang];
+    const improved = L.template(
+      L.defaultRole,
+      L.defaultGoal,
+      L.defaultConstraints,
+      L.defaultFormat,
+      L.langHint,
+      raw
+    );
+
+
+      const variants = buildVariants(improved || raw);
+
+      return { score, comment, improved, variants };
+    }
+
+
+
+    function buildVariants(base) {
+      const concise = base
+        .replace(/【元の指示】[\s\S]*$/m, "")
+        .replace(/\n{2,}/g, "\n")
+        .trim();
+
+      const detailed =
+        base +
+        "\n\n【追加指示】\n・必要に応じて前提条件を補足してください。\n・出力の最後に、想定されるユースケースを1つだけ例示してください。";
+
+      const creative =
+        base +
+        "\n\n【トーン】\n・専門的でありつつも、読み手がイメージしやすいように比喩や具体例を1〜2箇所だけ用いてください。";
+
+      return [concise, detailed, creative];
+    }
+
+    function renderResult(result) {
+      const { score, comment, improved, variants } = result;
+
+      scoreValueEl.textContent = score ? `${score} / 10` : "– / 10";
+      const ratio = Math.max(0.05, Math.min(1, score / 10));
+      scoreBarEl.style.transform = `scaleX(${ratio})`;
+      scoreCommentEl.textContent = comment;
+
+      if (!improved) {
+        improvedEl.textContent = "No prompt to improve yet.";
+        improvedEl.classList.add("muted");
+      } else {
+        improvedEl.textContent = improved;
+        improvedEl.classList.remove("muted");
+      }
+
+      if (!variants || !variants.length) {
+        variantsEl.textContent = "You’ll see three alternative prompts here.";
+        variantsEl.classList.add("muted");
+      } else {
+        const [c, d, cr] = variants;
+        variantsEl.textContent =
+          "① Concise\n" +
+          c +
+          "\n\n② Detailed\n" +
+          d +
+          "\n\n③ Creative\n" +
+          cr;
+        variantsEl.classList.remove("muted");
+      }
+    }
+
+    btn.addEventListener("click", () => {
+      const prompt = inputEl.value;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="icon">…</span><span>Optimizing</span>';
+
+      // Simulate async work (later: replace with real LLM API call)
+      setTimeout(() => {
+        const result = analyzePrompt(prompt);
+        renderResult(result);
+        btn.disabled = false;
+        btn.innerHTML = '<span class="icon">⚡</span><span>Optimize</span>';
+      }, 220);
     });
 
-    // Lock button
-    const lockBtn = document.createElement('button');
-    lockBtn.className = 'ol-lock-btn' + (isLocked ? ' locked' : '');
-    lockBtn.title = isLocked ? 'Unlock' : 'Lock';
-    lockBtn.innerHTML = isLocked ? ICON_LOCK : ICON_UNLOCK;
-    lockBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      if (ed.locked.has(pi)) ed.locked.delete(pi);
-      else {
-        ed.locked.add(pi);
-        if (ed.selPath === pi) { ed.selPath = -1; ed.selShape = null; ed.selNode = null; updateNodeSection(); }
-      }
-      renderOutliner(); renderEditor();
+    // Optional: live scoring on blur
+    inputEl.addEventListener("blur", () => {
+      const prompt = inputEl.value;
+      if (!prompt.trim()) return;
+      const result = analyzePrompt(prompt);
+      renderResult(result);
     });
 
-    // Swatch + hex
-    const swatch = Object.assign(document.createElement('div'), { className: 'ol-swatch' });
-    swatch.style.background = ep.color;
-    const hex = Object.assign(document.createElement('div'), { className: 'ol-hex', textContent: ep.color });
-
-    // Order: [vis] [lock] [swatch] [hex]
-    item.append(visBtn, lockBtn, swatch, hex);
-    item.addEventListener('click', () => {
-      if (ed.locked.has(pi)) return;
-      ed.selPath = pi; ed.selShape = null; ed.selNode = null;
-      renderOutliner(); renderEditor(); updateNodeSection();
-    });
-    outlinerList.appendChild(item);
-  });
-}
-
-// ═══════════════════════════════════════════════════════════
-// NODE TYPE
-// ═══════════════════════════════════════════════════════════
-function updateNodeSection() {
-  if (!ed.selNode || ed.selPath < 0) { nodeSection.style.display = 'none'; return; }
-  nodeSection.style.display = 'block';
-  const { si, ni } = ed.selNode;
-  const nd = ed.paths[ed.selPath].subpaths[si][ni];
-  const isSharp = cpAt(nd.cpIn, nd) && cpAt(nd.cpOut, nd);
-  nodeSharpBtn.classList.toggle('active',  isSharp);
-  nodeCurveBtn.classList.toggle('active', !isSharp);
-}
-
-function setNodeType(type) {
-  if (!ed.selNode || ed.selPath < 0) return;
-  const { si, ni } = ed.selNode;
-  const nd = ed.paths[ed.selPath].subpaths[si][ni];
-  if (type === 'sharp') { nd.cpIn = {x:nd.x,y:nd.y}; nd.cpOut = {x:nd.x,y:nd.y}; }
-  else autoHandles(ed.selPath, si, ni);
-  updateNodeSection(); renderEditor(); commitEdit();
-}
-
-function autoHandles(pi, si, ni) {
-  const sp = ed.paths[pi].subpaths[si], N = sp.length, nd = sp[ni], g = ed.grid;
-  const prev = sp[(ni-1+N)%N], next = sp[(ni+1)%N];
-  let tx = (next.x-prev.x)/6, ty = (next.y-prev.y)/6;
-  if (Math.abs(tx)<0.5&&Math.abs(ty)<0.5) { tx=(next.x-nd.x)/3; ty=(next.y-nd.y)/3; }
-  if (Math.abs(tx)<0.5&&Math.abs(ty)<0.5) { tx=ed.grid; ty=0; }
-  let outX=snap(nd.x+tx), outY=snap(nd.y+ty), inX=snap(nd.x-tx), inY=snap(nd.y-ty);
-  const dom = Math.abs(tx)>=Math.abs(ty)?'x':'y';
-  const nudge = (ox,oy) => {
-    if (ox!==nd.x||oy!==nd.y) return [ox,oy];
-    return [ox+(dom==='x'?(tx>=0?ed.grid:-ed.grid):0), oy+(dom==='y'?(ty>=0?ed.grid:-ed.grid):0)];
-  };
-  [outX,outY]=nudge(outX,outY); [inX,inY]=nudge(inX,inY);
-  nd.cpOut={x:outX,y:outY}; nd.cpIn={x:inX,y:inY};
-}
-
-// ═══════════════════════════════════════════════════════════
-// DELETE
-// ═══════════════════════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  if (currentView !== 'edit') return;
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key !== 'Delete' && e.key !== 'Backspace') return;
-  e.preventDefault();
-
-  if (ed.selNode && ed.selPath >= 0) {
-    const { si, ni } = ed.selNode;
-    const sp = ed.paths[ed.selPath].subpaths[si];
-    if (sp.length <= 2) { ed.paths[ed.selPath].subpaths.splice(si, 1); toast('Subpath removed'); }
-    else { sp.splice(ni, 1); toast('Node deleted'); }
-    ed.selNode = null;
-    cleanEmptyPaths(); updateNodeSection(); renderOutliner(); renderEditor(); commitEdit();
-    return;
-  }
-
-  if (ed.selShape && ed.selPath >= 0 && !ed.locked.has(ed.selShape.pi)) {
-    const { pi, si } = ed.selShape;
-    ed.paths[pi].subpaths.splice(si, 1);
-    ed.selShape = null;
-    cleanEmptyPaths(); toast('Shape deleted');
-    renderOutliner(); renderEditor(); commitEdit();
-  }
-});
-
-function cleanEmptyPaths() {
-  for (let pi = ed.paths.length-1; pi >= 0; pi--) {
-    if (ed.paths[pi].subpaths.length === 0) {
-      ed.paths.splice(pi, 1); ed.locked.delete(pi);
-      if (ed.selPath === pi) ed.selPath = -1;
-      else if (ed.selPath > pi) ed.selPath--;
-    }
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// PATH PARSING & BUILDING
-// ═══════════════════════════════════════════════════════════
-function parsePathD(d) {
-  const re = /([MmHhVvLlCcSsQqTtAaZz])|([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/g;
-  const tokens = []; let m;
-  while ((m = re.exec(d)) !== null) tokens.push(m[0]);
-  const subpaths = [];
-  let cur=null, cx=0, cy=0, sx=0, sy=0, i=0, cmd='M';
-  const num  = () => parseFloat(tokens[i++]);
-  const node = (x,y) => ({x,y,cpIn:{x,y},cpOut:{x,y}});
-  const push = (x,y) => { if(cur) cur.push(node(x,y)); cx=x; cy=y; };
-  while (i < tokens.length) {
-    const t = tokens[i];
-    if (/^[MmHhVvLlCcSsQqTtAaZz]$/.test(t)) {
-      cmd=t; i++;
-      if(cmd==='Z'||cmd==='z'){if(cur&&cur.length){subpaths.push(cur);cur=null;}cx=sx;cy=sy;}
-      continue;
-    }
-    switch(cmd) {
-      case 'M':{if(cur)subpaths.push(cur);cx=num();cy=num();sx=cx;sy=cy;cur=[node(cx,cy)];cmd='L';break;}
-      case 'm':{if(cur)subpaths.push(cur);cx+=num();cy+=num();sx=cx;sy=cy;cur=[node(cx,cy)];cmd='l';break;}
-      case 'H':{push(num(),cy);break;}
-      case 'h':{push(cx+num(),cy);break;}
-      case 'V':{push(cx,num());break;}
-      case 'v':{push(cx,cy+num());break;}
-      case 'L':{push(num(),num());break;}
-      case 'l':{const dx=num(),dy=num();push(cx+dx,cy+dy);break;}
-      case 'C':{
-        const cp1x=num(),cp1y=num(),cp2x=num(),cp2y=num(),x=num(),y=num();
-        if(cur&&cur.length)cur[cur.length-1].cpOut={x:cp1x,y:cp1y};
-        if(cur)cur.push({x,y,cpIn:{x:cp2x,y:cp2y},cpOut:{x,y}});
-        cx=x;cy=y;break;
-      }
-      default:i++;
-    }
-  }
-  if(cur&&cur.length)subpaths.push(cur);
-  return subpaths;
-}
-
-function initEditor(svgStr, scale) {
-  const doc = new DOMParser().parseFromString(svgStr, 'image/svg+xml');
-  const svgEl = doc.querySelector('svg');
-  ed.vw = parseFloat(svgEl.getAttribute('width'));
-  ed.vh = parseFloat(svgEl.getAttribute('height'));
-  ed.grid = scale;
-  ed.locked.clear(); ed.hidden.clear();
-  ed.selPath=-1; ed.selShape=null; ed.selNode=null;
-  ed.dragShape=null; ed.dragHandle=null;
-  ed.lastHit={time:0,type:'',si:-1,ni:-1};
-  ed.paths = Array.from(doc.querySelectorAll('path')).map(p=>({
-    color: p.getAttribute('fill'), subpaths: parsePathD(p.getAttribute('d'))
-  }));
-}
-
-function buildSubD(sp) {
-  if (!sp.length) return '';
-  let d = `M${n(sp[0].x)},${n(sp[0].y)}`;
-  for (let k=1; k<sp.length; k++) {
-    const pv=sp[k-1],cv=sp[k];
-    if(cpAt(pv.cpOut,pv)&&cpAt(cv.cpIn,cv)) d+=`L${n(cv.x)},${n(cv.y)}`;
-    else d+=`C${n(pv.cpOut.x)},${n(pv.cpOut.y)} ${n(cv.cpIn.x)},${n(cv.cpIn.y)} ${n(cv.x)},${n(cv.y)}`;
-  }
-  const last=sp[sp.length-1],first=sp[0];
-  if(!(cpAt(last.cpOut,last)&&cpAt(first.cpIn,first)))
-    d+=`C${n(last.cpOut.x)},${n(last.cpOut.y)} ${n(first.cpIn.x)},${n(first.cpIn.y)} ${n(first.x)},${n(first.y)}`;
-  return d+'Z';
-}
-function buildD(sp) { return sp.map(s=>buildSubD(s)).join(''); }
-
-function rebuildSvg() {
-  let paths='';
-  for (const ep of ed.paths)
-    paths+=`\n  <path fill="${ep.color}" d="${buildD(ep.subpaths)}"/>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${ed.vw}" height="${ed.vh}" viewBox="0 0 ${ed.vw} ${ed.vh}">${paths}\n</svg>`;
-}
-
-function commitEdit() {
-  currentSvgString = rebuildSvg();
-  svgCode.value = formatSvg(currentSvgString);
-  document.getElementById('statFileSize').textContent = (new Blob([currentSvgString]).size/1024).toFixed(1)+' KB';
-}
-
-// ═══════════════════════════════════════════════════════════
-// CORE HELPERS
-// ═══════════════════════════════════════════════════════════
-const n    = v  => parseFloat(v.toFixed(2));
-const cpAt = (cp,nd) => Math.abs(cp.x-nd.x)<0.4&&Math.abs(cp.y-nd.y)<0.4;
-const snap = v  => Math.round(v/ed.grid)*ed.grid;
-const isSN = (si,ni) => ed.selNode&&ed.selNode.si===si&&ed.selNode.ni===ni;
-function toSvgPt(e) {
-  const pt=editorSvg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
-  return pt.matrixTransform(editorSvg.getScreenCTM().inverse());
-}
-function mirrorHandle(nd,type) {
-  if(type==='cpOut') nd.cpIn ={x:snap(2*nd.x-nd.cpOut.x),y:snap(2*nd.y-nd.cpOut.y)};
-  else               nd.cpOut={x:snap(2*nd.x-nd.cpIn.x), y:snap(2*nd.y-nd.cpIn.y) };
-}
-
-// ═══════════════════════════════════════════════════════════
-// EDITOR RENDER
-// IMPORTANT: hover tint is managed via setHoverTint() (DOM attr toggle),
-//            NOT by calling renderEditor() — prevents mouse event loops.
-// ═══════════════════════════════════════════════════════════
-function renderEditor() {
-  if (!ed.paths.length) { editorSvg.innerHTML=''; return; }
-  editorSvg.setAttribute('viewBox', `0 0 ${ed.vw} ${ed.vh}`);
-
-  const g  = ed.grid;
-  const AR = Math.max(2.5, g*0.34);
-  const CR = Math.max(1.8, g*0.24);
-  const LW = Math.max(0.5, g*0.08);
-  const GW = Math.max(0.3, g*0.045);
-  const HIT = Math.max(CR*2.5, 7);
-
-  let html='';
-
-  // Grid
-  html+=`<rect width="${ed.vw}" height="${ed.vh}" fill="#0f172a"/>`;
-  html+=`<g stroke="#1e293b" stroke-width="${GW}" pointer-events="none">`;
-  for(let x=0;x<=ed.vw;x+=g) html+=`<line x1="${x}" y1="0" x2="${x}" y2="${ed.vh}"/>`;
-  for(let y=0;y<=ed.vh;y+=g) html+=`<line x1="0" y1="${y}" x2="${ed.vw}" y2="${y}"/>`;
-  html+=`</g>`;
-
-  // ── All shapes (each subpath individually) ───────────────
-  for (let pi=0; pi<ed.paths.length; pi++) {
-    const ep=ed.paths[pi], isLock=ed.locked.has(pi), isHide=ed.hidden.has(pi), isSelP=pi===ed.selPath;
-    if(isHide) continue; // skip hidden color
-    for (let si=0; si<ep.subpaths.length; si++) {
-      const d=buildSubD(ep.subpaths[si]);
-      const isSelS=ed.selShape&&ed.selShape.pi===pi&&ed.selShape.si===si;
-
-      // Selection glow ring
-      if(isSelS) html+=`<path d="${d}" fill="none" stroke="#ffffff" stroke-width="${LW*2.5}" opacity="0.12" pointer-events="none"/>`;
-
-      // Fill shape — receives mouse events for hover/click/drag
-      // shape-rendering="crispEdges" fixes color unevenness at adjacent pixel boundaries
-      const op=isLock?0.3:1;
-      html+=`<path fill="${ep.color}" d="${d}" data-pi="${pi}" data-si="${si}" class="ep" opacity="${op}" shape-rendering="crispEdges"/>`;
-
-      // Tint overlay — starts hidden, toggled by setHoverTint()
-      // Also shown while dragging (rendered as visible if dragShape matches)
-      const isDragging=ed.dragShape&&ed.dragShape.pi===pi&&ed.dragShape.si===si;
-      html+=`<path class="ep-tint" data-pi="${pi}" data-si="${si}" d="${d}"
-        fill="rgba(239,68,68,0.32)" stroke="#ef4444" stroke-width="${LW*1.2}"
-        visibility="${isDragging?'visible':'hidden'}" pointer-events="none"/>`;
-    }
-  }
-
-  // ── Handles for selected (non-locked) path ───────────────
-  if(ed.selPath>=0 && !ed.locked.has(ed.selPath) && !ed.hidden.has(ed.selPath)) {
-    const ep=ed.paths[ed.selPath];
-
-    // Handle lines
-    for(let si=0;si<ep.subpaths.length;si++) {
-      const sp=ep.subpaths[si];
-      for(let ni=0;ni<sp.length;ni++) {
-        const nd=sp[ni],sel=isSN(si,ni);
-        if(!cpAt(nd.cpIn,nd))  html+=`<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpIn.x}"  y2="${nd.cpIn.y}"  stroke="${sel?'#ff3b3b':'#60a5fa'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
-        if(!cpAt(nd.cpOut,nd)) html+=`<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpOut.x}" y2="${nd.cpOut.y}" stroke="${sel?'#ff8c3b':'#fb923c'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
-      }
-    }
-    // Visible diamonds + anchor circles (pointer-events="none")
-    for(let si=0;si<ep.subpaths.length;si++) {
-      const sp=ep.subpaths[si];
-      for(let ni=0;ni<sp.length;ni++) {
-        const nd=sp[ni],sel=isSN(si,ni);
-        if(!cpAt(nd.cpIn,nd))
-          html+=`<rect x="${nd.cpIn.x-CR}" y="${nd.cpIn.y-CR}" width="${CR*2}" height="${CR*2}"
-            fill="${sel?'#ff3b3b':'#60a5fa'}" stroke="#0f172a" stroke-width="${LW*0.5}"
-            transform="rotate(45 ${nd.cpIn.x} ${nd.cpIn.y})" pointer-events="none"/>`;
-        if(!cpAt(nd.cpOut,nd))
-          html+=`<rect x="${nd.cpOut.x-CR}" y="${nd.cpOut.y-CR}" width="${CR*2}" height="${CR*2}"
-            fill="${sel?'#ff8c3b':'#fb923c'}" stroke="#0f172a" stroke-width="${LW*0.5}"
-            transform="rotate(45 ${nd.cpOut.x} ${nd.cpOut.y})" pointer-events="none"/>`;
-        if(sel) html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.75}" fill="none" stroke="#ff3b3b" stroke-width="${LW}" opacity="0.4" pointer-events="none"/>`;
-        html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR}" fill="${sel?'#ff3b3b':'#f1f5f9'}" stroke="${sel?'#ff9999':'#0f172a'}" stroke-width="${LW}" pointer-events="none"/>`;
-      }
-    }
-    // Hit targets (transparent circles — carry events)
-    for(let si=0;si<ep.subpaths.length;si++) {
-      const sp=ep.subpaths[si];
-      for(let ni=0;ni<sp.length;ni++) {
-        const nd=sp[ni];
-        if(!cpAt(nd.cpIn,nd))  html+=`<circle cx="${nd.cpIn.x}"  cy="${nd.cpIn.y}"  r="${HIT}" fill="transparent" data-hit="cpIn"  data-si="${si}" data-ni="${ni}"/>`;
-        if(!cpAt(nd.cpOut,nd)) html+=`<circle cx="${nd.cpOut.x}" cy="${nd.cpOut.y}" r="${HIT}" fill="transparent" data-hit="cpOut" data-si="${si}" data-ni="${ni}"/>`;
-        html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.6}" fill="transparent" data-hit="anchor" data-si="${si}" data-ni="${ni}"/>`;
-      }
-    }
-  }
-
-  editorSvg.innerHTML = html;
-  attachEditorEvents();
-}
-
-// ═══════════════════════════════════════════════════════════
-// ATTACH EDITOR EVENTS
-// Rule: NEVER call renderEditor() from mouseenter/mouseleave.
-// ═══════════════════════════════════════════════════════════
-function attachEditorEvents() {
-
-  // ── Shape subpath events ──────────────────────────────────
-  editorSvg.querySelectorAll('.ep').forEach(el => {
-    const pi=parseInt(el.dataset.pi), si=parseInt(el.dataset.si);
-    if(ed.locked.has(pi)) return;
-
-    el.addEventListener('mouseenter', () => {
-      // Lightweight — no renderEditor
-      setHoverTint(pi, si, true);
-      setCursor('shape');
-    });
-    el.addEventListener('mouseleave', () => {
-      setHoverTint(pi, si, false);
-      if(!ed.dragShape) setCursor('default');
-    });
-
-    el.addEventListener('mousedown', e => {
-      e.preventDefault(); e.stopPropagation();
-
-      // Always select this color/subpath
-      const wasSelected = (pi === ed.selPath);
-      ed.selPath  = pi;
-      ed.selShape = { pi, si };
-      ed.selNode  = null;
-      updateNodeSection();
-
-      if(!wasSelected) {
-        // First click on new color: update outliner + re-render to show handles
-        renderOutliner();
-        renderEditor();
-        // Still start drag so immediate drag works
-      }
-
-      // Start drag regardless (whether first click or not)
-      const pt = toSvgPt(e);
-      const origNodes = ed.paths[pi].subpaths[si].map(nd=>({
-        x:nd.x,y:nd.y,cpIn:{...nd.cpIn},cpOut:{...nd.cpOut}
-      }));
-      ed.dragShape = { pi, si, startX:pt.x, startY:pt.y, origNodes, didMove:false };
-      setCursor('drag');
-      window.addEventListener('mousemove', onShapeDrag);
-      window.addEventListener('mouseup',   onShapeDragEnd);
-    });
-  });
-
-  // ── Handle / anchor hit targets ───────────────────────────
-  editorSvg.querySelectorAll('[data-hit]').forEach(el => {
-    const type=el.dataset.hit, si=parseInt(el.dataset.si), ni=parseInt(el.dataset.ni);
-
-    el.addEventListener('mouseenter', () => setCursor(type==='anchor'?'anchor':'handle'));
-    el.addEventListener('mouseleave', () => { if(!ed.dragHandle) setCursor('default'); });
-
-    el.addEventListener('mousedown', e => {
-      e.preventDefault(); e.stopPropagation();
-
-      // Dblclick detection
-      const now=Date.now(), lh=ed.lastHit;
-      const isDbl=(now-lh.time<350)&&lh.type===type&&lh.si===si&&lh.ni===ni;
-      ed.lastHit={time:now,type,si,ni};
-
-      if(isDbl&&(type==='cpIn'||type==='cpOut')) {
-        const nd=ed.paths[ed.selPath].subpaths[si][ni];
-        mirrorHandle(nd,type);
-        renderEditor(); commitEdit();
-        return;
-      }
-
-      ed.selNode    = {si,ni};
-      ed.dragHandle = {type,si,ni};
-      setCursor('drag');
-      window.addEventListener('mousemove', onHandleDrag);
-      window.addEventListener('mouseup',   onHandleDragEnd);
-      updateNodeSection();
-      renderEditor(); // show selection highlight
-    });
-  });
-
-  // Background click → deselect node/shape
-  editorSvg.addEventListener('mousedown', e => {
-    if(e.target===editorSvg) {
-      ed.selNode=null; ed.selShape=null;
-      updateNodeSection(); setCursor('default'); renderEditor();
-    }
-  }, {once:true});
-}
-
-// ═══════════════════════════════════════════════════════════
-// SHAPE DRAG
-// ═══════════════════════════════════════════════════════════
-function onShapeDrag(e) {
-  if(!ed.dragShape) return;
-  const pt=toSvgPt(e);
-  const {pi,si,startX,startY,origNodes}=ed.dragShape;
-  const dx=snap(pt.x-startX), dy=snap(pt.y-startY);
-  if(dx!==0||dy!==0) ed.dragShape.didMove=true;
-  const sp=ed.paths[pi].subpaths[si];
-  for(let ni=0;ni<sp.length;ni++) {
-    const o=origNodes[ni],nd=sp[ni];
-    nd.x=o.x+dx;nd.y=o.y+dy;
-    nd.cpIn.x=o.cpIn.x+dx;nd.cpIn.y=o.cpIn.y+dy;
-    nd.cpOut.x=o.cpOut.x+dx;nd.cpOut.y=o.cpOut.y+dy;
-  }
-  renderEditor();
-}
-function onShapeDragEnd() {
-  window.removeEventListener('mousemove',onShapeDrag);
-  window.removeEventListener('mouseup',  onShapeDragEnd);
-  const moved = ed.dragShape && ed.dragShape.didMove;
-  ed.dragShape=null;
-  setCursor('default');
-  if(moved) commitEdit();
-  renderEditor();
-}
-
-// ═══════════════════════════════════════════════════════════
-// HANDLE / ANCHOR DRAG
-// ═══════════════════════════════════════════════════════════
-function onHandleDrag(e) {
-  if(!ed.dragHandle||ed.selPath<0) return;
-  const pt=toSvgPt(e);
-  const x=snap(pt.x),y=snap(pt.y);
-  const {type,si,ni}=ed.dragHandle;
-  const nd=ed.paths[ed.selPath].subpaths[si][ni];
-  if(type==='anchor') {
-    const dx=x-nd.x,dy=y-nd.y;
-    nd.cpIn.x+=dx;nd.cpIn.y+=dy;nd.cpOut.x+=dx;nd.cpOut.y+=dy;
-    nd.x=x;nd.y=y;
-  } else if(type==='cpIn') { nd.cpIn.x=x;nd.cpIn.y=y; }
-  else                      { nd.cpOut.x=x;nd.cpOut.y=y; }
-  renderEditor();
-}
-function onHandleDragEnd() {
-  window.removeEventListener('mousemove',onHandleDrag);
-  window.removeEventListener('mouseup',  onHandleDragEnd);
-  ed.dragHandle=null; setCursor('default'); commitEdit();
-}
-
-// ═══════════════════════════════════════════════════════════
-// VIEW
-// ═══════════════════════════════════════════════════════════
-function setView(v) {
-  currentView=v;
-  document.getElementById('viewEdit').classList.toggle('active',v==='edit');
-  document.getElementById('viewCode').classList.toggle('active',v==='code');
-  editorPanel.style.display = v==='edit'?'flex':'none';
-  codePanel.style.display   = v==='code'?'flex':'none';
-  if(v==='edit') renderEditor();
-}
-
-// ═══════════════════════════════════════════════════════════
-// MISC
-// ═══════════════════════════════════════════════════════════
-function rgbToHex(r,g,b) { return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join(''); }
-function formatSvg(svg)   { return svg.replace(/></g,'>\n<').replace(/(<\/svg>)/g,'\n$1'); }
-
-downloadSvgBtn.addEventListener('click',()=>{
-  if(!currentSvgString) return;
-  const blob=new Blob([currentSvgString],{type:'image/svg+xml'});
-  const a=document.createElement('a');
-  a.download='jamad_pixel.svg';a.href=URL.createObjectURL(blob);a.click();
-  URL.revokeObjectURL(a.href); toast('SVG downloaded!');
-});
-copySvgBtn.addEventListener('click',()=>{
-  if(!currentSvgString) return;
-  navigator.clipboard.writeText(currentSvgString).then(()=>toast('SVG code copied to clipboard!'));
-});
-
-function toast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._tid);t._tid=setTimeout(()=>t.classList.remove('show'),2500);
-}
-
-// Initial view
-setView('edit');
-</script>
+    document.querySelectorAll(".lang-select button").forEach(btn => { btn.addEventListener("click", () => { applyLanguage(btn.dataset.lang); }); });
+    applyLanguage("en");
+  </script>
 </body>
 </html>
