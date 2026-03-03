@@ -22,118 +22,93 @@
   body {
     background: var(--bg); color: var(--text);
     font-family: 'Courier New', monospace;
-    min-height: 100vh; display: flex; flex-direction: column; user-select: none;
+    height: 100vh; display: flex; flex-direction: column; user-select: none;
+    overflow: hidden;
   }
+
+  /* ── HEADER ─────────────────────────────────────────── */
   header {
     background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 10px 18px; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+    padding: 9px 18px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
   }
-  header h1 { font-size: 14px; font-weight: bold; letter-spacing: .18em; color: #93c5fd; }
+  header h1 { font-size: 14px; font-weight: bold; letter-spacing: .18em; color: #93c5fd; white-space: nowrap; }
   header .sub { font-size: 9px; color: var(--muted); letter-spacing: .1em; }
   .sep { width: 1px; height: 22px; background: var(--border2); flex-shrink: 0; }
+
+  /* Drop target indicator in header */
+  #openArea {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border: 1px dashed var(--border2); border-radius: 6px;
+    cursor: pointer; transition: all .15s; font-size: 10px; color: var(--muted);
+    letter-spacing: .08em;
+  }
+  #openArea:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.06); }
+  #openArea.drag-over { border-color: var(--accent); background: rgba(59,130,246,.1); color: var(--accent); }
+  #fileInput { display: none; }
+
   .btn {
     padding: 5px 12px; border: none; border-radius: 6px;
     font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold;
     letter-spacing: .1em; cursor: pointer; transition: all .15s; flex-shrink: 0;
   }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-d); }
-  .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
   .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
   .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-orange { background: var(--orange); color: #fff; border-radius: 6px; }
+  .btn-orange { background: var(--orange); color: #fff; }
   .btn-orange:hover { background: #ea6600; }
   .btn-orange:disabled { opacity: .4; cursor: not-allowed; }
-  .seg-toggle {
-    display: flex; background: var(--bg);
-    border: 1px solid var(--border2); border-radius: 4px; overflow: hidden;
+
+  /* Filename display */
+  #filenameDisplay {
+    font-size: 10px; color: var(--muted); letter-spacing: .06em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
   }
-  .seg-btn {
-    padding: 3px 9px; font-size: 9px; font-weight: bold; letter-spacing: .1em;
-    font-family: 'Courier New', monospace; color: var(--muted);
-    cursor: pointer; border: none; background: transparent; transition: all .12s;
-  }
-  .seg-btn + .seg-btn { border-left: 1px solid var(--border2); }
-  .seg-btn.active { background: var(--accent-d); color: #fff; }
-  .seg-btn:hover:not(.active) { background: var(--border); color: var(--text); }
-  .scale-control { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); }
-  .scale-control input {
-    width: 48px; background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); font-family: 'Courier New', monospace; font-size: 10px;
-    padding: 3px 6px; border-radius: 4px; text-align: center;
-  }
-  .scale-control input:focus { outline: none; border-color: var(--accent); }
-  main {
-    flex: 1; display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: var(--border); overflow: hidden; min-height: 0;
-  }
-  .panel { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
-  .panel-header {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 7px 14px; display: flex; align-items: center;
-    justify-content: space-between; flex-shrink: 0;
-  }
-  .panel-title { font-size: 9px; font-weight: bold; letter-spacing: .18em; color: var(--muted); }
-  .panel-body {
-    flex: 1; overflow: auto; display: flex; align-items: center;
-    justify-content: center; padding: 20px; position: relative; min-height: 0;
-  }
-  #dropZone {
-    width: 100%; height: 100%; border: 2px dashed var(--border); border-radius: 10px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 12px; cursor: pointer; transition: all .2s; position: absolute; inset: 20px;
-  }
-  #dropZone:hover, #dropZone.drag-over { border-color: var(--accent); background: rgba(59,130,246,.05); }
-  #dropZone .icon { font-size: 32px; opacity: .25; }
-  #dropZone .label { font-size: 11px; color: var(--muted); letter-spacing: .1em; text-align: center; line-height: 1.9; }
-  #dropZone .hint { font-size: 9px; color: var(--border2); letter-spacing: .06em; }
-  #fileInput { display: none; }
-  #sourcePreview { display: none; flex-direction: column; align-items: center; gap: 12px; width: 100%; height: 100%; }
-  #sourceCanvas { image-rendering: pixelated; image-rendering: crisp-edges; border: 1px solid var(--border); max-width: 100%; max-height: calc(100% - 60px); }
-  .source-info { font-size: 10px; color: var(--muted); letter-spacing: .08em; }
-  #svgDisplay { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-  #svgDisplay svg { max-width: 100%; max-height: 100%; border: 1px solid var(--border); }
-  #svgPlaceholder { font-size: 11px; color: var(--muted); letter-spacing: .1em; text-align: center; line-height: 2.2; }
-  .stats { display: flex; gap: 14px; align-items: center; }
-  .stat { font-size: 9px; color: var(--muted); letter-spacing: .08em; }
-  .stat span { color: var(--accent); font-weight: bold; }
-  #codePanel { display: none; flex-direction: column; height: 100%; width: 100%; }
-  #svgCode {
-    flex: 1; background: var(--bg); color: #7dd3fc;
-    font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6;
-    padding: 16px; overflow: auto; white-space: pre;
-    border: none; outline: none; resize: none; width: 100%;
-  }
-  .view-toggle { display: flex; gap: 4px; }
+
+  /* View toggle */
+  .view-toggle { display: flex; gap: 4px; margin-left: auto; }
   .view-btn {
-    padding: 3px 8px; font-size: 9px; font-weight: bold; letter-spacing: .1em;
+    padding: 3px 10px; font-size: 9px; font-weight: bold; letter-spacing: .12em;
     border: 1px solid var(--border2); background: transparent; color: var(--muted);
     cursor: pointer; border-radius: 4px; font-family: 'Courier New', monospace; transition: all .15s;
   }
   .view-btn.active { background: var(--accent-d); border-color: var(--accent-d); color: #fff; }
-  .checker-bg {
-    background-image: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%);
-    background-size: 16px 16px;
-  }
-  footer {
-    background: var(--surface); border-top: 1px solid var(--border);
-    padding: 5px 14px; font-size: 9px; color: var(--muted2); letter-spacing: .08em;
-    display: flex; align-items: center; gap: 14px; flex-shrink: 0;
-  }
-  #toast {
-    position: fixed; top: 58px; left: 50%; transform: translateX(-50%);
-    background: var(--accent-d); color: #fff; padding: 5px 16px;
-    border-radius: 20px; font-size: 11px; letter-spacing: .08em;
-    z-index: 100; opacity: 0; transition: opacity .2s; pointer-events: none;
-  }
-  #toast.show { opacity: 1; }
 
-  /* ── EDITOR ───────────────────────────────────────────── */
-  #editorPanel { display: none; width: 100%; height: 100%; flex-direction: row; overflow: hidden; }
+  /* Stats */
+  .stats { display: flex; gap: 12px; align-items: center; }
+  .stat { font-size: 9px; color: var(--muted); letter-spacing: .08em; }
+  .stat span { color: var(--accent); font-weight: bold; }
 
+  /* ── MAIN ────────────────────────────────────────────── */
+  main { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+
+  /* ── DROP OVERLAY (shown before first load) ──────────── */
+  #dropOverlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    background: var(--bg); z-index: 10;
+  }
+  #dropOverlay .big-icon { font-size: 48px; opacity: .2; }
+  #dropOverlay .label { font-size: 13px; color: var(--muted); letter-spacing: .12em; text-align: center; line-height: 2; }
+  #dropOverlay .hint  { font-size: 10px; color: var(--border2); letter-spacing: .08em; }
+  #dropOverlay.hidden { display: none; }
+
+  /* ── CODE VIEW ────────────────────────────────────────── */
+  #codePanel {
+    display: none; flex: 1; flex-direction: column;
+  }
+  #svgCode {
+    flex: 1; background: var(--bg); color: #7dd3fc;
+    font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6;
+    padding: 20px; overflow: auto; white-space: pre;
+    border: none; outline: none; resize: none; width: 100%; height: 100%;
+  }
+
+  /* ── EDITOR ─────────────────────────────────────────── */
+  #editorPanel { flex: 1; display: none; flex-direction: row; overflow: hidden; }
+
+  /* Outliner */
   #outliner {
     width: 128px; flex-shrink: 0; background: var(--surface);
-    border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
+    border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
   }
   .ol-section-title {
     padding: 6px 10px 5px; font-size: 8px; font-weight: bold;
@@ -152,126 +127,135 @@
   .ol-swatch { width: 15px; height: 15px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(255,255,255,.15); }
   .ol-hex { flex: 1; font-size: 8px; color: var(--muted); letter-spacing: .03em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .ol-item.active .ol-hex { color: #93c5fd; }
-  .ol-lock-btn {
+  .ol-vis-btn, .ol-lock-btn {
     flex-shrink: 0; width: 16px; height: 16px; display: flex; align-items: center;
-    justify-content: center; border-radius: 3px; transition: all .12s; color: var(--muted2);
-    background: transparent; border: none; cursor: pointer; padding: 0;
+    justify-content: center; border-radius: 3px; color: var(--muted2);
+    background: transparent; border: none; cursor: pointer; padding: 0; transition: all .12s;
   }
-  .ol-lock-btn:hover { color: var(--text); background: var(--border); }
+  .ol-vis-btn:hover, .ol-lock-btn:hover { color: var(--text); background: var(--border); }
   .ol-lock-btn.locked { color: var(--danger); }
-  .ol-empty { font-size: 9px; color: var(--muted2); padding: 12px 6px; text-align: center; letter-spacing: .06em; line-height: 1.8; }
+  .ol-vis-btn.hidden-color { color: var(--muted2); opacity: .4; }
+  .ol-empty { font-size: 9px; color: var(--muted2); padding: 14px 8px; text-align: center; letter-spacing: .06em; line-height: 1.9; }
 
   #node-section { display: none; border-top: 1px solid var(--border); padding: 8px 8px 10px; flex-shrink: 0; }
   #node-section .ns-title { font-size: 8px; font-weight: bold; letter-spacing: .2em; color: var(--muted2); margin-bottom: 6px; }
+  .seg-toggle { display: flex; background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
+  .seg-btn {
+    padding: 3px 8px; font-size: 9px; font-weight: bold; letter-spacing: .08em;
+    font-family: 'Courier New', monospace; color: var(--muted);
+    cursor: pointer; border: none; background: transparent; transition: all .12s;
+  }
+  .seg-btn + .seg-btn { border-left: 1px solid var(--border2); }
+  .seg-btn.active { background: var(--accent-d); color: #fff; }
+  .seg-btn:hover:not(.active) { background: var(--border); color: var(--text); }
   #node-section .seg-toggle { width: 100%; }
   #node-section .seg-btn { flex: 1; text-align: center; }
 
-  #editorCanvas { flex: 1; position: relative; overflow: hidden; }
-
-  /* Cursor modes via class on editorCanvas */
+  /* Editor canvas */
+  #editorCanvas {
+    flex: 1; position: relative; overflow: hidden;
+    background-image: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%);
+    background-size: 16px 16px;
+  }
   #editorCanvas.cur-default { cursor: default; }
   #editorCanvas.cur-shape   { cursor: move; }
   #editorCanvas.cur-anchor  { cursor: crosshair; }
   #editorCanvas.cur-handle  { cursor: pointer; }
   #editorCanvas.cur-drag    { cursor: grabbing; }
-
   #editorSvg { width: 100%; height: 100%; display: block; touch-action: none; cursor: inherit; }
 
   .editor-hint {
     position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
     background: rgba(15,23,42,.92); border: 1px solid var(--border);
     padding: 4px 14px; border-radius: 10px; font-size: 9px; color: var(--muted2);
-    letter-spacing: .08em; pointer-events: none; white-space: nowrap;
+    letter-spacing: .07em; pointer-events: none; white-space: nowrap;
+  }
+
+  /* Toast */
+  #toast {
+    position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
+    background: var(--accent-d); color: #fff; padding: 5px 16px;
+    border-radius: 20px; font-size: 11px; letter-spacing: .08em;
+    z-index: 100; opacity: 0; transition: opacity .2s; pointer-events: none;
+  }
+  #toast.show { opacity: 1; }
+
+  footer {
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 4px 16px; font-size: 9px; color: var(--muted2); letter-spacing: .08em;
+    display: flex; align-items: center; gap: 14px; flex-shrink: 0;
   }
 </style>
 </head>
 <body>
 <div id="toast"></div>
 
+<!-- ═══ HEADER ═══════════════════════════════════════════ -->
 <header>
   <div>
     <h1>JAMAD SVG</h1>
     <div class="sub">PIXEL TO PATH CONVERTER</div>
   </div>
   <div class="sep"></div>
-  <div class="scale-control">
-    <span>SCALE</span>
-    <input type="number" id="scaleInput" value="8" min="1" max="64">
-    <span>px</span>
+
+  <!-- Open / Drop target -->
+  <div id="openArea" title="Click or drop PNG here">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M12 10v6m-3-3 3 3 3-3"/></svg>
+    OPEN PNG
   </div>
+  <input type="file" id="fileInput" accept="image/png,image/*">
+
+  <span id="filenameDisplay"></span>
+
   <div class="sep"></div>
-  <button class="btn btn-primary" id="convertBtn" disabled>CONVERT →</button>
-  <div class="sep"></div>
+  <div class="stats" id="svgStats" style="display:none;">
+    <div class="stat">PATHS <span id="statElements">—</span></div>
+    <div class="stat">SIZE <span id="statFileSize">—</span></div>
+  </div>
+
+  <div class="sep" id="statsSep" style="display:none;"></div>
   <button class="btn btn-orange" id="downloadSvgBtn" disabled>↓ SVG</button>
-  <button class="btn btn-ghost" id="copySvgBtn" disabled>COPY</button>
+  <button class="btn btn-ghost"  id="copySvgBtn"     disabled title="Copy SVG code to clipboard">COPY SVG</button>
+
+  <div class="view-toggle">
+    <button class="view-btn active" id="viewEdit" onclick="setView('edit')">EDIT</button>
+    <button class="view-btn"        id="viewCode" onclick="setView('code')">CODE</button>
+  </div>
 </header>
 
+<!-- ═══ MAIN ═════════════════════════════════════════════ -->
 <main>
-  <div class="panel">
-    <div class="panel-header">
-      <span class="panel-title">SOURCE PNG</span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <div class="stats" id="sourceStats" style="display:none;">
-          <div class="stat">SIZE <span id="statSize">—</span></div>
-          <div class="stat">COLORS <span id="statColors">—</span></div>
-        </div>
-        <button class="btn btn-ghost" id="clearBtn" style="display:none;padding:3px 8px;font-size:9px;">CLEAR</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('fileInput').click()" style="padding:3px 8px;font-size:9px;">OPEN</button>
-      </div>
-    </div>
-    <div class="panel-body checker-bg">
-      <div id="dropZone">
-        <div class="icon">⬛</div>
-        <div class="label">DROP PNG HERE<br>or click OPEN</div>
-        <div class="hint">JAMAD PIXEL export recommended</div>
-      </div>
-      <div id="sourcePreview">
-        <canvas id="sourceCanvas"></canvas>
-        <div class="source-info" id="sourceInfo"></div>
-      </div>
-    </div>
+  <!-- Drop overlay (visible before first load) -->
+  <div id="dropOverlay">
+    <div class="big-icon">⬛</div>
+    <div class="label">DROP PNG HERE<br>or click OPEN PNG above</div>
+    <div class="hint">JAMAD PIXEL export recommended · Opens and converts automatically</div>
   </div>
 
-  <div class="panel">
-    <div class="panel-header">
-      <span class="panel-title">SVG OUTPUT</span>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <div class="stats" id="svgStats" style="display:none;">
-          <div class="stat">PATHS <span id="statElements">—</span></div>
-          <div class="stat">SIZE <span id="statFileSize">—</span></div>
-        </div>
-        <div class="view-toggle">
-          <button class="view-btn active" id="viewPreview" onclick="setView('preview')">PREVIEW</button>
-          <button class="view-btn" id="viewEdit" onclick="setView('edit')">EDIT</button>
-          <button class="view-btn" id="viewCode" onclick="setView('code')">CODE</button>
-        </div>
+  <!-- CODE view -->
+  <div id="codePanel">
+    <textarea id="svgCode" readonly placeholder="// SVG code will appear after loading an image..."></textarea>
+  </div>
+
+  <!-- EDIT view -->
+  <div id="editorPanel">
+    <div id="editorCanvas" class="cur-default">
+      <svg id="editorSvg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="editor-hint">
+        DRAG <span style="color:#ef4444">●</span> SHAPE TO MOVE ·
+        CLICK <span style="color:#f1f5f9">●</span> ANCHOR (→ <span style="color:#ff3b3b">●</span>) ·
+        DBLCLICK <span style="color:#fb923c">◆</span> HANDLE TO MIRROR ·
+        <span style="color:#94a3b8">DEL</span> DELETE
       </div>
     </div>
-    <div class="panel-body checker-bg" style="padding:0;overflow:hidden;">
-      <div id="svgDisplay" style="padding:20px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-        <div id="svgPlaceholder">LOAD AN IMAGE<br>THEN PRESS CONVERT</div>
-      </div>
-      <div id="codePanel">
-        <textarea id="svgCode" readonly placeholder="// SVG code will appear here..."></textarea>
-      </div>
-      <div id="editorPanel">
-        <div id="outliner">
-          <div class="ol-section-title">COLORS</div>
-          <div id="outliner-list"><div class="ol-empty">CONVERT<br>FIRST</div></div>
-          <div id="node-section">
-            <div class="ns-title">NODE TYPE</div>
-            <div class="seg-toggle">
-              <button class="seg-btn active" id="nodeSharpBtn" onclick="setNodeType('sharp')">◆ SHARP</button>
-              <button class="seg-btn"        id="nodeCurveBtn" onclick="setNodeType('curve')">⌒ CURVE</button>
-            </div>
-          </div>
-        </div>
-        <div id="editorCanvas" class="cur-default">
-          <svg id="editorSvg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
-          <div class="editor-hint">
-            HOVER SHAPE → <span style="color:#ef4444">RED</span> · DRAG (selected) · CLICK <span style="color:#f1f5f9">●</span> ANCHOR ·
-            DBLCLICK <span style="color:#fb923c">◆</span> MIRROR · <span style="color:#94a3b8">DEL</span> DELETE
-          </div>
+    <div id="outliner">
+      <div class="ol-section-title">COLORS</div>
+      <div id="outliner-list"><div class="ol-empty">OPEN AN<br>IMAGE</div></div>
+      <div id="node-section">
+        <div class="ns-title">NODE TYPE</div>
+        <div class="seg-toggle">
+          <button class="seg-btn active" id="nodeSharpBtn" onclick="setNodeType('sharp')">◆ SHARP</button>
+          <button class="seg-btn"        id="nodeCurveBtn" onclick="setNodeType('curve')">⌒ CURVE</button>
         </div>
       </div>
     </div>
@@ -279,10 +263,9 @@
 </main>
 
 <footer>
-  <span>JAMAD SVG v20260302.7</span>
-  <span>EDIT: hover=red tint · click to select · drag selected shape · DEL node/subpath</span>
+  <span>JAMAD SVG v20260302.8</span>
+  <span>COPY SVG = copies SVG source code to clipboard · DEL = delete selected node or shape</span>
 </footer>
-<input type="file" id="fileInput" accept="image/png,image/*">
 
 <script>
 'use strict';
@@ -290,42 +273,35 @@
 // ═══════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════
-let sourceImageData  = null;
 let currentSvgString = null;
-let currentView      = 'preview';
+let currentView      = 'edit';
 
 const ed = {
-  paths:    [],          // [{color, subpaths}]
+  paths:    [],
   locked:   new Set(),
+  hidden:   new Set(),
   vw: 0, vh: 0, grid: 8,
-  selPath:  -1,          // selected color index (outliner)
-  selShape: null,        // {pi, si} — subpath clicked/active for move/delete
-  selNode:  null,        // {si, ni} — selected anchor node
-  // drag state
-  dragShape:  null,      // {pi, si, startX, startY, origNodes}
-  dragHandle: null,      // {type, si, ni}
-  // dblclick detection
+  selPath:  -1,
+  selShape: null,   // {pi, si}
+  selNode:  null,   // {si, ni}
+  dragShape:  null, // {pi, si, startX, startY, origNodes, didMove}
+  dragHandle: null, // {type, si, ni}
   lastHit: { time: 0, type: '', si: -1, ni: -1 },
 };
 
 // ═══════════════════════════════════════════════════════════
 // DOM REFS
 // ═══════════════════════════════════════════════════════════
-const dropZone       = document.getElementById('dropZone');
-const sourcePreview  = document.getElementById('sourcePreview');
-const sourceCanvas   = document.getElementById('sourceCanvas');
-const sourceCtx      = sourceCanvas.getContext('2d');
-const convertBtn     = document.getElementById('convertBtn');
+const fileInput      = document.getElementById('fileInput');
+const openArea       = document.getElementById('openArea');
+const dropOverlay    = document.getElementById('dropOverlay');
 const downloadSvgBtn = document.getElementById('downloadSvgBtn');
 const copySvgBtn     = document.getElementById('copySvgBtn');
-const clearBtn       = document.getElementById('clearBtn');
-const svgDisplay     = document.getElementById('svgDisplay');
-const codePanel      = document.getElementById('codePanel');
-const editorPanel    = document.getElementById('editorPanel');
 const svgCode        = document.getElementById('svgCode');
 const editorSvg      = document.getElementById('editorSvg');
 const editorCanvas   = document.getElementById('editorCanvas');
-const scaleInput     = document.getElementById('scaleInput');
+const editorPanel    = document.getElementById('editorPanel');
+const codePanel      = document.getElementById('codePanel');
 const outlinerList   = document.getElementById('outliner-list');
 const nodeSection    = document.getElementById('node-section');
 const nodeSharpBtn   = document.getElementById('nodeSharpBtn');
@@ -337,7 +313,7 @@ const nodeCurveBtn   = document.getElementById('nodeCurveBtn');
 function setCursor(name) { editorCanvas.className = 'cur-' + name; }
 
 // ═══════════════════════════════════════════════════════════
-// HOVER TINT (lightweight — no full re-render)
+// HOVER TINT — lightweight, no re-render
 // ═══════════════════════════════════════════════════════════
 function setHoverTint(pi, si, on) {
   const el = editorSvg.querySelector(`.ep-tint[data-pi="${pi}"][data-si="${si}"]`);
@@ -345,74 +321,64 @@ function setHoverTint(pi, si, on) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// FILE LOADING
+// FILE LOADING — auto-convert on load
 // ═══════════════════════════════════════════════════════════
-document.getElementById('fileInput').addEventListener('change', e => {
+openArea.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => {
   const f = e.target.files[0]; if (f) loadFile(f); e.target.value = '';
 });
-dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
-dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('drag-over');
-  const f = e.dataTransfer.files[0]; if (f) loadFile(f);
+
+// Drag & drop onto the entire page
+document.addEventListener('dragover',  e => { e.preventDefault(); openArea.classList.add('drag-over'); });
+document.addEventListener('dragleave', e => { if (e.relatedTarget === null) openArea.classList.remove('drag-over'); });
+document.addEventListener('drop', e => {
+  e.preventDefault(); openArea.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) loadFile(f);
 });
+
 function loadFile(file) {
   const url = URL.createObjectURL(file);
   const img = new Image();
   img.onload = () => {
-    sourceCanvas.width = img.width; sourceCanvas.height = img.height;
-    sourceCtx.drawImage(img, 0, 0);
-    sourceImageData = sourceCtx.getImageData(0, 0, img.width, img.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const imgData = ctx.getImageData(0, 0, img.width, img.height);
     URL.revokeObjectURL(url);
-    const ds = Math.min(6, Math.floor(320 / Math.max(img.width, img.height)));
-    sourceCanvas.style.width  = img.width  * Math.max(1, ds) + 'px';
-    sourceCanvas.style.height = img.height * Math.max(1, ds) + 'px';
-    dropZone.style.display = 'none'; sourcePreview.style.display = 'flex'; clearBtn.style.display = '';
-    const colors = new Set();
-    for (let i = 0; i < sourceImageData.data.length; i += 4)
-      if (sourceImageData.data[i+3] > 0)
-        colors.add(`${sourceImageData.data[i]},${sourceImageData.data[i+1]},${sourceImageData.data[i+2]}`);
-    document.getElementById('statSize').textContent   = `${img.width}×${img.height}`;
-    document.getElementById('statColors').textContent = colors.size;
-    document.getElementById('sourceStats').style.display = 'flex';
-    document.getElementById('sourceInfo').textContent    = `${img.width}×${img.height}px · ${colors.size} colors`;
-    convertBtn.disabled = false; toast('Image loaded ✓');
+
+    document.getElementById('filenameDisplay').textContent = file.name;
+
+    // Auto-convert immediately — use scale=8 (hidden, sensible default)
+    convert(imgData, 8);
+    toast(`${file.name} loaded & converted ✓`);
   };
+  img.onerror = () => { URL.revokeObjectURL(url); toast('Failed to load image'); };
   img.src = url;
 }
-clearBtn.addEventListener('click', () => {
-  sourceImageData = null;
-  dropZone.style.display = ''; sourcePreview.style.display = 'none'; clearBtn.style.display = 'none';
-  document.getElementById('sourceStats').style.display = 'none';
-  convertBtn.disabled = true; resetOutput();
-});
 
 // ═══════════════════════════════════════════════════════════
 // CONVERSION
 // ═══════════════════════════════════════════════════════════
-convertBtn.addEventListener('click', convert);
-function convert() {
-  if (!sourceImageData) return;
-  const scale = parseInt(scaleInput.value) || 8;
-  const svg = toPathSvg(sourceImageData, scale);
+function convert(imgData, scale) {
+  const svg = toPathSvg(imgData, scale);
   currentSvgString = svg;
   initEditor(svg, scale);
-  document.getElementById('svgPlaceholder').style.display = 'none';
-  svgDisplay.innerHTML = svg;
-  svgDisplay.querySelector('svg').style.maxWidth  = '100%';
-  svgDisplay.querySelector('svg').style.maxHeight = '100%';
+
   svgCode.value = formatSvg(svg);
   const elCount = (svg.match(/<path/g) || []).length;
   const sizeKb  = (new Blob([svg]).size / 1024).toFixed(1);
   document.getElementById('statElements').textContent = elCount;
   document.getElementById('statFileSize').textContent = sizeKb + ' KB';
   document.getElementById('svgStats').style.display   = 'flex';
+  document.getElementById('statsSep').style.display   = '';
   downloadSvgBtn.disabled = false; copySvgBtn.disabled = false;
+
+  dropOverlay.classList.add('hidden');
   renderOutliner();
-  if (currentView === 'edit') renderEditor();
-  toast(`Converted! ${elCount} paths · ${sizeKb} KB`);
+  setView('edit');
 }
+
 function toPathSvg(imgData, scale) {
   const w = imgData.width, h = imgData.height, d = imgData.data;
   const colorGrids = {};
@@ -445,33 +411,58 @@ function toPathSvg(imgData, scale) {
 // ═══════════════════════════════════════════════════════════
 // OUTLINER
 // ═══════════════════════════════════════════════════════════
+const ICON_EYE     = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const ICON_EYE_OFF = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`;
 const ICON_LOCK   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
 const ICON_UNLOCK = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`;
+
 function renderOutliner() {
   outlinerList.innerHTML = '';
-  if (!ed.paths.length) { outlinerList.innerHTML = '<div class="ol-empty">CONVERT<br>FIRST</div>'; return; }
+  if (!ed.paths.length) { outlinerList.innerHTML = '<div class="ol-empty">OPEN AN<br>IMAGE</div>'; return; }
   ed.paths.forEach((ep, pi) => {
     const isLocked = ed.locked.has(pi);
     const isActive = pi === ed.selPath;
     const item = document.createElement('div');
     item.className = 'ol-item' + (isActive ? ' active' : '') + (isLocked ? ' ol-locked' : '');
-    const swatch = Object.assign(document.createElement('div'), { className: 'ol-swatch' });
-    swatch.style.background = ep.color;
-    const hex    = Object.assign(document.createElement('div'), { className: 'ol-hex', textContent: ep.color });
+    const isHidden = ed.hidden.has(pi);
+
+    // Visibility button (eye)
+    const visBtn = document.createElement('button');
+    visBtn.className = 'ol-vis-btn' + (isHidden ? ' hidden-color' : '');
+    visBtn.title = isHidden ? 'Show' : 'Hide';
+    visBtn.innerHTML = isHidden ? ICON_EYE_OFF : ICON_EYE;
+    visBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (ed.hidden.has(pi)) ed.hidden.delete(pi);
+      else {
+        ed.hidden.add(pi);
+        if (ed.selPath === pi) { ed.selPath = -1; ed.selShape = null; ed.selNode = null; updateNodeSection(); }
+      }
+      renderOutliner(); renderEditor();
+    });
+
+    // Lock button
     const lockBtn = document.createElement('button');
     lockBtn.className = 'ol-lock-btn' + (isLocked ? ' locked' : '');
     lockBtn.title = isLocked ? 'Unlock' : 'Lock';
     lockBtn.innerHTML = isLocked ? ICON_LOCK : ICON_UNLOCK;
     lockBtn.addEventListener('click', e => {
       e.stopPropagation();
-      if (ed.locked.has(pi)) { ed.locked.delete(pi); }
+      if (ed.locked.has(pi)) ed.locked.delete(pi);
       else {
         ed.locked.add(pi);
         if (ed.selPath === pi) { ed.selPath = -1; ed.selShape = null; ed.selNode = null; updateNodeSection(); }
       }
       renderOutliner(); renderEditor();
     });
-    item.append(swatch, hex, lockBtn);
+
+    // Swatch + hex
+    const swatch = Object.assign(document.createElement('div'), { className: 'ol-swatch' });
+    swatch.style.background = ep.color;
+    const hex = Object.assign(document.createElement('div'), { className: 'ol-hex', textContent: ep.color });
+
+    // Order: [vis] [lock] [swatch] [hex]
+    item.append(visBtn, lockBtn, swatch, hex);
     item.addEventListener('click', () => {
       if (ed.locked.has(pi)) return;
       ed.selPath = pi; ed.selShape = null; ed.selNode = null;
@@ -493,6 +484,7 @@ function updateNodeSection() {
   nodeSharpBtn.classList.toggle('active',  isSharp);
   nodeCurveBtn.classList.toggle('active', !isSharp);
 }
+
 function setNodeType(type) {
   if (!ed.selNode || ed.selPath < 0) return;
   const { si, ni } = ed.selNode;
@@ -501,17 +493,18 @@ function setNodeType(type) {
   else autoHandles(ed.selPath, si, ni);
   updateNodeSection(); renderEditor(); commitEdit();
 }
+
 function autoHandles(pi, si, ni) {
   const sp = ed.paths[pi].subpaths[si], N = sp.length, nd = sp[ni], g = ed.grid;
   const prev = sp[(ni-1+N)%N], next = sp[(ni+1)%N];
-  let tx = (next.x - prev.x) / 6, ty = (next.y - prev.y) / 6;
-  if (Math.abs(tx)<0.5 && Math.abs(ty)<0.5) { tx=(next.x-nd.x)/3; ty=(next.y-nd.y)/3; }
-  if (Math.abs(tx)<0.5 && Math.abs(ty)<0.5) { tx=g; ty=0; }
+  let tx = (next.x-prev.x)/6, ty = (next.y-prev.y)/6;
+  if (Math.abs(tx)<0.5&&Math.abs(ty)<0.5) { tx=(next.x-nd.x)/3; ty=(next.y-nd.y)/3; }
+  if (Math.abs(tx)<0.5&&Math.abs(ty)<0.5) { tx=ed.grid; ty=0; }
   let outX=snap(nd.x+tx), outY=snap(nd.y+ty), inX=snap(nd.x-tx), inY=snap(nd.y-ty);
   const dom = Math.abs(tx)>=Math.abs(ty)?'x':'y';
   const nudge = (ox,oy) => {
     if (ox!==nd.x||oy!==nd.y) return [ox,oy];
-    return [ox+(dom==='x'?(tx>=0?g:-g):0), oy+(dom==='y'?(ty>=0?g:-g):0)];
+    return [ox+(dom==='x'?(tx>=0?ed.grid:-ed.grid):0), oy+(dom==='y'?(ty>=0?ed.grid:-ed.grid):0)];
   };
   [outX,outY]=nudge(outX,outY); [inX,inY]=nudge(inX,inY);
   nd.cpOut={x:outX,y:outY}; nd.cpIn={x:inX,y:inY};
@@ -526,45 +519,29 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Delete' && e.key !== 'Backspace') return;
   e.preventDefault();
 
-  // Priority 1: delete selected node
   if (ed.selNode && ed.selPath >= 0) {
     const { si, ni } = ed.selNode;
     const sp = ed.paths[ed.selPath].subpaths[si];
-
-    if (sp.length <= 2) {
-      // Too few nodes → remove entire subpath
-      ed.paths[ed.selPath].subpaths.splice(si, 1);
-      toast('Subpath removed');
-    } else {
-      sp.splice(ni, 1);
-      toast('Node deleted');
-    }
-    ed.selNode  = null;
-    // Clean up empty paths
-    cleanEmptyPaths();
-    updateNodeSection(); renderOutliner(); renderEditor(); commitEdit();
+    if (sp.length <= 2) { ed.paths[ed.selPath].subpaths.splice(si, 1); toast('Subpath removed'); }
+    else { sp.splice(ni, 1); toast('Node deleted'); }
+    ed.selNode = null;
+    cleanEmptyPaths(); updateNodeSection(); renderOutliner(); renderEditor(); commitEdit();
     return;
   }
 
-  // Priority 2: delete selected subpath
-  if (ed.selShape && ed.selPath >= 0) {
+  if (ed.selShape && ed.selPath >= 0 && !ed.locked.has(ed.selShape.pi)) {
     const { pi, si } = ed.selShape;
-    if (!ed.locked.has(pi)) {
-      ed.paths[pi].subpaths.splice(si, 1);
-      ed.selShape = null;
-      cleanEmptyPaths();
-      toast('Shape deleted');
-      renderOutliner(); renderEditor(); commitEdit();
-    }
+    ed.paths[pi].subpaths.splice(si, 1);
+    ed.selShape = null;
+    cleanEmptyPaths(); toast('Shape deleted');
+    renderOutliner(); renderEditor(); commitEdit();
   }
 });
 
 function cleanEmptyPaths() {
-  // Remove paths with no subpaths left; adjust selPath
-  for (let pi = ed.paths.length - 1; pi >= 0; pi--) {
+  for (let pi = ed.paths.length-1; pi >= 0; pi--) {
     if (ed.paths[pi].subpaths.length === 0) {
-      ed.paths.splice(pi, 1);
-      ed.locked.delete(pi);
+      ed.paths.splice(pi, 1); ed.locked.delete(pi);
       if (ed.selPath === pi) ed.selPath = -1;
       else if (ed.selPath > pi) ed.selPath--;
     }
@@ -587,37 +564,38 @@ function parsePathD(d) {
     const t = tokens[i];
     if (/^[MmHhVvLlCcSsQqTtAaZz]$/.test(t)) {
       cmd=t; i++;
-      if (cmd==='Z'||cmd==='z') { if(cur&&cur.length){subpaths.push(cur);cur=null;} cx=sx;cy=sy; }
+      if(cmd==='Z'||cmd==='z'){if(cur&&cur.length){subpaths.push(cur);cur=null;}cx=sx;cy=sy;}
       continue;
     }
     switch(cmd) {
-      case 'M': { if(cur)subpaths.push(cur); cx=num();cy=num();sx=cx;sy=cy;cur=[node(cx,cy)];cmd='L'; break; }
-      case 'm': { if(cur)subpaths.push(cur); cx+=num();cy+=num();sx=cx;sy=cy;cur=[node(cx,cy)];cmd='l'; break; }
-      case 'H': { push(num(),cy); break; }
-      case 'h': { push(cx+num(),cy); break; }
-      case 'V': { push(cx,num()); break; }
-      case 'v': { push(cx,cy+num()); break; }
-      case 'L': { push(num(),num()); break; }
-      case 'l': { const dx=num(),dy=num(); push(cx+dx,cy+dy); break; }
-      case 'C': {
+      case 'M':{if(cur)subpaths.push(cur);cx=num();cy=num();sx=cx;sy=cy;cur=[node(cx,cy)];cmd='L';break;}
+      case 'm':{if(cur)subpaths.push(cur);cx+=num();cy+=num();sx=cx;sy=cy;cur=[node(cx,cy)];cmd='l';break;}
+      case 'H':{push(num(),cy);break;}
+      case 'h':{push(cx+num(),cy);break;}
+      case 'V':{push(cx,num());break;}
+      case 'v':{push(cx,cy+num());break;}
+      case 'L':{push(num(),num());break;}
+      case 'l':{const dx=num(),dy=num();push(cx+dx,cy+dy);break;}
+      case 'C':{
         const cp1x=num(),cp1y=num(),cp2x=num(),cp2y=num(),x=num(),y=num();
-        if(cur&&cur.length) cur[cur.length-1].cpOut={x:cp1x,y:cp1y};
-        if(cur) cur.push({x,y,cpIn:{x:cp2x,y:cp2y},cpOut:{x,y}});
-        cx=x;cy=y; break;
+        if(cur&&cur.length)cur[cur.length-1].cpOut={x:cp1x,y:cp1y};
+        if(cur)cur.push({x,y,cpIn:{x:cp2x,y:cp2y},cpOut:{x,y}});
+        cx=x;cy=y;break;
       }
-      default: i++;
+      default:i++;
     }
   }
-  if (cur&&cur.length) subpaths.push(cur);
+  if(cur&&cur.length)subpaths.push(cur);
   return subpaths;
 }
+
 function initEditor(svgStr, scale) {
   const doc = new DOMParser().parseFromString(svgStr, 'image/svg+xml');
   const svgEl = doc.querySelector('svg');
   ed.vw = parseFloat(svgEl.getAttribute('width'));
   ed.vh = parseFloat(svgEl.getAttribute('height'));
   ed.grid = scale;
-  ed.locked.clear();
+  ed.locked.clear(); ed.hidden.clear();
   ed.selPath=-1; ed.selShape=null; ed.selNode=null;
   ed.dragShape=null; ed.dragHandle=null;
   ed.lastHit={time:0,type:'',si:-1,ni:-1};
@@ -625,26 +603,29 @@ function initEditor(svgStr, scale) {
     color: p.getAttribute('fill'), subpaths: parsePathD(p.getAttribute('d'))
   }));
 }
+
 function buildSubD(sp) {
   if (!sp.length) return '';
   let d = `M${n(sp[0].x)},${n(sp[0].y)}`;
   for (let k=1; k<sp.length; k++) {
-    const pv=sp[k-1], cv=sp[k];
-    if (cpAt(pv.cpOut,pv)&&cpAt(cv.cpIn,cv)) d+=`L${n(cv.x)},${n(cv.y)}`;
+    const pv=sp[k-1],cv=sp[k];
+    if(cpAt(pv.cpOut,pv)&&cpAt(cv.cpIn,cv)) d+=`L${n(cv.x)},${n(cv.y)}`;
     else d+=`C${n(pv.cpOut.x)},${n(pv.cpOut.y)} ${n(cv.cpIn.x)},${n(cv.cpIn.y)} ${n(cv.x)},${n(cv.y)}`;
   }
-  const last=sp[sp.length-1], first=sp[0];
-  if (!(cpAt(last.cpOut,last)&&cpAt(first.cpIn,first)))
+  const last=sp[sp.length-1],first=sp[0];
+  if(!(cpAt(last.cpOut,last)&&cpAt(first.cpIn,first)))
     d+=`C${n(last.cpOut.x)},${n(last.cpOut.y)} ${n(first.cpIn.x)},${n(first.cpIn.y)} ${n(first.x)},${n(first.y)}`;
   return d+'Z';
 }
-function buildD(subpaths) { return subpaths.map(sp=>buildSubD(sp)).join(''); }
+function buildD(sp) { return sp.map(s=>buildSubD(s)).join(''); }
+
 function rebuildSvg() {
   let paths='';
   for (const ep of ed.paths)
     paths+=`\n  <path fill="${ep.color}" d="${buildD(ep.subpaths)}"/>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${ed.vw}" height="${ed.vh}" viewBox="0 0 ${ed.vw} ${ed.vh}">${paths}\n</svg>`;
 }
+
 function commitEdit() {
   currentSvgString = rebuildSvg();
   svgCode.value = formatSvg(currentSvgString);
@@ -652,28 +633,28 @@ function commitEdit() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// HELPERS
+// CORE HELPERS
 // ═══════════════════════════════════════════════════════════
 const n    = v  => parseFloat(v.toFixed(2));
-const cpAt = (cp,nd) => Math.abs(cp.x-nd.x)<0.4 && Math.abs(cp.y-nd.y)<0.4;
+const cpAt = (cp,nd) => Math.abs(cp.x-nd.x)<0.4&&Math.abs(cp.y-nd.y)<0.4;
 const snap = v  => Math.round(v/ed.grid)*ed.grid;
-const isSN = (si,ni) => ed.selNode && ed.selNode.si===si && ed.selNode.ni===ni;
+const isSN = (si,ni) => ed.selNode&&ed.selNode.si===si&&ed.selNode.ni===ni;
 function toSvgPt(e) {
   const pt=editorSvg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
   return pt.matrixTransform(editorSvg.getScreenCTM().inverse());
 }
-function mirrorHandle(nd, draggedType) {
-  if (draggedType==='cpOut') nd.cpIn ={x:snap(2*nd.x-nd.cpOut.x),y:snap(2*nd.y-nd.cpOut.y)};
-  else                        nd.cpOut={x:snap(2*nd.x-nd.cpIn.x), y:snap(2*nd.y-nd.cpIn.y) };
+function mirrorHandle(nd,type) {
+  if(type==='cpOut') nd.cpIn ={x:snap(2*nd.x-nd.cpOut.x),y:snap(2*nd.y-nd.cpOut.y)};
+  else               nd.cpOut={x:snap(2*nd.x-nd.cpIn.x), y:snap(2*nd.y-nd.cpIn.y) };
 }
 
 // ═══════════════════════════════════════════════════════════
 // EDITOR RENDER
-// Full re-render. Hover tint is handled via lightweight DOM
-// update (setHoverTint), NOT via re-render.
+// IMPORTANT: hover tint is managed via setHoverTint() (DOM attr toggle),
+//            NOT by calling renderEditor() — prevents mouse event loops.
 // ═══════════════════════════════════════════════════════════
 function renderEditor() {
-  if (!ed.paths.length) return;
+  if (!ed.paths.length) { editorSvg.innerHTML=''; return; }
   editorSvg.setAttribute('viewBox', `0 0 ${ed.vw} ${ed.vh}`);
 
   const g  = ed.grid;
@@ -683,81 +664,77 @@ function renderEditor() {
   const GW = Math.max(0.3, g*0.045);
   const HIT = Math.max(CR*2.5, 7);
 
-  let html = '';
+  let html='';
 
-  // Grid background
-  html += `<rect width="${ed.vw}" height="${ed.vh}" fill="#0f172a"/>`;
-  html += `<g stroke="#1e293b" stroke-width="${GW}" pointer-events="none">`;
-  for (let x=0; x<=ed.vw; x+=g) html+=`<line x1="${x}" y1="0" x2="${x}" y2="${ed.vh}"/>`;
-  for (let y=0; y<=ed.vh; y+=g) html+=`<line x1="0" y1="${y}" x2="${ed.vw}" y2="${y}"/>`;
-  html += `</g>`;
+  // Grid
+  html+=`<rect width="${ed.vw}" height="${ed.vh}" fill="#0f172a"/>`;
+  html+=`<g stroke="#1e293b" stroke-width="${GW}" pointer-events="none">`;
+  for(let x=0;x<=ed.vw;x+=g) html+=`<line x1="${x}" y1="0" x2="${x}" y2="${ed.vh}"/>`;
+  for(let y=0;y<=ed.vh;y+=g) html+=`<line x1="0" y1="${y}" x2="${ed.vw}" y2="${y}"/>`;
+  html+=`</g>`;
 
-  // ── Layer 1: all shape fills (individual subpaths) ──────
-  // For each subpath: fill, then an INVISIBLE hit-target, then a hidden tint overlay
+  // ── All shapes (each subpath individually) ───────────────
   for (let pi=0; pi<ed.paths.length; pi++) {
-    const ep     = ed.paths[pi];
-    const isLock = ed.locked.has(pi);
-    const isSelP = pi===ed.selPath;
+    const ep=ed.paths[pi], isLock=ed.locked.has(pi), isHide=ed.hidden.has(pi), isSelP=pi===ed.selPath;
+    if(isHide) continue; // skip hidden color
     for (let si=0; si<ep.subpaths.length; si++) {
-      const d = buildSubD(ep.subpaths[si]);
-      const isSelS = ed.selShape && ed.selShape.pi===pi && ed.selShape.si===si;
-      const op = isLock ? 0.35 : 1;
+      const d=buildSubD(ep.subpaths[si]);
+      const isSelS=ed.selShape&&ed.selShape.pi===pi&&ed.selShape.si===si;
 
-      // Selection glow
-      if (isSelS)
-        html+=`<path d="${d}" fill="none" stroke="#ffffff" stroke-width="${LW*2.5}" opacity="0.1" pointer-events="none"/>`;
+      // Selection glow ring
+      if(isSelS) html+=`<path d="${d}" fill="none" stroke="#ffffff" stroke-width="${LW*2.5}" opacity="0.12" pointer-events="none"/>`;
 
-      // Fill (no hover styling — cursor only via JS below)
-      html+=`<path fill="${ep.color}" d="${d}" data-pi="${pi}" data-si="${si}" class="ep" opacity="${op}"/>`;
+      // Fill shape — receives mouse events for hover/click/drag
+      // shape-rendering="crispEdges" fixes color unevenness at adjacent pixel boundaries
+      const op=isLock?0.3:1;
+      html+=`<path fill="${ep.color}" d="${d}" data-pi="${pi}" data-si="${si}" class="ep" opacity="${op}" shape-rendering="crispEdges"/>`;
 
-      // Tint overlay (hidden by default, revealed on hover via setHoverTint)
+      // Tint overlay — starts hidden, toggled by setHoverTint()
+      // Also shown while dragging (rendered as visible if dragShape matches)
+      const isDragging=ed.dragShape&&ed.dragShape.pi===pi&&ed.dragShape.si===si;
       html+=`<path class="ep-tint" data-pi="${pi}" data-si="${si}" d="${d}"
-        fill="rgba(239,68,68,0.35)" stroke="#ef4444" stroke-width="${LW*1.2}" opacity="0.85"
-        visibility="hidden" pointer-events="none"/>`;
+        fill="rgba(239,68,68,0.32)" stroke="#ef4444" stroke-width="${LW*1.2}"
+        visibility="${isDragging?'visible':'hidden'}" pointer-events="none"/>`;
     }
   }
 
-  // ── Layer 2: handle lines + shapes for selected path ────
-  if (ed.selPath>=0 && !ed.locked.has(ed.selPath)) {
-    const ep = ed.paths[ed.selPath];
+  // ── Handles for selected (non-locked) path ───────────────
+  if(ed.selPath>=0 && !ed.locked.has(ed.selPath) && !ed.hidden.has(ed.selPath)) {
+    const ep=ed.paths[ed.selPath];
 
     // Handle lines
-    for (let si=0; si<ep.subpaths.length; si++) {
-      const sp = ep.subpaths[si];
-      for (let ni=0; ni<sp.length; ni++) {
-        const nd=sp[ni]; const sel=isSN(si,ni);
-        if (!cpAt(nd.cpIn, nd))  html+=`<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpIn.x}"  y2="${nd.cpIn.y}"  stroke="${sel?'#ff3b3b':'#60a5fa'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
-        if (!cpAt(nd.cpOut,nd))  html+=`<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpOut.x}" y2="${nd.cpOut.y}" stroke="${sel?'#ff8c3b':'#fb923c'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
+    for(let si=0;si<ep.subpaths.length;si++) {
+      const sp=ep.subpaths[si];
+      for(let ni=0;ni<sp.length;ni++) {
+        const nd=sp[ni],sel=isSN(si,ni);
+        if(!cpAt(nd.cpIn,nd))  html+=`<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpIn.x}"  y2="${nd.cpIn.y}"  stroke="${sel?'#ff3b3b':'#60a5fa'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
+        if(!cpAt(nd.cpOut,nd)) html+=`<line x1="${nd.x}" y1="${nd.y}" x2="${nd.cpOut.x}" y2="${nd.cpOut.y}" stroke="${sel?'#ff8c3b':'#fb923c'}" stroke-width="${LW}" opacity="${sel?1:.75}" pointer-events="none"/>`;
       }
     }
-    // Visible handle + anchor shapes (pointer-events none)
-    for (let si=0; si<ep.subpaths.length; si++) {
-      const sp = ep.subpaths[si];
-      for (let ni=0; ni<sp.length; ni++) {
-        const nd=sp[ni]; const sel=isSN(si,ni);
-        if (!cpAt(nd.cpIn,nd))
+    // Visible diamonds + anchor circles (pointer-events="none")
+    for(let si=0;si<ep.subpaths.length;si++) {
+      const sp=ep.subpaths[si];
+      for(let ni=0;ni<sp.length;ni++) {
+        const nd=sp[ni],sel=isSN(si,ni);
+        if(!cpAt(nd.cpIn,nd))
           html+=`<rect x="${nd.cpIn.x-CR}" y="${nd.cpIn.y-CR}" width="${CR*2}" height="${CR*2}"
             fill="${sel?'#ff3b3b':'#60a5fa'}" stroke="#0f172a" stroke-width="${LW*0.5}"
             transform="rotate(45 ${nd.cpIn.x} ${nd.cpIn.y})" pointer-events="none"/>`;
-        if (!cpAt(nd.cpOut,nd))
+        if(!cpAt(nd.cpOut,nd))
           html+=`<rect x="${nd.cpOut.x-CR}" y="${nd.cpOut.y-CR}" width="${CR*2}" height="${CR*2}"
             fill="${sel?'#ff8c3b':'#fb923c'}" stroke="#0f172a" stroke-width="${LW*0.5}"
             transform="rotate(45 ${nd.cpOut.x} ${nd.cpOut.y})" pointer-events="none"/>`;
-        if (sel)
-          html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.75}" fill="none" stroke="#ff3b3b" stroke-width="${LW}" opacity="0.4" pointer-events="none"/>`;
-        html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR}"
-          fill="${sel?'#ff3b3b':'#f1f5f9'}" stroke="${sel?'#ff9999':'#0f172a'}" stroke-width="${LW}" pointer-events="none"/>`;
+        if(sel) html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.75}" fill="none" stroke="#ff3b3b" stroke-width="${LW}" opacity="0.4" pointer-events="none"/>`;
+        html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR}" fill="${sel?'#ff3b3b':'#f1f5f9'}" stroke="${sel?'#ff9999':'#0f172a'}" stroke-width="${LW}" pointer-events="none"/>`;
       }
     }
-    // Invisible hit targets
-    for (let si=0; si<ep.subpaths.length; si++) {
-      const sp = ep.subpaths[si];
-      for (let ni=0; ni<sp.length; ni++) {
+    // Hit targets (transparent circles — carry events)
+    for(let si=0;si<ep.subpaths.length;si++) {
+      const sp=ep.subpaths[si];
+      for(let ni=0;ni<sp.length;ni++) {
         const nd=sp[ni];
-        if (!cpAt(nd.cpIn,nd))
-          html+=`<circle cx="${nd.cpIn.x}"  cy="${nd.cpIn.y}"  r="${HIT}" fill="transparent" data-hit="cpIn"  data-si="${si}" data-ni="${ni}"/>`;
-        if (!cpAt(nd.cpOut,nd))
-          html+=`<circle cx="${nd.cpOut.x}" cy="${nd.cpOut.y}" r="${HIT}" fill="transparent" data-hit="cpOut" data-si="${si}" data-ni="${ni}"/>`;
+        if(!cpAt(nd.cpIn,nd))  html+=`<circle cx="${nd.cpIn.x}"  cy="${nd.cpIn.y}"  r="${HIT}" fill="transparent" data-hit="cpIn"  data-si="${si}" data-ni="${ni}"/>`;
+        if(!cpAt(nd.cpOut,nd)) html+=`<circle cx="${nd.cpOut.x}" cy="${nd.cpOut.y}" r="${HIT}" fill="transparent" data-hit="cpOut" data-si="${si}" data-ni="${ni}"/>`;
         html+=`<circle cx="${nd.x}" cy="${nd.y}" r="${AR*1.6}" fill="transparent" data-hit="anchor" data-si="${si}" data-ni="${ni}"/>`;
       }
     }
@@ -768,52 +745,49 @@ function renderEditor() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// ATTACH EVENTS (after innerHTML re-build)
-// Key rule: NEVER call renderEditor() from mouseenter/mouseleave.
-// Use setHoverTint() for hover visuals instead.
+// ATTACH EDITOR EVENTS
+// Rule: NEVER call renderEditor() from mouseenter/mouseleave.
 // ═══════════════════════════════════════════════════════════
 function attachEditorEvents() {
 
-  // ── Shape (subpath) events ────────────────────────────────
+  // ── Shape subpath events ──────────────────────────────────
   editorSvg.querySelectorAll('.ep').forEach(el => {
-    const pi = parseInt(el.dataset.pi);
-    const si = parseInt(el.dataset.si);
-    if (ed.locked.has(pi)) return;
+    const pi=parseInt(el.dataset.pi), si=parseInt(el.dataset.si);
+    if(ed.locked.has(pi)) return;
 
     el.addEventListener('mouseenter', () => {
-      // Lightweight: only show tint + change cursor (NO renderEditor)
+      // Lightweight — no renderEditor
       setHoverTint(pi, si, true);
       setCursor('shape');
     });
     el.addEventListener('mouseleave', () => {
       setHoverTint(pi, si, false);
-      setCursor('default');
+      if(!ed.dragShape) setCursor('default');
     });
 
     el.addEventListener('mousedown', e => {
       e.preventDefault(); e.stopPropagation();
 
-      if (pi !== ed.selPath) {
-        // Select this color group
-        ed.selPath  = pi;
-        ed.selShape = { pi, si };
-        ed.selNode  = null;
-        renderOutliner(); updateNodeSection();
-        renderEditor();   // Full re-render OK: we just clicked, no hover loop issue
-        return;
-      }
-
-      // Already selected color — update selected subpath
+      // Always select this color/subpath
+      const wasSelected = (pi === ed.selPath);
+      ed.selPath  = pi;
       ed.selShape = { pi, si };
       ed.selNode  = null;
       updateNodeSection();
 
-      // Start shape drag immediately
+      if(!wasSelected) {
+        // First click on new color: update outliner + re-render to show handles
+        renderOutliner();
+        renderEditor();
+        // Still start drag so immediate drag works
+      }
+
+      // Start drag regardless (whether first click or not)
       const pt = toSvgPt(e);
       const origNodes = ed.paths[pi].subpaths[si].map(nd=>({
-        x:nd.x, y:nd.y, cpIn:{...nd.cpIn}, cpOut:{...nd.cpOut}
+        x:nd.x,y:nd.y,cpIn:{...nd.cpIn},cpOut:{...nd.cpOut}
       }));
-      ed.dragShape = { pi, si, startX: pt.x, startY: pt.y, origNodes };
+      ed.dragShape = { pi, si, startX:pt.x, startY:pt.y, origNodes, didMove:false };
       setCursor('drag');
       window.addEventListener('mousemove', onShapeDrag);
       window.addEventListener('mouseup',   onShapeDragEnd);
@@ -822,159 +796,134 @@ function attachEditorEvents() {
 
   // ── Handle / anchor hit targets ───────────────────────────
   editorSvg.querySelectorAll('[data-hit]').forEach(el => {
-    const type = el.dataset.hit;
-    const si   = parseInt(el.dataset.si);
-    const ni   = parseInt(el.dataset.ni);
+    const type=el.dataset.hit, si=parseInt(el.dataset.si), ni=parseInt(el.dataset.ni);
 
     el.addEventListener('mouseenter', () => setCursor(type==='anchor'?'anchor':'handle'));
-    el.addEventListener('mouseleave', () => setCursor('default'));
+    el.addEventListener('mouseleave', () => { if(!ed.dragHandle) setCursor('default'); });
 
     el.addEventListener('mousedown', e => {
       e.preventDefault(); e.stopPropagation();
 
-      const now = Date.now();
-      const { lastHit } = ed;
-      const isDbl = (now - lastHit.time < 350)
-                 && lastHit.type === type
-                 && lastHit.si   === si
-                 && lastHit.ni   === ni;
-      ed.lastHit = { time: now, type, si, ni };
+      // Dblclick detection
+      const now=Date.now(), lh=ed.lastHit;
+      const isDbl=(now-lh.time<350)&&lh.type===type&&lh.si===si&&lh.ni===ni;
+      ed.lastHit={time:now,type,si,ni};
 
-      if (isDbl && (type==='cpIn'||type==='cpOut')) {
-        const nd = ed.paths[ed.selPath].subpaths[si][ni];
-        mirrorHandle(nd, type);
+      if(isDbl&&(type==='cpIn'||type==='cpOut')) {
+        const nd=ed.paths[ed.selPath].subpaths[si][ni];
+        mirrorHandle(nd,type);
         renderEditor(); commitEdit();
         return;
       }
 
-      // Select node + start drag
-      ed.selNode    = { si, ni };
-      ed.dragHandle = { type, si, ni };
+      ed.selNode    = {si,ni};
+      ed.dragHandle = {type,si,ni};
       setCursor('drag');
       window.addEventListener('mousemove', onHandleDrag);
       window.addEventListener('mouseup',   onHandleDragEnd);
       updateNodeSection();
-      // Lightweight anchor highlight update — avoid full re-render here
-      // to keep drag working. We'll re-render after mouseup.
-      highlightSelectedAnchor(si, ni);
+      renderEditor(); // show selection highlight
     });
   });
 
-  // Background → deselect node
+  // Background click → deselect node/shape
   editorSvg.addEventListener('mousedown', e => {
-    if (e.target===editorSvg) {
+    if(e.target===editorSvg) {
       ed.selNode=null; ed.selShape=null;
       updateNodeSection(); setCursor('default'); renderEditor();
     }
-  }, { once: true });
-}
-
-// Fast anchor highlight without full re-render
-function highlightSelectedAnchor(si, ni) {
-  // Find the anchor circle for this node and update its fill
-  // (pointer-events="none" circles can't be queried by data-hit,
-  // so we re-render fully but that's fine since we do it once on click)
-  renderEditor();
+  }, {once:true});
 }
 
 // ═══════════════════════════════════════════════════════════
 // SHAPE DRAG
 // ═══════════════════════════════════════════════════════════
 function onShapeDrag(e) {
-  if (!ed.dragShape) return;
-  const pt = toSvgPt(e);
-  const { pi, si, startX, startY, origNodes } = ed.dragShape;
-  const dx = snap(pt.x - startX);
-  const dy = snap(pt.y - startY);
-  const sp = ed.paths[pi].subpaths[si];
-  for (let ni=0; ni<sp.length; ni++) {
-    const orig=origNodes[ni], nd=sp[ni];
-    nd.x=orig.x+dx;           nd.y=orig.y+dy;
-    nd.cpIn.x=orig.cpIn.x+dx; nd.cpIn.y=orig.cpIn.y+dy;
-    nd.cpOut.x=orig.cpOut.x+dx; nd.cpOut.y=orig.cpOut.y+dy;
+  if(!ed.dragShape) return;
+  const pt=toSvgPt(e);
+  const {pi,si,startX,startY,origNodes}=ed.dragShape;
+  const dx=snap(pt.x-startX), dy=snap(pt.y-startY);
+  if(dx!==0||dy!==0) ed.dragShape.didMove=true;
+  const sp=ed.paths[pi].subpaths[si];
+  for(let ni=0;ni<sp.length;ni++) {
+    const o=origNodes[ni],nd=sp[ni];
+    nd.x=o.x+dx;nd.y=o.y+dy;
+    nd.cpIn.x=o.cpIn.x+dx;nd.cpIn.y=o.cpIn.y+dy;
+    nd.cpOut.x=o.cpOut.x+dx;nd.cpOut.y=o.cpOut.y+dy;
   }
   renderEditor();
 }
 function onShapeDragEnd() {
-  window.removeEventListener('mousemove', onShapeDrag);
-  window.removeEventListener('mouseup',   onShapeDragEnd);
-  ed.dragShape = null;
+  window.removeEventListener('mousemove',onShapeDrag);
+  window.removeEventListener('mouseup',  onShapeDragEnd);
+  const moved = ed.dragShape && ed.dragShape.didMove;
+  ed.dragShape=null;
   setCursor('default');
-  commitEdit(); renderEditor();
+  if(moved) commitEdit();
+  renderEditor();
 }
 
 // ═══════════════════════════════════════════════════════════
 // HANDLE / ANCHOR DRAG
 // ═══════════════════════════════════════════════════════════
 function onHandleDrag(e) {
-  if (!ed.dragHandle||ed.selPath<0) return;
+  if(!ed.dragHandle||ed.selPath<0) return;
   const pt=toSvgPt(e);
-  const x=snap(pt.x), y=snap(pt.y);
+  const x=snap(pt.x),y=snap(pt.y);
   const {type,si,ni}=ed.dragHandle;
   const nd=ed.paths[ed.selPath].subpaths[si][ni];
-  if (type==='anchor') {
-    const dx=x-nd.x, dy=y-nd.y;
-    nd.cpIn.x+=dx; nd.cpIn.y+=dy; nd.cpOut.x+=dx; nd.cpOut.y+=dy;
-    nd.x=x; nd.y=y;
-  } else if (type==='cpIn') { nd.cpIn.x=x; nd.cpIn.y=y; }
-  else                       { nd.cpOut.x=x; nd.cpOut.y=y; }
+  if(type==='anchor') {
+    const dx=x-nd.x,dy=y-nd.y;
+    nd.cpIn.x+=dx;nd.cpIn.y+=dy;nd.cpOut.x+=dx;nd.cpOut.y+=dy;
+    nd.x=x;nd.y=y;
+  } else if(type==='cpIn') { nd.cpIn.x=x;nd.cpIn.y=y; }
+  else                      { nd.cpOut.x=x;nd.cpOut.y=y; }
   renderEditor();
 }
 function onHandleDragEnd() {
-  window.removeEventListener('mousemove', onHandleDrag);
-  window.removeEventListener('mouseup',   onHandleDragEnd);
-  ed.dragHandle=null;
-  setCursor('default');
-  commitEdit();
+  window.removeEventListener('mousemove',onHandleDrag);
+  window.removeEventListener('mouseup',  onHandleDragEnd);
+  ed.dragHandle=null; setCursor('default'); commitEdit();
 }
 
 // ═══════════════════════════════════════════════════════════
 // VIEW
 // ═══════════════════════════════════════════════════════════
 function setView(v) {
-  currentView = v;
-  document.getElementById('viewPreview').classList.toggle('active', v==='preview');
-  document.getElementById('viewEdit').classList.toggle('active',    v==='edit');
-  document.getElementById('viewCode').classList.toggle('active',    v==='code');
-  svgDisplay.style.display  = v==='preview'?'flex':'none';
-  editorPanel.style.display = v==='edit'   ?'flex':'none';
-  codePanel.style.display   = v==='code'   ?'flex':'none';
-  if (v==='edit') { renderOutliner(); updateNodeSection(); renderEditor(); }
+  currentView=v;
+  document.getElementById('viewEdit').classList.toggle('active',v==='edit');
+  document.getElementById('viewCode').classList.toggle('active',v==='code');
+  editorPanel.style.display = v==='edit'?'flex':'none';
+  codePanel.style.display   = v==='code'?'flex':'none';
+  if(v==='edit') renderEditor();
 }
 
 // ═══════════════════════════════════════════════════════════
-// MISC HELPERS
+// MISC
 // ═══════════════════════════════════════════════════════════
 function rgbToHex(r,g,b) { return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join(''); }
 function formatSvg(svg)   { return svg.replace(/></g,'>\n<').replace(/(<\/svg>)/g,'\n$1'); }
-function resetOutput() {
-  currentSvgString=null;
-  Object.assign(ed,{paths:[],locked:new Set(),selPath:-1,selShape:null,selNode:null,
-    dragShape:null,dragHandle:null,lastHit:{time:0,type:'',si:-1,ni:-1}});
-  svgDisplay.innerHTML='<div id="svgPlaceholder" style="font-size:11px;color:var(--muted);letter-spacing:.1em;text-align:center;line-height:2.2;">LOAD AN IMAGE<br>THEN PRESS CONVERT</div>';
-  svgCode.value=''; editorSvg.innerHTML='';
-  outlinerList.innerHTML='<div class="ol-empty">CONVERT<br>FIRST</div>';
-  nodeSection.style.display='none';
-  document.getElementById('svgStats').style.display='none';
-  downloadSvgBtn.disabled=true; copySvgBtn.disabled=true; setCursor('default');
-}
+
 downloadSvgBtn.addEventListener('click',()=>{
-  if (!currentSvgString) return;
+  if(!currentSvgString) return;
   const blob=new Blob([currentSvgString],{type:'image/svg+xml'});
   const a=document.createElement('a');
-  a.download='jamad_pixel.svg'; a.href=URL.createObjectURL(blob); a.click();
+  a.download='jamad_pixel.svg';a.href=URL.createObjectURL(blob);a.click();
   URL.revokeObjectURL(a.href); toast('SVG downloaded!');
 });
 copySvgBtn.addEventListener('click',()=>{
-  if (!currentSvgString) return;
-  navigator.clipboard.writeText(currentSvgString).then(()=>toast('Copied!'));
+  if(!currentSvgString) return;
+  navigator.clipboard.writeText(currentSvgString).then(()=>toast('SVG code copied to clipboard!'));
 });
+
 function toast(msg) {
   const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  clearTimeout(t._tid); t._tid=setTimeout(()=>t.classList.remove('show'),2200);
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._tid);t._tid=setTimeout(()=>t.classList.remove('show'),2500);
 }
-scaleInput.addEventListener('change',()=>{ if(sourceImageData) convert(); });
+
+// Initial view
+setView('edit');
 </script>
 </body>
 </html>
