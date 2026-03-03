@@ -255,6 +255,7 @@
     <div class="footer-tip"><span class="tip-key">HOVER EDGE</span><span class="tip-label">preview node</span></div>
     <div class="footer-tip"><span class="tip-key">CLICK EDGE</span><span class="tip-label">insert node</span></div>
     <div class="footer-tip"><span class="tip-key">DBLCLICK ◆</span><span class="tip-label">mirror handle</span></div>
+    <div class="footer-tip"><span class="tip-key">DBLCLICK ●</span><span class="tip-label">sharp / curve toggle</span></div>
     <div class="footer-tip"><span class="tip-key">DEL</span><span class="tip-label">delete node / shape</span></div>
     <div class="footer-tip"><span class="tip-key">Ctrl Z</span><span class="tip-label">undo</span></div>
     <div class="footer-tip"><span class="tip-key">Ctrl Y</span><span class="tip-label">redo</span></div>
@@ -1007,11 +1008,29 @@ function attachEditorEvents(g, AR) {
       const now = Date.now(), lh = ed.lastHit;
       const isDbl = (now - lh.time < 350) && lh.type === type && lh.si === si && lh.ni === ni;
       ed.lastHit = { time: now, type, si, ni };
-      if (isDbl && (type === 'cpIn' || type === 'cpOut')) {
-        pushHistory();
-        mirrorHandle(ed.paths[ed.selPath].subpaths[si][ni], type);
-        renderEditor(); commitEdit();
-        notify('mirror', 'HANDLE MIRRORED');
+      if (isDbl) {
+        if (type === 'cpIn' || type === 'cpOut') {
+          // ハンドル ダブルクリック → 反対ハンドルをミラー
+          pushHistory();
+          mirrorHandle(ed.paths[ed.selPath].subpaths[si][ni], type);
+          renderEditor(); commitEdit();
+          notify('mirror', 'HANDLE MIRRORED');
+        } else if (type === 'anchor') {
+          // 頂点 ダブルクリック → SHARP ↔ CURVE トグル
+          pushHistory();
+          ed.selNode = { si, ni };
+          const nd = ed.paths[ed.selPath].subpaths[si][ni];
+          const isSharp = cpAt(nd.cpIn, nd) && cpAt(nd.cpOut, nd);
+          if (isSharp) {
+            autoHandles(ed.selPath, si, ni);
+            notify('curve', 'CURVE NODE');
+          } else {
+            nd.cpIn  = { x: nd.x, y: nd.y };
+            nd.cpOut = { x: nd.x, y: nd.y };
+            notify('sharp', 'SHARP NODE');
+          }
+          updateNodeSection(); renderEditor(); commitEdit();
+        }
         return;
       }
       ed.selNode = { si, ni };
