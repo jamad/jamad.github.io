@@ -1,605 +1,452 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Square, Circle, Lock, Settings, Bell, BellOff, X } from 'lucide-react';
-
-// --- 定数と設定 ---
-const BEAT_HEIGHT = 60; 
-const MIN_BEATS = 300; // 長さを3倍に拡張
-
-// ピアノのキー配置定義（相対的な音程を持たせる）
-const KEY_DEF = [
-  { key: 'a', type: 'white', semitoneOffset: 0, whiteIdx: 0, baseNote: 'C' },
-  { key: 'w', type: 'black', semitoneOffset: 1, centerIdx: 1, baseNote: 'C#' },
-  { key: 's', type: 'white', semitoneOffset: 2, whiteIdx: 1, baseNote: 'D' },
-  { key: 'e', type: 'black', semitoneOffset: 3, centerIdx: 2, baseNote: 'D#' },
-  { key: 'd', type: 'white', semitoneOffset: 4, whiteIdx: 2, baseNote: 'E' },
-  { key: 'f', type: 'white', semitoneOffset: 5, whiteIdx: 3, baseNote: 'F' },
-  { key: 't', type: 'black', semitoneOffset: 6, centerIdx: 4, baseNote: 'F#' },
-  { key: 'g', type: 'white', semitoneOffset: 7, whiteIdx: 4, baseNote: 'G' },
-  { key: 'y', type: 'black', semitoneOffset: 8, centerIdx: 5, baseNote: 'G#' },
-  { key: 'h', type: 'white', semitoneOffset: 9, whiteIdx: 5, baseNote: 'A' },
-  { key: 'u', type: 'black', semitoneOffset: 10, centerIdx: 6, baseNote: 'A#' },
-  { key: 'j', type: 'white', semitoneOffset: 11, whiteIdx: 6, baseNote: 'B' },
-  { key: 'k', type: 'white', semitoneOffset: 12, whiteIdx: 7, baseNote: 'C' },
-  { key: 'o', type: 'black', semitoneOffset: 13, centerIdx: 8, baseNote: 'C#' },
-  { key: 'l', type: 'white', semitoneOffset: 14, whiteIdx: 8, baseNote: 'D' },
-  { key: 'p', type: 'black', semitoneOffset: 15, centerIdx: 9, baseNote: 'D#' },
-  { key: ';', type: 'white', semitoneOffset: 16, whiteIdx: 9, baseNote: 'E' }
-];
-
-const getFrequency = (baseOctave, semitoneOffset) => {
-  const C4_FREQ = 261.63;
-  const semitonesFromC4 = (baseOctave - 4) * 12 + semitoneOffset;
-  return C4_FREQ * Math.pow(2, semitonesFromC4 / 12);
-};
-
-export default function App() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isRecording, setIsRecording] = useState(true);
-  const [metronomeOn, setMetronomeOn] = useState(true);
-  const [tempo, setTempo] = useState(120);
-  const [currentBeatUI, setCurrentBeatUI] = useState(0);
-  const [notes, setNotes] = useState([]);
-  const [pressedKeys, setPressedKeys] = useState(new Set());
-  const [octaveShift, setOctaveShift] = useState(0); // -1 or 0 or 1
-  
-  // CONFIG関連
-  const [showConfig, setShowConfig] = useState(false);
-  const [synthConfig, setSynthConfig] = useState({
-    type: 'sine', // デフォルトは澄んだ音
-    attack: 0.05,
-    release: 2.5
-  });
-
-  // オーディオとスケジューラーの内部状態
-  const audioCtxRef = useRef(null);
-  const octaveShiftRef = useRef(0);
-  const synthConfigRef = useRef(synthConfig);
-
-  const engineRef = useRef({
-    isPlaying: false,
-    startTimeContext: 0,
-    startBeat: 0,
-    notes: [], 
-    activeRecordingNotes: {},
-    nextPlaybackIndex: 0,
-    nextMetronomeBeat: 0,
-    schedulerId: null,
-    rafId: null
-  });
-
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    synthConfigRef.current = synthConfig;
-  }, [synthConfig]);
-
-  // --- Audio Context 初期化 ---
-  const initAudio = useCallback(() => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-  }, []);
-
-  // --- シンセサイザー音色 ---
-  const playNote = useCallback((freq, time) => {
-    if (!audioCtxRef.current) return;
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const config = synthConfigRef.current;
-
-    osc.type = config.type;
-    osc.frequency.setValueAtTime(freq, time);
-
-    // エンベロープ設定
-    gain.gain.setValueAtTime(0, time);
-    gain.gain.linearRampToValueAtTime(0.8, time + config.attack);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + config.release);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(time);
-    osc.stop(time + config.release);
-  }, []);
-
-  const playClick = useCallback((time, isPrimary) => {
-    if (!audioCtxRef.current) return;
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    osc.frequency.value = isPrimary ? 1200 : 800;
-    osc.type = 'square';
-    
-    gain.gain.setValueAtTime(0, time);
-    gain.gain.linearRampToValueAtTime(0.3, time + 0.005);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
-    
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    
-    osc.start(time);
-    osc.stop(time + 0.05);
-  }, []);
-
-  // --- スケジューラー (再生とメトロノーム) ---
-  const scheduler = useCallback(() => {
-    if (!engineRef.current.isPlaying || !audioCtxRef.current) return;
-
-    const engine = engineRef.current;
-    const ctx = audioCtxRef.current;
-    const now = ctx.currentTime;
-    
-    const currentBeat = engine.startBeat + (now - engine.startTimeContext) * (tempo / 60);
-    const lookaheadBeats = 0.1 * (tempo / 60);
-
-    if (metronomeOn) {
-      while (engine.nextMetronomeBeat < currentBeat + lookaheadBeats) {
-        const timeToPlay = engine.startTimeContext + (engine.nextMetronomeBeat - engine.startBeat) / (tempo / 60);
-        playClick(timeToPlay, engine.nextMetronomeBeat % 4 === 0);
-        engine.nextMetronomeBeat++;
-      }
-    } else {
-      engine.nextMetronomeBeat = Math.max(engine.nextMetronomeBeat, Math.ceil(currentBeat));
-    }
-
-    while (
-      engine.nextPlaybackIndex < engine.notes.length &&
-      engine.notes[engine.nextPlaybackIndex].startBeat < currentBeat + lookaheadBeats
-    ) {
-      const note = engine.notes[engine.nextPlaybackIndex];
-      const timeToPlay = engine.startTimeContext + (note.startBeat - engine.startBeat) / (tempo / 60);
-      
-      playNote(note.freq, timeToPlay);
-      engine.nextPlaybackIndex++;
-    }
-
-    engine.schedulerId = setTimeout(scheduler, 25);
-  }, [tempo, metronomeOn, playClick, playNote]);
-
-  // --- UI レンダリングループ ---
-  const renderLoop = useCallback(() => {
-    if (engineRef.current.isPlaying && audioCtxRef.current) {
-      const engine = engineRef.current;
-      const now = audioCtxRef.current.currentTime;
-      const currentBeat = engine.startBeat + (now - engine.startTimeContext) * (tempo / 60);
-      setCurrentBeatUI(currentBeat);
-
-      // 自動スクロール (プレイヘッドが画面中央に保たれるように)
-      if (containerRef.current) {
-        const playheadY = currentBeat * BEAT_HEIGHT;
-        const container = containerRef.current;
-        const halfHeight = container.clientHeight / 2;
-        container.scrollTop = playheadY - halfHeight;
-      }
-    }
-    engineRef.current.rafId = requestAnimationFrame(renderLoop);
-  }, [tempo]);
-
-  useEffect(() => {
-    engineRef.current.rafId = requestAnimationFrame(renderLoop);
-    return () => cancelAnimationFrame(engineRef.current.rafId);
-  }, [renderLoop]);
-
-  // --- 再生・停止コントロール ---
-  const togglePlay = () => {
-    initAudio();
-    if (isPlaying) {
-      setIsPlaying(false);
-      engineRef.current.isPlaying = false;
-      clearTimeout(engineRef.current.schedulerId);
-    } else {
-      setIsPlaying(true);
-      engineRef.current.isPlaying = true;
-      engineRef.current.startTimeContext = audioCtxRef.current.currentTime;
-      engineRef.current.startBeat = currentBeatUI;
-      engineRef.current.nextMetronomeBeat = Math.ceil(currentBeatUI);
-
-      engineRef.current.notes.sort((a, b) => a.startBeat - b.startBeat);
-      let idx = engineRef.current.notes.findIndex(n => n.startBeat >= currentBeatUI);
-      engineRef.current.nextPlaybackIndex = idx === -1 ? engineRef.current.notes.length : idx;
-
-      scheduler();
-    }
-  };
-
-  const handleStop = () => {
-    setIsPlaying(false);
-    engineRef.current.isPlaying = false;
-    clearTimeout(engineRef.current.schedulerId);
-  };
-
-  // --- キーボードイベント管理 ---
-  const stateRef = useRef({ isPlaying, isRecording, tempo, currentBeatUI });
-  useEffect(() => {
-    stateRef.current = { isPlaying, isRecording, tempo, currentBeatUI };
-  }, [isPlaying, isRecording, tempo, currentBeatUI]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.repeat) return;
-      
-      // Shiftキーによるオクターブシフト
-      if (e.code === 'ShiftLeft') {
-        setOctaveShift(-1);
-        octaveShiftRef.current = -1;
-        return;
-      }
-      if (e.code === 'ShiftRight') {
-        setOctaveShift(1);
-        octaveShiftRef.current = 1;
-        return;
-      }
-
-      const keyStr = e.key.toLowerCase();
-      const keyObj = KEY_DEF.find(k => k.key === keyStr);
-      if (!keyObj) return;
-
-      initAudio();
-      
-      const currentOctave = 4 + octaveShiftRef.current;
-      const freq = getFrequency(currentOctave, keyObj.semitoneOffset);
-      
-      playNote(freq, audioCtxRef.current.currentTime);
-      
-      setPressedKeys(prev => {
-        const next = new Set(prev);
-        next.add(keyObj.key);
-        return next;
-      });
-
-      const { isRecording, isPlaying, tempo, currentBeatUI } = stateRef.current;
-      
-      if (isRecording) {
-        let beat = currentBeatUI;
-        if (isPlaying && audioCtxRef.current) {
-          beat = engineRef.current.startBeat + (audioCtxRef.current.currentTime - engineRef.current.startTimeContext) * (tempo / 60);
-        }
-        engineRef.current.activeRecordingNotes[keyObj.key] = { 
-          startBeat: beat, 
-          startTime: audioCtxRef.current ? audioCtxRef.current.currentTime : 0,
-          freq: freq,
-          keyId: keyObj.key
-        };
-      }
-    };
-
-    const handleKeyUp = (e) => {
-      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
-        setOctaveShift(0);
-        octaveShiftRef.current = 0;
-        return;
-      }
-
-      const keyStr = e.key.toLowerCase();
-      const keyObj = KEY_DEF.find(k => k.key === keyStr);
-      if (!keyObj) return;
-
-      setPressedKeys(prev => {
-        const next = new Set(prev);
-        next.delete(keyObj.key);
-        return next;
-      });
-
-      const activeNote = engineRef.current.activeRecordingNotes[keyObj.key];
-      if (activeNote) {
-        delete engineRef.current.activeRecordingNotes[keyObj.key];
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crystal Sequencer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: sans-serif; overflow: hidden; }
+        .custom-scrollbar::-webkit-scrollbar { width: 16px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-left: 1px solid #1e293b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; border: 4px solid #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
         
-        const { isPlaying, tempo, currentBeatUI } = stateRef.current;
-        let endBeat = currentBeatUI;
+        /* ピアノの鍵盤アニメーション */
+        .key-active-white { background-color: #d1d5db !important; }
+        .key-active-black { background-color: #374151 !important; height: 62% !important; }
         
-        if (isPlaying && audioCtxRef.current) {
-          endBeat = engineRef.current.startBeat + (audioCtxRef.current.currentTime - engineRef.current.startTimeContext) * (tempo / 60);
-        } else if (audioCtxRef.current) {
-          const durationSec = audioCtxRef.current.currentTime - activeNote.startTime;
-          endBeat = activeNote.startBeat + durationSec * (tempo / 60);
-        }
+        input[type=range]::-webkit-slider-runnable-track { background: #1e293b; border-radius: 10px; height: 6px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #06b6d4; cursor: pointer; margin-top: -5px; }
+    </style>
+</head>
+<body class="bg-gray-950 text-slate-200 select-none">
 
-        const newNote = {
-          id: Math.random().toString(36).substr(2, 9),
-          keyId: activeNote.keyId,
-          freq: activeNote.freq,
-          startBeat: activeNote.startBeat,
-          durationBeat: Math.max(0.125, endBeat - activeNote.startBeat)
-        };
-
-        engineRef.current.notes.push(newNote);
-        setNotes([...engineRef.current.notes]);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [initAudio, playNote]);
-
-  const handleTimelineClick = (e) => {
-    if (isPlaying) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const y = e.clientY - rect.top + e.currentTarget.scrollTop;
-    const beat = y / BEAT_HEIGHT;
-    setCurrentBeatUI(Math.max(0, beat));
-  };
-
-  const maxRecordedBeat = notes.reduce((max, n) => Math.max(max, n.startBeat + n.durationBeat), 0);
-  const totalTimelineBeats = Math.max(MIN_BEATS, Math.ceil(maxRecordedBeat) + 20, Math.ceil(currentBeatUI) + 20);
-  
-  return (
-    <div className="flex flex-col h-screen bg-gray-950 text-slate-200 font-sans select-none overflow-hidden relative">
-      
-      {/* ツールバー */}
-      <div className="h-16 bg-gray-900 border-b border-gray-800 flex items-center px-6 gap-6 shadow-md z-30 flex-shrink-0">
-        <div className="flex gap-2">
-          <button 
-            onClick={togglePlay}
-            className={`w-12 h-12 flex items-center justify-center rounded-lg transition-colors shadow-sm ${isPlaying ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-gray-800 hover:bg-gray-700 border border-gray-700'}`}
-            title="再生/一時停止"
-          >
-            <Play className="w-6 h-6 ml-1" fill={isPlaying ? "white" : "none"} />
-          </button>
-          <button 
-            onClick={handleStop}
-            className="w-12 h-12 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 transition-colors shadow-sm"
-            title="停止"
-          >
-            <Square className="w-5 h-5" fill="currentColor" />
-          </button>
+    <!-- ツールバー -->
+    <div class="h-16 bg-gray-900 border-b border-gray-800 flex items-center px-6 gap-6 shadow-md z-30 relative">
+        <div class="flex gap-2">
+            <button id="playBtn" class="w-12 h-12 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 transition-colors shadow-sm">
+                <i data-lucide="play" id="playIcon"></i>
+            </button>
+            <button id="stopBtn" class="w-12 h-12 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 transition-colors shadow-sm">
+                <i data-lucide="square" fill="currentColor"></i>
+            </button>
         </div>
 
-        <div className="w-px h-8 bg-gray-800"></div>
+        <div class="w-px h-8 bg-gray-800"></div>
 
-        <button 
-          onClick={() => setIsRecording(!isRecording)}
-          className={`flex items-center gap-2 px-4 h-10 rounded-lg transition-colors border shadow-sm ${isRecording ? 'bg-red-900/40 border-red-500/50 text-red-400' : 'bg-gray-800 border-gray-700 text-gray-400'}`}
-          title="録音ロック（オンで記録、オフで練習モード）"
-        >
-          {isRecording ? <Circle className="w-4 h-4" fill="currentColor" /> : <Lock className="w-4 h-4" />}
-          <span className="font-semibold text-sm tracking-wide">{isRecording ? "REC" : "LOCKED"}</span>
+        <button id="recBtn" class="flex items-center gap-2 px-4 h-10 rounded-lg transition-colors border shadow-sm bg-red-900/40 border-red-500/50 text-red-400">
+            <i data-lucide="circle" id="recIcon" fill="currentColor" class="w-4 h-4"></i>
+            <span class="font-semibold text-sm tracking-wide" id="recText">REC</span>
         </button>
 
-        <div className="w-px h-8 bg-gray-800"></div>
+        <div class="w-px h-8 bg-gray-800"></div>
 
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setMetronomeOn(!metronomeOn)}
-            className={`p-2 rounded-lg transition-colors ${metronomeOn ? 'text-cyan-400 bg-cyan-900/30' : 'text-gray-500 hover:bg-gray-800'}`}
-            title="メトロノーム"
-          >
-            {metronomeOn ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-          </button>
-          <div className="flex flex-col w-32">
-            <div className="flex justify-between text-xs text-gray-400 mb-1 font-semibold tracking-wider">
-              <span>BPM</span>
-              <span className="font-mono text-cyan-400">{tempo}</span>
+        <div class="flex items-center gap-4">
+            <button id="metroBtn" class="p-2 rounded-lg transition-colors text-cyan-400 bg-cyan-900/30">
+                <i data-lucide="bell" class="w-5 h-5"></i>
+            </button>
+            <div class="flex flex-col w-32">
+                <div class="flex justify-between text-xs text-gray-400 mb-1 font-semibold tracking-wider">
+                    <span>BPM</span>
+                    <span id="bpmDisplay" class="font-mono text-cyan-400">120</span>
+                </div>
+                <input type="range" id="bpmSlider" min="60" max="200" value="120" class="w-full appearance-none bg-transparent">
             </div>
-            <input 
-              type="range" 
-              min="60" max="200" 
-              value={tempo} 
-              onChange={(e) => setTempo(Number(e.target.value))}
-              className="accent-cyan-500 cursor-pointer h-1.5 bg-gray-800 rounded-lg appearance-none"
-            />
-          </div>
         </div>
 
-        <button 
-          onClick={() => setShowConfig(true)}
-          className="ml-auto p-2.5 rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 transition-colors shadow-sm"
-          title="音色設定"
-        >
-          <Settings className="w-5 h-5" />
+        <button id="configBtn" class="ml-auto p-2.5 rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 transition-colors shadow-sm">
+            <i data-lucide="settings" class="w-5 h-5"></i>
         </button>
-      </div>
-
-      {/* 鍵盤エリア (上部配置) */}
-      <div className="h-44 bg-gray-900 border-b-4 border-gray-800 relative flex-shrink-0 z-20 shadow-lg">
-        <div className="w-full h-full relative">
-          {KEY_DEF.map((k) => {
-            const isPressed = pressedKeys.has(k.key);
-            const currentOctave = 4 + octaveShift + Math.floor(k.semitoneOffset / 12);
-            const noteLabel = `${k.baseNote}${currentOctave}`;
-
-            if (k.type === 'white') {
-              return (
-                <div
-                  key={k.key}
-                  className={`absolute top-0 bottom-0 border-r border-l border-gray-300 rounded-b-lg transition-colors duration-75 flex flex-col items-center justify-end pb-4 shadow-sm
-                    ${isPressed ? 'bg-gray-300' : 'bg-slate-50 hover:bg-gray-200'}`}
-                  style={{ 
-                    left: `${k.whiteIdx * 10}%`, 
-                    width: '10%',
-                    zIndex: 0
-                  }}
-                  onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: k.key, repeat: false, code: '' }))}
-                  onMouseUp={() => window.dispatchEvent(new KeyboardEvent('keyup', { key: k.key, code: '' }))}
-                  onMouseLeave={() => { if (isPressed) window.dispatchEvent(new KeyboardEvent('keyup', { key: k.key, code: '' })); }}
-                >
-                  <span className={`text-xs font-bold mb-1 ${isPressed ? 'text-cyan-700' : 'text-gray-400'}`}>{noteLabel}</span>
-                  <span className={`text-lg font-black ${isPressed ? 'text-gray-800' : 'text-gray-400'}`}>{k.key.toUpperCase()}</span>
-                </div>
-              );
-            } else {
-              return (
-                <div
-                  key={k.key}
-                  className={`absolute top-0 rounded-b-lg transition-colors duration-75 flex flex-col items-center justify-end pb-3 shadow-md border-x border-b border-gray-950
-                    ${isPressed ? 'bg-gray-700 h-[62%]' : 'bg-gray-800 h-[60%]'}`}
-                  style={{ 
-                    left: `${k.centerIdx * 10 - 3}%`, 
-                    width: '6%',
-                    zIndex: 10
-                  }}
-                  onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: k.key, repeat: false, code: '' }))}
-                  onMouseUp={() => window.dispatchEvent(new KeyboardEvent('keyup', { key: k.key, code: '' }))}
-                  onMouseLeave={() => { if (isPressed) window.dispatchEvent(new KeyboardEvent('keyup', { key: k.key, code: '' })); }}
-                >
-                  <span className={`text-[10px] font-bold mb-1 ${isPressed ? 'text-cyan-400' : 'text-gray-500'}`}>{noteLabel}</span>
-                  <span className={`text-sm font-bold ${isPressed ? 'text-white' : 'text-gray-400'}`}>{k.key.toUpperCase()}</span>
-                </div>
-              );
-            }
-          })}
-        </div>
-      </div>
-
-      {/* メインエリア (タイムライン) */}
-      <div 
-        className="flex-1 overflow-y-auto bg-[#0f172a] relative cursor-crosshair custom-scrollbar z-10"
-        ref={containerRef}
-        onClick={handleTimelineClick}
-      >
-        <div 
-          className="relative w-full" 
-          style={{ height: totalTimelineBeats * BEAT_HEIGHT }}
-        >
-          {/* グリッド背景 */}
-          <div 
-            className="absolute inset-0 pointer-events-none opacity-20"
-            style={{
-              backgroundImage: `linear-gradient(to bottom, #334155 1px, transparent 1px), linear-gradient(to bottom, #1e293b 1px, transparent 1px)`,
-              backgroundSize: `100% ${BEAT_HEIGHT}px, 100% ${BEAT_HEIGHT / 4}px`
-            }}
-          />
-
-          {/* 縦の鍵盤ライン */}
-          {KEY_DEF.map((k) => (
-            <div 
-              key={`line-${k.key}`}
-              className={`absolute top-0 bottom-0 border-l ${k.type === 'black' ? 'border-gray-800 bg-gray-900/40' : 'border-gray-800/50'}`}
-              style={{ 
-                left: k.type === 'white' ? `${k.whiteIdx * 10}%` : `${k.centerIdx * 10 - 3}%`,
-                width: k.type === 'white' ? '10%' : '6%'
-              }}
-            />
-          ))}
-
-          {/* 記録されたノート */}
-          {notes.map((note) => {
-            const keyConfig = KEY_DEF.find(k => k.key === note.keyId);
-            if (!keyConfig) return null;
-            return (
-              <div
-                key={note.id}
-                className={`absolute rounded-md border ${keyConfig.type === 'white' ? 'bg-cyan-500/80 border-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.6)]' : 'bg-indigo-500/80 border-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.6)]'}`}
-                style={{
-                  top: note.startBeat * BEAT_HEIGHT,
-                  height: note.durationBeat * BEAT_HEIGHT,
-                  left: keyConfig.type === 'white' ? `${keyConfig.whiteIdx * 10 + 0.5}%` : `${keyConfig.centerIdx * 10 - 2.5}%`,
-                  width: keyConfig.type === 'white' ? '9%' : '5%',
-                  minHeight: '4px'
-                }}
-              />
-            );
-          })}
-
-          {/* プレイヘッド (再生位置) */}
-          <div 
-            className="absolute left-0 right-0 h-[2px] bg-red-500 z-10 pointer-events-none shadow-[0_0_15px_rgba(239,68,68,1)]"
-            style={{ top: currentBeatUI * BEAT_HEIGHT }}
-          >
-            <div className="absolute -top-[5px] -left-1 w-3 h-3 bg-red-500 rounded-full" />
-            <div className="absolute -top-3 right-4 text-xs text-red-100 font-mono font-bold bg-red-900/90 px-2 py-0.5 rounded shadow-md border border-red-700">
-              {currentBeatUI.toFixed(2)}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CONFIG モーダル */}
-      {showConfig && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-80 p-6 relative">
-            <button 
-              onClick={() => setShowConfig(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Settings className="w-5 h-5 text-cyan-400" />
-              音色設定
-            </h2>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">波形 (Oscillator)</label>
-                <select 
-                  value={synthConfig.type}
-                  onChange={(e) => setSynthConfig({...synthConfig, type: e.target.value})}
-                  className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white outline-none focus:border-cyan-500"
-                >
-                  <option value="sine">Sine (澄んだ音・ベル風)</option>
-                  <option value="triangle">Triangle (柔らかいシンセ)</option>
-                  <option value="square">Square (ファミコン風)</option>
-                  <option value="sawtooth">Sawtooth (鋭いリード)</option>
-                </select>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm font-semibold text-gray-300 mb-2">
-                  <label>アタック (Attack)</label>
-                  <span className="text-cyan-400">{synthConfig.attack}s</span>
-                </div>
-                <input 
-                  type="range" min="0.01" max="0.5" step="0.01"
-                  value={synthConfig.attack}
-                  onChange={(e) => setSynthConfig({...synthConfig, attack: Number(e.target.value)})}
-                  className="w-full accent-cyan-500 h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer"
-                />
-                <p className="text-xs text-gray-500 mt-1">音の立ち上がりの速さ</p>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm font-semibold text-gray-300 mb-2">
-                  <label>リリース (Release)</label>
-                  <span className="text-cyan-400">{synthConfig.release}s</span>
-                </div>
-                <input 
-                  type="range" min="0.1" max="5.0" step="0.1"
-                  value={synthConfig.release}
-                  onChange={(e) => setSynthConfig({...synthConfig, release: Number(e.target.value)})}
-                  className="w-full accent-cyan-500 h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer"
-                />
-                <p className="text-xs text-gray-500 mt-1">鍵盤を離した後の余韻</p>
-              </div>
-            </div>
-            
-            <button 
-              onClick={() => setShowConfig(false)}
-              className="mt-8 w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded-lg transition-colors"
-            >
-              完了
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* スクロールバーのカスタマイズ */}
-      <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 16px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #0f172a; 
-          border-left: 1px solid #1e293b;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #334155; 
-          border-radius: 8px;
-          border: 4px solid #0f172a;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #475569; 
-        }
-      `}} />
     </div>
-  );
-}
+
+    <!-- 鍵盤エリア -->
+    <div class="h-44 bg-gray-900 border-b-4 border-gray-800 relative z-20 shadow-lg" id="keyboardContainer">
+        <!-- JSで鍵盤を生成 -->
+    </div>
+
+    <!-- メインエリア (タイムライン) -->
+    <div id="timelineContainer" class="flex-1 overflow-y-auto bg-[#0f172a] relative cursor-crosshair custom-scrollbar z-10" style="height: calc(100vh - 16rem);">
+        <div id="timelineContent" class="relative w-full overflow-hidden">
+            <!-- グリッド背景 -->
+            <div id="gridBg" class="absolute inset-0 pointer-events-none opacity-20"></div>
+            <!-- 鍵盤ライン -->
+            <div id="columnLines" class="absolute inset-0 pointer-events-none"></div>
+            <!-- ノート描画領域 -->
+            <div id="notesLayer" class="absolute inset-0 pointer-events-none"></div>
+            <!-- プレイヘッド -->
+            <div id="playhead" class="absolute left-0 right-0 h-[2px] bg-red-500 z-10 pointer-events-none shadow-[0_0_15px_rgba(239,68,68,1)]" style="top: 0;">
+                <div class="absolute -top-[5px] -left-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                <div id="beatCounter" class="absolute -top-3 right-4 text-xs text-red-100 font-mono font-bold bg-red-900/90 px-2 py-0.5 rounded shadow-md border border-red-700">0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定モーダル -->
+    <div id="configModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-80 p-6 relative">
+            <button id="closeConfig" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <i data-lucide="settings" class="w-5 h-5 text-cyan-400"></i>
+                音色設定
+            </h2>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-300 mb-2">波形 (Oscillator)</label>
+                    <select id="waveType" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white outline-none focus:border-cyan-500">
+                        <option value="sine">Sine (澄んだ音)</option>
+                        <option value="triangle">Triangle (柔らかい)</option>
+                        <option value="square">Square (レトロ)</option>
+                        <option value="sawtooth">Sawtooth (鋭い)</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm font-semibold text-gray-300 mb-2">
+                        <label>アタック (Attack)</label>
+                        <span id="attackVal" class="text-cyan-400">0.05s</span>
+                    </div>
+                    <input type="range" id="attackSlider" min="0.01" max="0.5" step="0.01" value="0.05" class="w-full appearance-none bg-transparent">
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm font-semibold text-gray-300 mb-2">
+                        <label>リリース (Release)</label>
+                        <span id="releaseVal" class="text-cyan-400">2.5s</span>
+                    </div>
+                    <input type="range" id="releaseSlider" min="0.1" max="5.0" step="0.1" value="2.5" class="w-full appearance-none bg-transparent">
+                </div>
+            </div>
+            <button id="modalOk" class="mt-8 w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded-lg transition-colors">完了</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 設定とデータ ---
+        const BEAT_HEIGHT = 60;
+        const MIN_BEATS = 300;
+        const KEY_DEF = [
+            { key: 'a', type: 'white', offset: 0, wIdx: 0, label: 'C' },
+            { key: 'w', type: 'black', offset: 1, cIdx: 1, label: 'C#' },
+            { key: 's', type: 'white', offset: 2, wIdx: 1, label: 'D' },
+            { key: 'e', type: 'black', offset: 3, cIdx: 2, label: 'D#' },
+            { key: 'd', type: 'white', offset: 4, wIdx: 2, label: 'E' },
+            { key: 'f', type: 'white', offset: 5, wIdx: 3, label: 'F' },
+            { key: 't', type: 'black', offset: 6, cIdx: 4, label: 'F#' },
+            { key: 'g', type: 'white', offset: 7, wIdx: 4, label: 'G' },
+            { key: 'y', type: 'black', offset: 8, cIdx: 5, label: 'G#' },
+            { key: 'h', type: 'white', offset: 9, wIdx: 5, label: 'A' },
+            { key: 'u', type: 'black', offset: 10, cIdx: 6, label: 'A#' },
+            { key: 'j', type: 'white', offset: 11, wIdx: 6, label: 'B' },
+            { key: 'k', type: 'white', offset: 12, wIdx: 7, label: 'C' },
+            { key: 'o', type: 'black', offset: 13, cIdx: 8, label: 'C#' },
+            { key: 'l', type: 'white', offset: 14, wIdx: 8, label: 'D' },
+            { key: 'p', type: 'black', offset: 15, cIdx: 9, label: 'D#' },
+            { key: ';', type: 'white', offset: 16, wIdx: 9, label: 'E' }
+        ];
+
+        let state = {
+            isPlaying: false,
+            isRecording: true,
+            metronomeOn: true,
+            tempo: 120,
+            currentBeat: 0,
+            octaveShift: 0,
+            synth: { type: 'sine', attack: 0.05, release: 2.5 },
+            notes: []
+        };
+
+        const activeRecording = {};
+        let audioCtx = null;
+        let schedulerId = null;
+        let rafId = null;
+        let engine = { startTime: 0, startBeat: 0, nextMetro: 0, nextNoteIdx: 0 };
+
+        // --- 初期化 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initKeyboard();
+            initTimeline();
+            setupEvents();
+            requestAnimationFrame(uiLoop);
+        });
+
+        function initKeyboard() {
+            const container = document.getElementById('keyboardContainer');
+            KEY_DEF.forEach(k => {
+                const el = document.createElement('div');
+                // IDに特殊文字が含まれても安全なように data-key 属性も持たせる
+                el.id = `key-${k.key}`;
+                el.setAttribute('data-note-key', k.key);
+                if (k.type === 'white') {
+                    el.className = `absolute top-0 bottom-0 border-r border-l border-gray-300 rounded-b-lg transition-colors duration-75 flex flex-col items-center justify-end pb-4 bg-slate-50 cursor-pointer`;
+                    el.style.left = `${k.wIdx * 10}%`;
+                    el.style.width = '10%';
+                    el.style.zIndex = '0';
+                    el.innerHTML = `<span class="note-label text-xs font-bold mb-1 text-gray-400"></span><span class="text-lg font-black text-gray-400">${k.key.toUpperCase()}</span>`;
+                } else {
+                    el.className = `absolute top-0 rounded-b-lg transition-colors duration-75 flex flex-col items-center justify-end pb-3 bg-gray-800 border-x border-b border-gray-950 h-[60%] cursor-pointer`;
+                    el.style.left = `${k.cIdx * 10 - 3}%`;
+                    el.style.width = '6%';
+                    el.style.zIndex = '10';
+                    el.innerHTML = `<span class="note-label text-[10px] font-bold mb-1 text-gray-500"></span><span class="text-sm font-bold text-gray-400">${k.key.toUpperCase()}</span>`;
+                }
+                container.appendChild(el);
+            });
+            updateKeyboardLabels();
+        }
+
+        function updateKeyboardLabels() {
+            KEY_DEF.forEach(k => {
+                const octave = 4 + state.octaveShift + Math.floor(k.offset / 12);
+                // 特殊文字対策として [id="..."] 形式か getElementById を使用する
+                const labelEl = document.getElementById(`key-${k.key}`).querySelector('.note-label');
+                if (labelEl) labelEl.textContent = `${k.label}${octave}`;
+            });
+        }
+
+        function initTimeline() {
+            const content = document.getElementById('timelineContent');
+            content.style.height = `${MIN_BEATS * BEAT_HEIGHT}px`;
+            
+            const grid = document.getElementById('gridBg');
+            grid.style.backgroundSize = `100% ${BEAT_HEIGHT}px, 100% ${BEAT_HEIGHT / 4}px`;
+            grid.style.backgroundImage = `linear-gradient(to bottom, #334155 1px, transparent 1px), linear-gradient(to bottom, #1e293b 1px, transparent 1px)`;
+
+            const lines = document.getElementById('columnLines');
+            KEY_DEF.forEach(k => {
+                const l = document.createElement('div');
+                l.className = `absolute top-0 bottom-0 border-l ${k.type === 'black' ? 'border-gray-800 bg-gray-900/40' : 'border-gray-800/50'}`;
+                l.style.left = k.type === 'white' ? `${k.wIdx * 10}%` : `${k.cIdx * 10 - 3}%`;
+                l.style.width = k.type === 'white' ? '10%' : '6%';
+                lines.appendChild(l);
+            });
+        }
+
+        // --- 音声エンジン ---
+        function getFreq(offset, shift) {
+            const C4 = 261.63;
+            const steps = shift * 12 + offset;
+            return C4 * Math.pow(2, steps / 12);
+        }
+
+        function playHarp(freq, time) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = state.synth.type;
+            osc.frequency.setValueAtTime(freq, time);
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.8, time + state.synth.attack);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + state.synth.release);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(time);
+            osc.stop(time + state.synth.release);
+        }
+
+        function playClick(time, primary) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.value = primary ? 1200 : 800;
+            osc.type = 'square';
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.3, time + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(time);
+            osc.stop(time + 0.05);
+        }
+
+        function scheduler() {
+            if (!state.isPlaying) return;
+            const now = audioCtx.currentTime;
+            const lookahead = 0.1;
+            const beatPerSec = state.tempo / 60;
+            const currBeat = engine.startBeat + (now - engine.startTime) * beatPerSec;
+
+            // メトロノーム
+            if (state.metronomeOn) {
+                while (engine.nextMetro < currBeat + lookahead * beatPerSec) {
+                    const t = engine.startTime + (engine.nextMetro - engine.startBeat) / beatPerSec;
+                    playClick(t, engine.nextMetro % 4 === 0);
+                    engine.nextMetro++;
+                }
+            }
+
+            // 再生
+            while (engine.nextNoteIdx < state.notes.length && state.notes[engine.nextNoteIdx].start < currBeat + lookahead * beatPerSec) {
+                const n = state.notes[engine.nextNoteIdx];
+                const t = engine.startTime + (n.start - engine.startBeat) / beatPerSec;
+                playHarp(n.freq, t);
+                engine.nextNoteIdx++;
+            }
+
+            schedulerId = setTimeout(scheduler, 25);
+        }
+
+        // --- イベントループ ---
+        function uiLoop() {
+            if (state.isPlaying && audioCtx) {
+                const now = audioCtx.currentTime;
+                state.currentBeat = engine.startBeat + (now - engine.startTime) * (state.tempo / 60);
+                
+                // 自動スクロール
+                const container = document.getElementById('timelineContainer');
+                const py = state.currentBeat * BEAT_HEIGHT;
+                container.scrollTop = py - container.clientHeight / 2;
+            }
+            
+            document.getElementById('playhead').style.top = `${state.currentBeat * BEAT_HEIGHT}px`;
+            document.getElementById('beatCounter').textContent = state.currentBeat.toFixed(2);
+            
+            requestAnimationFrame(uiLoop);
+        }
+
+        // --- ノート描画 ---
+        function drawNotes() {
+            const layer = document.getElementById('notesLayer');
+            layer.innerHTML = '';
+            state.notes.forEach(n => {
+                const k = KEY_DEF.find(kd => kd.key === n.keyId);
+                const el = document.createElement('div');
+                el.className = `absolute rounded-md border ${k.type === 'white' ? 'bg-cyan-500/80 border-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.6)]' : 'bg-indigo-500/80 border-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.6)]'}`;
+                el.style.top = `${n.start * BEAT_HEIGHT}px`;
+                el.style.height = `${n.dur * BEAT_HEIGHT}px`;
+                el.style.left = k.type === 'white' ? `${k.wIdx * 10 + 0.5}%` : `${k.cIdx * 10 - 2.5}%`;
+                el.style.width = k.type === 'white' ? '9%' : '5%';
+                el.style.minHeight = '4px';
+                layer.appendChild(el);
+            });
+        }
+
+        // --- イベント処理 ---
+        function setupEvents() {
+            const getCtx = () => {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            };
+
+            // 再生・停止
+            document.getElementById('playBtn').onclick = () => {
+                getCtx();
+                if (!state.isPlaying) {
+                    state.isPlaying = true;
+                    engine.startTime = audioCtx.currentTime;
+                    engine.startBeat = state.currentBeat;
+                    engine.nextMetro = Math.ceil(state.currentBeat);
+                    state.notes.sort((a, b) => a.start - b.start);
+                    engine.nextNoteIdx = state.notes.findIndex(n => n.start >= state.currentBeat);
+                    if (engine.nextNoteIdx === -1) engine.nextNoteIdx = state.notes.length;
+                    document.getElementById('playIcon').setAttribute('data-lucide', 'pause');
+                    lucide.createIcons();
+                    scheduler();
+                } else {
+                    state.isPlaying = false;
+                    clearTimeout(schedulerId);
+                    document.getElementById('playIcon').setAttribute('data-lucide', 'play');
+                    lucide.createIcons();
+                }
+            };
+
+            document.getElementById('stopBtn').onclick = () => {
+                state.isPlaying = false;
+                clearTimeout(schedulerId);
+                document.getElementById('playIcon').setAttribute('data-lucide', 'play');
+                lucide.createIcons();
+            };
+
+            // REC
+            document.getElementById('recBtn').onclick = () => {
+                state.isRecording = !state.isRecording;
+                const btn = document.getElementById('recBtn');
+                const text = document.getElementById('recText');
+                if (state.isRecording) {
+                    btn.className = "flex items-center gap-2 px-4 h-10 rounded-lg transition-colors border shadow-sm bg-red-900/40 border-red-500/50 text-red-400";
+                    text.textContent = "REC";
+                } else {
+                    btn.className = "flex items-center gap-2 px-4 h-10 rounded-lg transition-colors border shadow-sm bg-gray-800 border-gray-700 text-gray-400";
+                    text.textContent = "LOCKED";
+                }
+            };
+
+            // BPM
+            document.getElementById('bpmSlider').oninput = (e) => {
+                state.tempo = parseInt(e.target.value);
+                document.getElementById('bpmDisplay').textContent = state.tempo;
+            };
+
+            // メトロノーム
+            document.getElementById('metroBtn').onclick = () => {
+                state.metronomeOn = !state.metronomeOn;
+                document.getElementById('metroBtn').className = state.metronomeOn ? "p-2 rounded-lg transition-colors text-cyan-400 bg-cyan-900/30" : "p-2 rounded-lg transition-colors text-gray-500 hover:bg-gray-800";
+            };
+
+            // シーク
+            document.getElementById('timelineContainer').onclick = (e) => {
+                if (state.isPlaying) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const y = e.clientY - rect.top + e.currentTarget.scrollTop;
+                state.currentBeat = Math.max(0, y / BEAT_HEIGHT);
+            };
+
+            // キーボード
+            window.onkeydown = (e) => {
+                if (e.repeat) return;
+                if (e.code === 'ShiftLeft') { state.octaveShift = -1; updateKeyboardLabels(); return; }
+                if (e.code === 'ShiftRight') { state.octaveShift = 1; updateKeyboardLabels(); return; }
+
+                const k = KEY_DEF.find(kd => kd.key === e.key.toLowerCase());
+                if (!k) return;
+                
+                getCtx();
+                const freq = getFreq(k.offset, state.octaveShift);
+                playHarp(freq, audioCtx.currentTime);
+                
+                const keyEl = document.getElementById(`key-${k.key}`);
+                if (keyEl) keyEl.classList.add(k.type === 'white' ? 'key-active-white' : 'key-active-black');
+
+                if (state.isRecording) {
+                    activeRecording[k.key] = { start: state.currentBeat, time: audioCtx.currentTime, freq };
+                }
+            };
+
+            window.onkeyup = (e) => {
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') { state.octaveShift = 0; updateKeyboardLabels(); return; }
+                
+                const keyStr = e.key.toLowerCase();
+                const k = KEY_DEF.find(kd => kd.key === keyStr);
+                if (!k) return;
+
+                const keyEl = document.getElementById(`key-${k.key}`);
+                if (keyEl) keyEl.classList.remove('key-active-white', 'key-active-black');
+
+                if (activeRecording[keyStr]) {
+                    const rec = activeRecording[keyStr];
+                    const dur = Math.max(0.15, (audioCtx.currentTime - rec.time) * (state.tempo / 60));
+                    state.notes.push({ id: Date.now(), keyId: keyStr, start: rec.start, dur, freq: rec.freq });
+                    delete activeRecording[keyStr];
+                    drawNotes();
+                }
+            };
+
+            // 設定
+            document.getElementById('configBtn').onclick = () => document.getElementById('configModal').classList.remove('hidden');
+            document.getElementById('closeConfig').onclick = () => document.getElementById('configModal').classList.add('hidden');
+            document.getElementById('modalOk').onclick = () => document.getElementById('configModal').classList.add('hidden');
+            
+            document.getElementById('waveType').onchange = (e) => state.synth.type = e.target.value;
+            document.getElementById('attackSlider').oninput = (e) => {
+                state.synth.attack = parseFloat(e.target.value);
+                document.getElementById('attackVal').textContent = e.target.value + 's';
+            };
+            document.getElementById('releaseSlider').oninput = (e) => {
+                state.synth.release = parseFloat(e.target.value);
+                document.getElementById('releaseVal').textContent = e.target.value + 's';
+            };
+        }
+    </script>
+</body>
+</html>
