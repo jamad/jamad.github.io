@@ -15,16 +15,16 @@
         
         /* ピアノの鍵盤アニメーション */
         .key-active-white { background-color: #d1d5db !important; }
-        .key-active-black { background-color: #374151 !important; height: 62% !important; }
+        .key-active-black { background-color: #374151 !important; }
         
         input[type=range]::-webkit-slider-runnable-track { background: #1e293b; border-radius: 10px; height: 6px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #06b6d4; cursor: pointer; margin-top: -5px; }
     </style>
 </head>
-<body class="bg-gray-950 text-slate-200 select-none">
+<body class="bg-gray-950 text-slate-200 select-none flex flex-col h-screen">
 
     <!-- ツールバー -->
-    <div class="h-16 bg-gray-900 border-b border-gray-800 flex items-center px-6 gap-6 shadow-md z-30 relative">
+    <div class="h-16 shrink-0 bg-gray-900 border-b border-gray-800 flex items-center px-6 gap-6 shadow-md z-30 relative">
         <div class="flex gap-2">
             <button id="playBtn" class="w-12 h-12 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 transition-colors shadow-sm">
                 <i data-lucide="play" id="playIcon"></i>
@@ -61,13 +61,13 @@
         </button>
     </div>
 
-    <!-- 鍵盤エリア -->
-    <div class="h-44 bg-gray-900 border-b-4 border-gray-800 relative z-20 shadow-lg" id="keyboardContainer">
+    <!-- 鍵盤エリア (横に3オクターブ・高さは元に戻す) -->
+    <div class="h-44 shrink-0 bg-gray-900 border-b-4 border-gray-800 relative z-20 shadow-lg transition-shadow duration-300 overflow-hidden" id="keyboardContainer">
         <!-- JSで鍵盤を生成 -->
     </div>
 
-    <!-- メインエリア (タイムライン) -->
-    <div id="timelineContainer" class="flex-1 overflow-y-auto bg-[#0f172a] relative cursor-crosshair custom-scrollbar z-10" style="height: calc(100vh - 16rem);">
+    <!-- メインエリア (タイムライン) flex-1で残りの高さを自動的に埋める -->
+    <div id="timelineContainer" class="flex-1 overflow-y-auto bg-[#0f172a] relative cursor-crosshair custom-scrollbar z-10">
         <div id="timelineContent" class="relative w-full overflow-hidden">
             <!-- グリッド背景 -->
             <div id="gridBg" class="absolute inset-0 pointer-events-none opacity-20"></div>
@@ -126,25 +126,55 @@
         // --- 設定とデータ ---
         const BEAT_HEIGHT = 60;
         const MIN_BEATS = 300;
-        const KEY_DEF = [
-            { key: 'a', type: 'white', offset: 0, wIdx: 0, label: 'C' },
-            { key: 'w', type: 'black', offset: 1, cIdx: 1, label: 'C#' },
-            { key: 's', type: 'white', offset: 2, wIdx: 1, label: 'D' },
-            { key: 'e', type: 'black', offset: 3, cIdx: 2, label: 'D#' },
-            { key: 'd', type: 'white', offset: 4, wIdx: 2, label: 'E' },
-            { key: 'f', type: 'white', offset: 5, wIdx: 3, label: 'F' },
-            { key: 't', type: 'black', offset: 6, cIdx: 4, label: 'F#' },
-            { key: 'g', type: 'white', offset: 7, wIdx: 4, label: 'G' },
-            { key: 'y', type: 'black', offset: 8, cIdx: 5, label: 'G#' },
-            { key: 'h', type: 'white', offset: 9, wIdx: 5, label: 'A' },
-            { key: 'u', type: 'black', offset: 10, cIdx: 6, label: 'A#' },
-            { key: 'j', type: 'white', offset: 11, wIdx: 6, label: 'B' },
-            { key: 'k', type: 'white', offset: 12, wIdx: 7, label: 'C' },
-            { key: 'o', type: 'black', offset: 13, cIdx: 8, label: 'C#' },
-            { key: 'l', type: 'white', offset: 14, wIdx: 8, label: 'D' },
-            { key: 'p', type: 'black', offset: 15, cIdx: 9, label: 'D#' },
-            { key: ';', type: 'white', offset: 16, wIdx: 9, label: 'E' }
+        
+        // 3オクターブ分の鍵盤データ (C3 = 0, C4 = 12, B5 = 35)
+        const START_OCTAVE = 3;
+        const NUM_OCTAVES = 3;
+        const NOTES =[
+            { label: 'C', type: 'white' }, { label: 'C#', type: 'black' },
+            { label: 'D', type: 'white' }, { label: 'D#', type: 'black' },
+            { label: 'E', type: 'white' },
+            { label: 'F', type: 'white' }, { label: 'F#', type: 'black' },
+            { label: 'G', type: 'white' }, { label: 'G#', type: 'black' },
+            { label: 'A', type: 'white' }, { label: 'A#', type: 'black' },
+            { label: 'B', type: 'white' }
         ];
+
+        const VISUAL_KEYS =[];
+        let _wIdx = 0;
+        for (let oct = 0; oct < NUM_OCTAVES; oct++) {
+            for (let i = 0; i < NOTES.length; i++) {
+                const n = NOTES[i];
+                const offset = oct * 12 + i; // 0 to 35
+                if (n.type === 'white') {
+                    VISUAL_KEYS.push({ offset, label: n.label, type: 'white', wIdx: _wIdx });
+                    _wIdx++;
+                } else {
+                    VISUAL_KEYS.push({ offset, label: n.label, type: 'black', prevWIdx: _wIdx - 1 });
+                }
+            }
+        }
+        
+        const TOTAL_WHITE = _wIdx; // 21 (3オクターブ)
+        const WHITE_W = 100 / TOTAL_WHITE;
+        const BLACK_W = WHITE_W * 0.65;
+
+        // PCキーボードのマッピング (デフォルトは真ん中の C4=12 から)
+        const KEY_DEF =[
+            { key: 'a', baseOffset: 12 }, { key: 'w', baseOffset: 13 }, { key: 's', baseOffset: 14 },
+            { key: 'e', baseOffset: 15 }, { key: 'd', baseOffset: 16 }, { key: 'f', baseOffset: 17 },
+            { key: 't', baseOffset: 18 }, { key: 'g', baseOffset: 19 }, { key: 'y', baseOffset: 20 },
+            { key: 'h', baseOffset: 21 }, { key: 'u', baseOffset: 22 }, { key: 'j', baseOffset: 23 },
+            { key: 'k', baseOffset: 24 }, { key: 'o', baseOffset: 25 }, { key: 'l', baseOffset: 26 },
+            { key: 'p', baseOffset: 27 }, { key: ';', baseOffset: 28 }
+        ];
+
+        // SHIFT記号化バグ防止用
+        const CODE_MAP = {
+            'KeyA': 'a', 'KeyW': 'w', 'KeyS': 's', 'KeyE': 'e', 'KeyD': 'd', 'KeyF': 'f',
+            'KeyT': 't', 'KeyG': 'g', 'KeyY': 'y', 'KeyH': 'h', 'KeyU': 'u', 'KeyJ': 'j',
+            'KeyK': 'k', 'KeyO': 'o', 'KeyL': 'l', 'KeyP': 'p', 'Semicolon': ';'
+        };
 
         let state = {
             isPlaying: false,
@@ -154,13 +184,13 @@
             currentBeat: 0,
             octaveShift: 0,
             synth: { type: 'sine', attack: 0.05, release: 2.5 },
-            notes: []
+            notes:[]
         };
 
         const activeRecording = {};
+        const activeMouseRecording = {};
         let audioCtx = null;
         let schedulerId = null;
-        let rafId = null;
         let engine = { startTime: 0, startBeat: 0, nextMetro: 0, nextNoteIdx: 0 };
 
         // --- 初期化 ---
@@ -174,23 +204,30 @@
 
         function initKeyboard() {
             const container = document.getElementById('keyboardContainer');
-            KEY_DEF.forEach(k => {
+            container.innerHTML = '';
+            
+            VISUAL_KEYS.forEach(vk => {
                 const el = document.createElement('div');
-                // IDに特殊文字が含まれても安全なように data-key 属性も持たせる
-                el.id = `key-${k.key}`;
-                el.setAttribute('data-note-key', k.key);
-                if (k.type === 'white') {
-                    el.className = `absolute top-0 bottom-0 border-r border-l border-gray-300 rounded-b-lg transition-colors duration-75 flex flex-col items-center justify-end pb-4 bg-slate-50 cursor-pointer`;
-                    el.style.left = `${k.wIdx * 10}%`;
-                    el.style.width = '10%';
-                    el.style.zIndex = '0';
-                    el.innerHTML = `<span class="note-label text-xs font-bold mb-1 text-gray-400"></span><span class="text-lg font-black text-gray-400">${k.key.toUpperCase()}</span>`;
+                el.id = `vis-key-${vk.offset}`;
+                el.onmousedown = () => playMouse(vk.offset);
+                el.onmouseup = () => stopMouse(vk.offset);
+                el.onmouseleave = () => stopMouse(vk.offset);
+                
+                if (vk.type === 'white') {
+                    el.className = `absolute top-0 bottom-0 border-r border-gray-300 transition-colors duration-75 flex flex-col items-center justify-end pb-2 bg-slate-50 cursor-pointer hover:bg-slate-200 z-0`;
+                    el.style.left = `${vk.wIdx * WHITE_W}%`;
+                    el.style.width = `${WHITE_W}%`;
+                    el.innerHTML = `
+                        <span class="note-label text-[10px] font-bold text-gray-400 select-none pointer-events-none">${vk.label}${START_OCTAVE + Math.floor(vk.offset/12)}</span>
+                        <span class="pc-key-label text-sm font-black text-cyan-600 mt-1 h-5 select-none pointer-events-none"></span>
+                    `;
                 } else {
-                    el.className = `absolute top-0 rounded-b-lg transition-colors duration-75 flex flex-col items-center justify-end pb-3 bg-gray-800 border-x border-b border-gray-950 h-[60%] cursor-pointer`;
-                    el.style.left = `${k.cIdx * 10 - 3}%`;
-                    el.style.width = '6%';
-                    el.style.zIndex = '10';
-                    el.innerHTML = `<span class="note-label text-[10px] font-bold mb-1 text-gray-500"></span><span class="text-sm font-bold text-gray-400">${k.key.toUpperCase()}</span>`;
+                    el.className = `absolute top-0 rounded-b-md transition-colors duration-75 flex flex-col items-center justify-end pb-2 bg-gray-800 border-x border-b border-gray-950 h-[60%] cursor-pointer hover:bg-gray-700 z-10 shadow-sm`;
+                    el.style.left = `${(vk.prevWIdx + 1) * WHITE_W - (BLACK_W / 2)}%`;
+                    el.style.width = `${BLACK_W}%`;
+                    el.innerHTML = `
+                        <span class="pc-key-label text-xs font-bold text-cyan-400 h-4 select-none pointer-events-none"></span>
+                    `;
                 }
                 container.appendChild(el);
             });
@@ -198,11 +235,35 @@
         }
 
         function updateKeyboardLabels() {
+            // 全クリア
+            VISUAL_KEYS.forEach(vk => {
+                const el = document.getElementById(`vis-key-${vk.offset}`);
+                if (el) {
+                    const pcLabel = el.querySelector('.pc-key-label');
+                    if (pcLabel) pcLabel.textContent = '';
+                    // 以前の色を消す
+                    el.classList.remove('bg-blue-100', 'bg-red-100', 'bg-blue-900', 'bg-red-900');
+                }
+            });
+
+            // 現在のシフトに応じてPCキーラベルを表示
             KEY_DEF.forEach(k => {
-                const octave = 4 + state.octaveShift + Math.floor(k.offset / 12);
-                // 特殊文字対策として [id="..."] 形式か getElementById を使用する
-                const labelEl = document.getElementById(`key-${k.key}`).querySelector('.note-label');
-                if (labelEl) labelEl.textContent = `${k.label}${octave}`;
+                const absOffset = k.baseOffset + state.octaveShift * 12;
+                const visKey = VISUAL_KEYS.find(vk => vk.offset === absOffset);
+                if (visKey) {
+                    const el = document.getElementById(`vis-key-${absOffset}`);
+                    if (el) {
+                        const pcLabel = el.querySelector('.pc-key-label');
+                        if (pcLabel) pcLabel.textContent = k.key.toUpperCase();
+                        
+                        // SHIFT中の色付けエフェクト
+                        if (state.octaveShift === -1) {
+                            el.classList.add(visKey.type === 'white' ? 'bg-blue-100' : 'bg-blue-900');
+                        } else if (state.octaveShift === 1) {
+                            el.classList.add(visKey.type === 'white' ? 'bg-red-100' : 'bg-red-900');
+                        }
+                    }
+                }
             });
         }
 
@@ -215,20 +276,25 @@
             grid.style.backgroundImage = `linear-gradient(to bottom, #334155 1px, transparent 1px), linear-gradient(to bottom, #1e293b 1px, transparent 1px)`;
 
             const lines = document.getElementById('columnLines');
-            KEY_DEF.forEach(k => {
+            lines.innerHTML = '';
+            VISUAL_KEYS.forEach(vk => {
                 const l = document.createElement('div');
-                l.className = `absolute top-0 bottom-0 border-l ${k.type === 'black' ? 'border-gray-800 bg-gray-900/40' : 'border-gray-800/50'}`;
-                l.style.left = k.type === 'white' ? `${k.wIdx * 10}%` : `${k.cIdx * 10 - 3}%`;
-                l.style.width = k.type === 'white' ? '10%' : '6%';
+                const isWhite = vk.type === 'white';
+                l.className = `absolute top-0 bottom-0 border-l ${isWhite ? 'border-gray-800/50' : 'border-gray-800 bg-gray-900/40'}`;
+                l.style.left = isWhite ? `${vk.wIdx * WHITE_W}%` : `${(vk.prevWIdx + 1) * WHITE_W - (BLACK_W / 2)}%`;
+                l.style.width = isWhite ? `${WHITE_W}%` : `${BLACK_W}%`;
                 lines.appendChild(l);
             });
         }
 
         // --- 音声エンジン ---
-        function getFreq(offset, shift) {
-            const C4 = 261.63;
-            const steps = shift * 12 + offset;
-            return C4 * Math.pow(2, steps / 12);
+        const getCtx = () => {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        };
+
+        function getFreqFromOffset(offset) {
+            return 261.63 * Math.pow(2, (offset - 12) / 12); // offset 12 = C4
         }
 
         function playHarp(freq, time) {
@@ -239,11 +305,17 @@
             osc.frequency.setValueAtTime(freq, time);
             gain.gain.setValueAtTime(0, time);
             gain.gain.linearRampToValueAtTime(0.8, time + state.synth.attack);
+            gain.gain.setValueAtTime(0.8, time + state.synth.attack);
             gain.gain.exponentialRampToValueAtTime(0.001, time + state.synth.release);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start(time);
             osc.stop(time + state.synth.release);
+        }
+
+        function playPreview() {
+            if (!audioCtx) return;
+            playHarp(261.63, audioCtx.currentTime); // C4でテスト
         }
 
         function playClick(time, primary) {
@@ -267,7 +339,6 @@
             const beatPerSec = state.tempo / 60;
             const currBeat = engine.startBeat + (now - engine.startTime) * beatPerSec;
 
-            // メトロノーム
             if (state.metronomeOn) {
                 while (engine.nextMetro < currBeat + lookahead * beatPerSec) {
                     const t = engine.startTime + (engine.nextMetro - engine.startBeat) / beatPerSec;
@@ -276,60 +347,92 @@
                 }
             }
 
-            // 再生
-            while (engine.nextNoteIdx < state.notes.length && state.notes[engine.nextNoteIdx].start < currBeat + lookahead * beatPerSec) {
+            while (engine.nextNoteIdx < state.notes.length) {
                 const n = state.notes[engine.nextNoteIdx];
-                const t = engine.startTime + (n.start - engine.startBeat) / beatPerSec;
-                playHarp(n.freq, t);
+                if (n.start >= currBeat + lookahead * beatPerSec) break;
+                if (!n._skipScheduler) {
+                    const t = engine.startTime + (n.start - engine.startBeat) / beatPerSec;
+                    playHarp(n.freq, t);
+                }
                 engine.nextNoteIdx++;
             }
-
             schedulerId = setTimeout(scheduler, 25);
         }
 
-        // --- イベントループ ---
         function uiLoop() {
             if (state.isPlaying && audioCtx) {
                 const now = audioCtx.currentTime;
                 state.currentBeat = engine.startBeat + (now - engine.startTime) * (state.tempo / 60);
-                
-                // 自動スクロール
                 const container = document.getElementById('timelineContainer');
                 const py = state.currentBeat * BEAT_HEIGHT;
                 container.scrollTop = py - container.clientHeight / 2;
             }
-            
             document.getElementById('playhead').style.top = `${state.currentBeat * BEAT_HEIGHT}px`;
             document.getElementById('beatCounter').textContent = state.currentBeat.toFixed(2);
-            
             requestAnimationFrame(uiLoop);
         }
 
-        // --- ノート描画 ---
         function drawNotes() {
             const layer = document.getElementById('notesLayer');
             layer.innerHTML = '';
             state.notes.forEach(n => {
-                const k = KEY_DEF.find(kd => kd.key === n.keyId);
+                if (n.absOffset === undefined) return;
+                const visKey = VISUAL_KEYS.find(vk => vk.offset === n.absOffset);
+                if (!visKey) return;
+                
+                const isWhite = visKey.type === 'white';
+                const left = isWhite ? `${visKey.wIdx * WHITE_W}%` : `${(visKey.prevWIdx + 1) * WHITE_W - (BLACK_W / 2)}%`;
+                const width = isWhite ? `${WHITE_W}%` : `${BLACK_W}%`;
+                
                 const el = document.createElement('div');
-                el.className = `absolute rounded-md border ${k.type === 'white' ? 'bg-cyan-500/80 border-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.6)]' : 'bg-indigo-500/80 border-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.6)]'}`;
+                el.className = `absolute rounded-md border ${isWhite ? 'bg-cyan-500/80 border-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.6)]' : 'bg-indigo-500/80 border-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.6)]'}`;
                 el.style.top = `${n.start * BEAT_HEIGHT}px`;
                 el.style.height = `${n.dur * BEAT_HEIGHT}px`;
-                el.style.left = k.type === 'white' ? `${k.wIdx * 10 + 0.5}%` : `${k.cIdx * 10 - 2.5}%`;
-                el.style.width = k.type === 'white' ? '9%' : '5%';
+                el.style.left = left;
+                el.style.width = width;
                 el.style.minHeight = '4px';
                 layer.appendChild(el);
             });
         }
 
+        // --- マウス操作用関数 ---
+        window.playMouse = function(offset) {
+            getCtx();
+            if (activeMouseRecording[offset]) return; // 連続発音防止
+            
+            const freq = getFreqFromOffset(offset);
+            playHarp(freq, audioCtx.currentTime);
+            
+            const keyEl = document.getElementById(`vis-key-${offset}`);
+            if (keyEl) {
+                const isWhite = VISUAL_KEYS.find(v => v.offset === offset).type === 'white';
+                keyEl.classList.add(isWhite ? 'key-active-white' : 'key-active-black');
+            }
+            
+            if (state.isRecording) {
+                activeMouseRecording[offset] = { start: state.currentBeat, time: audioCtx.currentTime, freq, absOffset: offset };
+            }
+        };
+
+        window.stopMouse = function(offset) {
+            const keyEl = document.getElementById(`vis-key-${offset}`);
+            if (keyEl) keyEl.classList.remove('key-active-white', 'key-active-black');
+            
+            if (activeMouseRecording[offset]) {
+                const rec = activeMouseRecording[offset];
+                const dur = Math.max(0.15, (audioCtx.currentTime - rec.time) * (state.tempo / 60));
+                const newNote = { id: Date.now() + Math.random(), start: rec.start, dur, freq: rec.freq, absOffset: offset };
+                
+                if (state.isPlaying) newNote._skipScheduler = true;
+                
+                state.notes.push(newNote);
+                delete activeMouseRecording[offset];
+                drawNotes();
+            }
+        };
+
         // --- イベント処理 ---
         function setupEvents() {
-            const getCtx = () => {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-            };
-
-            // 再生・停止
             document.getElementById('playBtn').onclick = () => {
                 getCtx();
                 if (!state.isPlaying) {
@@ -337,6 +440,7 @@
                     engine.startTime = audioCtx.currentTime;
                     engine.startBeat = state.currentBeat;
                     engine.nextMetro = Math.ceil(state.currentBeat);
+                    state.notes.forEach(n => n._skipScheduler = false);
                     state.notes.sort((a, b) => a.start - b.start);
                     engine.nextNoteIdx = state.notes.findIndex(n => n.start >= state.currentBeat);
                     if (engine.nextNoteIdx === -1) engine.nextNoteIdx = state.notes.length;
@@ -358,7 +462,6 @@
                 lucide.createIcons();
             };
 
-            // REC
             document.getElementById('recBtn').onclick = () => {
                 state.isRecording = !state.isRecording;
                 const btn = document.getElementById('recBtn');
@@ -372,19 +475,16 @@
                 }
             };
 
-            // BPM
             document.getElementById('bpmSlider').oninput = (e) => {
                 state.tempo = parseInt(e.target.value);
                 document.getElementById('bpmDisplay').textContent = state.tempo;
             };
 
-            // メトロノーム
             document.getElementById('metroBtn').onclick = () => {
                 state.metronomeOn = !state.metronomeOn;
                 document.getElementById('metroBtn').className = state.metronomeOn ? "p-2 rounded-lg transition-colors text-cyan-400 bg-cyan-900/30" : "p-2 rounded-lg transition-colors text-gray-500 hover:bg-gray-800";
             };
 
-            // シーク
             document.getElementById('timelineContainer').onclick = (e) => {
                 if (state.isPlaying) return;
                 const rect = e.currentTarget.getBoundingClientRect();
@@ -392,60 +492,76 @@
                 state.currentBeat = Math.max(0, y / BEAT_HEIGHT);
             };
 
-            // キーボード
             window.onkeydown = (e) => {
                 if (e.repeat) return;
                 if (e.code === 'ShiftLeft') { state.octaveShift = -1; updateKeyboardLabels(); return; }
                 if (e.code === 'ShiftRight') { state.octaveShift = 1; updateKeyboardLabels(); return; }
 
-                const k = KEY_DEF.find(kd => kd.key === e.key.toLowerCase());
+                const keyStr = CODE_MAP[e.code];
+                if (!keyStr || activeRecording[keyStr]) return;
+
+                const k = KEY_DEF.find(kd => kd.key === keyStr);
                 if (!k) return;
                 
+                const absOffset = k.baseOffset + state.octaveShift * 12;
                 getCtx();
-                const freq = getFreq(k.offset, state.octaveShift);
+                const freq = getFreqFromOffset(absOffset);
                 playHarp(freq, audioCtx.currentTime);
                 
-                const keyEl = document.getElementById(`key-${k.key}`);
-                if (keyEl) keyEl.classList.add(k.type === 'white' ? 'key-active-white' : 'key-active-black');
+                const keyEl = document.getElementById(`vis-key-${absOffset}`);
+                if (keyEl) {
+                    const isWhite = VISUAL_KEYS.find(v => v.offset === absOffset).type === 'white';
+                    keyEl.classList.add(isWhite ? 'key-active-white' : 'key-active-black');
+                }
 
                 if (state.isRecording) {
-                    activeRecording[k.key] = { start: state.currentBeat, time: audioCtx.currentTime, freq };
+                    activeRecording[keyStr] = { start: state.currentBeat, time: audioCtx.currentTime, freq, absOffset };
                 }
             };
 
             window.onkeyup = (e) => {
                 if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') { state.octaveShift = 0; updateKeyboardLabels(); return; }
                 
-                const keyStr = e.key.toLowerCase();
-                const k = KEY_DEF.find(kd => kd.key === keyStr);
-                if (!k) return;
-
-                const keyEl = document.getElementById(`key-${k.key}`);
-                if (keyEl) keyEl.classList.remove('key-active-white', 'key-active-black');
+                const keyStr = CODE_MAP[e.code];
+                if (!keyStr) return;
 
                 if (activeRecording[keyStr]) {
                     const rec = activeRecording[keyStr];
+                    const keyEl = document.getElementById(`vis-key-${rec.absOffset}`);
+                    if (keyEl) keyEl.classList.remove('key-active-white', 'key-active-black');
+
                     const dur = Math.max(0.15, (audioCtx.currentTime - rec.time) * (state.tempo / 60));
-                    state.notes.push({ id: Date.now(), keyId: keyStr, start: rec.start, dur, freq: rec.freq });
+                    const newNote = { id: Date.now(), start: rec.start, dur, freq: rec.freq, absOffset: rec.absOffset };
+                    
+                    if (state.isPlaying) newNote._skipScheduler = true;
+                    
+                    state.notes.push(newNote);
                     delete activeRecording[keyStr];
                     drawNotes();
                 }
             };
 
             // 設定
-            document.getElementById('configBtn').onclick = () => document.getElementById('configModal').classList.remove('hidden');
+            document.getElementById('configBtn').onclick = () => { getCtx(); document.getElementById('configModal').classList.remove('hidden'); };
             document.getElementById('closeConfig').onclick = () => document.getElementById('configModal').classList.add('hidden');
             document.getElementById('modalOk').onclick = () => document.getElementById('configModal').classList.add('hidden');
             
-            document.getElementById('waveType').onchange = (e) => state.synth.type = e.target.value;
-            document.getElementById('attackSlider').oninput = (e) => {
+            // 設定変更時プレビュー
+            document.getElementById('waveType').onchange = (e) => { state.synth.type = e.target.value; playPreview(); };
+            
+            const atkSlider = document.getElementById('attackSlider');
+            atkSlider.oninput = (e) => {
                 state.synth.attack = parseFloat(e.target.value);
                 document.getElementById('attackVal').textContent = e.target.value + 's';
             };
-            document.getElementById('releaseSlider').oninput = (e) => {
+            atkSlider.onchange = () => playPreview(); // スライダーを離した時に音を鳴らす
+
+            const relSlider = document.getElementById('releaseSlider');
+            relSlider.oninput = (e) => {
                 state.synth.release = parseFloat(e.target.value);
                 document.getElementById('releaseVal').textContent = e.target.value + 's';
             };
+            relSlider.onchange = () => playPreview(); // スライダーを離した時に音を鳴らす
         }
     </script>
 </body>
